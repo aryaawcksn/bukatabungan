@@ -2,11 +2,9 @@ import { useState, useEffect, useRef } from 'react';
 import { FormSubmissionCard } from './components/form-submission-card';
 import { FormDetailDialog } from './components/form-detail-dialog';
 import { ApprovalDialog } from './components/approval-dialog';
-import { FileText, Search, Filter, LayoutDashboard, ClipboardCheck, FileBarChart, RefreshCw } from 'lucide-react';
+import { FileText, Search, Filter, LayoutDashboard, ClipboardCheck, FileBarChart } from 'lucide-react';
 import { Input } from './components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './components/ui/select';
-import { Badge } from './components/ui/badge';
-import { Button } from './components/ui/button';
 import { toast } from 'sonner';
 import { Toaster } from './components/ui/sonner';
 
@@ -132,7 +130,7 @@ const mapBackendDataToFormSubmission = (data: any): FormSubmission => {
 export default function DashboardPage() {
   const [submissions, setSubmissions] = useState<FormSubmission[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [, setIsRefreshing] = useState(false);
   const [lastFetchTime, setLastFetchTime] = useState<Date | null>(null);
   const [selectedSubmission, setSelectedSubmission] = useState<FormSubmission | null>(null);
   const [approvalDialog, setApprovalDialog] = useState<{ open: boolean; type: 'approve' | 'reject'; submission: FormSubmission | null }>({
