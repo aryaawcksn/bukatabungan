@@ -386,36 +386,27 @@ if (sendWhatsApp) {
       throw new Error("Konfigurasi WhatsApp tidak lengkap. Pastikan FONNTE_TOKEN sudah diatur di file .env");
     }
 
-    // Gunakan custom message jika ada, atau default message
     const whatsappMessage = message || (status === "approved"
       ? `Halo ${fullName}! 🎉 Permohonan rekening Anda telah disetujui. Silakan kunjungi kantor cabang untuk aktivasi.`
       : `Halo ${fullName}, permohonan rekening Anda belum disetujui. Silakan hubungi cabang terdekat untuk info lebih lanjut.`);
 
-    // Fonnte API terbaru, pakai parameter 'data' (lebih fleksibel)
-    const payload = {
-      data: JSON.stringify([
-        {
-          target: phone,
-          message: whatsappMessage,
-          delay: "1" // bisa diubah sesuai kebutuhan
-        }
-      ])
-    };
-
     await axios.post(
       "https://api.fonnte.com/send",
-      payload,
       {
-        headers: { Authorization: process.env.FONNTE_TOKEN },
+        target: phone,
+        message: whatsappMessage
+      },
+      {
+        headers: { Authorization: process.env.FONNTE_TOKEN }
       }
     );
 
     console.log("✅ WhatsApp berhasil dikirim ke:", phone);
   } catch (whatsappError) {
     console.error("❌ Error saat mengirim WhatsApp:", whatsappError.message);
-    // Jangan gagalkan seluruh request jika WhatsApp gagal
   }
 }
+
     res.json({ success: true, message: "Status diperbarui dan notifikasi dikirim" });
   } catch (err) {
     console.error(err);
