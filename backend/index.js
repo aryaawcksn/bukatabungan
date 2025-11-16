@@ -21,11 +21,11 @@ app.use(express.json());
 
 // 🔗 Koneksi ke PostgreSQL
 const pool = new Pool({
-  user: process.env.PG_USER || "postgres",
-  host: process.env.PG_HOST || "localhost",
-  database: process.env.PG_DATABASE || "bukutabungan",
-  password: process.env.PG_PASSWORD || "12345",
-  port: process.env.PG_PORT || 5432,
+  user: process.env.PGUSER,
+  host: process.env.PGHOST,
+  database: process.env.PGDATABASE,
+  password: process.env.PGPASSWORD,
+  port: process.env.PGPORT,
 });
 
 // ✅ Route test koneksi
@@ -425,7 +425,7 @@ app.use((req, res) => {
 });
 
 // Jalankan server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT;
 app.listen(PORT, () =>
   console.log(`🚀 Server berjalan di http://localhost:${PORT}`)
 );

@@ -82,7 +82,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
 };
 
   try {
-    const response = await fetch("http://localhost:5000/api/pengajuan", {
+    const response = await fetch("https://bukatabungan-production.up.railway.app/api/pengajuan", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify(submitData),
@@ -131,7 +131,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       const formData = new FormData();
       formData.append("gambar", file);
 
-      const res = await fetch("http://localhost:5000/upload", {
+      const res = await fetch("https://bukatabungan-production.up.railway.app/upload", {
         method: "POST",
         body: formData,
       });

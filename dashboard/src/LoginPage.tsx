@@ -29,7 +29,7 @@ export default function LoginPage() {
   }
 
   try {
-    const res = await axios.post("http://localhost:5000/api/login", { username, password });
+    const res = await axios.post("https://bukatabungan-production.up.railway.app/api/login", { username, password });
     if (res.data.success) {
       const { token, admin } = res.data;
 

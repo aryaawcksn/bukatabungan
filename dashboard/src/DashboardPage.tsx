@@ -195,13 +195,13 @@ export default function DashboardPage() {
 
   const checkBackendConnection = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/cek-koneksi');
+      const response = await fetch('https://bukatabungan-production.up.railway.app/api/cek-koneksi');
       if (response.ok) {
         console.log('✅ Backend server terhubung');
       }
     } catch (error) {
       console.error('❌ Backend server tidak dapat diakses:', error);
-      toast.error('Backend server tidak berjalan. Pastikan backend berjalan di http://localhost:5000', {
+      toast.error('Backend server tidak berjalan. Pastikan backend berjalan di https://bukatabungan-production.up.railway.app', {
         duration: 5000,
       });
     }
@@ -221,7 +221,7 @@ export default function DashboardPage() {
       throw new Error("Token tidak ditemukan. Silakan login ulang.");
     }
 
-    const response = await fetch('http://localhost:5000/api/pengajuan', {
+    const response = await fetch('https://bukatabungan-production.up.railway.app/api/pengajuan', {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -286,7 +286,7 @@ export default function DashboardPage() {
     const newStatus = approvalDialog.type === 'approve' ? 'approved' : 'rejected';
     
     try {
-      const response = await fetch(`http://localhost:5000/api/pengajuan/${approvalDialog.submission.id}`, {
+      const response = await fetch(`https://bukatabungan-production.up.railway.app/api/pengajuan/${approvalDialog.submission.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
