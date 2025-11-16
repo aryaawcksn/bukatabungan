@@ -26,8 +26,6 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false }
 });
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 
 // ✅ Route test koneksi
 app.get("/api/cek-koneksi", async (req, res) => {
@@ -311,6 +309,7 @@ app.get("/api/pengajuan", verifyToken, async (req, res) => {
 app.put("/api/pengajuan/:id", async (req, res) => {
   const { id } = req.params;
   const { status, sendEmail, sendWhatsApp, message } = req.body;
+  const resend = new Resend('re_ie5yHe12_MmEL6zxaP74ptQEEgSKgLKrp');
 
 console.log("REQUEST BODY:", req.body);
 console.log("sendEmail:", sendEmail, "sendWhatsApp:", sendWhatsApp, "message:", message);
@@ -340,7 +339,7 @@ console.log("sendEmail:", sendEmail, "sendWhatsApp:", sendWhatsApp, "message:", 
         const emailHtml = emailMessage.replace(/\n/g, '<br/>');
 
         const response = await resend.emails.send({
-          from: 'onboarding@resend.dev',
+          from: 'aryaagun04@gmail.com',
           to: email,
           subject: status === "approved"
             ? "Permohonan Rekening Anda Disetujui ✅"
