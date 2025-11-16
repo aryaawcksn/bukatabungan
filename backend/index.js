@@ -9,6 +9,7 @@ import uploadRouter from "./upload.js";  // ⬅️ tambahkan ini di paling atas
 import path from "path";    
 import nodemailer from "nodemailer";
 import axios from "axios";
+import { Resend } from 'resend';
 
 
 
@@ -308,6 +309,8 @@ app.get("/api/pengajuan", verifyToken, async (req, res) => {
 app.put("/api/pengajuan/:id", async (req, res) => {
   const { id } = req.params;
   const { status, sendEmail, sendWhatsApp, message } = req.body;
+  const resend = new Resend(process.env.RESEND_API_KEY);
+
 console.log("REQUEST BODY:", req.body);
 console.log("sendEmail:", sendEmail, "sendWhatsApp:", sendWhatsApp, "message:", message);
 
@@ -329,51 +332,30 @@ console.log("sendEmail:", sendEmail, "sendWhatsApp:", sendWhatsApp, "message:", 
     // 🔹 Kirim Email (kalau dipilih)
     if (sendEmail) {
       try {
-        // Validasi environment variables
-        if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-          console.error("❌ SMTP_USER atau SMTP_PASS tidak ditemukan di .env");
-          
-          throw new Error("Konfigurasi email tidak lengkap. Pastikan SMTP_USER dan SMTP_PASS sudah diatur di file .env");
-        }
-        
-  const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+        const emailMessage = message || (status === "approved"
+          ? "Selamat! Permohonan pembukaan rekening tabungan Anda telah disetujui.\n\nSilakan kunjungi kantor cabang terdekat dengan membawa dokumen asli untuk proses aktivasi rekening.\n\nTerima kasih telah mempercayai layanan kami."
+          : "Mohon maaf, permohonan pembukaan rekening tabungan Anda tidak dapat kami setujui saat ini.\n\nHal ini dikarenakan data atau dokumen yang Anda berikan belum memenuhi persyaratan.\n\nAnda dapat mengajukan permohonan kembali setelah melengkapi dokumen yang diperlukan.");
 
-// Gunakan custom message jika ada, atau default message
-const emailMessage = message || (status === "approved"
-  ? "Selamat! Permohonan pembukaan rekening tabungan Anda telah disetujui.\n\nSilakan kunjungi kantor cabang terdekat dengan membawa dokumen asli untuk proses aktivasi rekening.\n\nTerima kasih telah mempercayai layanan kami."
-  : "Mohon maaf, permohonan pembukaan rekening tabungan Anda tidak dapat kami setujui saat ini.\n\nHal ini dikarenakan data atau dokumen yang Anda berikan belum memenuhi persyaratan.\n\nAnda dapat mengajukan permohonan kembali setelah melengkapi dokumen yang diperlukan.");
+        const emailHtml = emailMessage.replace(/\n/g, '<br/>');
 
-// Convert newlines to HTML breaks
-const emailHtml = emailMessage.replace(/\n/g, '<br/>');
+        const response = await resend.emails.send({
+          from: 'onboarding@resend.dev',
+          to: email,
+          subject: status === "approved"
+            ? "Permohonan Rekening Anda Disetujui ✅"
+            : "Permohonan Rekening Anda Ditolak ❌",
+          html: `
+            <h3>Halo ${fullName},</h3>
+            <p>${emailHtml}</p>
+            <br/>
+            <small>Pesan otomatis dari sistem Bank Sleman</small>
+          `,
+        });
 
-// langsung kirim, tanpa verify()
-const info = await transporter.sendMail({
-  from: `"Bank Sleman" <${process.env.SMTP_USER}>`,
-  to: email,
-  subject: status === "approved"
-    ? "Permohonan Rekening Anda Disetujui ✅"
-    : "Permohonan Rekening Anda Ditolak ❌",
-  html: `
-    <h3>Halo ${fullName},</h3>
-    <p>${emailHtml}</p>
-    <br/>
-    <small>Pesan otomatis dari sistem Bank Sleman</small>
-  `,
-});
-
-        console.log("✅ Email berhasil dikirim:", info.messageId);
+        console.log("✅ Email berhasil dikirim:", response);
       } catch (emailError) {
         console.error("❌ Error saat mengirim email:", emailError.message);
-        // Jangan gagalkan seluruh request jika email gagal
-        // Status sudah diupdate, hanya email yang gagal
+        // jangan gagalkan request
       }
     }
 
