@@ -127,7 +127,7 @@ export const getAllPengajuan = async (req, res) => {
     // Cek apakah kolom status ada
     const hasStatusColumn = await checkStatusColumn();
 
-    // Query dengan kolom foto_ktp dan foto_selfie
+    // Query dengan kolom foto_ktp dan foto_selfie, termasuk approved/rejected info
     const query = hasStatusColumn
       ? `
         SELECT 
@@ -149,7 +149,11 @@ export const getAllPengajuan = async (req, res) => {
           COALESCE(status, 'pending') AS status,
           foto_ktp,
           foto_selfie,
-          created_at
+          created_at,
+          approved_by,
+          approved_at,
+          rejected_by,
+          rejected_at
         FROM pengajuan_tabungan
         WHERE cabang_pengambilan = $1
         ORDER BY created_at DESC;
@@ -174,7 +178,11 @@ export const getAllPengajuan = async (req, res) => {
           'pending' AS status,
           foto_ktp,
           foto_selfie,
-          created_at
+          created_at,
+          approved_by,
+          approved_at,
+          rejected_by,
+          rejected_at
         FROM pengajuan_tabungan
         WHERE cabang_pengambilan = $1
         ORDER BY created_at DESC;
@@ -198,16 +206,43 @@ export const getAllPengajuan = async (req, res) => {
 export const updatePengajuanStatus = async (req, res) => {
   const { id } = req.params;
   const { status, sendEmail, sendWhatsApp, message } = req.body;
+  const adminUsername = req.user?.username || 'Unknown'; // Ambil username dari token
 
   console.log("REQUEST BODY:", req.body);
   console.log("sendEmail:", sendEmail, "sendWhatsApp:", sendWhatsApp, "message:", message);
+  console.log("Admin yang melakukan aksi:", adminUsername);
 
   try {
-    // Update status di database
-    const result = await pool.query(
-      "UPDATE pengajuan_tabungan SET status = $1 WHERE id = $2 RETURNING *",
-      [status, id]
-    );
+    // Update status di database dengan informasi siapa yang approve/reject
+    let query, values;
+    if (status === 'approved') {
+      query = `
+        UPDATE pengajuan_tabungan 
+        SET status = $1, approved_by = $2, approved_at = NOW(), rejected_by = NULL, rejected_at = NULL
+        WHERE id = $3 
+        RETURNING *;
+      `;
+      values = [status, adminUsername, id];
+    } else if (status === 'rejected') {
+      query = `
+        UPDATE pengajuan_tabungan 
+        SET status = $1, rejected_by = $2, rejected_at = NOW(), approved_by = NULL, approved_at = NULL
+        WHERE id = $3 
+        RETURNING *;
+      `;
+      values = [status, adminUsername, id];
+    } else {
+      // Jika status pending, reset semua approval/rejection info
+      query = `
+        UPDATE pengajuan_tabungan 
+        SET status = $1, approved_by = NULL, approved_at = NULL, rejected_by = NULL, rejected_at = NULL
+        WHERE id = $2 
+        RETURNING *;
+      `;
+      values = [status, id];
+    }
+
+    const result = await pool.query(query, values);
 
     if (result.rowCount === 0)
       return res.status(404).json({ success: false, message: "Data tidak ditemukan" });

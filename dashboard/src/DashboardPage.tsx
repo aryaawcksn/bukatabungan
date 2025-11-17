@@ -35,6 +35,10 @@ export interface FormSubmission {
   };
   submittedAt: string;
   status: 'pending' | 'approved' | 'rejected';
+  approvedBy?: string;
+  approvedAt?: string;
+  rejectedBy?: string;
+  rejectedAt?: string;
 }
 
 // Helper function untuk mapping data dari backend ke format FormSubmission
@@ -123,7 +127,11 @@ const mapBackendDataToFormSubmission = (data: any): FormSubmission => {
       selfiePhoto: data.foto_selfie || '',
     },
     submittedAt: formatDateTime(data.created_at),
-    status: (data.status || 'pending') as 'pending' | 'approved' | 'rejected'
+    status: (data.status || 'pending') as 'pending' | 'approved' | 'rejected',
+    approvedBy: data.approved_by || undefined,
+    approvedAt: data.approved_at ? formatDateTime(data.approved_at) : undefined,
+    rejectedBy: data.rejected_by || undefined,
+    rejectedAt: data.rejected_at ? formatDateTime(data.rejected_at) : undefined
   };
 };
 
@@ -313,6 +321,7 @@ export default function DashboardPage() {
           }
         );
         
+        
         // Refresh data dari backend untuk memastikan data terbaru
         await fetchSubmissions(false);
       } else {
@@ -347,23 +356,41 @@ export default function DashboardPage() {
       {/* Header */}
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
-              <FileText className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-gray-900 font-semibold text-lg">Sistem Pemantauan Rekening Bank</h1>
-              <p className="text-gray-500 text-sm">
-                Pantau status dan kelola permohonan rekening baru
-                {lastFetchTime && (
-                  <span className="ml-2 text-xs">
-                    • Terakhir update: {lastFetchTime.toLocaleTimeString('id-ID')}
-                  </span>
-                )}
-              </p>
-            </div>
-          </div>
-        </div>
+  {/* Left Side */}
+  <div className="flex items-center gap-3">
+    <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+      <FileText className="w-6 h-6 text-white" />
+    </div>
+    <div>
+      <h1 className="text-gray-900 font-semibold text-lg">Sistem Pemantauan Rekening Bank</h1>
+      <p className="text-gray-500 text-sm">
+        Pantau status dan kelola permohonan rekening baru
+        {lastFetchTime && (
+          <span className="ml-2 text-xs">
+            • Terakhir update: {lastFetchTime.toLocaleTimeString('id-ID')}
+          </span>
+        )}
+      </p>
+    </div>
+  </div>
+
+  {/* Profile Badge */}
+  <div className="flex items-center gap-3 bg-blue-50v px-4 py-2">
+    <div className="text-right leading-tight">
+      <p className="text-sm font-medium text-gray-800">
+        {localStorage.getItem("admin_username") || "Not_found"}
+      </p>
+      <p className="text-xs text-gray-500">
+        Cabang {localStorage.getItem("admin_cabang") || "not_found"}
+      </p>
+    </div>
+
+    <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center font-semibold">
+      { (localStorage.getItem("admin_username") || "U").charAt(0).toUpperCase() }
+    </div>
+  </div>
+</div>
+
 
         {/* Navigation Bar */}
         <nav className="bg-gray-100 border-t border-gray-200">

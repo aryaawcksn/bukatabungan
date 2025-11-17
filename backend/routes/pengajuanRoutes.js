@@ -15,7 +15,7 @@ router.post("/", createPengajuan);
 router.get("/", verifyToken, getAllPengajuan);
 
 // Route update status pengajuan (protected)
-router.put("/:id", updatePengajuanStatus);
+router.put("/:id", verifyToken, updatePengajuanStatus);
 
 export default router;
 
