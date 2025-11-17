@@ -118,6 +118,92 @@ export const createPengajuan = async (req, res) => {
 };
 
 /**
+ * Mengambil satu pengajuan berdasarkan ID
+ */
+export const getPengajuanById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const adminCabang = req.user.cabang; // cabang dari token login
+
+    // Cek apakah kolom status ada
+    const hasStatusColumn = await checkStatusColumn();
+
+    // Query dengan kolom foto_ktp dan foto_selfie, termasuk approved/rejected info
+    const query = hasStatusColumn
+      ? `
+        SELECT 
+          id,
+          kode_referensi,
+          nama_lengkap,
+          nik,
+          email,
+          no_hp,
+          tanggal_lahir,
+          alamat,
+          provinsi,
+          kota,
+          kode_pos,
+          pekerjaan,
+          penghasilan,
+          cabang_pengambilan,
+          jenis_kartu,
+          COALESCE(status, 'pending') AS status,
+          foto_ktp,
+          foto_selfie,
+          created_at,
+          approved_by,
+          approved_at,
+          rejected_by,
+          rejected_at
+        FROM pengajuan_tabungan
+        WHERE id = $1 AND cabang_pengambilan = $2;
+      `
+      : `
+        SELECT 
+          id,
+          kode_referensi,
+          nama_lengkap,
+          nik,
+          email,
+          no_hp,
+          tanggal_lahir,
+          alamat,
+          provinsi,
+          kota,
+          kode_pos,
+          pekerjaan,
+          penghasilan,
+          cabang_pengambilan,
+          jenis_kartu,
+          'pending' AS status,
+          foto_ktp,
+          foto_selfie,
+          created_at,
+          approved_by,
+          approved_at,
+          rejected_by,
+          rejected_at
+        FROM pengajuan_tabungan
+        WHERE id = $1 AND cabang_pengambilan = $2;
+      `;
+
+    const result = await pool.query(query, [id, adminCabang]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, message: "Pengajuan tidak ditemukan" });
+    }
+
+    res.json({
+      success: true,
+      data: result.rows[0],
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+/**
  * Mengambil semua pengajuan berdasarkan cabang admin
  */
 export const getAllPengajuan = async (req, res) => {
