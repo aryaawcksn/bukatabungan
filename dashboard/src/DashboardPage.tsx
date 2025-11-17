@@ -294,9 +294,19 @@ export default function DashboardPage() {
     const newStatus = approvalDialog.type === 'approve' ? 'approved' : 'rejected';
     
     try {
+      // 🔑 Ambil token dari localStorage
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast.error("Token tidak ditemukan. Silakan login ulang.");
+        return;
+      }
+
       const response = await fetch(`https://bukatabungan-production.up.railway.app/api/pengajuan/${approvalDialog.submission.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ 
           status: newStatus,
           sendEmail: sendEmail,
@@ -304,6 +314,30 @@ export default function DashboardPage() {
           message
         })
       });
+
+      if (!response.ok) {
+        // Handle error response
+        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+          
+          // Jika token tidak valid atau expired, redirect ke login
+          if (response.status === 401 || response.status === 403) {
+            localStorage.removeItem("token");
+            localStorage.removeItem("admin_cabang");
+            localStorage.removeItem("admin_username");
+            localStorage.removeItem("isLoggedIn");
+            toast.error("Session expired. Silakan login ulang.");
+            window.location.href = "/";
+            return;
+          }
+        } catch (e) {
+          // Jika response bukan JSON
+        }
+        toast.error(errorMessage || 'Gagal mengupdate status');
+        return;
+      }
 
       const result = await response.json();
 
