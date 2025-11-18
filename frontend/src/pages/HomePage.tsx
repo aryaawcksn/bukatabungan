@@ -107,9 +107,7 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
               <a href="#" className="text-gray-700 hover:text-emerald-600 transition-colors">INFO</a>
               <a href="#" className="text-gray-700 hover:text-emerald-600 transition-colors">HUBUNGI KAMI</a>
             </nav>
-            <Button className="bg-emerald-600 hover:bg-emerald-700">
-              Login
-            </Button>
+            
           </div>
 
         </div>

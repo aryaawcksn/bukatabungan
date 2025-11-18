@@ -27,22 +27,38 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "auto" });
   }, []);
-  const [formData, setFormData] = useState({
-    fullName: '',
-    nik: '',
-    email: '',
-    phone: '',
-    birthDate: '',
-    address: '',
-    province: '',
-    city: '',
-    postalCode: '',
-    occupation: '',
-    monthlyIncome: '',
-    cabang_pengambilan: 'Sleman',
-    cardType: '', // kept in state but will be auto-filled based on savingsType
-    agreeTerms: false
-  });
+
+const [formData, setFormData] = useState({
+  fullName: '',
+  nik: '',
+  email: '',
+  phone: '',
+  birthDate: '',
+  address: '',
+  province: '',
+  city: '',
+  postalCode: '',
+  occupation: '',
+  monthlyIncome: '',
+  cabang_pengambilan: 'Sleman',
+  cardType: '',
+  agreeTerms: false,
+
+  gender: '',
+  maritalStatus: '',
+  citizenship: '',
+  motherName: '',
+
+  tempatBekerja: '',
+  alamatKantor: '',
+  sumberDana: '',
+  tujuanRekening: '',
+  kontakDaruratNama: '',
+  kontakDaruratHp: '',
+  employmentStatus: '',
+
+
+});
 
   // Map default jenis_kartu: samakan dengan savingsType
   const getDefaultCardType = () => {
@@ -57,8 +73,8 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
 
-  // Siapkan data yang akan dikirim ke backend
- const submitData = {
+// Siapkan data yang akan dikirim ke backend
+const submitData = {
   nama_lengkap: formData.fullName,
   nik: formData.nik,
   email: formData.email,
@@ -70,16 +86,39 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
   kode_pos: formData.postalCode,
   pekerjaan: formData.occupation,
   penghasilan: formData.monthlyIncome,
+
+  jenis_kelamin: formData.gender,
+  status_perkawinan: formData.maritalStatus,
+  kewarganegaraan: formData.citizenship,
+  nama_ibu_kandung: formData.motherName,
+
+  // pekerjaan tambahan
+  tempat_bekerja: formData.tempatBekerja,
+  alamat_kantor: formData.alamatKantor,
+  sumber_dana: formData.sumberDana,
+  tujuan_rekening: formData.tujuanRekening,
+
+  // kontak darurat
+  kontak_darurat_nama: formData.kontakDaruratNama,
+  kontak_darurat_hp: formData.kontakDaruratHp,
+
+  // status & persetujuan data
+  status_bekerja: formData.employmentStatus, // "Ya" atau "Tidak"
+  setuju_data: formData.agreeTerms ? 'Ya' : 'Tidak',
+
+  // kartu
   jenis_kartu: formData.cardType || getDefaultCardType(),
   card_type: formData.cardType || getDefaultCardType(),
   savings_type: savingsType,
   savings_type_name: getSavingsTypeName(),
   cabang_pengambilan: formData.cabang_pengambilan || '',
 
-  // 🟢 Tambahkan dua ini supaya backend tahu URL hasil upload
+  // file upload
   foto_ktp: ktpUrl,
   foto_selfie: selfieUrl,
 };
+
+
 
   try {
     const response = await fetch("https://bukatabungan-production.up.railway.app/api/pengajuan", {
@@ -261,9 +300,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
               <a href="#" className="text-gray-700 hover:text-emerald-600 transition-colors">INFO</a>
               <a href="#" className="text-gray-700 hover:text-emerald-600 transition-colors">HUBUNGI KAMI</a>
             </nav>
-            <Button className="bg-emerald-600 hover:bg-emerald-700">
-              Login
-            </Button>
+           
           </div>
         </div>
       </header>
@@ -304,15 +341,13 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       <section className="py-12 bg-gray-50">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
          <Button
-  variant="ghost"
-  onClick={onBack}
-  className="mb-8 hover:bg-gray-100 hover:text-emerald-700 transition-colors"
->
-  <ArrowLeft className="h-4 w-4 mr-2" />
-  Kembali ke Prosedur
-</Button>
-
-
+          variant="ghost"
+          onClick={onBack}
+          className="mb-8 hover:bg-gray-100 hover:text-emerald-700 transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Kembali ke Prosedur
+        </Button>
           <div className="text-center mb-8">
             <p className="text-gray-600 text-lg">
               Lengkapi data berikut untuk membuka rekening Anda
@@ -321,77 +356,148 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
 
         <Card className="bg-white p-10 border-0 shadow-xl rounded-2xl w-full max-w-4xl mx-auto">
           <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Data Pribadi */}
-            <div>
-              <h3 className="text-emerald-900 mb-6 text-2xl">Data Pribadi</h3>
-              <div className="space-y-5">
-                <div>
-                  <Label htmlFor="fullName" className="text-gray-700">Nama Lengkap (Sesuai KTP)</Label>
-                  <Input 
-                    id="fullName" 
-                    required
-                    placeholder="Masukkan nama lengkap"
-                    value={formData.fullName}
-                    onChange={(e) => setFormData({...formData, fullName: e.target.value})}
-                    className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded"
-                  />
-                </div>
+           {/* Data Pribadi */}
+<div>
+  <h3 className="text-emerald-900 mb-6 text-2xl">Data Pribadi</h3>
+  <div className="space-y-5">
 
-                <div>
-                  <Label htmlFor="nik" className="text-gray-700">NIK (Nomor Induk Kependudukan)</Label>
-                  <Input 
-                    id="nik" 
-                    required
-                    placeholder="16 digit NIK"
-                    maxLength={16}
-                    value={formData.nik}
-                    onChange={(e) => setFormData({...formData, nik: e.target.value})}
-                    className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded"
-                  />
-                </div>
+    {/* Nama Lengkap */}
+    <div>
+      <Label htmlFor="fullName" className="text-gray-700">Nama Lengkap (Sesuai KTP)</Label>
+      <Input 
+        id="fullName" 
+        required
+        placeholder="Masukkan nama lengkap"
+        value={formData.fullName}
+        onChange={(e) => setFormData({...formData, fullName: e.target.value})}
+        className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded"
+      />
+    </div>
 
-                <div className="grid md:grid-cols-2 gap-5">
-                  <div>
-                    <Label htmlFor="email" className="text-gray-700">Email</Label>
-                    <Input 
-                      id="email" 
-                      type="email"
-                      required
-                      placeholder="email@example.com"
-                      value={formData.email}
-                      onChange={(e) => setFormData({...formData, email: e.target.value})}
-                      className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded"
-                    />
-                  </div>
+    {/* NIK */}
+    <div>
+      <Label htmlFor="nik" className="text-gray-700">NIK (Nomor Induk Kependudukan)</Label>
+      <Input 
+        id="nik" 
+        required
+        placeholder="16 digit NIK"
+        maxLength={16}
+        value={formData.nik}
+        onChange={(e) => setFormData({...formData, nik: e.target.value})}
+        className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded"
+      />
+    </div>
 
-                  <div>
-                    <Label htmlFor="phone" className="text-gray-700">Nomor Telepon</Label>
-                    <Input 
-                      id="phone" 
-                      type="tel"
-                      required
-                      placeholder="08xxxxxxxxxx"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                      className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded"
-                    />
-                  </div>
-                </div>
+    {/* Gender + Marital Status */}
+    <div className="grid md:grid-cols-2 gap-5">
 
-                <div>
-                  <Label htmlFor="birthDate" className="text-gray-700">Tanggal Lahir</Label>
-                  <Input 
-                    id="birthDate" 
-                    type="date"
-                    required
-                    value={formData.birthDate}
-                    onChange={(e) => setFormData({...formData, birthDate: e.target.value})}
-                    className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded"
-                  />
-                </div>
-              </div>
-            </div>
+      {/* Jenis Kelamin */}
+      <div>
+        <Label className="text-gray-700">Jenis Kelamin</Label>
+        <Select
+          value={formData.gender}
+          onValueChange={(value) => setFormData({ ...formData, gender: value })}
+        >
+          <SelectTrigger className="mt-2 border-gray-200 focus:border-emerald-500 rounded">
+            <SelectValue placeholder="Pilih jenis kelamin" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Laki-laki">Laki-laki</SelectItem>
+            <SelectItem value="Perempuan">Perempuan</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
+      {/* Status Pernikahan */}
+      <div>
+        <Label className="text-gray-700">Status Pernikahan</Label>
+        <Select
+          value={formData.maritalStatus}
+          onValueChange={(value) => setFormData({ ...formData, maritalStatus: value })}
+        >
+          <SelectTrigger className="mt-2 border-gray-200 focus:border-emerald-500 rounded">
+            <SelectValue placeholder="Pilih status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Belum Menikah">Belum Menikah</SelectItem>
+            <SelectItem value="Menikah">Menikah</SelectItem>
+            <SelectItem value="Cerai">Cerai</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+    </div>
+
+    {/* Email + Phone */}
+    <div className="grid md:grid-cols-2 gap-5">
+      <div>
+        <Label htmlFor="email" className="text-gray-700">Email</Label>
+        <Input 
+          id="email" 
+          type="email"
+          required
+          placeholder="email@example.com"
+          value={formData.email}
+          onChange={(e) => setFormData({...formData, email: e.target.value})}
+          className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded"
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="phone" className="text-gray-700">Nomor Telepon</Label>
+        <Input 
+          id="phone" 
+          type="tel"
+          required
+          placeholder="08xxxxxxxxxx"
+          value={formData.phone}
+          onChange={(e) => setFormData({...formData, phone: e.target.value})}
+          className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded"
+        />
+      </div>
+    </div>
+
+    {/* Tanggal Lahir */}
+    <div>
+      <Label htmlFor="birthDate" className="text-gray-700">Tanggal Lahir</Label>
+      <Input 
+        id="birthDate" 
+        type="date"
+        required
+        value={formData.birthDate}
+        onChange={(e) => setFormData({...formData, birthDate: e.target.value})}
+        className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded"
+      />
+    </div>
+
+    {/* Kewarganegaraan */}
+    <div>
+      <Label htmlFor="citizenship" className="text-gray-700">Kewarganegaraan</Label>
+      <Input
+        id="citizenship"
+        required
+        placeholder="Contoh: Indonesia"
+        value={formData.citizenship}
+        onChange={(e) => setFormData({ ...formData, citizenship: e.target.value })}
+        className="mt-2 border-gray-200 focus:border-emerald-500 rounded"
+      />
+    </div>
+
+    {/* Nama Ibu Kandung */}
+    <div>
+      <Label htmlFor="motherName" className="text-gray-700">Nama Ibu Kandung</Label>
+      <Input
+        id="motherName"
+        required
+        placeholder="Masukkan nama ibu kandung"
+        value={formData.motherName}
+        onChange={(e) => setFormData({ ...formData, motherName: e.target.value })}
+        className="mt-2 border-gray-200 focus:border-emerald-500 rounded"
+      />
+    </div>
+
+  </div>
+</div>
             {/* Alamat */}
             <div className="pt-6 border-t border-gray-100">
               <h3 className="text-emerald-900 mb-6 text-2xl">Alamat</h3>
@@ -452,26 +558,117 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
               </div>
             </div>
 
-            {/* Informasi Pekerjaan */}
+            {/* Informasi Pekerjaan Tambahan */}
+<div className="space-y-5 mt-5">
+   <h3 className="text-emerald-900 mb-6 text-2xl">Informasi Pekerjaan</h3>
+
+  {/* Tempat Bekerja */}
+
+  <div>
+  <Label htmlFor="employmentStatus" className="text-gray-700">Status Pekerjaan</Label>
+
+  <Select
+    value={formData.employmentStatus}
+    onValueChange={(value) => setFormData({ ...formData, employmentStatus: value })}
+  >
+    <SelectTrigger className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded">
+      <SelectValue placeholder="Pilih status pekerjaan" />
+    </SelectTrigger>
+
+    <SelectContent>
+      <SelectItem value="bekerja">Sudah Bekerja</SelectItem>
+      <SelectItem value="tidak-bekerja">Belum Bekerja</SelectItem>
+      <SelectItem value="pelajar-mahasiswa">Pelajar / Mahasiswa</SelectItem>
+    </SelectContent>
+  </Select>
+</div>
+
+  <div>
+    <Label htmlFor="tempatBekerja" className="text-gray-700">Tempat Bekerja</Label>
+    <Input
+      id="tempatBekerja"
+      placeholder="Nama perusahaan atau instansi"
+      value={formData.tempatBekerja}
+      onChange={(e) => setFormData({ ...formData, tempatBekerja: e.target.value })}
+      className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded"
+    />
+  </div>
+
+  {/* Alamat Kantor */}
+  <div>
+    <Label htmlFor="alamatKantor" className="text-gray-700">Alamat Kantor</Label>
+    <Textarea
+      id="alamatKantor"
+      placeholder="Alamat lengkap kantor"
+      value={formData.alamatKantor}
+      onChange={(e) => setFormData({ ...formData, alamatKantor: e.target.value })}
+      className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded"
+    />
+  </div>
+
+  {/* Sumber Dana */}
+  <h3 className="text-emerald-900 mb-6 text-2xl">Sumber dana & Tujuan rekening</h3>
+  <div>
+    <Label htmlFor="sumberDana" className="text-gray-700">Sumber Dana</Label>
+    <Select
+      value={formData.sumberDana}
+      onValueChange={(value) => setFormData({ ...formData, sumberDana: value })}
+    >
+      <SelectTrigger className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded">
+        <SelectValue placeholder="Pilih sumber dana" />
+      </SelectTrigger>
+
+      <SelectContent>
+        <SelectItem value="gaji">Gaji</SelectItem>
+        <SelectItem value="usaha">Usaha</SelectItem>
+        <SelectItem value="warisan">Warisan</SelectItem>
+        <SelectItem value="orang-tua">Orang Tua</SelectItem>
+        <SelectItem value="investasi">Investasi</SelectItem>
+        <SelectItem value="lainnya">Lainnya</SelectItem>
+      </SelectContent>
+    </Select>
+  </div>
+
+  {/* Tujuan Rekening */}
+  <div>
+    <Label htmlFor="tujuanRekening" className="text-gray-700">Tujuan Pembukaan Rekening</Label>
+    <Select
+      value={formData.tujuanRekening}
+      onValueChange={(value) => setFormData({ ...formData, tujuanRekening: value })}
+    >
+      <SelectTrigger className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded">
+        <SelectValue placeholder="Pilih tujuan pembukaan rekening" />
+      </SelectTrigger>
+
+      <SelectContent>
+        <SelectItem value="tabungan-personal">Tabungan Pribadi</SelectItem>
+        <SelectItem value="bisnis">Keperluan Bisnis</SelectItem>
+        <SelectItem value="investasi">Investasi</SelectItem>
+        <SelectItem value="pembayaran">Pembayaran / Transaksi</SelectItem>
+        <SelectItem value="lainnya">Lainnya</SelectItem>
+      </SelectContent>
+    </Select>
+  </div>
+
+</div>
+
+
             <div className="pt-6 border-t border-gray-100">
-              <h3 className="text-emerald-900 mb-6 text-2xl">Informasi Pekerjaan</h3>
+              <h3 className="text-emerald-900 mb-6 text-2xl">Informasi Kartu</h3>
               <div className="space-y-5">
                 <div>
-                  <Label htmlFor="occupation" className="text-gray-700">Pekerjaan</Label>
+                  <Label htmlFor="occupation" className="text-gray-700">Jenis Kartu</Label>
                   <Select 
                     value={formData.occupation}
                     onValueChange={(value) => setFormData({...formData, occupation: value})}
                   >
                     <SelectTrigger className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded">
-                      <SelectValue placeholder="Pilih pekerjaan" />
+                      <SelectValue placeholder="Pilih jenis" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="pegawai">Pegawai Swasta</SelectItem>
-                      <SelectItem value="pns">PNS/TNI/Polri</SelectItem>
-                      <SelectItem value="wiraswasta">Wiraswasta</SelectItem>
-                      <SelectItem value="profesional">Profesional</SelectItem>
-                      <SelectItem value="mahasiswa">Mahasiswa</SelectItem>
-                      <SelectItem value="lainnya">Lainnya</SelectItem>
+                      <SelectItem value="gold">Gold</SelectItem>
+                      <SelectItem value="pns">Silver</SelectItem>
+                      <SelectItem value="wiraswasta">Platinum</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

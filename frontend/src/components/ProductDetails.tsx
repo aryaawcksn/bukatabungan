@@ -71,6 +71,7 @@ function ProductDetails({
           ],
           interest: "Suku bunga: 3.5% per tahun (dapat berubah sewaktu-waktu)",
           cardBg: "bg-gradient-to-br from-emerald-500 to-emerald-700",
+          image: "/mutiara.jpg",
         };
       case "bisnis":
         return {
@@ -103,6 +104,7 @@ function ProductDetails({
           ],
           interest: "Suku bunga: 3.5% per tahun (dapat berubah sewaktu-waktu)",
           cardBg: "bg-gradient-to-br from-indigo-600 to-purple-700",
+          image: "/sleman.jpg",
         };
       case "simpel":
         return {
@@ -135,6 +137,7 @@ function ProductDetails({
           ],
           interest: "Suku bunga: 2.5% per tahun (dapat berubah sewaktu-waktu)",
           cardBg: "bg-gradient-to-br from-pink-500 to-rose-600",
+          image: "/SD.jpg",
         };
       default:
         return {
@@ -210,9 +213,7 @@ function ProductDetails({
               <a href="#" className="text-gray-700 hover:text-emerald-600 transition-colors">INFO</a>
               <a href="#" className="text-gray-700 hover:text-emerald-600 transition-colors">HUBUNGI KAMI</a>
             </nav>
-            <Button className="bg-emerald-600 hover:bg-emerald-700">
-              Login
-            </Button>
+           
           </div>
         </div>
       </header>
@@ -287,12 +288,28 @@ function ProductDetails({
             {/* Main Content */}
             <main className="lg:col-span-3 space-y-6">
               {/* Description */}
-              <Card className="p-8 shadow-lg bg-white rounded-2xl">
-                <h3 className="text-2xl font-semibold text-gray-800 mb-4">
-                  Deskripsi Produk
-                </h3>
-                <p className="text-gray-700 leading-relaxed text-lg">{productInfo.description}</p>
-              </Card>
+              <Card className="relative overflow-hidden p-8 shadow-lg bg-white rounded-2xl">
+
+  {/* Background image yang di-blur & opacity */}
+  <div 
+    className="absolute inset-0 bg-cover bg-right opacity-30"
+    style={{ backgroundImage: `url('${productInfo.image}')` }}
+  />
+
+  {/* Gradient untuk efek fade kiri → kanan */}
+  <div className="absolute inset-0 bg-gradient-to-r from-white via-white/80 to-transparent" />
+
+  {/* Content */}
+  <div className="relative z-10">
+    <h3 className="text-2xl font-semibold text-gray-800 mb-4">
+      Deskripsi Produk
+    </h3>
+    <p className="text-gray-700 leading-relaxed text-lg">
+      {productInfo.description}
+    </p>
+  </div>
+
+</Card>
 
               {/* Features */}
               <Card className="p-8 shadow-lg bg-white rounded-2xl">
