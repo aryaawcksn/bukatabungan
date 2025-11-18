@@ -23,6 +23,8 @@ const checkStatusColumn = async () => {
  */
 export const createPengajuan = async (req, res) => {
   try {
+    console.log("📥 Received request body:", JSON.stringify(req.body, null, 2));
+    
     const {
       nama_lengkap,
       nik,
@@ -38,24 +40,58 @@ export const createPengajuan = async (req, res) => {
       cabang_pengambilan,
       foto_ktp,
       foto_selfie,
+      // Field baru
+      jenis_kelamin,
+      status_pernikahan,
+      status_perkawinan, // Support both naming from frontend
+      nama_ibu_kandung,
+      kewarganegaraan,
+      tempat_bekerja,
+      alamat_kantor,
+      sumber_dana,
+      tujuan_rekening,
+      kontak_darurat_nama,
+      kontak_darurat_hp,
+      setuju_data,
     } = req.body;
+
+    // Validasi field required
+    if (!nama_lengkap || !nik || !email || !no_hp || !tanggal_lahir || !alamat || !provinsi || !kota || !kode_pos) {
+      console.error("❌ Missing required fields");
+      return res.status(400).json({ 
+        success: false, 
+        message: "Field wajib tidak lengkap. Pastikan nama, NIK, email, no HP, tanggal lahir, alamat, provinsi, kota, dan kode pos sudah diisi." 
+      });
+    }
 
     // dukung beberapa nama field dari frontend
     const jenis_kartu = req.body.jenis_kartu || req.body.card_type || req.body.cardType;
+    
+    // Normalize status_pernikahan (support both naming)
+    const statusPernikahan = status_pernikahan || status_perkawinan;
+    
+    // Normalize setuju_data (convert 'Ya'/'Tidak' to boolean if needed)
+    let setujuDataValue = setuju_data;
+    if (typeof setuju_data === 'string') {
+      setujuDataValue = setuju_data === 'Ya' || setuju_data === 'true' || setuju_data === true;
+    } else if (setuju_data === undefined || setuju_data === null) {
+      setujuDataValue = false;
+    }
 
     // Generate kode referensi unik
     const kode_referensi = `REF-${Math.floor(Math.random() * 1000000)}`;
 
     // Cek apakah kolom status ada di tabel
     const hasStatusColumn = await checkStatusColumn();
+    console.log("📊 Has status column:", hasStatusColumn);
 
-    // Query SQL dengan kolom foto_ktp dan foto_selfie
+    // Query SQL dengan kolom foto_ktp dan foto_selfie, plus field baru
     let query, values;
     if (hasStatusColumn) {
       query = `
         INSERT INTO pengajuan_tabungan 
-        (kode_referensi, nama_lengkap, nik, email, no_hp, tanggal_lahir, alamat, provinsi, kota, kode_pos, pekerjaan, penghasilan, cabang_pengambilan, jenis_kartu, status, foto_ktp, foto_selfie)
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
+        (kode_referensi, nama_lengkap, nik, email, no_hp, tanggal_lahir, alamat, provinsi, kota, kode_pos, pekerjaan, penghasilan, cabang_pengambilan, jenis_kartu, status, foto_ktp, foto_selfie, jenis_kelamin, status_pernikahan, nama_ibu_kandung, kewarganegaraan, tempat_bekerja, alamat_kantor, sumber_dana, tujuan_rekening, kontak_darurat_nama, kontak_darurat_hp, setuju_data)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28)
         RETURNING *;
       `;
       values = [
@@ -76,12 +112,23 @@ export const createPengajuan = async (req, res) => {
         req.body.status || "pending",
         foto_ktp,
         foto_selfie,
+        jenis_kelamin || null,
+        statusPernikahan || null,
+        nama_ibu_kandung || null,
+        kewarganegaraan || 'WNI',
+        tempat_bekerja || null,
+        alamat_kantor || null,
+        sumber_dana || null,
+        tujuan_rekening || null,
+        kontak_darurat_nama || null,
+        kontak_darurat_hp || null,
+        setujuDataValue,
       ];
     } else {
       query = `
         INSERT INTO pengajuan_tabungan 
-        (kode_referensi, nama_lengkap, nik, email, no_hp, tanggal_lahir, alamat, provinsi, kota, kode_pos, pekerjaan, penghasilan, cabang_pengambilan, jenis_kartu, foto_ktp, foto_selfie)
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
+        (kode_referensi, nama_lengkap, nik, email, no_hp, tanggal_lahir, alamat, provinsi, kota, kode_pos, pekerjaan, penghasilan, cabang_pengambilan, jenis_kartu, foto_ktp, foto_selfie, jenis_kelamin, status_pernikahan, nama_ibu_kandung, kewarganegaraan, tempat_bekerja, alamat_kantor, sumber_dana, tujuan_rekening, kontak_darurat_nama, kontak_darurat_hp, setuju_data)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27)
         RETURNING *;
       `;
       values = [
@@ -101,10 +148,27 @@ export const createPengajuan = async (req, res) => {
         jenis_kartu,
         foto_ktp,
         foto_selfie,
+        jenis_kelamin || null,
+        statusPernikahan || null,
+        nama_ibu_kandung || null,
+        kewarganegaraan || 'WNI',
+        tempat_bekerja || null,
+        alamat_kantor || null,
+        sumber_dana || null,
+        tujuan_rekening || null,
+        kontak_darurat_nama || null,
+        kontak_darurat_hp || null,
+        setujuDataValue,
       ];
     }
 
+    console.log("🔍 Executing query with", values.length, "parameters");
+    console.log("📝 Query:", query.substring(0, 200) + "...");
+    
     const result = await pool.query(query, values);
+    
+    console.log("✅ Data berhasil disimpan dengan ID:", result.rows[0]?.id);
+    console.log("📋 Kode referensi:", kode_referensi);
 
     res.json({
       success: true,
@@ -113,7 +177,39 @@ export const createPengajuan = async (req, res) => {
       data: result.rows[0],
     });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    console.error("❌ Error creating pengajuan:", err);
+    console.error("❌ Error details:", {
+      message: err.message,
+      code: err.code,
+      detail: err.detail,
+      constraint: err.constraint,
+      table: err.table,
+      column: err.column
+    });
+    
+    // Berikan error message yang lebih informatif
+    let errorMessage = err.message;
+    if (err.code === '23505') { // Unique violation
+      errorMessage = "Data dengan NIK atau email ini sudah terdaftar";
+    } else if (err.code === '23502') { // Not null violation
+      errorMessage = `Field wajib tidak boleh kosong: ${err.column || 'unknown'}`;
+    } else if (err.code === '23503') { // Foreign key violation
+      errorMessage = "Data referensi tidak valid";
+    } else if (err.code === '42P01') { // Undefined table
+      errorMessage = "Tabel tidak ditemukan. Pastikan database sudah di-setup dengan benar.";
+    } else if (err.code === '42703') { // Undefined column
+      errorMessage = `Kolom tidak ditemukan: ${err.column || 'unknown'}. Pastikan migrasi database sudah dijalankan.`;
+    }
+    
+    res.status(500).json({ 
+      success: false, 
+      message: errorMessage,
+      error: process.env.NODE_ENV === 'development' ? {
+        code: err.code,
+        detail: err.detail,
+        constraint: err.constraint
+      } : undefined
+    });
   }
 };
 
@@ -128,7 +224,7 @@ export const getPengajuanById = async (req, res) => {
     // Cek apakah kolom status ada
     const hasStatusColumn = await checkStatusColumn();
 
-    // Query dengan kolom foto_ktp dan foto_selfie, termasuk approved/rejected info
+    // Query dengan kolom foto_ktp dan foto_selfie, termasuk approved/rejected info, plus field baru
     const query = hasStatusColumn
       ? `
         SELECT 
@@ -150,6 +246,17 @@ export const getPengajuanById = async (req, res) => {
           COALESCE(status, 'pending') AS status,
           foto_ktp,
           foto_selfie,
+          jenis_kelamin,
+          status_pernikahan,
+          nama_ibu_kandung,
+          kewarganegaraan,
+          tempat_bekerja,
+          alamat_kantor,
+          sumber_dana,
+          tujuan_rekening,
+          kontak_darurat_nama,
+          kontak_darurat_hp,
+          setuju_data,
           created_at,
           approved_by,
           approved_at,
@@ -178,6 +285,17 @@ export const getPengajuanById = async (req, res) => {
           'pending' AS status,
           foto_ktp,
           foto_selfie,
+          jenis_kelamin,
+          status_pernikahan,
+          nama_ibu_kandung,
+          kewarganegaraan,
+          tempat_bekerja,
+          alamat_kantor,
+          sumber_dana,
+          tujuan_rekening,
+          kontak_darurat_nama,
+          kontak_darurat_hp,
+          setuju_data,
           created_at,
           approved_by,
           approved_at,
@@ -212,8 +330,10 @@ export const getAllPengajuan = async (req, res) => {
 
     // Cek apakah kolom status ada
     const hasStatusColumn = await checkStatusColumn();
+    console.log("📊 getAllPengajuan - Has status column:", hasStatusColumn);
+    console.log("📊 getAllPengajuan - Admin cabang:", adminCabang);
 
-    // Query dengan kolom foto_ktp dan foto_selfie, termasuk approved/rejected info
+    // Query dengan kolom foto_ktp dan foto_selfie, termasuk approved/rejected info, plus field baru
     const query = hasStatusColumn
       ? `
         SELECT 
@@ -235,6 +355,17 @@ export const getAllPengajuan = async (req, res) => {
           COALESCE(status, 'pending') AS status,
           foto_ktp,
           foto_selfie,
+          jenis_kelamin,
+          status_pernikahan,
+          nama_ibu_kandung,
+          kewarganegaraan,
+          tempat_bekerja,
+          alamat_kantor,
+          sumber_dana,
+          tujuan_rekening,
+          kontak_darurat_nama,
+          kontak_darurat_hp,
+          setuju_data,
           created_at,
           approved_by,
           approved_at,
@@ -264,6 +395,17 @@ export const getAllPengajuan = async (req, res) => {
           'pending' AS status,
           foto_ktp,
           foto_selfie,
+          jenis_kelamin,
+          status_pernikahan,
+          nama_ibu_kandung,
+          kewarganegaraan,
+          tempat_bekerja,
+          alamat_kantor,
+          sumber_dana,
+          tujuan_rekening,
+          kontak_darurat_nama,
+          kontak_darurat_hp,
+          setuju_data,
           created_at,
           approved_by,
           approved_at,
@@ -275,6 +417,19 @@ export const getAllPengajuan = async (req, res) => {
       `;
 
     const result = await pool.query(query, [adminCabang]);
+    
+    console.log("📊 getAllPengajuan - Total rows:", result.rows.length);
+    if (result.rows.length > 0) {
+      console.log("📊 Sample row fields:", Object.keys(result.rows[0]));
+      console.log("📊 Sample row (first 3):", {
+        id: result.rows[0].id,
+        nama_lengkap: result.rows[0].nama_lengkap,
+        jenis_kelamin: result.rows[0].jenis_kelamin,
+        status_pernikahan: result.rows[0].status_pernikahan,
+        tempat_bekerja: result.rows[0].tempat_bekerja,
+        sumber_dana: result.rows[0].sumber_dana
+      });
+    }
 
     res.json({
       success: true,

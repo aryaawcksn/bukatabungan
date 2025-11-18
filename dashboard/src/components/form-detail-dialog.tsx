@@ -5,11 +5,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
-import { Card, CardContent } from './ui/card';
+import { Card } from './ui/card';
 import { 
   User, Mail, Phone, Calendar, MapPin, Briefcase, DollarSign, 
   FileText, Image as ImageIcon, CheckCircle, XCircle, CreditCard, 
-  UserCheck, UserX 
+  UserCheck, UserX, Building2, Target, Wallet, AlertCircle, ShieldCheck
 } from 'lucide-react';
 
 
@@ -57,7 +57,7 @@ const Field = ({ label, value, icon }: FieldProps) => (
       {icon}
       {label}
     </div>
-    <div className="text-gray-900 font-medium">{value || '-'}</div>
+    <div className="text-gray-900 font-medium whitespace-pre-wrap break-words">{value || '-'}</div>
   </div>
 );
 
@@ -67,26 +67,44 @@ interface ImageCardProps {
   onClick: () => void;
 }
 
-const ImageCard = ({ label, src, onClick }: ImageCardProps) => (
-  <div>
-    <div className="text-gray-500 mb-2 flex items-center gap-2">
-      <ImageIcon className="w-4 h-4" />
-      {label}
-    </div>
-    <div
-      className="relative border border-gray-200 rounded-xl overflow-hidden bg-gray-50 aspect-video group cursor-pointer"
-      onClick={onClick}
-    >
-      <img src={src} alt={label} className="w-full h-full object-cover transition-all" />
-      {/* Hover Overlay */}
-      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-        <span className="text-white text-sm font-medium bg-black/40 px-3 py-1 rounded-lg">
-          Lihat
-        </span>
+const ImageCard = ({ label, src, onClick }: ImageCardProps) => {
+  const hasImage = src && src.trim() !== '';
+  
+  if (!hasImage) {
+    return (
+      <div>
+        <div className="text-gray-500 mb-2 flex items-center gap-2">
+          <ImageIcon className="w-4 h-4" />
+          {label}
+        </div>
+        <div className="relative border border-gray-200 rounded-xl overflow-hidden bg-gray-50 aspect-video flex items-center justify-center">
+          <span className="text-gray-400 text-sm">Foto belum diupload</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="text-gray-500 mb-2 flex items-center gap-2">
+        <ImageIcon className="w-4 h-4" />
+        {label}
+      </div>
+      <div
+        className="relative border border-gray-200 rounded-xl overflow-hidden bg-gray-50 aspect-video group cursor-pointer"
+        onClick={onClick}
+      >
+        <img src={src} alt={label} className="w-full h-full object-cover transition-all" />
+        {/* Hover Overlay */}
+        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+          <span className="text-white text-sm font-medium bg-black/40 px-3 py-1 rounded-lg">
+            Lihat
+          </span>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 interface ImagePreviewModalProps {
   image: string | null;
@@ -149,17 +167,17 @@ export function FormDetailDialog({
     pending: {
       label: 'Menunggu Review',
       variant: 'outline' as const,
-      className: 'border-orange-200 text-orange-700 bg-orange-50'
+      className: 'border-orange-500 text-orange-700 bg-orange-100'
     },
     approved: {
       label: 'Disetujui',
       variant: 'outline' as const,
-      className: 'border-green-200 text-green-700 bg-green-50'
+      className: 'border-green-500 text-green-700 bg-green-100'
     },
     rejected: {
       label: 'Ditolak',
       variant: 'outline' as const,
-      className: 'border-red-200 text-red-700 bg-red-50'
+      className: 'border-red-500 text-red-700 bg-red-100'
     }
   };
 
@@ -226,23 +244,33 @@ export function FormDetailDialog({
                 <Field label="Email" icon={<Mail className="w-4 h-4 text-gray-400" />} value={submission.personalData.email} />
                 <Field label="Nomor Telepon" icon={<Phone className="w-4 h-4 text-gray-400" />} value={submission.personalData.phone} />
                 <Field label="Tanggal Lahir" icon={<Calendar className="w-4 h-4 text-gray-400" />} value={submission.personalData.birthDate} />
+                {submission.personalData.gender && (
+                  <Field label="Jenis Kelamin" value={submission.personalData.gender} />
+                )}
+                {submission.personalData.maritalStatus && (
+                  <Field label="Status Pernikahan" value={submission.personalData.maritalStatus} />
+                )}
+                {submission.personalData.citizenship && (
+                  <Field label="Kewarganegaraan" value={submission.personalData.citizenship} />
+                )}
+                {submission.personalData.motherName && (
+                  <Field label="Nama Ibu Kandung" value={submission.personalData.motherName} />
+                )}
               </TwoCol>
             </Section>
 
             {/* ADDRESS */}
             <Section title="Alamat" icon={<MapPin className="w-5 h-5 text-blue-600" />}>
-            <Card>
-              <CardContent>
-                <Field label="Alamat Lengkap" value={submission.personalData.address.street} />
+            <TwoCol>
+              <Field label="Alamat Lengkap" value={submission.personalData.address.street} />
+              <div></div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                  <Field label="Provinsi" value={submission.personalData.address.province} />
-                  <Field label="Kota" value={submission.personalData.address.city} />
-                  <Field label="Kode Pos" value={submission.personalData.address.postalCode} />
-                </div>
-              </CardContent>
-            </Card>
+              <Field label="Provinsi" value={submission.personalData.address.province} />
+              <Field label="Kota" value={submission.personalData.address.city} />
+              <Field label="Kode Pos" value={submission.personalData.address.postalCode} />
+            </TwoCol>
           </Section>
+
             <Separator />
 
             {/* JOB INFO */}
@@ -250,10 +278,58 @@ export function FormDetailDialog({
               <TwoCol>
                 <Field label="Pekerjaan" value={submission.jobInfo.occupation} />
                 <Field label="Range Penghasilan" icon={<DollarSign className="w-4 h-4 text-gray-400" />} value={submission.jobInfo.salaryRange} />
+                {submission.jobInfo.workplace && (
+                  <Field 
+                    label="Tempat Bekerja" 
+                    icon={<Building2 className="w-4 h-4 text-gray-400" />} 
+                    value={submission.jobInfo.workplace} 
+                  />
+                )}
+                {submission.jobInfo.officeAddress && (
+                  <Field 
+                    label="Alamat Kantor" 
+                    icon={<MapPin className="w-4 h-4 text-gray-400" />} 
+                    value={submission.jobInfo.officeAddress} 
+                  />
+                )}
+                {submission.jobInfo.incomeSource && (
+                  <Field 
+                    label="Sumber Dana" 
+                    icon={<Wallet className="w-4 h-4 text-gray-400" />} 
+                    value={submission.jobInfo.incomeSource} 
+                  />
+                )}
+                {submission.jobInfo.accountPurpose && (
+                  <Field 
+                    label="Tujuan Pembukaan Rekening" 
+                    icon={<Target className="w-4 h-4 text-gray-400" />} 
+                    value={submission.jobInfo.accountPurpose} 
+                  />
+                )}
               </TwoCol>
             </Section>
 
             <Separator />
+
+            {/* EMERGENCY CONTACT */}
+            {submission.emergencyContact && (
+              <>
+                <Section title="Kontak Darurat" icon={<AlertCircle className="w-5 h-5 text-blue-600" />}>
+                  <TwoCol>
+                    <Field 
+                      label="Nama Kontak Darurat" 
+                      value={submission.emergencyContact.name} 
+                    />
+                    <Field 
+                      label="Nomor Telepon Kontak Darurat" 
+                      icon={<Phone className="w-4 h-4 text-gray-400" />} 
+                      value={submission.emergencyContact.phone} 
+                    />
+                  </TwoCol>
+                </Section>
+                <Separator />
+              </>
+            )}
 
             {/* DOCUMENTS */}
             <Section title="Dokumen" icon={<FileText className="w-5 h-5 text-blue-600" />}>
@@ -273,32 +349,58 @@ export function FormDetailDialog({
             </Section>
 
             <Separator />
+            
+
+            {/* DATA AGREEMENT */}
+            {submission.dataAgreement !== undefined && (
+              <>
+                <Section title="Persetujuan Data" icon={<ShieldCheck className="w-5 h-5 text-blue-600" />}>
+                  <Card className={`p-3 ${submission.dataAgreement ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'}`}>
+                    <div className="flex items-center gap-2">
+                      <ShieldCheck className={`w-4 h-4 ${submission.dataAgreement ? 'text-green-600' : 'text-yellow-600'}`} />
+                      <span className={submission.dataAgreement ? 'text-green-700' : 'text-yellow-700'}>
+                        {submission.dataAgreement 
+                          ? '✓ Menyetujui Syarat dan Ketentuan serta Kebijakan Privasi'
+                          : '✗ Belum menyetujui Syarat dan Ketentuan'}
+                      </span>
+                    </div>
+                  </Card>
+                </Section>
+                <Separator />
+              </>
+            )}
 
             {/* SUBMISSION INFO */}
-            <Card className="bg-blue-50 border-blue-100 p-3">
-              <div className="flex items-center gap-2 text-gray-700">
-                <Calendar className="w-4 h-4" />
-                <span>
-                  Tanggal Pengajuan:
-                  <strong className="ml-1">{submission.submittedAt}</strong>
-                </span>
-              </div>
-            </Card>
+          <Section
+              title="Log Aktivitas"
+              icon={<FileText className="w-5 h-5 text-blue-600" />}
+            >
+              <Card className="bg-blue-50 border-blue-100 p-3">
+                <div className="flex items-center gap-2 text-gray-700">
+                  <Calendar className="w-4 h-4" />
+                  <span>
+                    Tanggal Pengajuan:
+                    <strong className="ml-1">{submission.submittedAt}</strong>
+                  </span>
+                </div>
+              </Card>
+
+              <br></br>
 
             {/* APPROVAL/REJECTION INFO */}
             {submission.status === 'approved' && submission.approvedBy && (
               <>
-                <Separator />
+                
                 <Card className="bg-green-50 border-green-200 p-3">
                   <div className="flex items-center gap-2 text-green-700">
                     <UserCheck className="w-4 h-4" />
                     <span>
                       Diterima oleh: <strong className="ml-1">{submission.approvedBy}</strong>
                       {submission.approvedAt && (
-                        <span className="text-green-600 text-sm ml-2">
-                          ({submission.approvedAt})
-                        </span>
-                      )}
+                      <strong className="text-green-600 ml-2">
+                        ({submission.approvedAt})
+                      </strong>
+                    )}
                     </span>
                   </div>
                 </Card>
@@ -315,7 +417,7 @@ export function FormDetailDialog({
                       Ditolak oleh: <strong className="ml-1">{submission.rejectedBy}</strong>
                       {submission.rejectedAt && (
                         <span className="text-red-600 text-sm ml-2">
-                          ({submission.rejectedAt})
+                          {submission.rejectedAt}
                         </span>
                       )}
                     </span>
@@ -323,6 +425,7 @@ export function FormDetailDialog({
                 </Card>
               </>
             )}
+            </Section>
           </div>
 
           {/* FOOTER */}

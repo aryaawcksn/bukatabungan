@@ -18,6 +18,10 @@ export interface FormSubmission {
     email: string;
     phone: string;
     birthDate: string;
+    gender?: string;
+    maritalStatus?: string;
+    citizenship?: string;
+    motherName?: string;
     address: {
       street: string;
       province: string;
@@ -28,6 +32,14 @@ export interface FormSubmission {
   jobInfo: {
     occupation: string;
     salaryRange: string;
+    workplace?: string;
+    officeAddress?: string;
+    incomeSource?: string;
+    accountPurpose?: string;
+  };
+  emergencyContact?: {
+    name: string;
+    phone: string;
   };
   documents: {
     ktpPhoto: string;
@@ -39,6 +51,7 @@ export interface FormSubmission {
   approvedAt?: string;
   rejectedBy?: string;
   rejectedAt?: string;
+  dataAgreement?: boolean;
 }
 
 // Helper function untuk mapping data dari backend ke format FormSubmission
@@ -101,6 +114,31 @@ const mapBackendDataToFormSubmission = (data: any): FormSubmission => {
     ).join(' ');
   };
 
+  // Map sumber dana ke format yang lebih readable
+  const mapSumberDana = (sumberDana: string) => {
+    const map: Record<string, string> = {
+      'gaji': 'Gaji',
+      'usaha': 'Usaha',
+      'warisan': 'Warisan',
+      'orang-tua': 'Orang Tua',
+      'investasi': 'Investasi',
+      'lainnya': 'Lainnya'
+    };
+    return map[sumberDana] || sumberDana;
+  };
+
+  // Map tujuan rekening ke format yang lebih readable
+  const mapTujuanRekening = (tujuan: string) => {
+    const map: Record<string, string> = {
+      'tabungan-personal': 'Tabungan Pribadi',
+      'bisnis': 'Keperluan Bisnis',
+      'investasi': 'Investasi',
+      'pembayaran': 'Pembayaran / Transaksi',
+      'lainnya': 'Lainnya'
+    };
+    return map[tujuan] || tujuan;
+  };
+
   return {
     id: data.id?.toString() || '',
     referenceCode: data.kode_referensi || '',
@@ -111,6 +149,10 @@ const mapBackendDataToFormSubmission = (data: any): FormSubmission => {
       email: data.email || '',
       phone: data.no_hp || '',
       birthDate: formatDate(data.tanggal_lahir),
+      gender: (data.jenis_kelamin && data.jenis_kelamin.trim() !== '') ? data.jenis_kelamin : undefined,
+      maritalStatus: (data.status_pernikahan && data.status_pernikahan.trim() !== '') ? data.status_pernikahan : undefined,
+      citizenship: (data.kewarganegaraan && data.kewarganegaraan.trim() !== '') ? data.kewarganegaraan : undefined,
+      motherName: (data.nama_ibu_kandung && data.nama_ibu_kandung.trim() !== '') ? data.nama_ibu_kandung : undefined,
       address: {
         street: data.alamat || '',
         province: data.provinsi || '',
@@ -120,18 +162,28 @@ const mapBackendDataToFormSubmission = (data: any): FormSubmission => {
     },
     jobInfo: {
       occupation: data.pekerjaan || '',
-      salaryRange: mapPenghasilan(data.penghasilan)
+      salaryRange: mapPenghasilan(data.penghasilan),
+      workplace: (data.tempat_bekerja && data.tempat_bekerja.trim() !== '') ? data.tempat_bekerja : undefined,
+      officeAddress: (data.alamat_kantor && data.alamat_kantor.trim() !== '') ? data.alamat_kantor : undefined,
+      incomeSource: (data.sumber_dana && data.sumber_dana.trim() !== '') ? mapSumberDana(data.sumber_dana) : undefined,
+      accountPurpose: (data.tujuan_rekening && data.tujuan_rekening.trim() !== '') ? mapTujuanRekening(data.tujuan_rekening) : undefined
     },
+    emergencyContact: ((data.kontak_darurat_nama && data.kontak_darurat_nama.trim() !== '') || 
+                       (data.kontak_darurat_hp && data.kontak_darurat_hp.trim() !== '')) ? {
+      name: data.kontak_darurat_nama || '',
+      phone: data.kontak_darurat_hp || ''
+    } : undefined,
     documents: {
-      ktpPhoto: data.foto_ktp || '',
-      selfiePhoto: data.foto_selfie || '',
+      ktpPhoto: (data.foto_ktp && data.foto_ktp.trim() !== '') ? data.foto_ktp : '',
+      selfiePhoto: (data.foto_selfie && data.foto_selfie.trim() !== '') ? data.foto_selfie : '',
     },
     submittedAt: formatDateTime(data.created_at),
     status: (data.status || 'pending') as 'pending' | 'approved' | 'rejected',
     approvedBy: data.approved_by || undefined,
     approvedAt: data.approved_at ? formatDateTime(data.approved_at) : undefined,
     rejectedBy: data.rejected_by || undefined,
-    rejectedAt: data.rejected_at ? formatDateTime(data.rejected_at) : undefined
+    rejectedAt: data.rejected_at ? formatDateTime(data.rejected_at) : undefined,
+    dataAgreement: data.setuju_data || false
   };
 };
 
@@ -266,7 +318,17 @@ export default function DashboardPage() {
     console.error("Error fetching submissions:", error);
     const errorMessage = error.message || "Terjadi kesalahan saat mengambil data";
     if (showLoading) {
-      toast.error(`Gagal memuat data: ${errorMessage}`);
+      toast.error(
+  <span>
+    Gagal memuat data atau {errorMessage}. Silahkan coba login{" "}
+    <a 
+      href="/login" 
+      className="underline text-blue-600 font-semibold"
+    >
+      di sini
+    </a>.
+  </span>
+);
     }
     setSubmissions([]);
   } finally {
@@ -392,13 +454,10 @@ export default function DashboardPage() {
         <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
   {/* Left Side */}
   <div className="flex items-center gap-3">
-    <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
-      <FileText className="w-6 h-6 text-white" />
-    </div>
     <div>
-      <h1 className="text-gray-900 font-semibold text-lg">Sistem Pemantauan Rekening Bank</h1>
+      <h1 className="text-gray-900 font-semibold text-lg">Sistem Pemantauan Formulir Rekening</h1>
       <p className="text-gray-500 text-sm">
-        Pantau status dan kelola permohonan rekening baru
+        Bank Sleman Cabang {localStorage.getItem("admin_cabang") || "not_found"}
         {lastFetchTime && (
           <span className="ml-2 text-xs">
             • Terakhir update: {lastFetchTime.toLocaleTimeString('id-ID')}
@@ -411,17 +470,19 @@ export default function DashboardPage() {
   {/* Profile Badge */}
   <div className="flex items-center gap-3 bg-blue-50v px-4 py-2">
     <div className="text-right leading-tight">
+      <p className="text-xs text-gray-500">
+       Selamat datang
+      </p>
       <p className="text-sm font-medium text-gray-800">
         {localStorage.getItem("admin_username") || "Not_found"}
       </p>
-      <p className="text-xs text-gray-500">
-        Cabang {localStorage.getItem("admin_cabang") || "not_found"}
-      </p>
+      
     </div>
 
     <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center font-semibold">
       { (localStorage.getItem("admin_username") || "U").charAt(0).toUpperCase() }
     </div>
+    
   </div>
 </div>
 
@@ -434,7 +495,7 @@ export default function DashboardPage() {
               { id: 'submissions', label: 'Permohonan', icon: <ClipboardCheck className="w-4 h-4 mr-2" /> },
               { id: 'reports', label: 'Ajukan', icon: <FileBarChart className="w-4 h-4 mr-2" /> },
               { id: 'export', label: 'Kelola Data', icon: <FileBarChart className="w-4 h-4 mr-2" /> },
-              { id: 'log', label: 'Aktivitas', icon: <FileBarChart className="w-4 h-4 mr-2" /> }
+              { id: 'logout', label: 'Logout', icon: <FileBarChart className="w-4 h-4 mr-2" /> }
             ].map(tab => (
               <button
                 key={tab.id}
@@ -457,19 +518,19 @@ export default function DashboardPage() {
       <main className="max-w-7xl mx-auto px-6 py-8">
         {activeTab === 'dashboard' && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="bg-white border border-gray-200 rounded-xl p-6">
+            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-lg transition-shadow ">
               <p className="text-gray-500 text-sm">Total Permohonan</p>
               <p className="text-lg font-semibold text-gray-900">{stats.total}</p>
             </div>
-            <div className="bg-white border border-gray-200 rounded-xl p-6">
+            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-lg transition-shadow ">
               <p className="text-gray-500 text-sm">Menunggu</p>
               <p className="text-lg font-semibold text-orange-600">{stats.pending}</p>
             </div>
-            <div className="bg-white border border-gray-200 rounded-xl p-6">
+            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-lg transition-shadow ">
               <p className="text-gray-500 text-sm">Disetujui</p>
               <p className="text-lg font-semibold text-green-600">{stats.approved}</p>
             </div>
-            <div className="bg-white border border-gray-200 rounded-xl p-6">
+            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-lg transition-shadow ">
               <p className="text-gray-500 text-sm">Ditolak</p>
               <p className="text-lg font-semibold text-red-600">{stats.rejected}</p>
             </div>
