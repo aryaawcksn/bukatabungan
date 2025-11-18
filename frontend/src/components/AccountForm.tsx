@@ -121,25 +121,41 @@ const submitData = {
 
 
   try {
+    console.log("📤 Sending data to server:", submitData);
+    
     const response = await fetch("https://bukatabungan-production.up.railway.app/api/pengajuan", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify(submitData),
-});
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(submitData),
+    });
 
+    console.log("📥 Response status:", response.status);
+    
     // Parse hasil respons JSON
-    const result = await response.json();
-    console.log("Response dari server:", result);
+    let result;
+    try {
+      result = await response.json();
+      console.log("📋 Response dari server:", result);
+    } catch (parseError) {
+      console.error("❌ Error parsing response:", parseError);
+      const textResponse = await response.text();
+      console.error("📄 Raw response:", textResponse);
+      alert(`⚠️ Gagal menyimpan data:\n\nServer mengembalikan response yang tidak valid.\nStatus: ${response.status}\n\nSilakan hubungi administrator.`);
+      return;
+    }
 
     if (response.ok && result.success) {
       setReferenceCode(result.kode_referensi ?? null);
       setSubmitted(true);
     } else {
-      alert("⚠️ Gagal menyimpan data: " + (result.message || "Terjadi kesalahan"));
+      const errorMessage = result.message || result.error?.detail || `HTTP ${response.status}: ${response.statusText}`;
+      console.error("❌ Error response:", result);
+      alert(`⚠️ Gagal menyimpan data:\n\n${errorMessage}\n\nSilakan periksa kembali data yang diisi atau hubungi administrator.`);
     }
-  } catch (err) {
-    console.error("Error saat submit:", err);
-    alert("❌ Terjadi kesalahan koneksi ke server");
+  } catch (err: any) {
+    console.error("❌ Error saat submit:", err);
+    const errorMessage = err.message || "Terjadi kesalahan koneksi ke server";
+    alert(`❌ Terjadi kesalahan:\n\n${errorMessage}\n\nPastikan koneksi internet Anda stabil dan coba lagi.`);
   }
 };
 
