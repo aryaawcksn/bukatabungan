@@ -91,7 +91,7 @@ export const createPengajuan = async (req, res) => {
     if (hasStatusColumn) {
      query = `
   INSERT INTO pengajuan_tabungan 
-  (
+(
     kode_referensi,
     nama_lengkap,
     nik,
@@ -104,62 +104,62 @@ export const createPengajuan = async (req, res) => {
     kode_pos,
     pekerjaan,
     penghasilan,
-    cabang_pengambilan,
     jenis_kartu,
+    cabang_pengambilan,
     status,
     foto_ktp,
     foto_selfie,
-    jenis_kelamin,
-    status_pernikahan,
-    nama_ibu_kandung,
-    kewarganegaraan,
-    tempat_bekerja,
-    alamat_kantor,
-    sumber_dana,
-    tujuan_rekening,
     jenis_rekening,
-    kontak_darurat_nama,
+    jenis_kelamin,
+    setuju_data,
     kontak_darurat_hp,
-    setuju_data
-  )
-  VALUES 
-  (
-    $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,
-    $15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29
-  )
-  RETURNING *;
-`;
+    kontak_darurat_nama,
+    tujuan_rekening,
+    sumber_dana,
+    alamat_kantor,
+    tempat_bekerja,
+    kewarganegaraan,
+    nama_ibu_kandung,
+    status_pernikahan
+)
+VALUES
+(
+    $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,
+    $16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30
+)
+RETURNING *;
+      `;
       values = [
-        kode_referensi,
-        nama_lengkap,
-        nik,
-        email,
-        no_hp,
-        tanggal_lahir,
-        alamat,
-        provinsi,
-        kota,
-        kode_pos,
-        pekerjaan,
-        penghasilan,
-        cabang_pengambilan,
-        jenis_kartu,
-        jenis_rekening,
-        req.body.status || "pending",
-        foto_ktp,
-        foto_selfie,
-        jenis_kelamin || null,
-        statusPernikahan || null,
-        nama_ibu_kandung || null,
-        kewarganegaraan || 'WNI',
-        tempat_bekerja || null,
-        alamat_kantor || null,
-        sumber_dana || null,
-        tujuan_rekening || null,
-        kontak_darurat_nama || null,
-        kontak_darurat_hp || null,
-        setujuDataValue,
-      ];
+  kode_referensi,          // $1
+  nama_lengkap,            // $2
+  nik,                     // $3
+  email,                   // $4
+  no_hp,                   // $5
+  tanggal_lahir,           // $6
+  alamat,                  // $7
+  provinsi,                // $8
+  kota,                    // $9
+  kode_pos,                // $10
+  pekerjaan,               // $11
+  penghasilan,             // $12
+  jenis_kartu,             // $13
+  cabang_pengambilan,      // $14
+  req.body.status || "pending",  // $15
+  foto_ktp,                // $16
+  foto_selfie,             // $17
+  jenis_rekening,          // $18
+  jenis_kelamin,           // $19
+  setujuDataValue,         // $20
+  kontak_darurat_hp,       // $21
+  kontak_darurat_nama,     // $22
+  tujuan_rekening,         // $23
+  sumber_dana,             // $24
+  alamat_kantor,           // $25
+  tempat_bekerja,          // $26
+  kewarganegaraan,         // $27
+  nama_ibu_kandung,        // $28
+  statusPernikahan         // $29
+];
     } else {
       query = `
         INSERT INTO pengajuan_tabungan 
