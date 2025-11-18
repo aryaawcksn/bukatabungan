@@ -16,12 +16,13 @@ interface AccountFormProps {
 export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
   const [submitted, setSubmitted] = useState(false);
   const [referenceCode, setReferenceCode] = useState<string | null>(null);
+  const [ktpFile, setKtpFile] = useState<File | null>(null);
+  const [selfieFile, setSelfieFile] = useState<File | null>(null);
+  const [ktpPreview, setKtpPreview] = useState<string | null>(null);
+  const [selfiePreview, setSelfiePreview] = useState<string | null>(null);
   const [ktpUrl, setKtpUrl] = useState<string | null>(null);
   const [selfieUrl, setSelfieUrl] = useState<string | null>(null);
-  const [loadingKtp, setLoadingKtp] = useState(false);
-  const [loadingSelfie, setLoadingSelfie] = useState(false);
-  const [fotoKtp, setFotoKtp] = useState("");
-  const [fotoSelfie, setFotoSelfie] = useState("");
+  const [loadingSubmit, setLoadingSubmit] = useState(false);
 
   // Ensure page starts at the top when entering this screen
   useEffect(() => {
@@ -38,11 +39,11 @@ const [formData, setFormData] = useState({
   province: '',
   city: '',
   postalCode: '',
-  occupation: '',
   monthlyIncome: '',
   cabang_pengambilan: 'Sleman',
   cardType: '',
   agreeTerms: false,
+  jenis_rekening: '',
 
   gender: '',
   maritalStatus: '',
@@ -71,93 +72,112 @@ const [formData, setFormData] = useState({
   }, [savingsType]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+    e.preventDefault();
+    setLoadingSubmit(true);
+    let ktpUploadedUrl = ktpUrl;
+    let selfieUploadedUrl = selfieUrl;
 
-// Siapkan data yang akan dikirim ke backend
-const submitData = {
-  nama_lengkap: formData.fullName,
-  nik: formData.nik,
-  email: formData.email,
-  no_hp: formData.phone,
-  tanggal_lahir: formData.birthDate,
-  alamat: formData.address,
-  provinsi: formData.province,
-  kota: formData.city,
-  kode_pos: formData.postalCode,
-  pekerjaan: formData.occupation,
-  penghasilan: formData.monthlyIncome,
+    // Upload KTP jika ada file dan belum di-upload
+    if (ktpFile && !ktpUploadedUrl) {
+      try {
+        const formDataKtp = new FormData();
+        formDataKtp.append("gambar", ktpFile);
+        const resKtp = await fetch("https://bukatabungan-production.up.railway.app/upload", {
+          method: "POST",
+          body: formDataKtp,
+        });
+        if (!resKtp.ok) throw new Error("Gagal upload KTP");
+        const dataKtp = await resKtp.json();
+        ktpUploadedUrl = dataKtp.url;
+        setKtpUrl(ktpUploadedUrl);
+      } catch (err) {
+        alert("Upload KTP gagal, coba lagi!");
+        setLoadingSubmit(false);
+        return;
+      }
+    }
+    // Upload Selfie jika ada file dan belum di-upload
+    if (selfieFile && !selfieUploadedUrl) {
+      try {
+        const formDataSelfie = new FormData();
+        formDataSelfie.append("gambar", selfieFile);
+        const resSelfie = await fetch("https://bukatabungan-production.up.railway.app/upload", {
+          method: "POST",
+          body: formDataSelfie,
+        });
+        if (!resSelfie.ok) throw new Error("Gagal upload selfie");
+        const dataSelfie = await resSelfie.json();
+        selfieUploadedUrl = dataSelfie.url;
+        setSelfieUrl(selfieUploadedUrl);
+      } catch (err) {
+        alert("Upload selfie gagal, coba lagi!");
+        setLoadingSubmit(false);
+        return;
+      }
+    }
 
-  jenis_kelamin: formData.gender,
-  status_perkawinan: formData.maritalStatus,
-  kewarganegaraan: formData.citizenship,
-  nama_ibu_kandung: formData.motherName,
+    // Siapkan data yang akan dikirim ke backend
+    const submitData = {
+      nama_lengkap: formData.fullName,
+      nik: formData.nik,
+      email: formData.email,
+      no_hp: formData.phone,
+      tanggal_lahir: formData.birthDate,
+      alamat: formData.address,
+      provinsi: formData.province,
+      kota: formData.city,
+      kode_pos: formData.postalCode,
+      jenis_rekening: formData.jenis_rekening,
+      penghasilan: formData.monthlyIncome,
+      jenis_kelamin: formData.gender,
+      status_perkawinan: formData.maritalStatus,
+      kewarganegaraan: formData.citizenship,
+      nama_ibu_kandung: formData.motherName,
+      tempat_bekerja: formData.tempatBekerja,
+      alamat_kantor: formData.alamatKantor,
+      sumber_dana: formData.sumberDana,
+      tujuan_rekening: formData.tujuanRekening,
+      kontak_darurat_nama: formData.kontakDaruratNama,
+      kontak_darurat_hp: formData.kontakDaruratHp,
+      pekerjaan: formData.employmentStatus,
+      setuju_data: formData.agreeTerms ? 'Ya' : 'Tidak',
+      jenis_kartu: formData.cardType || getDefaultCardType(),
+      card_type: formData.cardType || getDefaultCardType(),
+      savings_type: savingsType,
+      savings_type_name: getSavingsTypeName(),
+      cabang_pengambilan: formData.cabang_pengambilan || '',
+      foto_ktp: ktpUploadedUrl,
+      foto_selfie: selfieUploadedUrl,
+    };
 
-  // pekerjaan tambahan
-  tempat_bekerja: formData.tempatBekerja,
-  alamat_kantor: formData.alamatKantor,
-  sumber_dana: formData.sumberDana,
-  tujuan_rekening: formData.tujuanRekening,
-
-  // kontak darurat
-  kontak_darurat_nama: formData.kontakDaruratNama,
-  kontak_darurat_hp: formData.kontakDaruratHp,
-
-  // status & persetujuan data
-  status_bekerja: formData.employmentStatus, // "Ya" atau "Tidak"
-  setuju_data: formData.agreeTerms ? 'Ya' : 'Tidak',
-
-  // kartu
-  jenis_kartu: formData.cardType || getDefaultCardType(),
-  card_type: formData.cardType || getDefaultCardType(),
-  savings_type: savingsType,
-  savings_type_name: getSavingsTypeName(),
-  cabang_pengambilan: formData.cabang_pengambilan || '',
-
-  // file upload
-  foto_ktp: ktpUrl,
-  foto_selfie: selfieUrl,
-};
-
-
-
-  try {
-    console.log("📤 Sending data to server:", submitData);
-    
-    const response = await fetch("https://bukatabungan-production.up.railway.app/api/pengajuan", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(submitData),
-    });
-
-    console.log("📥 Response status:", response.status);
-    
-    // Parse hasil respons JSON
-    let result;
     try {
-      result = await response.json();
-      console.log("📋 Response dari server:", result);
-    } catch (parseError) {
-      console.error("❌ Error parsing response:", parseError);
-      const textResponse = await response.text();
-      console.error("📄 Raw response:", textResponse);
-      alert(`⚠️ Gagal menyimpan data:\n\nServer mengembalikan response yang tidak valid.\nStatus: ${response.status}\n\nSilakan hubungi administrator.`);
-      return;
+      const response = await fetch("https://bukatabungan-production.up.railway.app/api/pengajuan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(submitData),
+      });
+      let result;
+      try {
+        result = await response.json();
+      } catch (parseError) {
+        const textResponse = await response.text();
+        alert(`⚠️ Gagal menyimpan data:\n\nServer mengembalikan response yang tidak valid.\nStatus: ${response.status}`);
+        setLoadingSubmit(false);
+        return;
+      }
+      if (response.ok && result.success) {
+        setReferenceCode(result.kode_referensi ?? null);
+        setSubmitted(true);
+      } else {
+        const errorMessage = result.message || result.error?.detail || `HTTP ${response.status}: ${response.statusText}`;
+        alert(`⚠️ Gagal menyimpan data:\n\n${errorMessage}`);
+      }
+    } catch (err: any) {
+      const errorMessage = err.message || "Terjadi kesalahan koneksi ke server";
+      alert(`❌ Terjadi kesalahan:\n\n${errorMessage}`);
     }
-
-    if (response.ok && result.success) {
-      setReferenceCode(result.kode_referensi ?? null);
-      setSubmitted(true);
-    } else {
-      const errorMessage = result.message || result.error?.detail || `HTTP ${response.status}: ${response.statusText}`;
-      console.error("❌ Error response:", result);
-      alert(`⚠️ Gagal menyimpan data:\n\n${errorMessage}\n\nSilakan periksa kembali data yang diisi atau hubungi administrator.`);
-    }
-  } catch (err: any) {
-    console.error("❌ Error saat submit:", err);
-    const errorMessage = err.message || "Terjadi kesalahan koneksi ke server";
-    alert(`❌ Terjadi kesalahan:\n\n${errorMessage}\n\nPastikan koneksi internet Anda stabil dan coba lagi.`);
-  }
-};
+    setLoadingSubmit(false);
+  };
 
   const getSavingsTypeName = () => {
     switch (savingsType) {
@@ -176,31 +196,7 @@ const submitData = {
     }
   };
 
-   const uploadToServer = async (
-    file: File,
-    setUrl: (url: string | null) => void,
-    setLoading: (loading: boolean) => void
-  ) => {
-    try {
-      setLoading(true);
-      const formData = new FormData();
-      formData.append("gambar", file);
-
-      const res = await fetch("https://bukatabungan-production.up.railway.app/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!res.ok) throw new Error("Gagal upload ke server");
-      const data = await res.json();
-      setUrl(data.url);
-    } catch (err) {
-      console.error("Upload gagal:", err);
-      alert("Upload gagal, coba lagi!");
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Tidak perlu uploadToServer, upload dilakukan saat submit
 
   if (submitted) {
     return (
@@ -485,6 +481,7 @@ const submitData = {
         className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded"
       />
     </div>
+    <div className="grid md:grid-cols-2 gap-5">
 
     {/* Kewarganegaraan */}
     <div>
@@ -500,6 +497,7 @@ const submitData = {
     </div>
 
     {/* Nama Ibu Kandung */}
+    
     <div>
       <Label htmlFor="motherName" className="text-gray-700">Nama Ibu Kandung</Label>
       <Input
@@ -512,6 +510,30 @@ const submitData = {
       />
     </div>
 
+    <div>
+      <Label htmlFor="kontakDaruratNama:" className="text-gray-700">Nama kontak Darurat</Label>
+      <Input
+        id="kontakDaruratNama"
+        required
+        placeholder="Masukkan nama kontak"
+        value={formData.kontakDaruratNama}
+        onChange={(e) => setFormData({ ...formData, kontakDaruratNama: e.target.value })}
+        className="mt-2 border-gray-200 focus:border-emerald-500 rounded"
+      />
+    </div>
+
+    <div>
+      <Label htmlFor="kontakDaruratHp" className="text-gray-700">Nomor Kontak Darurat</Label>
+      <Input
+        id="kontakDaruratHp"
+        required
+        placeholder="Masukan nomor hp kontak"
+        value={formData.kontakDaruratHp}
+        onChange={(e) => setFormData({ ...formData, kontakDaruratHp: e.target.value })}
+        className="mt-2 border-gray-200 focus:border-emerald-500 rounded"
+      />
+    </div>
+    </div>
   </div>
 </div>
             {/* Alamat */}
@@ -622,6 +644,24 @@ const submitData = {
     />
   </div>
 
+  <div>
+                  <Label htmlFor="monthlyIncome" className="text-gray-700">Penghasilan per Bulan</Label>
+                  <Select
+                    value={formData.monthlyIncome}
+                    onValueChange={(value) => setFormData({...formData, monthlyIncome: value})}
+                  >
+                    <SelectTrigger className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded">
+                      <SelectValue placeholder="Pilih range penghasilan" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="below5">&lt; Rp 5.000.000</SelectItem>
+                      <SelectItem value="5-10jt">Rp 5.000.000 - Rp 10.000.000</SelectItem>
+                      <SelectItem value="10-20jt">Rp 10.000.000 - Rp 20.000.000</SelectItem>
+                      <SelectItem value="above20">&gt; Rp 20.000.000</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
   {/* Sumber Dana */}
   <h3 className="text-emerald-900 mb-6 text-2xl">Sumber dana & Tujuan rekening</h3>
   <div>
@@ -644,6 +684,7 @@ const submitData = {
       </SelectContent>
     </Select>
   </div>
+  
 
   {/* Tujuan Rekening */}
   <div>
@@ -667,120 +708,124 @@ const submitData = {
   </div>
 
 </div>
-
-
             <div className="pt-6 border-t border-gray-100">
               <h3 className="text-emerald-900 mb-6 text-2xl">Informasi Kartu</h3>
               <div className="space-y-5">
                 <div>
-                  <Label htmlFor="occupation" className="text-gray-700">Jenis Kartu</Label>
+                  <Label htmlFor="jenis_rekening" className="text-gray-700">Jenis Kartu</Label>
                   <Select 
-                    value={formData.occupation}
-                    onValueChange={(value) => setFormData({...formData, occupation: value})}
+                    value={formData.jenis_rekening}
+                    onValueChange={(value) => setFormData({...formData, jenis_rekening: value})}
                   >
                     <SelectTrigger className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded">
                       <SelectValue placeholder="Pilih jenis" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="gold">Gold</SelectItem>
-                      <SelectItem value="pns">Silver</SelectItem>
-                      <SelectItem value="wiraswasta">Platinum</SelectItem>
+                      <SelectItem value="silver">Silver</SelectItem>
+                      <SelectItem value="Platinum">Platinum</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
-                <div>
-                  <Label htmlFor="monthlyIncome" className="text-gray-700">Penghasilan per Bulan</Label>
-                  <Select
-                    value={formData.monthlyIncome}
-                    onValueChange={(value) => setFormData({...formData, monthlyIncome: value})}
-                  >
-                    <SelectTrigger className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded">
-                      <SelectValue placeholder="Pilih range penghasilan" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="below5">&lt; Rp 5.000.000</SelectItem>
-                      <SelectItem value="5-10jt">Rp 5.000.000 - Rp 10.000.000</SelectItem>
-                      <SelectItem value="10-20jt">Rp 10.000.000 - Rp 20.000.000</SelectItem>
-                      <SelectItem value="above20">&gt; Rp 20.000.000</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                
               </div>
             </div>
 
             {/* Upload Dokumen */}
             <div className="pt-6 border-t border-gray-100">
   <h3 className="text-emerald-900 mb-6 text-2xl">Upload Dokumen</h3>
-
   <div className="space-y-6">
     {/* ===== Upload Foto KTP ===== */}
-    <div className="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center hover:border-emerald-500 transition-all hover:bg-emerald-50/50">
-      {/* Upload hanya muncul jika belum ada file */}
-      {!ktpUrl && (
-        <Upload
-          label="Upload Foto KTP"
-          description="Format: JPG, PNG (Max. 2MB)"
-          onChange={(file) => uploadToServer(file, setKtpUrl, setLoadingKtp)}
+    {!ktpFile && !ktpPreview && (
+      <Upload
+        label="Upload Foto KTP"
+        description="Format: JPG, PNG (Max. 2MB)"
+        onChange={(file) => {
+          setKtpFile(file);
+          setKtpPreview(URL.createObjectURL(file));
+          setKtpUrl(null);
+        }}
+      />
+    )}
+    {/* Preview muncul setelah pilih file */}
+    {ktpPreview && (
+      <div className="mt-4">
+        <img
+          src={ktpPreview}
+          alt="KTP Preview"
+          className="mx-auto rounded-xl shadow-md max-h-48"
         />
-      )}
+        <button
+  type="button"
+  onClick={() => {
+    setKtpFile(null);
+    setKtpPreview(null);
+    setKtpUrl(null);
+  }}
+  className="mt-3 text-sm text-red-600 hover:underline block mx-auto"
+>
+  Ganti Foto
+</button>
 
-      {loadingKtp && (
-        <p className="text-xs text-gray-500 mt-2">Uploading...</p>
-      )}
-
-      {/* Preview muncul setelah upload */}
-      {ktpUrl && (
-        <div className="mt-4">
-          <img
-            src={ktpUrl}
-            alt="KTP Preview"
-            className="mx-auto rounded-xl shadow-md max-h-48"
-          />
-          <button
-            onClick={() => setKtpUrl("")}
-            className="mt-3 text-sm text-red-600 hover:underline"
-          >
-            Ganti Foto
-          </button>
-        </div>
-      )}
-    </div>
+      </div>
+    )}
+    {/* Jika sudah di-upload (setelah submit), tampilkan preview dari URL backend */}
+    {ktpUrl && !ktpPreview && (
+      <div className="mt-4">
+        <img
+          src={ktpUrl}
+          alt="KTP Preview"
+          className="mx-auto rounded-xl shadow-md max-h-48"
+        />
+      </div>
+    )}
 
     {/* ===== Upload Selfie dengan KTP ===== */}
-    <div className="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center hover:border-emerald-500 transition-all hover:bg-emerald-50/50">
-      {!selfieUrl && (
-        <Upload
-          label="Upload Selfie dengan KTP"
-          description="Format: JPG, PNG (Max. 2MB)"
-          onChange={(file) =>
-            uploadToServer(file, setSelfieUrl, setLoadingSelfie)
-          }
+    {!selfieFile && !selfiePreview && (
+      <Upload
+        label="Upload Selfie dengan KTP"
+        description="Format: JPG, PNG (Max. 2MB)"
+        onChange={(file) => {
+          setSelfieFile(file);
+          setSelfiePreview(URL.createObjectURL(file));
+          setSelfieUrl(null);
+        }}
+      />
+    )}
+    {selfiePreview && (
+      <div className="mt-4">
+        <img
+          src={selfiePreview}
+          alt="Selfie Preview"
+          className="mx-auto rounded-xl shadow-md max-h-48"
         />
-      )}
+        <button
+  type="button"
+  onClick={() => {
+    setSelfieFile(null);
+    setSelfiePreview(null);
+    setSelfieUrl(null);
+  }}
+  className="mt-3 text-sm text-red-600 hover:underline block mx-auto"
+>
+  Ganti Foto
+</button>
 
-      {loadingSelfie && (
-        <p className="text-xs text-gray-500 mt-2">Uploading...</p>
-      )}
-
-      {selfieUrl && (
-        <div className="mt-4">
-          <img
-            src={selfieUrl}
-            alt="Selfie Preview"
-            className="mx-auto rounded-xl shadow-md max-h-48"
-          />
-          <button
-            onClick={() => setSelfieUrl("")}
-            className="mt-3 text-sm text-red-600 hover:underline"
-          >
-            Ganti Foto
-          </button>
-        </div>
-      )}
-    </div>
+      </div>
+    )}
+    {selfieUrl && !selfiePreview && (
+      <div className="mt-4">
+        <img
+          src={selfieUrl}
+          alt="Selfie Preview"
+          className="mx-auto rounded-xl shadow-md max-h-48"
+        />
+      </div>
+    )}
   </div>
-</div>
+            </div>
+
 
             {/* Pilihan Kartu: dihapus, kini otomatis berdasarkan jenis tabungan */}
             <div>
@@ -822,9 +867,10 @@ const submitData = {
 
             <Button 
               type="submit"
+              disabled={loadingSubmit}
               className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 py-7 text-lg shadow-lg hover:shadow-xl transition-all"
             >
-              Kirim Permohonan Pembukaan Rekening
+              {loadingSubmit ? 'Mengirim...' : 'Kirim Permohonan Pembukaan Rekening'}
             </Button>
           </form>
         </Card>

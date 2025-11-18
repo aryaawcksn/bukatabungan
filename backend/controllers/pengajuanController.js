@@ -53,6 +53,7 @@ export const createPengajuan = async (req, res) => {
       kontak_darurat_nama,
       kontak_darurat_hp,
       setuju_data,
+      jenis_rekening,
     } = req.body;
 
     // Validasi field required
@@ -90,7 +91,7 @@ export const createPengajuan = async (req, res) => {
     if (hasStatusColumn) {
       query = `
         INSERT INTO pengajuan_tabungan 
-        (kode_referensi, nama_lengkap, nik, email, no_hp, tanggal_lahir, alamat, provinsi, kota, kode_pos, pekerjaan, penghasilan, cabang_pengambilan, jenis_kartu, status, foto_ktp, foto_selfie, jenis_kelamin, status_pernikahan, nama_ibu_kandung, kewarganegaraan, tempat_bekerja, alamat_kantor, sumber_dana, tujuan_rekening, kontak_darurat_nama, kontak_darurat_hp, setuju_data)
+        (kode_referensi, nama_lengkap, nik, email, no_hp, tanggal_lahir, alamat, provinsi, kota, kode_pos, pekerjaan, penghasilan, cabang_pengambilan, jenis_kartu, status, foto_ktp, foto_selfie, jenis_kelamin, status_pernikahan, nama_ibu_kandung, kewarganegaraan, tempat_bekerja, alamat_kantor, sumber_dana, tujuan_rekening, jenis_rekening, kontak_darurat_nama, kontak_darurat_hp, setuju_data)
         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28)
         RETURNING *;
       `;
@@ -109,6 +110,7 @@ export const createPengajuan = async (req, res) => {
         penghasilan,
         cabang_pengambilan,
         jenis_kartu,
+        jenis_rekening,
         req.body.status || "pending",
         foto_ktp,
         foto_selfie,
@@ -159,6 +161,7 @@ export const createPengajuan = async (req, res) => {
         kontak_darurat_nama || null,
         kontak_darurat_hp || null,
         setujuDataValue,
+        jenis_rekening,
       ];
     }
 
@@ -243,6 +246,7 @@ export const getPengajuanById = async (req, res) => {
           penghasilan,
           cabang_pengambilan,
           jenis_kartu,
+          jenis_rekening,
           COALESCE(status, 'pending') AS status,
           foto_ktp,
           foto_selfie,
@@ -282,6 +286,7 @@ export const getPengajuanById = async (req, res) => {
           penghasilan,
           cabang_pengambilan,
           jenis_kartu,
+          jenis_rekening,
           'pending' AS status,
           foto_ktp,
           foto_selfie,
@@ -352,6 +357,7 @@ export const getAllPengajuan = async (req, res) => {
           penghasilan,
           cabang_pengambilan,
           jenis_kartu,
+          jenis_rekening,
           COALESCE(status, 'pending') AS status,
           foto_ktp,
           foto_selfie,
@@ -392,6 +398,7 @@ export const getAllPengajuan = async (req, res) => {
           penghasilan,
           cabang_pengambilan,
           jenis_kartu,
+          jenis_rekening,
           'pending' AS status,
           foto_ktp,
           foto_selfie,
