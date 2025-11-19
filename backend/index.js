@@ -15,7 +15,15 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: [
+    "https://bukatabungan.vercel.app",
+    "http://localhost:5173"
+  ],
+  methods: ["GET", "POST"],
+  credentials: true
+}));
+
 app.use(express.json());
 
 // Static files - agar file di folder uploads bisa diakses langsung
@@ -27,6 +35,7 @@ app.use("/upload", uploadRouter);
 app.use("/api", authRoutes);
 app.use("/api/pengajuan", pengajuanRoutes);
 app.use("/api", testRoutes);
+
 
 
 // ✅ Route untuk handle 404
