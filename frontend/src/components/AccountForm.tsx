@@ -24,12 +24,68 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
   const [selfieUrl, setSelfieUrl] = useState<string | null>(null);
   const [loadingSubmit, setLoadingSubmit] = useState(false);
 
+  // Validation errors (simple server-backed uniqueness + basic client hints)
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const apiBase = "https://bukatabungan-production.up.railway.app";
+
+  const validateNikAsync = async (nik: string) => {
+    if (!nik) return 'NIK wajib diisi';
+    // basic client-side checks
+    if (!/^\d{16}$/.test(nik)) return 'NIK harus 16 digit';
+    try {
+      const res = await fetch(`${apiBase}/api/check-nik?nik=${encodeURIComponent(nik)}`);
+      if (!res.ok) return 'Gagal memeriksa NIK';
+      const data = await res.json();
+      if (data.exists) {
+        const s = data.status;
+        if (s === 'accepted') return 'NIK Sudah Digunakan';
+        if (s === 'pending') return 'NIK sudah memiliki pengajuan pending (hanya 1 pengajuan pending per NIK)';
+        return 'NIK tidak tersedia';
+      }
+      return '';
+    } catch (err) {
+      return 'Gagal memeriksa NIK';
+    }
+  };
+
+  const validateEmailAsync = async (email: string) => {
+    if (!email) return 'Email wajib diisi';
+    try {
+      const res = await fetch(`${apiBase}/api/check-nik?email=${encodeURIComponent(email)}`);
+      if (!res.ok) return 'Gagal memeriksa Email';
+      const data = await res.json();
+      if (data.exists) return 'Email Sudah Digunakan';
+      return '';
+    } catch (err) {
+      return 'Gagal memeriksa Email';
+    }
+  };
+
+  const validatePhoneAsync = async (phone: string) => {
+    if (!phone) return 'Nomor telepon wajib diisi';
+    try {
+      const res = await fetch(`${apiBase}/api/check-nik?phone=${encodeURIComponent(phone)}`);
+      if (!res.ok) return 'Gagal memeriksa No HP';
+      const data = await res.json();
+      if (data.exists) return 'No HP Sudah Digunakan';
+      return '';
+    } catch (err) {
+      return 'Gagal memeriksa No HP';
+    }
+  };
+
+  const getFieldClass = (name: string) => {
+    return errors[name]
+      ? 'mt-2 border-red-500 focus:border-red-500 focus:ring-red-500 rounded'
+      : 'mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded';
+  };
+
   // Ensure page starts at the top when entering this screen
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "auto" });
   }, []);
 
-  // Ini
 const [formData, setFormData] = useState({
   fullName: '',
   nik: '',
@@ -58,114 +114,9 @@ const [formData, setFormData] = useState({
   kontakDaruratNama: '',
   kontakDaruratHp: '',
   employmentStatus: '',
+
+
 });
-
-  // Validation state
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
-  // Validation helpers
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const phoneRegex = /^0\d{8,15}$/; // simple Indonesia-like phone: starts with 0, 9-16 digits
-  const numericRegex = /^\d+$/;
-
-  const validateField = (name: string): string => {
-  const val = (formData as any)[name];
-
-  switch (name) {
-    case 'fullName':
-      if (!val || val.trim().length < 3) return 'Nama lengkap minimal 3 karakter';
-      return '';
-
-    case 'nik':
-      if (!val) return 'NIK wajib diisi';
-      if (!numericRegex.test(val)) return 'NIK harus berupa angka';
-      if (val.length !== 16) return 'NIK harus 16 digit';
-      return '';
-      case 'email':
-        if (!val) return 'Email wajib diisi';
-        if (!emailRegex.test(val)) return 'Format email tidak valid';
-        return '';
-      case 'phone':
-        if (!val) return 'Nomor telepon wajib diisi';
-        if (!phoneRegex.test(val)) return 'Format nomor telepon tidak valid (contoh: 0812...)';
-        return '';
-      case 'birthDate':
-        if (!val) return 'Tanggal lahir wajib diisi';
-        return '';
-      case 'address':
-        if (!val || val.trim().length < 10) return 'Alamat lengkap wajib diisi (minimal 10 karakter)';
-        return '';
-      case 'province':
-      case 'city':
-        if (!val) return 'Field ini wajib diisi';
-        return '';
-      case 'postalCode':
-        if (!val) return 'Kode pos wajib diisi';
-        if (!numericRegex.test(val) || val.length < 4) return 'Kode pos tidak valid';
-        return '';
-      case 'kontakDaruratNama':
-        if (!val) return 'Nama kontak darurat wajib diisi';
-        return '';
-      case 'kontakDaruratHp':
-        if (!val) return 'Nomor kontak darurat wajib diisi';
-        if (!phoneRegex.test(val)) return 'Format nomor telepon kontak darurat tidak valid';
-        return '';
-      case 'agreeTerms':
-        if (!formData.agreeTerms) return 'Anda harus menyetujui syarat dan ketentuan';
-        return '';
-      case 'ktpFile':
-        if (!ktpFile && !ktpUrl) return 'Foto KTP wajib diunggah';
-        return '';
-      case 'selfieFile':
-        if (!selfieFile && !selfieUrl) return 'Foto selfie dengan KTP wajib diunggah';
-        return '';
-      default:
-        return '';
-    }
-  };
-
-  const validateNikAsync = async (nik: string): Promise<string> => {
-  try {
-    const res = await fetch(`https://bukatabungan-production.up.railway.app/api/check-nik?nik=${nik}`);
-    const data = await res.json();
-
-    if (data.exists) {
-      return 'NIK sudah terdaftar';
-    }
-
-    return '';
-  } catch (err) {
-    return 'Gagal memeriksa NIK, coba lagi';
-  }
-};
-
-
-  const validateAll = (): Record<string,string> => {
-    const fieldNames = ['fullName','nik','email','phone','birthDate','address','province','city','postalCode','kontakDaruratNama','kontakDaruratHp','agreeTerms','ktpFile','selfieFile'];
-    const newErrors: Record<string,string> = {};
-    fieldNames.forEach((f) => {
-      const err = validateField(f);
-      if (err) newErrors[f] = err;
-    });
-    setErrors(newErrors);
-    return newErrors;
-  };
-
-  const handleValidate = (name: string) => {
-    const err = validateField(name);
-    setErrors(prev => {
-      const next = { ...prev };
-      if (err) next[name] = err;
-      else delete next[name];
-      return next;
-    });
-  };
-
-  const getFieldClass = (name: string, base = 'mt-2 rounded') => {
-    const hasError = !!errors[name];
-    const baseBorder = hasError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-200 focus:border-emerald-500 focus:ring-emerald-500';
-    return `${base} ${baseBorder}`;
-  };
 
   // Map default jenis_kartu: samakan dengan savingsType
   const getDefaultCardType = () => {
@@ -180,20 +131,27 @@ const [formData, setFormData] = useState({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoadingSubmit(true);
-    // Validate all fields before upload/submit
-    const newErrors = validateAll();
+    // Run server-side uniqueness checks for nik/email/phone (emergency phone is excluded)
+    const nikErr = await validateNikAsync(formData.nik);
+    const emailErr = await validateEmailAsync(formData.email);
+    const phoneErr = await validatePhoneAsync(formData.phone);
+    const newErrors: Record<string,string> = {};
+    if (nikErr) newErrors.nik = nikErr;
+    if (emailErr) newErrors.email = emailErr;
+    if (phoneErr) newErrors.phone = phoneErr;
     if (Object.keys(newErrors).length > 0) {
+      setErrors(prev => ({ ...prev, ...newErrors }));
       setLoadingSubmit(false);
-      const firstField = Object.keys(newErrors)[0] || null;
-      if (firstField) {
-        const el = document.getElementById(firstField);
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          try { (el as HTMLElement).focus(); } catch {}
-        }
+      // focus the first invalid field
+      const first = Object.keys(newErrors)[0];
+      const el = first ? document.getElementById(first) : null;
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        try { (el as HTMLElement).focus(); } catch {}
       }
       return;
     }
+
     let ktpUploadedUrl = ktpUrl;
     let selfieUploadedUrl = selfieUrl;
 
@@ -339,11 +297,23 @@ const [formData, setFormData] = useState({
             <ul className="space-y-4 text-gray-700">
               <li className="flex items-start gap-3">
                 <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                <span>Kami akan mengirimkan email atau WA konfirmasi kepada Anda</span>
+                <span>Kami akan mengirimkan email konfirmasi ke alamat email Anda</span>
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
                 <span>Tim verifikasi akan memeriksa dokumen Anda</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                <span>Anda akan menerima nomor virtual account untuk setoran awal</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                <span>Setelah setoran diterima, rekening Anda akan aktif</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                <span>Kartu debit akan dikirim ke alamat Anda dalam 7-10 hari kerja</span>
               </li>
             </ul>
           </div>
@@ -484,40 +454,40 @@ const [formData, setFormData] = useState({
     {/* Nama Lengkap */}
     <div>
       <Label htmlFor="fullName" className="text-gray-700">Nama Lengkap (Sesuai KTP)</Label>
-      {errors.fullName && <p className="text-sm text-red-600 mb-1">{errors.fullName}</p>}
       <Input 
         id="fullName" 
         required
         placeholder="Masukkan nama lengkap"
         value={formData.fullName}
         onChange={(e) => setFormData({...formData, fullName: e.target.value})}
-        onBlur={() => handleValidate('fullName')}
-        className={getFieldClass('fullName')}
+        className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded"
       />
     </div>
 
     {/* NIK */}
-    <Input 
-  id="nik"
-  required
-  placeholder="16 digit NIK"
-  maxLength={16}
-  value={formData.nik}
-  onChange={(e) => setFormData({...formData, nik: e.target.value})}
-  onBlur={async () => {
-    // Step 1: Validasi lokal
-    const localError = validateField('nik');
-    if (localError) {
-      setErrors(prev => ({ ...prev, nik: localError }));
-      return;
-    }
-
-    // Step 2: Validasi backend (cek NIK sudah ada atau belum)
-    const asyncError = await validateNikAsync(formData.nik);
-    setErrors(prev => ({ ...prev, nik: asyncError }));
-  }}
-  className={getFieldClass('nik')}
-/>
+    <div>
+      <Label htmlFor="nik" className="text-gray-700">NIK (Nomor Induk Kependudukan)</Label>
+      {errors.nik && <p className="text-sm text-red-600 mb-1">{errors.nik}</p>}
+      <Input 
+        id="nik" 
+        required
+        placeholder="16 digit NIK"
+        maxLength={16}
+        value={formData.nik}
+        onChange={(e) => setFormData({...formData, nik: e.target.value})}
+        onBlur={async (e) => {
+          const val = (e.currentTarget as HTMLInputElement).value;
+          const err = await validateNikAsync(val);
+          setErrors(prev => {
+            const next = { ...prev };
+            if (err) next.nik = err;
+            else delete next.nik;
+            return next;
+          });
+        }}
+        className={getFieldClass('nik')}
+      />
+    </div>
 
     {/* Gender + Marital Status */}
     <div className="grid md:grid-cols-2 gap-5">
@@ -525,13 +495,13 @@ const [formData, setFormData] = useState({
       {/* Jenis Kelamin */}
       <div>
         <Label className="text-gray-700">Jenis Kelamin</Label>
-          <Select
-            value={formData.gender}
-            onValueChange={(value) => { setFormData({ ...formData, gender: value }); handleValidate('gender'); }}
-          >
-            <SelectTrigger className={getFieldClass('gender')}>
-              <SelectValue placeholder="Pilih jenis kelamin" />
-            </SelectTrigger>
+        <Select
+          value={formData.gender}
+          onValueChange={(value) => setFormData({ ...formData, gender: value })}
+        >
+          <SelectTrigger className="mt-2 border-gray-200 focus:border-emerald-500 rounded">
+            <SelectValue placeholder="Pilih jenis kelamin" />
+          </SelectTrigger>
           <SelectContent>
             <SelectItem value="Laki-laki">Laki-laki</SelectItem>
             <SelectItem value="Perempuan">Perempuan</SelectItem>
@@ -544,9 +514,9 @@ const [formData, setFormData] = useState({
         <Label className="text-gray-700">Status Pernikahan</Label>
         <Select
           value={formData.maritalStatus}
-          onValueChange={(value) => { setFormData({ ...formData, maritalStatus: value }); handleValidate('maritalStatus'); }}
+          onValueChange={(value) => setFormData({ ...formData, maritalStatus: value })}
         >
-          <SelectTrigger className={getFieldClass('maritalStatus')}>
+          <SelectTrigger className="mt-2 border-gray-200 focus:border-emerald-500 rounded">
             <SelectValue placeholder="Pilih status" />
           </SelectTrigger>
           <SelectContent>
@@ -560,7 +530,7 @@ const [formData, setFormData] = useState({
     </div>
 
     {/* Email + Phone */}
-    <div className="grid md:grid-cols-2 gap-5">
+      <div className="grid md:grid-cols-2 gap-5">
       <div>
         <Label htmlFor="email" className="text-gray-700">Email</Label>
         {errors.email && <p className="text-sm text-red-600 mb-1">{errors.email}</p>}
@@ -571,7 +541,16 @@ const [formData, setFormData] = useState({
           placeholder="email@example.com"
           value={formData.email}
           onChange={(e) => setFormData({...formData, email: e.target.value})}
-          onBlur={() => handleValidate('email')}
+          onBlur={async (e) => {
+            const val = (e.currentTarget as HTMLInputElement).value;
+            const err = await validateEmailAsync(val);
+            setErrors(prev => {
+              const next = { ...prev };
+              if (err) next.email = err;
+              else delete next.email;
+              return next;
+            });
+          }}
           className={getFieldClass('email')}
         />
       </div>
@@ -586,7 +565,16 @@ const [formData, setFormData] = useState({
           placeholder="08xxxxxxxxxx"
           value={formData.phone}
           onChange={(e) => setFormData({...formData, phone: e.target.value})}
-          onBlur={() => handleValidate('phone')}
+          onBlur={async (e) => {
+            const val = (e.currentTarget as HTMLInputElement).value;
+            const err = await validatePhoneAsync(val);
+            setErrors(prev => {
+              const next = { ...prev };
+              if (err) next.phone = err;
+              else delete next.phone;
+              return next;
+            });
+          }}
           className={getFieldClass('phone')}
         />
       </div>
@@ -595,15 +583,13 @@ const [formData, setFormData] = useState({
     {/* Tanggal Lahir */}
     <div>
       <Label htmlFor="birthDate" className="text-gray-700">Tanggal Lahir</Label>
-      {errors.birthDate && <p className="text-sm text-red-600 mb-1">{errors.birthDate}</p>}
       <Input 
         id="birthDate" 
         type="date"
         required
         value={formData.birthDate}
         onChange={(e) => setFormData({...formData, birthDate: e.target.value})}
-        onBlur={() => handleValidate('birthDate')}
-        className={getFieldClass('birthDate')}
+        className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded"
       />
     </div>
     <div className="grid md:grid-cols-2 gap-5">
@@ -617,8 +603,7 @@ const [formData, setFormData] = useState({
         placeholder="Contoh: Indonesia"
         value={formData.citizenship}
         onChange={(e) => setFormData({ ...formData, citizenship: e.target.value })}
-        onBlur={() => handleValidate('citizenship')}
-        className={getFieldClass('citizenship')}
+        className="mt-2 border-gray-200 focus:border-emerald-500 rounded"
       />
     </div>
 
@@ -632,36 +617,31 @@ const [formData, setFormData] = useState({
         placeholder="Masukkan nama ibu kandung"
         value={formData.motherName}
         onChange={(e) => setFormData({ ...formData, motherName: e.target.value })}
-        onBlur={() => handleValidate('motherName')}
-        className={getFieldClass('motherName')}
+        className="mt-2 border-gray-200 focus:border-emerald-500 rounded"
       />
     </div>
 
     <div>
       <Label htmlFor="kontakDaruratNama:" className="text-gray-700">Nama kontak Darurat</Label>
-      {errors.kontakDaruratNama && <p className="text-sm text-red-600 mb-1">{errors.kontakDaruratNama}</p>}
       <Input
         id="kontakDaruratNama"
         required
         placeholder="Masukkan nama kontak"
         value={formData.kontakDaruratNama}
         onChange={(e) => setFormData({ ...formData, kontakDaruratNama: e.target.value })}
-        onBlur={() => handleValidate('kontakDaruratNama')}
-        className={getFieldClass('kontakDaruratNama')}
+        className="mt-2 border-gray-200 focus:border-emerald-500 rounded"
       />
     </div>
 
     <div>
       <Label htmlFor="kontakDaruratHp" className="text-gray-700">Nomor Kontak Darurat</Label>
-      {errors.kontakDaruratHp && <p className="text-sm text-red-600 mb-1">{errors.kontakDaruratHp}</p>}
       <Input
         id="kontakDaruratHp"
         required
         placeholder="Masukan nomor hp kontak"
         value={formData.kontakDaruratHp}
         onChange={(e) => setFormData({ ...formData, kontakDaruratHp: e.target.value })}
-        onBlur={() => handleValidate('kontakDaruratHp')}
-        className={getFieldClass('kontakDaruratHp')}
+        className="mt-2 border-gray-200 focus:border-emerald-500 rounded"
       />
     </div>
     </div>
@@ -673,7 +653,6 @@ const [formData, setFormData] = useState({
               <div className="space-y-5">
                 <div>
                   <Label htmlFor="address" className="text-gray-700">Alamat Lengkap</Label>
-                  {errors.address && <p className="text-sm text-red-600 mb-1">{errors.address}</p>}
                   <Textarea 
                     id="address"
                     required
@@ -681,43 +660,37 @@ const [formData, setFormData] = useState({
                     rows={3}
                     value={formData.address}
                     onChange={(e) => setFormData({...formData, address: e.target.value})}
-                    onBlur={() => handleValidate('address')}
-                    className={getFieldClass('address')}
+                    className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded"
                   />
                 </div>
 
                 <div className="grid md:grid-cols-3 gap-5">
                   <div>
                     <Label htmlFor="province" className="text-gray-700">Provinsi</Label>
-                    {errors.province && <p className="text-sm text-red-600 mb-1">{errors.province}</p>}
                     <Input 
                       id="province"
                       required
                       placeholder="Nama Provinsi"
                       value={formData.province}
                       onChange={(e) => setFormData({...formData, province: e.target.value})}
-                      onBlur={() => handleValidate('province')}
-                      className={getFieldClass('province')}
+                      className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded"
                     />
                   </div>
 
                   <div>
                     <Label htmlFor="city" className="text-gray-700">Kota/Kabupaten</Label>
-                    {errors.city && <p className="text-sm text-red-600 mb-1">{errors.city}</p>}
                     <Input 
                       id="city"
                       required
                       placeholder="Nama Kota"
                       value={formData.city}
                       onChange={(e) => setFormData({...formData, city: e.target.value})}
-                      onBlur={() => handleValidate('city')}
-                      className={getFieldClass('city')}
+                      className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded"
                     />
                   </div>
 
                   <div>
                     <Label htmlFor="postalCode" className="text-gray-700">Kode Pos</Label>
-                    {errors.postalCode && <p className="text-sm text-red-600 mb-1">{errors.postalCode}</p>}
                     <Input 
                       id="postalCode"
                       required
@@ -725,8 +698,7 @@ const [formData, setFormData] = useState({
                       maxLength={5}
                       value={formData.postalCode}
                       onChange={(e) => setFormData({...formData, postalCode: e.target.value})}
-                      onBlur={() => handleValidate('postalCode')}
-                      className={getFieldClass('postalCode')}
+                      className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded"
                     />
                   </div>
                 </div>
@@ -876,20 +848,17 @@ const [formData, setFormData] = useState({
   <h3 className="text-emerald-900 mb-6 text-2xl">Upload Dokumen</h3>
   <div className="space-y-6">
     {/* ===== Upload Foto KTP ===== */}
-    <div id="ktpFile">
-      {errors.ktpFile && <p className="text-sm text-red-600 mb-1">{errors.ktpFile}</p>}
-      {!ktpFile && !ktpPreview && (
-        <Upload
-          label="Upload Foto KTP"
-          description="Format: JPG, PNG (Max. 2MB)"
-          onChange={(file) => {
-            setKtpFile(file);
-            setKtpPreview(URL.createObjectURL(file));
-            setKtpUrl(null);
-          }}
-        />
-      )}
-    </div>
+    {!ktpFile && !ktpPreview && (
+      <Upload
+        label="Upload Foto KTP"
+        description="Format: JPG, PNG (Max. 2MB)"
+        onChange={(file) => {
+          setKtpFile(file);
+          setKtpPreview(URL.createObjectURL(file));
+          setKtpUrl(null);
+        }}
+      />
+    )}
     {/* Preview muncul setelah pilih file */}
     {ktpPreview && (
       <div className="mt-4">
@@ -924,20 +893,17 @@ const [formData, setFormData] = useState({
     )}
 
     {/* ===== Upload Selfie dengan KTP ===== */}
-    <div id="selfieFile">
-      {errors.selfieFile && <p className="text-sm text-red-600 mb-1">{errors.selfieFile}</p>}
-      {!selfieFile && !selfiePreview && (
-        <Upload
-          label="Upload Selfie dengan KTP"
-          description="Format: JPG, PNG (Max. 2MB)"
-          onChange={(file) => {
-            setSelfieFile(file);
-            setSelfiePreview(URL.createObjectURL(file));
-            setSelfieUrl(null);
-          }}
-        />
-      )}
-    </div>
+    {!selfieFile && !selfiePreview && (
+      <Upload
+        label="Upload Selfie dengan KTP"
+        description="Format: JPG, PNG (Max. 2MB)"
+        onChange={(file) => {
+          setSelfieFile(file);
+          setSelfiePreview(URL.createObjectURL(file));
+          setSelfieUrl(null);
+        }}
+      />
+    )}
     {selfiePreview && (
       <div className="mt-4">
         <img
@@ -993,18 +959,15 @@ const [formData, setFormData] = useState({
 
             {/* Terms & Conditions */}
             <div className="flex items-start gap-4 bg-gradient-to-br from-emerald-50 to-green-50 p-6 rounded-2xl shadow-inner">
-              <div className="flex-shrink-0">
-                {errors.agreeTerms && <p className="text-sm text-red-600 mb-1">{errors.agreeTerms}</p>}
-                <Checkbox 
-                  id="agreeTerms"
-                  checked={formData.agreeTerms}
-                  onCheckedChange={(checked) => setFormData({...formData, agreeTerms: checked as boolean})}
-                  required
-                  className="mt-1"
-                />
-              </div>
+              <Checkbox 
+                id="terms"
+                checked={formData.agreeTerms}
+                onCheckedChange={(checked) => setFormData({...formData, agreeTerms: checked as boolean})}
+                required
+                className="mt-1"
+              />
               <div>
-                <Label htmlFor="agreeTerms" className="cursor-pointer text-gray-800">
+                <Label htmlFor="terms" className="cursor-pointer text-gray-800">
                   Saya menyetujui <a href="#" className="text-emerald-700 hover:underline">Syarat dan Ketentuan</a> serta <a href="#" className="text-emerald-700 hover:underline">Kebijakan Privasi</a>
                 </Label>
                 <p className="text-xs text-gray-600 mt-2">
