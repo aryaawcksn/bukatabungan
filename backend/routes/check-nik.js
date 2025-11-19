@@ -13,11 +13,15 @@ router.get("/check-nik", async (req, res) => {
         [nik]
       );
       if (cek.rows.length > 0) {
-        const status = cek.rows[0].status;
-        const relevant = ['pending', 'accepted'];
-        return res.json({ exists: relevant.includes(status), status });
-      }
-      return res.json({ exists: false, status: null });
+  const status = cek.rows[0].status;
+
+  // blok hanya jika pending atau accepted
+  const blocked = ['pending', 'accepted'].includes(status);
+
+  return res.json({ exists: blocked, status });
+}
+
+return res.json({ exists: false, status: null });
     }
 
     if (email) {
