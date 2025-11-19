@@ -27,7 +27,8 @@ app.use(cors({
   credentials: true
 }));
 
-app.options("*", cors());
+// Fix wildcard crash
+app.options(/.*/, cors());
 
 
 app.use(express.json());
