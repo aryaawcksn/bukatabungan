@@ -15,23 +15,39 @@ dotenv.config();
 const app = express();
 
 // Middleware
+// Global CORS
 app.use(cors({
   origin: [
     "https://bukatabungan.vercel.app",
-    "http://localhost:5173"
+    "http://localhost:5173",
+    "http://localhost:5174"
   ],
-  methods: ["GET", "POST"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type"],
   credentials: true
 }));
 
 app.use(express.json());
 
-// Static files - agar file di folder uploads bisa diakses langsung
+// Static
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
-// Routes
-app.use('/api', checkNikRoute);
+// CORS khusus untuk upload route
+app.use("/upload", cors({
+  origin: [
+    "https://bukatabungan.vercel.app",
+    "http://localhost:5174",
+    "http://localhost:5173"
+  ],
+  methods: ["POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type"],
+}));
+
+// Upload route
 app.use("/upload", uploadRouter);
+
+// API routes
+app.use('/api', checkNikRoute);
 app.use("/api", authRoutes);
 app.use("/api/pengajuan", pengajuanRoutes);
 app.use("/api", testRoutes);
