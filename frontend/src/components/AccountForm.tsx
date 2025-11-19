@@ -39,7 +39,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       const data = await res.json();
       if (data.exists) {
         const s = data.status;
-        if (s === 'accepted') return 'NIK Sudah Digunakan';
+        if (s === 'approved') return 'NIK Sudah Digunakan';
         if (s === 'pending') return 'NIK sudah memiliki pengajuan pending (hanya 1 pengajuan pending per NIK)';
         return 'NIK tidak tersedia';
       }

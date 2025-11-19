@@ -16,7 +16,7 @@ router.get("/check-nik", async (req, res) => {
   const status = cek.rows[0].status;
 
   // blok hanya jika pending atau accepted
-  const blocked = ['pending', 'accepted'].includes(status);
+  const blocked = ['pending', 'approved'].includes(status);
 
   return res.json({ exists: blocked, status });
 }
