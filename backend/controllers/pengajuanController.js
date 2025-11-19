@@ -87,7 +87,7 @@ export const createPengajuan = async (req, res) => {
     console.log("📊 Has status column:", hasStatusColumn);
 
     // Query SQL dengan semua field sesuai schema database
-    query = `
+    let query = `
       INSERT INTO pengajuan_tabungan 
       (
         kode_referensi,
@@ -127,7 +127,7 @@ export const createPengajuan = async (req, res) => {
       )
       RETURNING *;
     `;
-    const values = [
+    let values = [
       kode_referensi,          // $1
       nama_lengkap,            // $2
       nik,                     // $3
