@@ -35,7 +35,8 @@ export function FormSubmissionCard({
     }
   };
 
-  const status = statusConfig[submission.status];
+  const statusKey = submission?.status ?? 'pending';
+  const status = statusConfig[statusKey] || statusConfig.pending;
 
   return (
     <Card className="hover:shadow-md transition-shadow">

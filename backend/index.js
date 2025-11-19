@@ -8,6 +8,7 @@ import uploadRouter from "./upload.js";
 import authRoutes from "./routes/authRoutes.js";
 import pengajuanRoutes from "./routes/pengajuanRoutes.js";
 import testRoutes from "./routes/testRoutes.js";
+import checkNikRoute from "./routes/check-nik.js";
 
 dotenv.config();
 
@@ -21,10 +22,12 @@ app.use(express.json());
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 // Routes
+app.use('/api', checkNikRoute);
 app.use("/upload", uploadRouter);
 app.use("/api", authRoutes);
 app.use("/api/pengajuan", pengajuanRoutes);
 app.use("/api", testRoutes);
+
 
 // ✅ Route untuk handle 404
 app.use((req, res) => {
