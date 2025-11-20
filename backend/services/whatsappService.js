@@ -14,15 +14,25 @@ export const sendWhatsAppNotification = async (phone, fullName, status, customMe
     throw new Error("Konfigurasi WhatsApp tidak lengkap. Pastikan FONNTE_TOKEN sudah diatur di file .env");
   }
 
-  // Gunakan custom message jika ada, atau default message
-  const whatsappMessage = customMessage || (status === "approved"
-    ? `Halo ${fullName}! 🎉 Permohonan rekening Anda telah disetujui. Silakan kunjungi kantor cabang untuk aktivasi.`
-    : `Halo ${fullName}, permohonan rekening Anda belum disetujui. Silakan hubungi cabang terdekat untuk info lebih lanjut.`);
+  let whatsappMessage = "";
 
-  // Format nomor: +62
+  // Mode OTP (status === "otp")
+  if (status === "otp") {
+    whatsappMessage = customMessage; // langsung kirim message OTP
+  }
+
+  // Mode approved/rejected (lama)
+  else {
+    whatsappMessage = customMessage || 
+      (status === "approved"
+        ? `Halo ${fullName}! 🎉 Permohonan rekening Anda telah disetujui. Silakan kunjungi kantor cabang untuk aktivasi.`
+        : `Halo ${fullName}, permohonan rekening Anda belum disetujui. Silakan hubungi cabang terdekat untuk info lebih lanjut.`);
+  }
+
+  // Format nomor
   let formattedPhone = phone;
-  if (phone.startsWith("0")) {
-    formattedPhone = "62" + phone.slice(1);
+  if (formattedPhone.startsWith("0")) {
+    formattedPhone = "62" + formattedPhone.slice(1);
   }
 
   const response = await axios.post(

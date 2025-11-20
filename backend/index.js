@@ -9,7 +9,7 @@ import authRoutes from "./routes/authRoutes.js";
 import pengajuanRoutes from "./routes/pengajuanRoutes.js";
 import testRoutes from "./routes/testRoutes.js";
 import checkNikRoute from "./routes/check-nik.js";
-
+import otpRoutes from "./routes/otpRoutes.js";
 dotenv.config();
 
 const app = express();
@@ -45,6 +45,7 @@ app.use("/api", checkNikRoute);
 app.use("/api", authRoutes); // login route
 app.use("/api/pengajuan", pengajuanRoutes);
 app.use("/api", testRoutes);
+app.use("/otp", otpRoutes);
 
 // ===== 404 =====
 app.use((req, res) => {

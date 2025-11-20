@@ -8,6 +8,7 @@ import { Textarea } from './ui/textarea';
 import { Checkbox } from './ui/checkbox';
 import { ArrowLeft, CheckCircle, Sparkles, Phone, Mail, MapPin } from 'lucide-react';
 import { Upload } from "./Upload"; 
+import OtpModal from './OtpModal';
 interface AccountFormProps {
   savingsType: string;
   onBack: () => void;
@@ -23,6 +24,10 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
   const [ktpUrl, setKtpUrl] = useState<string | null>(null);
   const [selfieUrl, setSelfieUrl] = useState<string | null>(null);
   const [loadingSubmit, setLoadingSubmit] = useState(false);
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [currentPhone, setCurrentPhone] = useState("");
+  const [pendingSubmitData, setPendingSubmitData] = useState<any>(null); // simpan data sebelum OTP
+
 
   // Validation errors (simple server-backed uniqueness + basic client hints)
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -164,113 +169,186 @@ const [formData, setFormData] = useState({
     setErrors(prev => ({ ...prev, ktp: "", selfie: "" }));
   }
 
-    let ktpUploadedUrl = ktpUrl;
-    let selfieUploadedUrl = selfieUrl;
+   try {
+      const res = await fetch("https://bukatabungan-production.up.railway.app/otp/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: formData.phone }),
+      });
 
-    // Upload KTP jika ada file dan belum di-upload
-    if (ktpFile && !ktpUploadedUrl) {
-      try {
-        const formDataKtp = new FormData();
-        formDataKtp.append("gambar", ktpFile);
-        const resKtp = await fetch("https://bukatabungan-production.up.railway.app/upload", {
+      const data = await res.json();
+
+      if (!data.success) {
+        alert(data.message);
+        setLoadingSubmit(false);
+        return;
+      }
+
+      // Simpan data form sementara
+      setPendingSubmitData(formData);
+      setCurrentPhone(formData.phone);
+
+      // Tampilkan modal OTP
+      setShowOtpModal(true);
+
+    } catch {
+      alert("Gagal mengirim OTP");
+    }
+
+    setLoadingSubmit(false);
+  };
+const handleOtpVerified = async () => {
+    setShowOtpModal(false);
+    await submitFinalForm(pendingSubmitData);
+  };
+
+
+  // =========================
+  // FINAL FORM SUBMIT
+  // =========================
+  // ==============================
+// FINAL FORM SUBMIT (SETELAH OTP)
+// ==============================
+const submitFinalForm = async (data: any) => {
+  setLoadingSubmit(true);
+
+  // ============================
+  // 1. Upload KTP
+  // ============================
+  let ktpUploadedUrl = ktpUrl;
+  if (ktpFile && !ktpUploadedUrl) {
+    try {
+      const formDataKtp = new FormData();
+      formDataKtp.append("gambar", ktpFile);
+
+      const resKtp = await fetch(
+        "https://bukatabungan-production.up.railway.app/upload",
+        {
           method: "POST",
           body: formDataKtp,
           credentials: "include",
-        });
-        if (!resKtp.ok) throw new Error("Gagal upload KTP");
-        const dataKtp = await resKtp.json();
-        ktpUploadedUrl = dataKtp.url;
-        setKtpUrl(ktpUploadedUrl);
-      } catch (err) {
-        alert("Upload KTP gagal, coba lagi!");
-        setLoadingSubmit(false);
-        return;
-      }
+        }
+      );
+
+      if (!resKtp.ok) throw new Error("Gagal upload KTP");
+
+      const dataKtp = await resKtp.json();
+      ktpUploadedUrl = dataKtp.url;
+      setKtpUrl(ktpUploadedUrl);
+    } catch (err) {
+      alert("Upload KTP gagal, coba lagi!");
+      setLoadingSubmit(false);
+      return;
     }
-    // Upload Selfie jika ada file dan belum di-upload
-    if (selfieFile && !selfieUploadedUrl) {
-      try {
-        const formDataSelfie = new FormData();
-        formDataSelfie.append("gambar", selfieFile);
-        const resSelfie = await fetch("https://bukatabungan-production.up.railway.app/upload", {
+  }
+
+  // ============================
+  // 2. Upload Selfie
+  // ============================
+  let selfieUploadedUrl = selfieUrl;
+  if (selfieFile && !selfieUploadedUrl) {
+    try {
+      const formDataSelfie = new FormData();
+      formDataSelfie.append("gambar", selfieFile);
+
+      const resSelfie = await fetch(
+        "https://bukatabungan-production.up.railway.app/upload",
+        {
           method: "POST",
           body: formDataSelfie,
-           credentials: "include",
-        });
-        if (!resSelfie.ok) throw new Error("Gagal upload selfie");
-        const dataSelfie = await resSelfie.json();
-        selfieUploadedUrl = dataSelfie.url;
-        setSelfieUrl(selfieUploadedUrl);
-      } catch (err) {
-        alert("Upload selfie gagal, coba lagi!");
-        setLoadingSubmit(false);
-        return;
-      }
+          credentials: "include",
+        }
+      );
+
+      if (!resSelfie.ok) throw new Error("Gagal upload selfie");
+
+      const dataSelfie = await resSelfie.json();
+      selfieUploadedUrl = dataSelfie.url;
+      setSelfieUrl(selfieUploadedUrl);
+    } catch (err) {
+      alert("Upload selfie gagal, coba lagi!");
+      setLoadingSubmit(false);
+      return;
     }
+  }
 
-    // Siapkan data yang akan dikirim ke backend
-    const submitData = {
-      nama_lengkap: formData.fullName,
-      nik: formData.nik,
-      email: formData.email,
-      no_hp: formData.phone,
-      tanggal_lahir: formData.birthDate,
-      alamat: formData.address,
-      provinsi: formData.province,
-      kota: formData.city,
-      kode_pos: formData.postalCode,
-      jenis_rekening: formData.jenis_rekening,
-      penghasilan: formData.monthlyIncome,
-      jenis_kelamin: formData.gender,
-      status_perkawinan: formData.maritalStatus,
-      kewarganegaraan: formData.citizenship,
-      nama_ibu_kandung: formData.motherName,
-      tempat_bekerja: formData.tempatBekerja,
-      alamat_kantor: formData.alamatKantor,
-      sumber_dana: formData.sumberDana,
-      tujuan_rekening: formData.tujuanRekening,
-      kontak_darurat_nama: formData.kontakDaruratNama,
-      kontak_darurat_hp: formData.kontakDaruratHp,
-      pekerjaan: formData.employmentStatus,
-      setuju_data: formData.agreeTerms ? 'Ya' : 'Tidak',
-      jenis_kartu: formData.cardType || getDefaultCardType(),
-      card_type: formData.cardType || getDefaultCardType(),
-      savings_type: savingsType,
-      savings_type_name: getSavingsTypeName(),
-      cabang_pengambilan: formData.cabang_pengambilan || '',
-      foto_ktp: ktpUploadedUrl,
-      foto_selfie: selfieUploadedUrl,
-    };
+  // ============================
+  // 3. Siapkan data submit
+  // ============================
+  const submitData = {
+    nama_lengkap: data.fullName,
+    nik: data.nik,
+    email: data.email,
+    no_hp: data.phone,
+    tanggal_lahir: data.birthDate,
+    alamat: data.address,
+    provinsi: data.province,
+    kota: data.city,
+    kode_pos: data.postalCode,
+    jenis_rekening: data.jenis_rekening,
+    penghasilan: data.monthlyIncome,
+    jenis_kelamin: data.gender,
+    status_perkawinan: data.maritalStatus,
+    kewarganegaraan: data.citizenship,
+    nama_ibu_kandung: data.motherName,
+    tempat_bekerja: data.tempatBekerja,
+    alamat_kantor: data.alamatKantor,
+    sumber_dana: data.sumberDana,
+    tujuan_rekening: data.tujuanRekening,
+    kontak_darurat_nama: data.kontakDaruratNama,
+    kontak_darurat_hp: data.kontakDaruratHp,
+    pekerjaan: data.employmentStatus,
+    setuju_data: data.agreeTerms ? "Ya" : "Tidak",
+    jenis_kartu: data.cardType || getDefaultCardType(),
+    card_type: data.cardType || getDefaultCardType(),
+    savings_type: savingsType,
+    savings_type_name: getSavingsTypeName(),
+    cabang_pengambilan: data.cabang_pengambilan,
+    foto_ktp: ktpUploadedUrl,
+    foto_selfie: selfieUploadedUrl,
+  };
 
-    try {
-      const response = await fetch("https://bukatabungan-production.up.railway.app/api/pengajuan", {
+  // ============================
+  // 4. Submit ke backend
+  // ============================
+  try {
+    const response = await fetch(
+      "https://bukatabungan-production.up.railway.app/api/pengajuan",
+      {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(submitData),
-         credentials: "include",
-      });
-      let result;
-      try {
-        result = await response.json();
-      } catch (parseError) {
-        const textResponse = await response.text();
-        alert(`⚠️ Gagal menyimpan data:\n\nServer mengembalikan response yang tidak valid.\nStatus: ${response.status}`);
-        setLoadingSubmit(false);
-        return;
+        credentials: "include",
       }
-      if (response.ok && result.success) {
-        setReferenceCode(result.kode_referensi ?? null);
-        setSubmitted(true);
-      } else {
-        const errorMessage = result.message || result.error?.detail || `HTTP ${response.status}: ${response.statusText}`;
-        alert(`⚠️ Gagal menyimpan data:\n\n${errorMessage}`);
-      }
-    } catch (err: any) {
-      const errorMessage = err.message || "Terjadi kesalahan koneksi ke server";
-      alert(`❌ Terjadi kesalahan:\n\n${errorMessage}`);
+    );
+
+    let result;
+    try {
+      result = await response.json();
+    } catch {
+      alert(
+        `⚠️ Gagal menyimpan data:\nServer mengembalikan response tidak valid.`
+      );
+      setLoadingSubmit(false);
+      return;
     }
-    setLoadingSubmit(false);
-  };
+
+    if (response.ok && result.success) {
+      setReferenceCode(result.kode_referensi ?? null);
+      setSubmitted(true);
+    } else {
+      const errorMessage =
+        result.message ||
+        result.error?.detail ||
+        `HTTP ${response.status}: ${response.statusText}`;
+      alert(`⚠️ Gagal menyimpan data:\n\n${errorMessage}`);
+    }
+  } catch (err: any) {
+    alert(`❌ Terjadi kesalahan:\n\n${err.message}`);
+  }
+
+  setLoadingSubmit(false);
+};
 
   const getSavingsTypeName = () => {
     switch (savingsType) {
@@ -288,6 +366,7 @@ const [formData, setFormData] = useState({
         return 'Tabungan';
     }
   };
+
 
   // Tidak perlu uploadToServer, upload dilakukan saat submit
 
@@ -571,7 +650,7 @@ const [formData, setFormData] = useState({
       </div>
 
       <div>
-        <Label htmlFor="phone" className="text-gray-700">Nomor Telepon</Label>
+        <Label htmlFor="phone" className="text-gray-700">Nomor Telepon (Digunakan untuk OTP)</Label>
         {errors.phone && <p className="text-sm text-red-600 mb-1">{errors.phone}</p>}
         <Input 
           id="phone" 
@@ -975,6 +1054,13 @@ const [formData, setFormData] = useState({
               {loadingSubmit ? 'Mengirim...' : 'Kirim Permohonan Pembukaan Rekening'}
             </Button>
           </form>
+           <OtpModal
+            open={showOtpModal}
+            onClose={() => setShowOtpModal(false)}
+            phone={currentPhone}
+            onVerified={handleOtpVerified}
+          />
+
         </Card>
         </div>
       </section>

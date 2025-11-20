@@ -280,14 +280,14 @@ export function FormDetailDialog({
                 <Field label="Range Penghasilan" icon={<DollarSign className="w-4 h-4 text-gray-400" />} value={submission.jobInfo.salaryRange} />
                 {submission.jobInfo.workplace && (
                   <Field 
-                    label="Tempat Bekerja" 
+                    label="Nama Instansi/Perusahaan" 
                     icon={<Building2 className="w-4 h-4 text-gray-400" />} 
                     value={submission.jobInfo.workplace} 
                   />
                 )}
                 {submission.jobInfo.officeAddress && (
                   <Field 
-                    label="Alamat Kantor" 
+                    label="Alamat Instansi/Perusahaan" 
                     icon={<MapPin className="w-4 h-4 text-gray-400" />} 
                     value={submission.jobInfo.officeAddress} 
                   />

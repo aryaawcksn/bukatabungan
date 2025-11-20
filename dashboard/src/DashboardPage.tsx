@@ -2,11 +2,15 @@ import { useState, useEffect, useRef } from 'react';
 import { FormSubmissionCard } from './components/form-submission-card';
 import { FormDetailDialog } from './components/form-detail-dialog';
 import { ApprovalDialog } from './components/approval-dialog';
-import { FileText, Search, Filter, LayoutDashboard, ClipboardCheck, FileBarChart } from 'lucide-react';
+import { FileText, Search, Filter, LayoutDashboard, ClipboardCheck, FileBarChart, LogOut, FileCog, X, Clock3, Check } from 'lucide-react';
 import { Input } from './components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './components/ui/select';
 import { toast } from 'sonner';
 import { Toaster } from './components/ui/sonner';
+import { Button } from './components/ui/button';
+import StatCard from "./components/ui/statcard";
+
+
 
 export interface FormSubmission {
   id: string;
@@ -451,6 +455,13 @@ export default function DashboardPage() {
     rejected: submissions.filter(s => s.status === 'rejected').length
   };
 
+  const handleLogout = () => {
+  localStorage.removeItem("token");   // kalau pakai token
+  sessionStorage.clear();             // kalau simpan session
+  window.location.href = "/login";    // redirect ke login
+};
+
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -497,9 +508,8 @@ export default function DashboardPage() {
             {[
               { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-4 h-4 mr-2" /> },
               { id: 'submissions', label: 'Permohonan', icon: <ClipboardCheck className="w-4 h-4 mr-2" /> },
-              { id: 'reports', label: 'Ajukan', icon: <FileBarChart className="w-4 h-4 mr-2" /> },
-              { id: 'export', label: 'Kelola Data', icon: <FileBarChart className="w-4 h-4 mr-2" /> },
-              { id: 'logout', label: 'Logout', icon: <FileBarChart className="w-4 h-4 mr-2" /> }
+              { id: 'manage', label: 'Kelola Data', icon: <FileCog className="w-4 h-4 mr-2" /> },
+              { id: 'logout', label: 'Logout', icon: <LogOut className="w-4 h-4 mr-2" /> }
             ].map(tab => (
               <button
                 key={tab.id}
@@ -519,27 +529,40 @@ export default function DashboardPage() {
       </header>
 
       {/* Content */}
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        {activeTab === 'dashboard' && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-lg transition-shadow ">
-              <p className="text-gray-500 text-sm">Total Permohonan</p>
-              <p className="text-lg font-semibold text-gray-900">{stats.total}</p>
-            </div>
-            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-lg transition-shadow ">
-              <p className="text-gray-500 text-sm">Menunggu</p>
-              <p className="text-lg font-semibold text-orange-600">{stats.pending}</p>
-            </div>
-            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-lg transition-shadow ">
-              <p className="text-gray-500 text-sm">Disetujui</p>
-              <p className="text-lg font-semibold text-green-600">{stats.approved}</p>
-            </div>
-            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-lg transition-shadow ">
-              <p className="text-gray-500 text-sm">Ditolak</p>
-              <p className="text-lg font-semibold text-red-600">{stats.rejected}</p>
-            </div>
-          </div>
-        )}
+     <main className="max-w-7xl mx-auto px-6 py-8">
+  {activeTab === "dashboard" && (
+    <>
+      <h3 className="mb-6 text-2xl">Informasi Permohonan</h3>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <StatCard
+          title="Total Permohonan"
+          value={stats.total}
+          color="#3B82F6"
+          icon={FileBarChart}
+        />
+        <StatCard
+          title="Menunggu"
+          value={stats.pending}
+          color="#f6b53b"
+          icon={Clock3}
+        />
+        <StatCard
+          title="Disetujui"
+          value={stats.approved}
+          color="#1fb64c"
+          icon={Check}
+        />
+        <StatCard
+          title="Ditolak"
+          value={stats.rejected}
+          color="#e43333"
+          icon={X}
+        />
+      </div>
+    </>
+  )}
+
 
         {activeTab === 'submissions' && (
           <>
@@ -596,12 +619,63 @@ export default function DashboardPage() {
           </>
         )}
 
-        {activeTab === 'reports' && (
-          <div className="bg-white border border-gray-200 rounded-xl p-12 text-center text-gray-500">
-            <FileBarChart className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-            <p>Fitur laporan akan ditambahkan di versi berikutnya.</p>
-          </div>
-        )}
+        {activeTab === 'manage' && (
+  <div className="p-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+    {/* Cabang Pengambilan */}
+    <button className="relative border rounded-xl p-6 hover:bg-gray-50 text-left shadow-sm">
+      <h3 className="font-semibold text-gray-800 text-lg mb-1">
+        Cabang Pengambilan
+      </h3>
+      <p className="text-gray-500 text-sm">Kelola daftar cabang bank.</p>
+    </button>
+
+    {/* Admin User - khusus high admin */}
+    <button className="relative border rounded-xl p-6 hover:bg-gray-50 text-left shadow-sm">
+      <span className="absolute top-3 right-3 bg-red-100 text-red-600 text-xs font-medium px-2 py-0.5 rounded-full">
+        High Admin
+      </span>
+
+      <h3 className="font-semibold text-gray-800 text-lg mb-1">
+        Admin User
+      </h3>
+      <p className="text-gray-500 text-sm">Manajemen akun admin.</p>
+    </button>
+
+    {/* Kelola Daftar (untuk developer saja) */}
+    <button className="relative border rounded-xl p-6 hover:bg-gray-50 text-left shadow-sm">
+      <span className="absolute top-3 right-3 bg-purple-100 text-purple-700 text-xs font-medium px-2 py-0.5 rounded-full">
+        Dev Only
+      </span>
+
+      <h3 className="font-semibold text-gray-800 text-lg mb-1">
+        Kelola Sistem
+      </h3>
+      <p className="text-gray-500 text-sm">Menu khusus pengembangan.</p>
+    </button>
+
+  </div>
+)}
+
+
+        {activeTab === 'logout' && (
+  <div className="bg-white border border-gray-200 rounded-xl p-12 text-center text-gray-700">
+    <LogOut className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+    <h2 className="text-xl font-semibold mb-2">Yakin ingin logout?</h2>
+    <p className="text-gray-500 mb-6">
+      Anda akan keluar dari panel admin.
+    </p>
+
+    <div className="flex justify-center gap-4">
+      <Button
+        onClick={handleLogout}
+        className="px-6 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700"
+      >
+        Logout
+      </Button>
+    </div>
+  </div>
+)}
       </main>
 
       {/* Dialogs */}
