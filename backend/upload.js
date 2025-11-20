@@ -29,25 +29,10 @@ const upload = multer({ storage });
 
 // ✅ Route upload (router, bukan app)
 router.post('/', upload.single('gambar'), (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        message: "File tidak diterima Cloudinary"
-      });
-    }
-
-    return res.json({
-      success: true,
-      url: req.file.path,        // secure_url dari cloudinary
-      public_id: req.file.filename
-    });
-
-  } catch (err) {
-    console.error("UPLOAD ERROR:", err);
-    res.status(500).json({ success: false, message: "Upload gagal" });
-  }
+  res.json({
+    url: req.file.path,
+    public_id: req.file.filename,
+  });
 });
-
 
 export default router;
