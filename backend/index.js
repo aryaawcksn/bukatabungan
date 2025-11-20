@@ -24,7 +24,6 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (like curl, mobile apps)
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) return callback(null, true);
     return callback(new Error("CORS not allowed"));
@@ -34,9 +33,6 @@ app.use(cors({
   credentials: true,
 }));
 
-// ===== HANDLE PRELIGHT OPTIONS =====
-app.options("/*", cors()); // <-- perbaikan di sini
-
 // ===== BODY PARSER =====
 app.use(express.json());
 
@@ -44,8 +40,7 @@ app.use(express.json());
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 // ===== ROUTES =====
-app.use("/upload", uploadRouter); // ikut global CORS
-
+app.use("/upload", uploadRouter); 
 app.use("/api", checkNikRoute);
 app.use("/api", authRoutes); // login route
 app.use("/api/pengajuan", pengajuanRoutes);
