@@ -145,6 +145,9 @@ const [formData, setFormData] = useState({
     if (nikErr) newErrors.nik = nikErr;
     if (emailErr) newErrors.email = emailErr;
     if (phoneErr) newErrors.phone = phoneErr;
+    if (!ktpFile && !ktpUrl) newErrors.ktp = "Silakan upload foto KTP!";
+    if (!selfieFile && !selfieUrl) newErrors.selfie = "Silakan upload selfie dengan KTP!";
+   
     if (Object.keys(newErrors).length > 0) {
       setErrors(prev => ({ ...prev, ...newErrors }));
       setLoadingSubmit(false);
@@ -156,7 +159,10 @@ const [formData, setFormData] = useState({
         try { (el as HTMLElement).focus(); } catch {}
       }
       return;
-    }
+    }else {
+    // hapus error jika semua valid
+    setErrors(prev => ({ ...prev, ktp: "", selfie: "" }));
+  }
 
     let ktpUploadedUrl = ktpUrl;
     let selfieUploadedUrl = selfieUrl;
@@ -865,6 +871,7 @@ const [formData, setFormData] = useState({
           setKtpFile(file);
           setKtpPreview(URL.createObjectURL(file));
           setKtpUrl(null);
+          setErrors(prev => ({ ...prev, ktp: "" }));
         }}
       />
     )}
@@ -910,6 +917,7 @@ const [formData, setFormData] = useState({
           setSelfieFile(file);
           setSelfiePreview(URL.createObjectURL(file));
           setSelfieUrl(null);
+          setErrors(prev => ({ ...prev, ktp: "" }));
         }}
       />
     )}
