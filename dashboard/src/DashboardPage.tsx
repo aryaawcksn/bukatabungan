@@ -255,13 +255,15 @@ export default function DashboardPage() {
 
   const checkBackendConnection = async () => {
     try {
-      const response = await fetch('https://bukatabungan-production.up.railway.app/api/cek-koneksi');
+      const response = await fetch('https://bukatabungan-production.up.railway.app/api/cek-koneksi', {
+        credentials: 'include'
+      });
       if (response.ok) {
         console.log('✅ Backend server terhubung');
       }
     } catch (error) {
       console.error('❌ Backend server tidak dapat diakses:', error);
-      toast.error('Backend server tidak berjalan. Pastikan backend berjalan di https://bukatabungan-production.up.railway.app', {
+      toast.error('Tidak dapat terhubung ke server', {
         duration: 5000,
       });
     }
@@ -286,7 +288,8 @@ export default function DashboardPage() {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
-      }
+      },
+      credentials: 'include'
     });
 
     if (!response.ok) {
@@ -374,7 +377,8 @@ export default function DashboardPage() {
           sendEmail: sendEmail,
           sendWhatsApp: sendWhatsApp,
           message
-        })
+        }),
+        credentials: 'include'
       });
 
       if (!response.ok) {

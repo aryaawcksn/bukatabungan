@@ -14,60 +14,50 @@ dotenv.config();
 
 const app = express();
 
-// Middleware
-// Global CORS
+// ===== GLOBAL CORS =====
+const allowedOrigins = [
+  "https://bukatabungan.vercel.app",
+  "http://localhost:5173",
+  "http://localhost:5174"
+];
+
 app.use(cors({
-  origin: [
-    "https://bukatabungan.vercel.app",
-    "http://localhost:5173",
-    "http://localhost:5174"
-  ],
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error("CORS not allowed"));
+  },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true
+  credentials: true,
 }));
 
-// Fix wildcard crash
-app.options(/.*/, cors());
+// Handle preflight for all routes
+app.options("*", cors());
 
-
+// ===== BODY PARSER =====
 app.use(express.json());
 
-// Static
+// ===== STATIC FILES =====
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
-// CORS khusus untuk upload route
-app.use("/upload", cors({
-  origin: [
-    "https://bukatabungan.vercel.app",
-    "http://localhost:5174",
-    "http://localhost:5173"
-  ],
-  methods: ["POST", "OPTIONS"],
-  allowedHeaders: ["Content-Type"],
-}));
+// ===== ROUTES =====
+app.use("/upload", uploadRouter); // sekarang sudah kena global CORS
 
-// Upload route
-app.use("/upload", uploadRouter);
-
-// API routes
-app.use('/api', checkNikRoute);
-app.use("/api", authRoutes);
+app.use("/api", checkNikRoute);
+app.use("/api", authRoutes); // login route
 app.use("/api/pengajuan", pengajuanRoutes);
 app.use("/api", testRoutes);
 
-
-
-// ✅ Route untuk handle 404
+// ===== 404 =====
 app.use((req, res) => {
-  res.status(404).json({ 
-    success: false, 
-    message: `Route tidak ditemukan: ${req.method} ${req.path}` 
+  res.status(404).json({
+    success: false,
+    message: `Route tidak ditemukan: ${req.method} ${req.path}`
   });
 });
 
-// Jalankan server
+// ===== START SERVER =====
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () =>
-  console.log(`🚀 Server berjalan di http://localhost:${PORT}`)
-);
+app.listen(PORT, () => console.log(`🚀 Server berjalan di http://localhost:${PORT}`));

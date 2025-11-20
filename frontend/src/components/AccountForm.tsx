@@ -34,7 +34,9 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     // basic client-side checks
     if (!/^\d{16}$/.test(nik)) return 'NIK harus 16 digit';
     try {
-      const res = await fetch(`${apiBase}/api/check-nik?nik=${encodeURIComponent(nik)}`);
+      const res = await fetch(`${apiBase}/api/check-nik?nik=${encodeURIComponent(nik)}`, {
+        credentials: "include", // ✅ di sini
+      });
       if (!res.ok) return 'Gagal memeriksa NIK';
       const data = await res.json();
       if (data.exists) {
@@ -52,7 +54,9 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
   const validateEmailAsync = async (email: string) => {
     if (!email) return 'Email wajib diisi';
     try {
-      const res = await fetch(`${apiBase}/api/check-nik?email=${encodeURIComponent(email)}`);
+      const res = await fetch(`${apiBase}/api/check-nik?email=${encodeURIComponent(email)}`, {
+        credentials: "include", // ✅ di sini
+      });
       if (!res.ok) return 'Gagal memeriksa Email';
       const data = await res.json();
       if (data.exists) return 'Email Sudah Digunakan';
@@ -62,18 +66,20 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     }
   };
 
-  const validatePhoneAsync = async (phone: string) => {
-    if (!phone) return 'Nomor telepon wajib diisi';
-    try {
-      const res = await fetch(`${apiBase}/api/check-nik?phone=${encodeURIComponent(phone)}`);
-      if (!res.ok) return 'Gagal memeriksa No HP';
-      const data = await res.json();
-      if (data.exists) return 'No HP Sudah Digunakan';
-      return '';
-    } catch (err) {
-      return 'Gagal memeriksa No HP';
-    }
-  };
+ const validatePhoneAsync = async (phone: string) => {
+  if (!phone) return 'Nomor telepon wajib diisi';
+  try {
+    const res = await fetch(`${apiBase}/api/check-nik?phone=${encodeURIComponent(phone)}`, {
+      credentials: "include", // ✅ di sini
+    });
+    if (!res.ok) return 'Gagal memeriksa No HP';
+    const data = await res.json();
+    if (data.exists) return 'No HP Sudah Digunakan';
+    return '';
+  } catch (err) {
+    return 'Gagal memeriksa No HP';
+  }
+};
 
   const getFieldClass = (name: string) => {
     return errors[name]
@@ -163,6 +169,7 @@ const [formData, setFormData] = useState({
         const resKtp = await fetch("https://bukatabungan-production.up.railway.app/upload", {
           method: "POST",
           body: formDataKtp,
+          credentials: "include",
         });
         if (!resKtp.ok) throw new Error("Gagal upload KTP");
         const dataKtp = await resKtp.json();
@@ -182,6 +189,7 @@ const [formData, setFormData] = useState({
         const resSelfie = await fetch("https://bukatabungan-production.up.railway.app/upload", {
           method: "POST",
           body: formDataSelfie,
+           credentials: "include",
         });
         if (!resSelfie.ok) throw new Error("Gagal upload selfie");
         const dataSelfie = await resSelfie.json();
@@ -233,6 +241,7 @@ const [formData, setFormData] = useState({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(submitData),
+         credentials: "include",
       });
       let result;
       try {
