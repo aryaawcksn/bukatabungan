@@ -35,7 +35,7 @@ app.use(cors({
 }));
 
 // ===== HANDLE PRELIGHT OPTIONS =====
-app.options("*", cors());
+app.options("/*", cors()); // <-- perbaikan di sini
 
 // ===== BODY PARSER =====
 app.use(express.json());
