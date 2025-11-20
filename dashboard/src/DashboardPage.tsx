@@ -538,7 +538,7 @@ export default function DashboardPage() {
         <StatCard
           title="Total Permohonan"
           value={stats.total}
-          color="#3B82F6"
+          color="#3a7eeaff"
           icon={FileBarChart}
         />
         <StatCard
