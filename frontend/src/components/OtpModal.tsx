@@ -21,7 +21,7 @@ export default function OtpModal({ open, onClose, phone, onVerified }: OtpModalP
     setError("");
 
     try {
-      const res = await fetch("https://yourdomain.com/otp/verify", {
+      const res = await fetch("https://bukatabungan-production.up.railway.app/otp/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone, otp }),
