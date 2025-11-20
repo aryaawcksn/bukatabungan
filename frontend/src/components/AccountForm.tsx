@@ -693,7 +693,7 @@ const [formData, setFormData] = useState({
                   </div>
 
                   <div>
-                    <Label htmlFor="city" className="text-gray-700">Kota/Kabupaten</Label>
+                    <Label htmlFor="city" className="text-f@gray-700">Kota/Kabupaten</Label>
                     <Input 
                       id="city"
                       required
@@ -832,7 +832,6 @@ const [formData, setFormData] = useState({
       </SelectContent>
     </Select>
   </div>
-
 </div>
             <div className="pt-6 border-t border-gray-100">
               <h3 className="text-emerald-900 mb-6 text-2xl">Informasi Kartu</h3>
@@ -853,106 +852,81 @@ const [formData, setFormData] = useState({
                     </SelectContent>
                   </Select>
                 </div>
-
-                
               </div>
             </div>
 
             {/* Upload Dokumen */}
-            <div className="pt-6 border-t border-gray-100">
-  <h3 className="text-emerald-900 mb-6 text-2xl">Upload Dokumen</h3>
-  <div className="space-y-6">
-    {/* ===== Upload Foto KTP ===== */}
-    {!ktpFile && !ktpPreview && (
-      <Upload
-        label="Upload Foto KTP"
-        description="Format: JPG, PNG (Max. 2MB)"
-        onChange={(file) => {
-          setKtpFile(file);
-          setKtpPreview(URL.createObjectURL(file));
+          {/* ===== Upload Foto KTP ===== */}
+<div className="mb-4">
+  {errors.ktp && <p className="text-red-600 text-sm mb-1">{errors.ktp}</p>}
+  {!ktpFile && !ktpPreview ? (
+    <Upload
+      label="Upload Foto KTP"
+      description="Format: JPG, PNG (Max. 2MB)"
+      onChange={(file) => {
+        setKtpFile(file);
+        setKtpPreview(URL.createObjectURL(file));
+        setKtpUrl(null);
+        setErrors(prev => ({ ...prev, ktp: "" })); // reset error
+      }}
+    />
+  ) : (
+    <div className="mt-2">
+      <img
+        src={ktpPreview || ktpUrl!}
+        alt="KTP Preview"
+        className="mx-auto rounded-xl shadow-md max-h-48"
+      />
+      <button
+        type="button"
+        className="mt-2 text-sm text-red-600 hover:underline block mx-auto"
+        onClick={() => {
+          setKtpFile(null);
+          setKtpPreview(null);
           setKtpUrl(null);
-          setErrors(prev => ({ ...prev, ktp: "" }));
         }}
+      >
+        Ganti Foto
+      </button>
+    </div>
+  )}
+</div>
+
+{/* ===== Upload Selfie dengan KTP ===== */}
+<div className="mb-4">
+  {errors.selfie && <p className="text-red-600 text-sm mb-1">{errors.selfie}</p>}
+  {!selfieFile && !selfiePreview ? (
+    <Upload
+      label="Upload Selfie dengan KTP"
+      description="Format: JPG, PNG (Max. 2MB)"
+      onChange={(file) => {
+        setSelfieFile(file);
+        setSelfiePreview(URL.createObjectURL(file));
+        setSelfieUrl(null);
+        setErrors(prev => ({ ...prev, selfie: "" })); // reset error
+      }}
+    />
+  ) : (
+    <div className="mt-2">
+      <img
+        src={selfiePreview || selfieUrl!}
+        alt="Selfie Preview"
+        className="mx-auto rounded-xl shadow-md max-h-48"
       />
-    )}
-    {/* Preview muncul setelah pilih file */}
-    {ktpPreview && (
-      <div className="mt-4">
-        <img
-          src={ktpPreview}
-          alt="KTP Preview"
-          className="mx-auto rounded-xl shadow-md max-h-48"
-        />
-        <button
-  type="button"
-  onClick={() => {
-    setKtpFile(null);
-    setKtpPreview(null);
-    setKtpUrl(null);
-  }}
-  className="mt-3 text-sm text-red-600 hover:underline block mx-auto"
->
-  Ganti Foto
-</button>
-
-      </div>
-    )}
-    {/* Jika sudah di-upload (setelah submit), tampilkan preview dari URL backend */}
-    {ktpUrl && !ktpPreview && (
-      <div className="mt-4">
-        <img
-          src={ktpUrl}
-          alt="KTP Preview"
-          className="mx-auto rounded-xl shadow-md max-h-48"
-        />
-      </div>
-    )}
-
-    {/* ===== Upload Selfie dengan KTP ===== */}
-    {!selfieFile && !selfiePreview && (
-      <Upload
-        label="Upload Selfie dengan KTP"
-        description="Format: JPG, PNG (Max. 2MB)"
-        onChange={(file) => {
-          setSelfieFile(file);
-          setSelfiePreview(URL.createObjectURL(file));
+      <button
+        type="button"
+        className="mt-2 text-sm text-red-600 hover:underline block mx-auto"
+        onClick={() => {
+          setSelfieFile(null);
+          setSelfiePreview(null);
           setSelfieUrl(null);
-          setErrors(prev => ({ ...prev, ktp: "" }));
         }}
-      />
-    )}
-    {selfiePreview && (
-      <div className="mt-4">
-        <img
-          src={selfiePreview}
-          alt="Selfie Preview"
-          className="mx-auto rounded-xl shadow-md max-h-48"
-        />
-        <button
-  type="button"
-  onClick={() => {
-    setSelfieFile(null);
-    setSelfiePreview(null);
-    setSelfieUrl(null);
-  }}
-  className="mt-3 text-sm text-red-600 hover:underline block mx-auto"
->
-  Ganti Foto
-</button>
-
-      </div>
-    )}
-    {selfieUrl && !selfiePreview && (
-      <div className="mt-4">
-        <img
-          src={selfieUrl}
-          alt="Selfie Preview"
-          className="mx-auto rounded-xl shadow-md max-h-48"
-        />
-      </div>
-    )}
-  </div>
-            </div>
+      >
+        Ganti Foto
+      </button>
+    </div>
+  )}
+</div>
 
 
             {/* Pilihan Kartu: dihapus, kini otomatis berdasarkan jenis tabungan */}
