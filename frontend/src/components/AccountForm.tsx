@@ -320,8 +320,12 @@ const submitFinalForm = async (data: any) => {
     savings_type: savingsType,
     savings_type_name: getSavingsTypeName(),
     cabang_pengambilan: data.cabang_pengambilan,
-    foto_ktp: ktpUploadedUrl,
-    foto_selfie: selfieUploadedUrl,
+    
+    documents: {
+          ktpPhoto: ktpUploadedUrl,
+          selfiePhoto: selfieUploadedUrl
+}
+
   };
 
   // ============================
