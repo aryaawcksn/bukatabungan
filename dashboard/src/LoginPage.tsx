@@ -41,9 +41,12 @@ export default function LoginPage() {
 
       if (rememberMe) {
         localStorage.setItem("remember_username", username);
+        localStorage.setItem("remember_password", password);
       } else {
         localStorage.removeItem("remember_username");
+        localStorage.removeItem("remember_password");
       }
+
 
       navigate("/dashboard");
     } else {
@@ -58,12 +61,19 @@ export default function LoginPage() {
 };
 
   useEffect(() => {
-  const remembered = localStorage.getItem("remember_username");
-  if (remembered) {
-    setUsername(remembered);
+  const savedUsername = localStorage.getItem("remember_username");
+  const savedPassword = localStorage.getItem("remember_password");
+
+  if (savedUsername) {
+    setUsername(savedUsername);
     setRememberMe(true);
   }
+
+  if (savedPassword) {
+    setPassword(savedPassword);
+  }
 }, []);
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">

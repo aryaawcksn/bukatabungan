@@ -259,75 +259,84 @@ export default function ProcedureSteps({
       </section>
 
       {/* Content */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-20">
+      <section className="py-12 bg-gray-50">
+  <div className="max-w-3xl mx-auto px-4 space-y-12">
 
-        {steps.map((step, i) => {
-          const Icon = step.icon;
-          return (
-            <Card
-              key={i}
-              className="bg-white p-10 border-0 shadow-xl rounded-2xl scroll-mt-16"
-            >
-              <div className="flex items-start gap-6 mb-6">
-                <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-emerald-100 to-emerald-200 rounded-2xl flex-shrink-0 shadow-md">
-                  <Icon className="h-10 w-10 text-emerald-700" />
-                </div>
-                <div>
-                  <h2 className="text-gray-900 mb-2 text-3xl font-semibold">
-                    Langkah {i + 1}: {step.title}
-                  </h2>
-                  <p className="text-gray-600 text-lg">{step.description}</p>
-                </div>
-              </div>
+    {steps.map((step, i) => {
+      const Icon = step.icon;
+      return (
+        <Card
+          key={i}
+          className="bg-white border border-gray-200 p-6 rounded-xl shadow-sm"
+        >
+          {/* Header */}
+          <div className="flex items-start gap-4 mb-4">
+            <div className="w-12 h-12 flex items-center justify-center bg-emerald-100 rounded-full flex-shrink-0">
+              <Icon className="h-6 w-6 text-emerald-700" />
+            </div>
 
-              <div className="bg-gradient-to-br from-emerald-50 to-green-50 rounded-2xl p-8 shadow-inner">
-                <h3 className="text-emerald-900 mb-6 text-xl font-semibold">
-                  Persyaratan & Detail:
-                </h3>
-                <div className="space-y-4">
-                  {step.details.map((detail, idx) => {
-                    const detailText =
-                      typeof detail === "string" ? detail : detail.text;
-                    return (
-                      <div
-                        key={idx}
-                        className="flex items-start gap-4 bg-white/60 backdrop-blur-sm p-4 rounded-xl shadow-sm"
-                      >
-                        <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm">
-                          <Check className="h-5 w-5 text-white" />
-                        </div>
-                        <p className="text-gray-800 pt-1">{detailText}</p>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </Card>
-          );
-        })}
-
-          {/* Buttons */}
-          <div className="flex justify-between gap-4 pt-8">
-            <Button
-              onClick={onBack}
-              variant="outline"
-              className="flex-1 bg-gray-100 hover:bg-gray-200 px-8 py-6 text-lg font-medium shadow rounded-xl border-0"
-            >
-              <ArrowLeft className="h-5 w-5 mr-2" />
-              Kembali
-            </Button>
-
-            <Button
-              onClick={onComplete}
-              className="flex-1 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 px-10 py-6 text-lg font-medium shadow-lg hover:shadow-xl transition-all rounded-xl"
-            >
-              Buka Tabungan Sekarang
-              <ArrowRight className="h-5 w-5 ml-2" />
-            </Button>
+            <div>
+              <h2 className="text-gray-900 text-xl font-semibold">
+                Langkah {i + 1}: {step.title}
+              </h2>
+              <p className="text-gray-600 text-sm mt-1">{step.description}</p>
+            </div>
           </div>
-        </div>
-      </section>
+
+          {/* Details */}
+          <div className="bg-emerald-50 p-4 rounded-lg border border-emerald-100">
+            <h3 className="text-emerald-900 font-medium text-sm mb-3">
+              Persyaratan & Detail
+            </h3>
+
+            <div className="space-y-3">
+              {step.details.map((detail, idx) => {
+                const detailText =
+                  typeof detail === "string" ? detail : detail.text;
+
+                return (
+                  <div
+                    key={idx}
+                    className="flex items-start gap-3 bg-white p-3 rounded-lg border border-gray-100"
+                  >
+                    <div className="w-6 h-6 bg-emerald-600 rounded-md flex items-center justify-center flex-shrink-0">
+                      <Check className="h-3.5 w-3.5 text-white" />
+                    </div>
+
+                    <p className="text-gray-800 text-sm leading-relaxed">
+                      {detailText}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </Card>
+      );
+    })}
+
+    {/* Buttons */}
+    <div className="flex justify-between gap-4 pt-6">
+      <Button
+        onClick={onBack}
+        variant="outline"
+        className="flex-1 bg-gray-100 hover:bg-gray-200 px-6 py-4 text-base rounded-lg"
+      >
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Kembali
+      </Button>
+
+      <Button
+        onClick={onComplete}
+        className="flex-1 bg-emerald-600 hover:bg-emerald-700 px-6 py-4 text-base rounded-lg text-white"
+      >
+        Buka Tabungan
+        <ArrowRight className="h-4 w-4 ml-2" />
+      </Button>
+    </div>
+  </div>
+</section>
+
 
       {/* Footer */}
       <footer className="bg-slate-900 text-gray-300 py-12">

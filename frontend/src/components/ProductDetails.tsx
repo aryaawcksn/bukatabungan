@@ -31,13 +31,26 @@ function ProductDetails({
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
   }, []);
 
-  const navItems = [
-    { icon: Info, label: "Kenali Produk" },
-    { icon: ListChecks, label: "Perlu Diketahui" },
-    { icon: Coins, label: "Biaya, Limit dan Suku Bunga" },
-    { icon: AlertTriangle, label: "Syarat dan Ketentuan", active: true },
-    { icon: LifeBuoy, label: "Dapatkan Layanan" },
-  ];
+  const [navItems, setNavItems] = React.useState([
+  { icon: Info, label: "Ringkasan Produk", active: true },
+  { icon: ListChecks, label: "Perlu Diketahui", active: false },
+  { icon: AlertTriangle, label: "Syarat dan Ketentuan", active: false },
+  { icon: Coins, label: "Biaya, Limit dan Suku Bunga", active: false },
+]);
+
+const [activeTab, setActiveTab] = React.useState("Ringkasan Produk");
+
+const handleTabClick = (label: string) => {
+  setActiveTab(label);
+  setNavItems(prev =>
+    prev.map(item => ({
+      ...item,
+      active: item.label === label
+    }))
+  );
+};
+
+
 
   const getProductInfo = () => {
     switch (savingsType) {
@@ -72,6 +85,24 @@ function ProductDetails({
           interest: "Suku bunga: 3.5% per tahun (dapat berubah sewaktu-waktu)",
           cardBg: "bg-gradient-to-br from-emerald-500 to-emerald-700",
           image: "/mutiara.jpg",
+          notes: [
+          {
+            jenis: "Perorangan belum dewasa yang diwakili oleh orang tua (< 12 tahun)",
+            dokumen: [
+              "Kartu identitas orang tua",
+              "NPWP orang tua",
+              "Akte Kelahiran Anak / Kartu Keluarga / Kartu Identitas Anak",
+            ]
+          },
+          {
+            jenis: "Perorangan belum dewasa yang diwakili oleh wali (< 12 tahun)",
+            dokumen: [
+              "Kartu identitas dan NPWP wali",
+              "Surat Penetapan Pengangkatan Wali dari Pengadilan Negeri"
+            ]
+          }
+        ]
+
         };
       case "bisnis":
         return {
@@ -105,6 +136,24 @@ function ProductDetails({
           interest: "Suku bunga: 3.5% per tahun (dapat berubah sewaktu-waktu)",
           cardBg: "bg-gradient-to-br from-indigo-600 to-purple-700",
           image: "/sleman.jpg",
+          notes: [
+            {
+              jenis: "Perorangan belum dewasa yang diwakili oleh orang tua (< 12 tahun)",
+              dokumen: [
+                "Kartu identitas orang tua",
+                "NPWP orang tua",
+                "Akte Kelahiran Anak / Kartu Keluarga / Kartu Identitas Anak"
+              ]
+            },
+            {
+              jenis: "Perorangan belum dewasa yang diwakili oleh wali (< 12 tahun)",
+              dokumen: [
+                "Kartu identitas dan NPWP wali",
+                "Surat Penetapan Pengangkatan Wali dari Pengadilan Negeri"
+              ]
+            }
+          ]
+
         };
       case "simpel":
         return {
@@ -138,6 +187,24 @@ function ProductDetails({
           interest: "Suku bunga: 2.5% per tahun (dapat berubah sewaktu-waktu)",
           cardBg: "bg-gradient-to-br from-pink-500 to-rose-600",
           image: "/SD.jpg",
+          notes: [
+            {
+              jenis: "Perorangan belum dewasa yang diwakili oleh orang tua (< 12 tahun)",
+              dokumen: [
+                "Kartu identitas orang tua",
+                "NPWP orang tua",
+                "Akte Kelahiran Anak / Kartu Keluarga / Kartu Identitas Anak"
+              ]
+            },
+            {
+              jenis: "Perorangan belum dewasa yang diwakili oleh wali (< 12 tahun)",
+              dokumen: [
+                "Kartu identitas dan NPWP wali",
+                "Surat Penetapan Pengangkatan Wali dari Pengadilan Negeri"
+              ]
+            }
+          ]
+
         };
       default:
         return {
@@ -150,11 +217,30 @@ function ProductDetails({
           fees: [],
           interest: "",
           cardBg: "bg-gradient-to-br from-emerald-500 to-emerald-700",
+          notes: [
+  {
+    jenis: "Perorangan belum dewasa yang diwakili oleh orang tua (< 12 tahun)",
+    dokumen: [
+      "Kartu identitas orang tua",
+      "NPWP orang tua",
+      "Akte Kelahiran Anak / Kartu Keluarga / Kartu Identitas Anak"
+    ]
+  },
+  {
+    jenis: "Perorangan belum dewasa yang diwakili oleh wali (< 12 tahun)",
+    dokumen: [
+      "Kartu identitas dan NPWP wali",
+      "Surat Penetapan Pengangkatan Wali dari Pengadilan Negeri"
+    ]
+  }
+]
+
         };
     }
   };
 
   const productInfo = getProductInfo();
+  
 
   return (
     <div className="min-h-screen bg-white">
@@ -252,133 +338,182 @@ function ProductDetails({
 
       {/* Product Details Section */}
       <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-4 gap-8">
-            {/* Sidebar Navigation */}
-            <aside className="lg:col-span-1">
-              <Card className="p-6 bg-white shadow-lg rounded-2xl sticky top-24">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                  Navigasi
-                </h2>
-                <nav className="space-y-2">
-                  {navItems.map((item, idx) => {
-                    const Icon = item.icon;
-                    return (
-                      <div
-                        key={idx}
-                        className={`flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-all ${
-                          item.active
-                            ? "bg-emerald-50 text-emerald-700 font-medium border-l-4 border-emerald-500"
-                            : "text-gray-600 hover:bg-gray-100"
-                        }`}
-                      >
-                        <Icon
-                          className={`h-5 w-5 ${
-                            item.active ? "text-emerald-600" : "text-gray-500"
-                          }`}
-                        />
-                        <span className="text-sm">{item.label}</span>
-                      </div>
-                    );
-                  })}
-                </nav>
-              </Card>
-            </aside>
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="grid lg:grid-cols-4 gap-8">
 
-            {/* Main Content */}
-            <main className="lg:col-span-3 space-y-6">
-              {/* Description */}
-              <Card className="relative overflow-hidden p-8 shadow-lg bg-white rounded-2xl">
+      {/* Sidebar Navigation */}
+      <aside className="lg:col-span-1">
+        <Card className="p-6 bg-white shadow-lg rounded-2xl sticky top-24">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Menu</h2>
 
-  {/* Background image yang di-blur & opacity */}
-  <div 
-    className="absolute inset-0 bg-cover bg-right opacity-30"
-    style={{ backgroundImage: `url('${productInfo.image}')` }}
-  />
-
-  {/* Gradient untuk efek fade kiri → kanan */}
-  <div className="absolute inset-0 bg-gradient-to-r from-white via-white/80 to-transparent" />
-
-  {/* Content */}
-  <div className="relative z-10">
-    <h3 className="text-2xl font-semibold text-gray-800 mb-4">
-      Deskripsi Produk
-    </h3>
-    <p className="text-gray-700 leading-relaxed text-lg">
-      {productInfo.description}
-    </p>
-  </div>
-
-</Card>
-
-              {/* Features */}
-              <Card className="p-8 shadow-lg bg-white rounded-2xl">
-                <h3 className="text-2xl font-semibold text-gray-800 mb-6">
-                  Keunggulan Produk
-                </h3>
-                <div className="grid md:grid-cols-2 gap-4">
-                  {productInfo.features.map((feature, idx) => (
-                    <div key={idx} className="flex items-start gap-3 text-gray-700">
-                      <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                      <span>{feature}</span>
-                    </div>
-                  ))}
-                </div>
-              </Card>
-
-              {/* Terms and Conditions */}
-              <Card className="p-8 shadow-lg bg-white rounded-2xl">
-                <h3 className="text-2xl font-semibold text-gray-800 mb-6">
-                  Syarat dan Ketentuan
-                </h3>
-                <ol className="list-decimal list-inside space-y-4 text-gray-700 leading-relaxed">
-                  {productInfo.terms.map((term, idx) => (
-                    <li key={idx} className="pl-2">{term}</li>
-                  ))}
-                </ol>
-              </Card>
-
-              {/* Fees and Interest */}
-              <Card className="p-8 shadow-lg bg-white rounded-2xl">
-                <h3 className="text-2xl font-semibold text-gray-800 mb-6">
-                  Biaya, Limit dan Suku Bunga
-                </h3>
-                <div className="space-y-4 mb-6">
-                  {productInfo.fees.map((fee, idx) => (
-                    <div key={idx} className="flex items-center gap-3 text-gray-700">
-                      <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0" />
-                      <span>{fee}</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="pt-4 border-t border-gray-200">
-                  <p className="text-gray-700 font-semibold text-lg">{productInfo.interest}</p>
-                </div>
-              </Card>
-
-              {/* Action Buttons */}
-              <div className="flex justify-between gap-4 pt-4">
-                <Button
-                  onClick={onBack}
-                  variant="outline"
-                  className="flex-1 bg-gray-100 hover:bg-gray-200 px-8 py-6 text-lg font-medium shadow rounded-xl border-0"
+          <nav className="space-y-2">
+            {navItems.map((item, idx) => {
+              const Icon = item.icon;
+              return (
+                <div
+                  key={idx}
+                  onClick={() => setActiveTab(item.label)}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-all ${
+                    activeTab === item.label
+                      ? "bg-emerald-50 text-emerald-700 font-medium border-l-4 border-emerald-500"
+                      : "text-gray-600 hover:bg-gray-100"
+                  }`}
                 >
-                  <ArrowLeft className="h-5 w-5 mr-2" />
-                  Kembali
-                </Button>
+                  <Icon
+                    className={`h-5 w-5 ${
+                      activeTab === item.label ? "text-emerald-600" : "text-gray-500"
+                    }`}
+                  />
+                  <span className="text-sm">{item.label}</span>
+                </div>
+              );
+            })}
+          </nav>
+        </Card>
+      </aside>
 
-                <Button
-                  onClick={onNext}
-                  className="flex-1 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 px-10 py-6 text-lg font-medium shadow-lg hover:shadow-xl transition-all rounded-xl"
-                >
-                  Lanjut ke Prosedur
-                  <ArrowRight className="h-5 w-5 ml-2" />
-                </Button>
+      {/* Main Content */}
+      <main className="lg:col-span-3 space-y-6">
+
+        {/* TAB 1 — RINGKASAN PRODUK */}
+        {activeTab === "Ringkasan Produk" && (
+          <>
+            {/* Description */}
+            <Card className="relative overflow-hidden p-8 shadow-lg bg-white rounded-2xl">
+              <div
+                className="absolute inset-0 bg-cover bg-right opacity-30"
+                style={{ backgroundImage: `url('${productInfo.image}')` }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-white via-white/80 to-transparent" />
+              <div className="relative z-10">
+                <h3 className="text-2xl font-semibold text-gray-800 mb-4">
+                  Deskripsi Produk
+                </h3>
+                <p className="text-gray-700 leading-relaxed text-lg">
+                  {productInfo.description}
+                </p>
               </div>
-            </main>
-          </div>
+            </Card>
+
+            {/* Features */}
+            <Card className="p-8 shadow-lg bg-white rounded-2xl">
+              <h3 className="text-2xl font-semibold text-gray-800 mb-6">
+                Keunggulan Produk
+              </h3>
+              <div className="grid md:grid-cols-2 gap-4">
+                {productInfo.features.map((feature, idx) => (
+                  <div key={idx} className="flex items-start gap-3 text-gray-700">
+                    <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                    <span>{feature}</span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </>
+        )}
+
+        {/* TAB 2 — PERLU DIKETAHUI */}
+       {activeTab === "Perlu Diketahui" && (
+  <Card className="p-8 shadow-lg bg-white rounded-2xl">
+    <h3 className="text-2xl font-semibold text-gray-800 mb-6">
+      Dokumen yang Diperlukan
+    </h3>
+
+    <div className="overflow-x-auto">
+      <table className="w-full border-collapse">
+  <thead>
+    <tr className="bg-green-600 text-white">
+      <th className="p-4 text-left w-1/3 rounded-tl-xl">Jenis Nasabah</th>
+      <th className="p-4 text-left rounded-tr-xl">Dokumen</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {productInfo.notes.map((row, idx) => (
+      <tr key={idx} className="bg-gray-50">
+        <td className="p-4 align-top text-gray-800 w-1/3">
+          {row.jenis}
+        </td>
+
+        <td className="p-4 align-top w-full text-gray-700">
+          {row.dokumen.map((doc, dIdx) => (
+            <p key={dIdx} className="leading-relaxed">
+              {doc}
+            </p>
+          ))}
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
+    </div>
+  </Card>
+)}
+
+
+        {/* TAB 3 — SYARAT DAN KETENTUAN */}
+        {activeTab === "Syarat dan Ketentuan" && (
+          <Card className="p-8 shadow-lg bg-white rounded-2xl">
+            <h3 className="text-2xl font-semibold text-gray-800 mb-6">
+              Syarat dan Ketentuan
+            </h3>
+            <ol className="list-decimal list-inside space-y-4 text-gray-700 leading-relaxed">
+              {productInfo.terms.map((term, idx) => (
+                <li key={idx} className="pl-2">{term}</li>
+              ))}
+            </ol>
+          </Card>
+        )}
+
+        {/* TAB 4 — BIAYA, LIMIT, SUKU BUNGA */}
+        {activeTab === "Biaya, Limit dan Suku Bunga" && (
+          <Card className="p-8 shadow-lg bg-white rounded-2xl">
+            <h3 className="text-2xl font-semibold text-gray-800 mb-6">
+              Biaya, Limit dan Suku Bunga
+            </h3>
+
+            <div className="space-y-4 mb-6">
+              {productInfo.fees.map((fee, idx) => (
+                <div key={idx} className="flex items-center gap-3 text-gray-700">
+                  <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0" />
+                  <span>{fee}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="pt-4 border-t border-gray-200">
+              <p className="text-gray-700 font-semibold text-lg">
+                {productInfo.interest}
+              </p>
+            </div>
+          </Card>
+        )}
+
+        {/* ACTION BUTTONS */}
+        <div className="flex justify-between gap-4 pt-4">
+          <Button
+            onClick={onBack}
+            variant="outline"
+            className="flex-1 bg-gray-100 hover:bg-gray-200 px-8 py-6 text-lg font-medium shadow rounded-xl border-0"
+          >
+            <ArrowLeft className="h-5 w-5 mr-2" />
+            Kembali
+          </Button>
+
+          <Button
+            onClick={onNext}
+            className="flex-1 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 px-10 py-6 text-lg font-medium shadow-lg hover:shadow-xl transition-all rounded-xl"
+          >
+            Lanjut ke Prosedur
+            <ArrowRight className="h-5 w-5 ml-2" />
+          </Button>
         </div>
-      </section>
+
+      </main>
+    </div>
+  </div>
+</section>
 
       {/* Footer */}
       <footer className="bg-slate-900 text-gray-300 py-12">

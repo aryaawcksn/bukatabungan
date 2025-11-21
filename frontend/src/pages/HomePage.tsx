@@ -14,6 +14,7 @@ import {
   MapPin,
   Clock,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 
 interface HomePageProps {
@@ -21,7 +22,9 @@ interface HomePageProps {
 }
 
 
+
 export default function HomePage({ onOpenSavings }: HomePageProps) {
+  const navigate = useNavigate();   // ← tambahkan ini
   const products = [
     {
       id: 'mutiara',
@@ -48,6 +51,7 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
       cardBg: 'bg-gradient-to-br from-pink-500 to-rose-600'
     }
   ];
+
 
   return (
     <div className="min-h-screen bg-white">
@@ -235,6 +239,12 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
                 >
                   Selengkapnya
                   <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+                <Button
+                  onClick={() => navigate(`/form/${product.id}`)}
+                  className="w-full mt-3 bg-blue-600 hover:bg-blue-700 group-hover:shadow-lg transition-all"
+                >
+                  Daftar Sekarang
                 </Button>
                 </div>
               </Card>

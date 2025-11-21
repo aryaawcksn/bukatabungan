@@ -27,7 +27,26 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [currentPhone, setCurrentPhone] = useState("");
   const [pendingSubmitData, setPendingSubmitData] = useState<any>(null); // simpan data sebelum OTP
-  const [otpCountdown, setOtpCountdown] = useState<number>(0);
+
+  // Restore OTP jika user keluar dari halaman
+useEffect(() => {
+  const otpActive = localStorage.getItem("otpInProgress") === "true";
+  if (!otpActive) return;
+
+  const savedData = localStorage.getItem("pendingSubmitData");
+  const savedPhone = localStorage.getItem("currentPhone");
+
+  if (savedData) {
+    setFormData(JSON.parse(savedData));
+  }
+  if (savedPhone) {
+    setCurrentPhone(savedPhone);
+  }
+
+  // Buka modal OTP
+  setShowOtpModal(true);
+}, []);
+
 
   // Validation errors (simple server-backed uniqueness + basic client hints)
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -184,9 +203,15 @@ const [formData, setFormData] = useState({
         return;
       }
 
+      // Simpan state proses OTP
+      localStorage.setItem("otpInProgress", "true");
+      localStorage.setItem("pendingSubmitData", JSON.stringify(formData));
+      localStorage.setItem("currentPhone", formData.phone);
+
       // Simpan data form sementara
       setPendingSubmitData(formData);
       setCurrentPhone(formData.phone);
+      
 
       // Tampilkan modal OTP
       setShowOtpModal(true);
@@ -198,63 +223,20 @@ const [formData, setFormData] = useState({
     setLoadingSubmit(false);
   };
 const handleOtpVerified = async () => {
-    setShowOtpModal(false);
-    await submitFinalForm(pendingSubmitData);
-  };
+  // Hapus state OTP
+  localStorage.removeItem("otpInProgress");
+  localStorage.removeItem("pendingSubmitData");
+  localStorage.removeItem("currentPhone");
 
-  localStorage.setItem("otpPendingData", JSON.stringify({
-  sentAt: Date.now(),
-  phone: formData.phone,
-  formData: formData
-}));
+  setShowOtpModal(false);
+  await submitFinalForm(pendingSubmitData);
 
-useEffect(() => {
-  const cache = localStorage.getItem("otpPendingData");
-  if (cache) {
-    const { sentAt, phone, formData: savedFormData } = JSON.parse(cache);
-    if (Date.now() < sentAt + 3*60*1000) {
-      setPendingSubmitData(savedFormData);
-      setFormData(savedFormData);
-      setCurrentPhone(phone);
-      setShowOtpModal(true);
-      setOtpCountdown(Math.ceil((sentAt + 3*60*1000 - Date.now()) / 1000));
-    } else {
-      localStorage.removeItem("otpPendingData");
-    }
-  }
-}, []);
-
-useEffect(() => {
-  if (!showOtpModal) return;
-  const interval = setInterval(() => {
-    setOtpCountdown(prev => {
-      if (prev <= 1) {
-        clearInterval(interval);
-        setShowOtpModal(false);
-        localStorage.removeItem("otpPendingData");
-        return 0;
-      }
-      return prev - 1;
-    });
-  }, 1000);
-  return () => clearInterval(interval);
-}, [showOtpModal]);
-
-localStorage.removeItem("otpPendingData");
+};
 
 
-  // =========================
-  // FINAL FORM SUBMIT
-  // =========================
-  // ==============================
-// FINAL FORM SUBMIT (SETELAH OTP)
-// ==============================
 const submitFinalForm = async (data: any) => {
   setLoadingSubmit(true);
 
-  // ============================
-  // 1. Upload KTP
-  // ============================
   let ktpUploadedUrl = ktpUrl;
   if (ktpFile && !ktpUploadedUrl) {
     try {
@@ -282,9 +264,6 @@ const submitFinalForm = async (data: any) => {
     }
   }
 
-  // ============================
-  // 2. Upload Selfie
-  // ============================
   let selfieUploadedUrl = selfieUrl;
   if (selfieFile && !selfieUploadedUrl) {
     try {
@@ -312,9 +291,6 @@ const submitFinalForm = async (data: any) => {
     }
   }
 
-  // ============================
-  // 3. Siapkan data submit
-  // ============================
   const submitData = {
     nama_lengkap: data.fullName,
     nik: data.nik,
@@ -843,28 +819,31 @@ const submitFinalForm = async (data: any) => {
 
             {/* Informasi Pekerjaan Tambahan */}
 <div className="space-y-5 mt-5">
-   <h3 className="text-emerald-900 mb-6 text-2xl">Informasi Pekerjaan</h3>
+  <h3 className="text-emerald-900 mb-6 text-2xl">Informasi Pekerjaan</h3>
 
-  {/* Tempat Bekerja */}
-
+  {/* STATUS PEKERJAAN */}
   <div>
-  <Label htmlFor="employmentStatus" className="text-gray-700">Status Pekerjaan</Label>
+    <Label htmlFor="employmentStatus" className="text-gray-700">Status Pekerjaan</Label>
 
-  <Select
-    value={formData.employmentStatus}
-    onValueChange={(value) => setFormData({ ...formData, employmentStatus: value })}
-  >
-    <SelectTrigger className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded">
-      <SelectValue placeholder="Pilih status pekerjaan" />
-    </SelectTrigger>
+    <Select
+      value={formData.employmentStatus}
+      onValueChange={(value) =>
+        setFormData({ ...formData, employmentStatus: value })
+      }
+    >
+      <SelectTrigger className="mt-2 border-gray-200 focus:border-emerald-500 rounded">
+        <SelectValue placeholder="Pilih status pekerjaan" />
+      </SelectTrigger>
 
-    <SelectContent>
-      <SelectItem value="bekerja">Sudah Bekerja</SelectItem>
-      <SelectItem value="tidak-bekerja">Belum Bekerja</SelectItem>
-      <SelectItem value="pelajar-mahasiswa">Pelajar / Mahasiswa</SelectItem>
-    </SelectContent>
-  </Select>
-</div>
+      <SelectContent>
+        <SelectItem value="bekerja">Sudah Bekerja</SelectItem>
+        <SelectItem value="tidak-bekerja">Belum Bekerja</SelectItem>
+        <SelectItem value="pelajar-mahasiswa">Pelajar / Mahasiswa</SelectItem>
+      </SelectContent>
+    </Select>
+  </div>
+
+  
 
   <div>
     <Label htmlFor="tempatBekerja" className="text-gray-700">Tempat Bekerja</Label>
@@ -1091,7 +1070,7 @@ const submitFinalForm = async (data: any) => {
               disabled={loadingSubmit}
               className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 py-7 text-lg shadow-lg hover:shadow-xl transition-all"
             >
-              {loadingSubmit ? 'Mengirim...' : 'Kirim Permohonan Pembukaan Rekening'}
+             {loadingSubmit ? 'Mengirim...' : 'Kirim Permohonan'} {getSavingsTypeName()}
             </Button>
           </form>
            <OtpModal

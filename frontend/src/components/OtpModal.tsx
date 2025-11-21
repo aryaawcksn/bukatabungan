@@ -31,7 +31,14 @@ export default function OtpModal({ open, onClose, phone, onVerified }: OtpModalP
 
       if (!data.success) {
         setError(data.message || "OTP salah");
+
+        // ❌ OTP salah atau expired → reset state proses OTP
+        localStorage.removeItem("otpInProgress");
+        localStorage.removeItem("pendingSubmitData");
+        localStorage.removeItem("currentPhone");
+
       } else {
+        // ✔ OTP valid
         onVerified();
       }
     } catch {
@@ -39,6 +46,15 @@ export default function OtpModal({ open, onClose, phone, onVerified }: OtpModalP
     }
 
     setLoading(false);
+  };
+
+  const handleCancel = () => {
+    // ❌ User batalkan OTP → hapus state OTP
+    localStorage.removeItem("otpInProgress");
+    localStorage.removeItem("pendingSubmitData");
+    localStorage.removeItem("currentPhone");
+
+    onClose();
   };
 
   return (
@@ -62,7 +78,8 @@ export default function OtpModal({ open, onClose, phone, onVerified }: OtpModalP
           <Button className="w-full" onClick={handleVerify} disabled={loading}>
             {loading ? "Memverifikasi..." : "Verifikasi"}
           </Button>
-          <Button variant="secondary" onClick={onClose}>
+
+          <Button variant="secondary" onClick={handleCancel}>
             Batal
           </Button>
         </div>
