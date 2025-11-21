@@ -27,7 +27,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [currentPhone, setCurrentPhone] = useState("");
   const [pendingSubmitData, setPendingSubmitData] = useState<any>(null); // simpan data sebelum OTP
-
+  const [otpCountdown, setOtpCountdown] = useState<number>(0);
 
   // Validation errors (simple server-backed uniqueness + basic client hints)
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -201,6 +201,46 @@ const handleOtpVerified = async () => {
     setShowOtpModal(false);
     await submitFinalForm(pendingSubmitData);
   };
+
+  localStorage.setItem("otpPendingData", JSON.stringify({
+  sentAt: Date.now(),
+  phone: formData.phone,
+  formData: formData
+}));
+
+useEffect(() => {
+  const cache = localStorage.getItem("otpPendingData");
+  if (cache) {
+    const { sentAt, phone, formData: savedFormData } = JSON.parse(cache);
+    if (Date.now() < sentAt + 3*60*1000) {
+      setPendingSubmitData(savedFormData);
+      setFormData(savedFormData);
+      setCurrentPhone(phone);
+      setShowOtpModal(true);
+      setOtpCountdown(Math.ceil((sentAt + 3*60*1000 - Date.now()) / 1000));
+    } else {
+      localStorage.removeItem("otpPendingData");
+    }
+  }
+}, []);
+
+useEffect(() => {
+  if (!showOtpModal) return;
+  const interval = setInterval(() => {
+    setOtpCountdown(prev => {
+      if (prev <= 1) {
+        clearInterval(interval);
+        setShowOtpModal(false);
+        localStorage.removeItem("otpPendingData");
+        return 0;
+      }
+      return prev - 1;
+    });
+  }, 1000);
+  return () => clearInterval(interval);
+}, [showOtpModal]);
+
+localStorage.removeItem("otpPendingData");
 
 
   // =========================
