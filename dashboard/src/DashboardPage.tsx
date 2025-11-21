@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { toast } from 'sonner';
 import { Toaster } from './components/ui/sonner';
 import { Button } from './components/ui/button';
-import StatCard from "./components/ui/statcard";
+import { StatCard } from './components/ui/statcard';
 
 
 
