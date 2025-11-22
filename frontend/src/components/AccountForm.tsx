@@ -234,9 +234,19 @@ const handleOtpVerified = async () => {
 };
 
 
+
+  // =========================
+  // FINAL FORM SUBMIT
+  // =========================
+  // ==============================
+// FINAL FORM SUBMIT (SETELAH OTP)
+// ==============================
 const submitFinalForm = async (data: any) => {
   setLoadingSubmit(true);
 
+  // ============================
+  // 1. Upload KTP
+  // ============================
   let ktpUploadedUrl = ktpUrl;
   if (ktpFile && !ktpUploadedUrl) {
     try {
@@ -264,6 +274,9 @@ const submitFinalForm = async (data: any) => {
     }
   }
 
+  // ============================
+  // 2. Upload Selfie
+  // ============================
   let selfieUploadedUrl = selfieUrl;
   if (selfieFile && !selfieUploadedUrl) {
     try {
@@ -291,6 +304,9 @@ const submitFinalForm = async (data: any) => {
     }
   }
 
+  // ============================
+  // 3. Siapkan data submit
+  // ============================
   const submitData = {
     nama_lengkap: data.fullName,
     nik: data.nik,
@@ -320,11 +336,8 @@ const submitFinalForm = async (data: any) => {
     savings_type: savingsType,
     savings_type_name: getSavingsTypeName(),
     cabang_pengambilan: data.cabang_pengambilan,
-    
-    documents: {
-          ktpPhoto: ktpUploadedUrl,
-          selfiePhoto: selfieUploadedUrl
-}
+    foto_ktp: ktpUploadedUrl,
+    foto_selfie: selfieUploadedUrl,
 
   };
 
