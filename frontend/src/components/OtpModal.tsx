@@ -33,9 +33,10 @@ export default function OtpModal({ open, onClose, phone, onVerified }: OtpModalP
         setError(data.message || "OTP salah");
 
         // ❌ OTP salah atau expired → reset state proses OTP
-        localStorage.removeItem("otpInProgress");
-        localStorage.removeItem("pendingSubmitData");
-        localStorage.removeItem("currentPhone");
+        // ❌ OTP salah atau expired → Jangan reset state agar user bisa coba lagi
+        // localStorage.removeItem("otpInProgress");
+        // localStorage.removeItem("pendingSubmitData");
+        // localStorage.removeItem("currentPhone");
 
       } else {
         // ✔ OTP valid

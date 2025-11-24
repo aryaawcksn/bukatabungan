@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Textarea } from './ui/textarea';
-import { Checkbox } from './ui/checkbox';
 import { ArrowLeft, CheckCircle, Sparkles, Phone, Mail, MapPin } from 'lucide-react';
-import { Upload } from "./Upload"; 
 import OtpModal from './OtpModal';
+import FormSimpel from './account-forms/FormSimpel';
+import FormBusiness from './account-forms/FormBusiness';
+import FormIndividu from './account-forms/FormIndividu';
+import type { AccountFormData } from './account-forms/types';
+
 interface AccountFormProps {
   savingsType: string;
   onBack: () => void;
@@ -27,26 +26,6 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [currentPhone, setCurrentPhone] = useState("");
   const [pendingSubmitData, setPendingSubmitData] = useState<any>(null); // simpan data sebelum OTP
-
-  // Restore OTP jika user keluar dari halaman
-useEffect(() => {
-  const otpActive = localStorage.getItem("otpInProgress") === "true";
-  if (!otpActive) return;
-
-  const savedData = localStorage.getItem("pendingSubmitData");
-  const savedPhone = localStorage.getItem("currentPhone");
-
-  if (savedData) {
-    setFormData(JSON.parse(savedData));
-  }
-  if (savedPhone) {
-    setCurrentPhone(savedPhone);
-  }
-
-  // Buka modal OTP
-  setShowOtpModal(true);
-}, []);
-
 
   // Validation errors (simple server-backed uniqueness + basic client hints)
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -116,37 +95,60 @@ useEffect(() => {
     window.scrollTo({ top: 0, behavior: "auto" });
   }, []);
 
-const [formData, setFormData] = useState({
-  fullName: '',
-  nik: '',
-  email: '',
-  phone: '',
-  birthDate: '',
-  address: '',
-  province: '',
-  city: '',
-  postalCode: '',
-  monthlyIncome: '',
-  cabang_pengambilan: 'Sleman',
-  cardType: '',
-  agreeTerms: false,
-  jenis_rekening: '',
+  const [formData, setFormData] = useState<AccountFormData>({
+    fullName: '',
+    nik: '',
+    email: '',
+    phone: '',
+    birthDate: '',
+    address: '',
+    province: '',
+    city: '',
+    postalCode: '',
+    monthlyIncome: '',
+    cabang_pengambilan: 'Sleman',
+    cardType: '',
+    agreeTerms: false,
+    jenis_rekening: '',
 
-  gender: '',
-  maritalStatus: '',
-  citizenship: '',
-  motherName: '',
+    gender: '',
+    maritalStatus: '',
+    citizenship: '',
+    motherName: '',
 
-  tempatBekerja: '',
-  alamatKantor: '',
-  sumberDana: '',
-  tujuanRekening: '',
-  kontakDaruratNama: '',
-  kontakDaruratHp: '',
-  employmentStatus: '',
+    tempatBekerja: '',
+    alamatKantor: '',
+    sumberDana: '',
+    tujuanRekening: '',
+    kontakDaruratNama: '',
+    kontakDaruratHp: '',
+    employmentStatus: '',
+  });
 
-
-});
+  // RESTORE OTP PROCESS IF ANY 
+  useEffect(() => {
+    const otpActive = localStorage.getItem("otpInProgress") === "true";
+    if (!otpActive) return;
+  
+    const savedData = localStorage.getItem("pendingSubmitData");
+    const savedPhone = localStorage.getItem("currentPhone");
+    const savedKtpUrl = localStorage.getItem("savedKtpUrl");
+    const savedSelfieUrl = localStorage.getItem("savedSelfieUrl");
+  
+    if (savedData) {
+      const parsed = JSON.parse(savedData);
+      setFormData(parsed);
+      setPendingSubmitData(parsed);
+    }
+    if (savedPhone) {
+      setCurrentPhone(savedPhone);
+    }
+    if (savedKtpUrl) setKtpUrl(savedKtpUrl);
+    if (savedSelfieUrl) setSelfieUrl(savedSelfieUrl);
+  
+    // Buka modal OTP
+    setShowOtpModal(true);
+  }, []);
 
   // Map default jenis_kartu: samakan dengan savingsType
   const getDefaultCardType = () => {
@@ -157,6 +159,23 @@ const [formData, setFormData] = useState({
   useEffect(() => {
     setFormData((prev) => ({ ...prev, cardType: getDefaultCardType() }));
   }, [savingsType]);
+
+  const getSavingsTypeName = () => {
+    switch (savingsType) {
+      case 'mutiara':
+        return 'Tabungan Mutiara';
+      case 'bisnis':
+        return 'Tabungan Bank Sleman';
+      case 'simpel':
+        return 'Tabungan Simpel';
+      case 'individu':
+        return 'Tabungan Individu';
+      case 'promosi':
+        return 'Tabungan Promosi';
+      default:
+        return 'Tabungan';
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -188,6 +207,46 @@ const [formData, setFormData] = useState({
     setErrors(prev => ({ ...prev, ktp: "", selfie: "" }));
   }
 
+    // ============================
+    // UPLOAD FILES FIRST
+    // ============================
+    let currentKtpUrl = ktpUrl;
+    let currentSelfieUrl = selfieUrl;
+
+    try {
+        if (ktpFile && !currentKtpUrl) {
+            const formDataKtp = new FormData();
+            formDataKtp.append("gambar", ktpFile);
+            const resKtp = await fetch("https://bukatabungan-production.up.railway.app/upload", {
+                method: "POST",
+                body: formDataKtp,
+                credentials: "include",
+            });
+            if (!resKtp.ok) throw new Error("Gagal upload KTP");
+            const dataKtp = await resKtp.json();
+            currentKtpUrl = dataKtp.url;
+            setKtpUrl(currentKtpUrl);
+        }
+
+        if (selfieFile && !currentSelfieUrl) {
+            const formDataSelfie = new FormData();
+            formDataSelfie.append("gambar", selfieFile);
+            const resSelfie = await fetch("https://bukatabungan-production.up.railway.app/upload", {
+                method: "POST",
+                body: formDataSelfie,
+                credentials: "include",
+            });
+            if (!resSelfie.ok) throw new Error("Gagal upload Selfie");
+            const dataSelfie = await resSelfie.json();
+            currentSelfieUrl = dataSelfie.url;
+            setSelfieUrl(currentSelfieUrl);
+        }
+    } catch (err) {
+        alert("Gagal mengupload dokumen. Silakan coba lagi.");
+        setLoadingSubmit(false);
+        return;
+    }
+
    try {
       const res = await fetch("https://bukatabungan-production.up.railway.app/otp/send", {
         method: "POST",
@@ -207,6 +266,8 @@ const [formData, setFormData] = useState({
       localStorage.setItem("otpInProgress", "true");
       localStorage.setItem("pendingSubmitData", JSON.stringify(formData));
       localStorage.setItem("currentPhone", formData.phone);
+      if (currentKtpUrl) localStorage.setItem("savedKtpUrl", currentKtpUrl);
+      if (currentSelfieUrl) localStorage.setItem("savedSelfieUrl", currentSelfieUrl);
 
       // Simpan data form sementara
       setPendingSubmitData(formData);
@@ -222,186 +283,163 @@ const [formData, setFormData] = useState({
 
     setLoadingSubmit(false);
   };
-const handleOtpVerified = async () => {
-  // Hapus state OTP
-  localStorage.removeItem("otpInProgress");
-  localStorage.removeItem("pendingSubmitData");
-  localStorage.removeItem("currentPhone");
 
-  setShowOtpModal(false);
-  await submitFinalForm(pendingSubmitData);
+  const handleOtpVerified = async () => {
+    // Hapus state OTP
+    localStorage.removeItem("otpInProgress");
+    localStorage.removeItem("pendingSubmitData");
+    localStorage.removeItem("currentPhone");
+    localStorage.removeItem("savedKtpUrl");
+    localStorage.removeItem("savedSelfieUrl");
+  
+    setShowOtpModal(false);
+    await submitFinalForm(pendingSubmitData);
+  };
 
-};
-
-
-
-  // =========================
-  // FINAL FORM SUBMIT
-  // =========================
   // ==============================
-// FINAL FORM SUBMIT (SETELAH OTP)
-// ==============================
-const submitFinalForm = async (data: any) => {
-  setLoadingSubmit(true);
-
-  // ============================
-  // 1. Upload KTP
-  // ============================
-  let ktpUploadedUrl = ktpUrl;
-  if (ktpFile && !ktpUploadedUrl) {
-    try {
-      const formDataKtp = new FormData();
-      formDataKtp.append("gambar", ktpFile);
-
-      const resKtp = await fetch(
-        "https://bukatabungan-production.up.railway.app/upload",
-        {
-          method: "POST",
-          body: formDataKtp,
-          credentials: "include",
-        }
-      );
-
-      if (!resKtp.ok) throw new Error("Gagal upload KTP");
-
-      const dataKtp = await resKtp.json();
-      ktpUploadedUrl = dataKtp.url;
-      setKtpUrl(ktpUploadedUrl);
-    } catch (err) {
-      alert("Upload KTP gagal, coba lagi!");
-      setLoadingSubmit(false);
-      return;
-    }
-  }
-
-  // ============================
-  // 2. Upload Selfie
-  // ============================
-  let selfieUploadedUrl = selfieUrl;
-  if (selfieFile && !selfieUploadedUrl) {
-    try {
-      const formDataSelfie = new FormData();
-      formDataSelfie.append("gambar", selfieFile);
-
-      const resSelfie = await fetch(
-        "https://bukatabungan-production.up.railway.app/upload",
-        {
-          method: "POST",
-          body: formDataSelfie,
-          credentials: "include",
-        }
-      );
-
-      if (!resSelfie.ok) throw new Error("Gagal upload selfie");
-
-      const dataSelfie = await resSelfie.json();
-      selfieUploadedUrl = dataSelfie.url;
-      setSelfieUrl(selfieUploadedUrl);
-    } catch (err) {
-      alert("Upload selfie gagal, coba lagi!");
-      setLoadingSubmit(false);
-      return;
-    }
-  }
-
-  // ============================
-  // 3. Siapkan data submit
-  // ============================
-  const submitData = {
-    nama_lengkap: data.fullName,
-    nik: data.nik,
-    email: data.email,
-    no_hp: data.phone,
-    tanggal_lahir: data.birthDate,
-    alamat: data.address,
-    provinsi: data.province,
-    kota: data.city,
-    kode_pos: data.postalCode,
-    jenis_rekening: data.jenis_rekening,
-    penghasilan: data.monthlyIncome,
-    jenis_kelamin: data.gender,
-    status_perkawinan: data.maritalStatus,
-    kewarganegaraan: data.citizenship,
-    nama_ibu_kandung: data.motherName,
-    tempat_bekerja: data.tempatBekerja,
-    alamat_kantor: data.alamatKantor,
-    sumber_dana: data.sumberDana,
-    tujuan_rekening: data.tujuanRekening,
-    kontak_darurat_nama: data.kontakDaruratNama,
-    kontak_darurat_hp: data.kontakDaruratHp,
-    pekerjaan: data.employmentStatus,
-    setuju_data: data.agreeTerms ? "Ya" : "Tidak",
-    jenis_kartu: data.cardType || getDefaultCardType(),
-    card_type: data.cardType || getDefaultCardType(),
-    savings_type: savingsType,
-    savings_type_name: getSavingsTypeName(),
-    cabang_pengambilan: data.cabang_pengambilan,
-    foto_ktp: ktpUploadedUrl,
-    foto_selfie: selfieUploadedUrl,
-
-  };
-
-  // ============================
-  // 4. Submit ke backend
-  // ============================
-  try {
-    const response = await fetch(
-      "https://bukatabungan-production.up.railway.app/api/pengajuan",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(submitData),
-        credentials: "include",
+  // FINAL FORM SUBMIT (SETELAH OTP)
+  // ==============================
+  const submitFinalForm = async (data: any) => {
+    setLoadingSubmit(true);
+  
+    // ============================
+    // 1. Upload KTP
+    // ============================
+    let ktpUploadedUrl = ktpUrl;
+    if (ktpFile && !ktpUploadedUrl) {
+      try {
+        const formDataKtp = new FormData();
+        formDataKtp.append("gambar", ktpFile);
+  
+        const resKtp = await fetch(
+          "https://bukatabungan-production.up.railway.app/upload",
+          {
+            method: "POST",
+            body: formDataKtp,
+            credentials: "include",
+          }
+        );
+  
+        if (!resKtp.ok) throw new Error("Gagal upload KTP");
+  
+        const dataKtp = await resKtp.json();
+        ktpUploadedUrl = dataKtp.url;
+        setKtpUrl(ktpUploadedUrl);
+      } catch (err) {
+        alert("Upload KTP gagal, coba lagi!");
+        setLoadingSubmit(false);
+        return;
       }
-    );
-
-    let result;
+    }
+  
+    // ============================
+    // 2. Upload Selfie
+    // ============================
+    let selfieUploadedUrl = selfieUrl;
+    if (selfieFile && !selfieUploadedUrl) {
+      try {
+        const formDataSelfie = new FormData();
+        formDataSelfie.append("gambar", selfieFile);
+  
+        const resSelfie = await fetch(
+          "https://bukatabungan-production.up.railway.app/upload",
+          {
+            method: "POST",
+            body: formDataSelfie,
+            credentials: "include",
+          }
+        );
+  
+        if (!resSelfie.ok) throw new Error("Gagal upload selfie");
+  
+        const dataSelfie = await resSelfie.json();
+        selfieUploadedUrl = dataSelfie.url;
+        setSelfieUrl(selfieUploadedUrl);
+      } catch (err) {
+        alert("Upload selfie gagal, coba lagi!");
+        setLoadingSubmit(false);
+        return;
+      }
+    }
+  
+    // ============================
+    // 3. Siapkan data submit
+    // ============================
+    const submitData = {
+      nama_lengkap: data.fullName,
+      nik: data.nik,
+      email: data.email,
+      no_hp: data.phone,
+      tanggal_lahir: data.birthDate,
+      alamat: data.address,
+      provinsi: data.province,
+      kota: data.city,
+      kode_pos: data.postalCode,
+      jenis_rekening: data.jenis_rekening,
+      penghasilan: data.monthlyIncome,
+      jenis_kelamin: data.gender,
+      status_perkawinan: data.maritalStatus,
+      kewarganegaraan: data.citizenship,
+      nama_ibu_kandung: data.motherName,
+      tempat_bekerja: data.tempatBekerja,
+      alamat_kantor: data.alamatKantor,
+      sumber_dana: data.sumberDana,
+      tujuan_rekening: data.tujuanRekening,
+      kontak_darurat_nama: data.kontakDaruratNama,
+      kontak_darurat_hp: data.kontakDaruratHp,
+      pekerjaan: data.employmentStatus,
+      setuju_data: data.agreeTerms ? "Ya" : "Tidak",
+      jenis_kartu: data.cardType || getDefaultCardType(),
+      card_type: data.cardType || getDefaultCardType(),
+      savings_type: savingsType,
+      savings_type_name: getSavingsTypeName(),
+      cabang_pengambilan: data.cabang_pengambilan,
+      foto_ktp: ktpUploadedUrl,
+      foto_selfie: selfieUploadedUrl,
+  
+    };
+  
+    // ============================
+    // 4. Submit ke backend
+    // ============================
     try {
-      result = await response.json();
-    } catch {
-      alert(
-        `⚠️ Gagal menyimpan data:\nServer mengembalikan response tidak valid.`
+      const response = await fetch(
+        "https://bukatabungan-production.up.railway.app/api/pengajuan",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(submitData),
+          credentials: "include",
+        }
       );
-      setLoadingSubmit(false);
-      return;
+  
+      let result;
+      try {
+        result = await response.json();
+      } catch {
+        alert(
+          `⚠️ Gagal menyimpan data:\nServer mengembalikan response tidak valid.`
+        );
+        setLoadingSubmit(false);
+        return;
+      }
+  
+      if (response.ok && result.success) {
+        setReferenceCode(result.kode_referensi ?? null);
+        setSubmitted(true);
+      } else {
+        const errorMessage =
+          result.message ||
+          result.error?.detail ||
+          `HTTP ${response.status}: ${response.statusText}`;
+        alert(`⚠️ Gagal menyimpan data:\n\n${errorMessage}`);
+      }
+    } catch (err: any) {
+      alert(`❌ Terjadi kesalahan:\n\n${err.message}`);
     }
-
-    if (response.ok && result.success) {
-      setReferenceCode(result.kode_referensi ?? null);
-      setSubmitted(true);
-    } else {
-      const errorMessage =
-        result.message ||
-        result.error?.detail ||
-        `HTTP ${response.status}: ${response.statusText}`;
-      alert(`⚠️ Gagal menyimpan data:\n\n${errorMessage}`);
-    }
-  } catch (err: any) {
-    alert(`❌ Terjadi kesalahan:\n\n${err.message}`);
-  }
-
-  setLoadingSubmit(false);
-};
-
-  const getSavingsTypeName = () => {
-    switch (savingsType) {
-      case 'mutiara':
-        return 'Tabungan Mutiara';
-      case 'bisnis':
-        return 'Tabungan Bank Sleman';
-      case 'simpel':
-        return 'Tabungan Simpel';
-      case 'individu':
-        return 'Tabungan Individu';
-      case 'promosi':
-        return 'Tabungan Promosi';
-      default:
-        return 'Tabungan';
-    }
+  
+    setLoadingSubmit(false);
   };
-
-
-  // Tidak perlu uploadToServer, upload dilakukan saat submit
 
   if (submitted) {
     return (
@@ -459,6 +497,44 @@ const submitFinalForm = async (data: any) => {
       </div>
     );
   }
+
+  const renderForm = () => {
+    const commonProps = {
+      formData,
+      setFormData,
+      errors,
+      setErrors,
+      validateNikAsync,
+      validateEmailAsync,
+      validatePhoneAsync,
+      getFieldClass,
+      ktpFile,
+      setKtpFile,
+      ktpPreview,
+      setKtpPreview,
+      ktpUrl,
+      setKtpUrl,
+      selfieFile,
+      setSelfieFile,
+      selfiePreview,
+      setSelfiePreview,
+      selfieUrl,
+      setSelfieUrl,
+      loadingSubmit,
+      handleSubmit,
+      savingsType,
+      getSavingsTypeName,
+    };
+
+    if (savingsType === 'simpel') {
+      return <FormSimpel {...commonProps} />;
+    } else if (savingsType === 'bisnis') {
+      return <FormBusiness {...commonProps} />;
+    } else {
+      // Default for individu, mutiara, promosi
+      return <FormIndividu {...commonProps} />;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -572,524 +648,7 @@ const submitFinalForm = async (data: any) => {
           </div>
 
         <Card className="bg-white p-10 border-0 shadow-xl rounded-2xl w-full max-w-4xl mx-auto">
-          <form onSubmit={handleSubmit} className="space-y-8">
-           {/* Data Pribadi */}
-<div>
-  <h3 className="text-emerald-900 mb-6 text-2xl">Data Pribadi</h3>
-  <div className="space-y-5">
-
-    {/* Nama Lengkap */}
-    <div>
-      <Label htmlFor="fullName" className="text-gray-700">Nama Lengkap (Sesuai KTP)</Label>
-      <Input 
-        id="fullName" 
-        required
-        placeholder="Masukkan nama lengkap"
-        value={formData.fullName}
-        onChange={(e) => setFormData({...formData, fullName: e.target.value})}
-        className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded"
-      />
-    </div>
-
-    {/* NIK */}
-    <div>
-      <Label htmlFor="nik" className="text-gray-700">NIK (Nomor Induk Kependudukan)</Label>
-      {errors.nik && <p className="text-sm text-red-600 mb-1">{errors.nik}</p>}
-      <Input 
-        id="nik" 
-        required
-        placeholder="16 digit NIK"
-        maxLength={16}
-        value={formData.nik}
-        onChange={(e) => setFormData({...formData, nik: e.target.value})}
-        onBlur={async (e) => {
-          const val = (e.currentTarget as HTMLInputElement).value;
-          const err = await validateNikAsync(val);
-          setErrors(prev => {
-            const next = { ...prev };
-            if (err) next.nik = err;
-            else delete next.nik;
-            return next;
-          });
-        }}
-        className={getFieldClass('nik')}
-      />
-    </div>
-
-    {/* Gender + Marital Status */}
-    <div className="grid md:grid-cols-2 gap-5">
-
-      {/* Jenis Kelamin */}
-      <div>
-        <Label className="text-gray-700">Jenis Kelamin</Label>
-        <Select
-          value={formData.gender}
-          onValueChange={(value) => setFormData({ ...formData, gender: value })}
-        >
-          <SelectTrigger className="mt-2 border-gray-200 focus:border-emerald-500 rounded">
-            <SelectValue placeholder="Pilih jenis kelamin" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Laki-laki">Laki-laki</SelectItem>
-            <SelectItem value="Perempuan">Perempuan</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Status Pernikahan */}
-      <div>
-        <Label className="text-gray-700">Status Pernikahan</Label>
-        <Select
-          value={formData.maritalStatus}
-          onValueChange={(value) => setFormData({ ...formData, maritalStatus: value })}
-        >
-          <SelectTrigger className="mt-2 border-gray-200 focus:border-emerald-500 rounded">
-            <SelectValue placeholder="Pilih status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Belum Menikah">Belum Menikah</SelectItem>
-            <SelectItem value="Menikah">Menikah</SelectItem>
-            <SelectItem value="Cerai">Cerai</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-    </div>
-
-    {/* Email + Phone */}
-      <div className="grid md:grid-cols-2 gap-5">
-      <div>
-        <Label htmlFor="email" className="text-gray-700">Email</Label>
-        {errors.email && <p className="text-sm text-red-600 mb-1">{errors.email}</p>}
-        <Input 
-          id="email" 
-          type="email"
-          required
-          placeholder="email@example.com"
-          value={formData.email}
-          onChange={(e) => setFormData({...formData, email: e.target.value})}
-          onBlur={async (e) => {
-            const val = (e.currentTarget as HTMLInputElement).value;
-            const err = await validateEmailAsync(val);
-            setErrors(prev => {
-              const next = { ...prev };
-              if (err) next.email = err;
-              else delete next.email;
-              return next;
-            });
-          }}
-          className={getFieldClass('email')}
-        />
-      </div>
-
-      <div>
-        <Label htmlFor="phone" className="text-gray-700">Nomor Telepon (Digunakan untuk OTP)</Label>
-        {errors.phone && <p className="text-sm text-red-600 mb-1">{errors.phone}</p>}
-        <Input 
-          id="phone" 
-          type="tel"
-          required
-          placeholder="08xxxxxxxxxx"
-          value={formData.phone}
-          onChange={(e) => setFormData({...formData, phone: e.target.value})}
-          onBlur={async (e) => {
-            const val = (e.currentTarget as HTMLInputElement).value;
-            const err = await validatePhoneAsync(val);
-            setErrors(prev => {
-              const next = { ...prev };
-              if (err) next.phone = err;
-              else delete next.phone;
-              return next;
-            });
-          }}
-          className={getFieldClass('phone')}
-        />
-      </div>
-    </div>
-
-    {/* Tanggal Lahir */}
-    <div>
-      <Label htmlFor="birthDate" className="text-gray-700">Tanggal Lahir</Label>
-      <Input 
-        id="birthDate" 
-        type="date"
-        required
-        value={formData.birthDate}
-        onChange={(e) => setFormData({...formData, birthDate: e.target.value})}
-        className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded"
-      />
-    </div>
-    <div className="grid md:grid-cols-2 gap-5">
-
-    {/* Kewarganegaraan */}
-    <div>
-      <Label htmlFor="citizenship" className="text-gray-700">Kewarganegaraan</Label>
-      <Input
-        id="citizenship"
-        required
-        placeholder="Contoh: Indonesia"
-        value={formData.citizenship}
-        onChange={(e) => setFormData({ ...formData, citizenship: e.target.value })}
-        className="mt-2 border-gray-200 focus:border-emerald-500 rounded"
-      />
-    </div>
-
-    {/* Nama Ibu Kandung */}
-    
-    <div>
-      <Label htmlFor="motherName" className="text-gray-700">Nama Ibu Kandung</Label>
-      <Input
-        id="motherName"
-        required
-        placeholder="Masukkan nama ibu kandung"
-        value={formData.motherName}
-        onChange={(e) => setFormData({ ...formData, motherName: e.target.value })}
-        className="mt-2 border-gray-200 focus:border-emerald-500 rounded"
-      />
-    </div>
-
-    <div>
-      <Label htmlFor="kontakDaruratNama:" className="text-gray-700">Nama kontak Darurat</Label>
-      <Input
-        id="kontakDaruratNama"
-        required
-        placeholder="Masukkan nama kontak"
-        value={formData.kontakDaruratNama}
-        onChange={(e) => setFormData({ ...formData, kontakDaruratNama: e.target.value })}
-        className="mt-2 border-gray-200 focus:border-emerald-500 rounded"
-      />
-    </div>
-
-    <div>
-      <Label htmlFor="kontakDaruratHp" className="text-gray-700">Nomor Kontak Darurat</Label>
-      <Input
-        id="kontakDaruratHp"
-        required
-        placeholder="Masukan nomor hp kontak"
-        value={formData.kontakDaruratHp}
-        onChange={(e) => setFormData({ ...formData, kontakDaruratHp: e.target.value })}
-        className="mt-2 border-gray-200 focus:border-emerald-500 rounded"
-      />
-    </div>
-    </div>
-  </div>
-</div>
-            {/* Alamat */}
-            <div className="pt-6 border-t border-gray-100">
-              <h3 className="text-emerald-900 mb-6 text-2xl">Alamat</h3>
-              <div className="space-y-5">
-                <div>
-                  <Label htmlFor="address" className="text-gray-700">Alamat Lengkap</Label>
-                  <Textarea 
-                    id="address"
-                    required
-                    placeholder="Jalan, RT/RW, Kelurahan, Kecamatan"
-                    rows={3}
-                    value={formData.address}
-                    onChange={(e) => setFormData({...formData, address: e.target.value})}
-                    className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded"
-                  />
-                </div>
-
-                <div className="grid md:grid-cols-3 gap-5">
-                  <div>
-                    <Label htmlFor="province" className="text-gray-700">Provinsi</Label>
-                    <Input 
-                      id="province"
-                      required
-                      placeholder="Nama Provinsi"
-                      value={formData.province}
-                      onChange={(e) => setFormData({...formData, province: e.target.value})}
-                      className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="city" className="text-f@gray-700">Kota/Kabupaten</Label>
-                    <Input 
-                      id="city"
-                      required
-                      placeholder="Nama Kota"
-                      value={formData.city}
-                      onChange={(e) => setFormData({...formData, city: e.target.value})}
-                      className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="postalCode" className="text-gray-700">Kode Pos</Label>
-                    <Input 
-                      id="postalCode"
-                      required
-                      placeholder="12345"
-                      maxLength={5}
-                      value={formData.postalCode}
-                      onChange={(e) => setFormData({...formData, postalCode: e.target.value})}
-                      className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded"
-                    />
-                  </div>
-                </div>
-
-                
-              </div>
-            </div>
-
-            {/* Informasi Pekerjaan Tambahan */}
-<div className="space-y-5 mt-5">
-  <h3 className="text-emerald-900 mb-6 text-2xl">Informasi Pekerjaan</h3>
-
-  {/* STATUS PEKERJAAN */}
-  <div>
-    <Label htmlFor="employmentStatus" className="text-gray-700">Status Pekerjaan</Label>
-
-    <Select
-      value={formData.employmentStatus}
-      onValueChange={(value) =>
-        setFormData({ ...formData, employmentStatus: value })
-      }
-    >
-      <SelectTrigger className="mt-2 border-gray-200 focus:border-emerald-500 rounded">
-        <SelectValue placeholder="Pilih status pekerjaan" />
-      </SelectTrigger>
-
-      <SelectContent>
-        <SelectItem value="bekerja">Sudah Bekerja</SelectItem>
-        <SelectItem value="tidak-bekerja">Belum Bekerja</SelectItem>
-        <SelectItem value="pelajar-mahasiswa">Pelajar / Mahasiswa</SelectItem>
-      </SelectContent>
-    </Select>
-  </div>
-
-  
-
-  <div>
-    <Label htmlFor="tempatBekerja" className="text-gray-700">Tempat Bekerja</Label>
-    <Input
-      id="tempatBekerja"
-      placeholder="Nama perusahaan atau instansi"
-      value={formData.tempatBekerja}
-      onChange={(e) => setFormData({ ...formData, tempatBekerja: e.target.value })}
-      className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded"
-    />
-  </div>
-
-  {/* Alamat Kantor */}
-  <div>
-    <Label htmlFor="alamatKantor" className="text-gray-700">Alamat Kantor</Label>
-    <Textarea
-      id="alamatKantor"
-      placeholder="Alamat lengkap kantor"
-      value={formData.alamatKantor}
-      onChange={(e) => setFormData({ ...formData, alamatKantor: e.target.value })}
-      className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded"
-    />
-  </div>
-
-  <div>
-                  <Label htmlFor="monthlyIncome" className="text-gray-700">Penghasilan per Bulan</Label>
-                  <Select
-                    value={formData.monthlyIncome}
-                    onValueChange={(value) => setFormData({...formData, monthlyIncome: value})}
-                  >
-                    <SelectTrigger className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded">
-                      <SelectValue placeholder="Pilih range penghasilan" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="below5">&lt; Rp 5.000.000</SelectItem>
-                      <SelectItem value="5-10jt">Rp 5.000.000 - Rp 10.000.000</SelectItem>
-                      <SelectItem value="10-20jt">Rp 10.000.000 - Rp 20.000.000</SelectItem>
-                      <SelectItem value="above20">&gt; Rp 20.000.000</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-  {/* Sumber Dana */}
-  <h3 className="text-emerald-900 mb-6 text-2xl">Sumber dana & Tujuan rekening</h3>
-  <div>
-    <Label htmlFor="sumberDana" className="text-gray-700">Sumber Dana</Label>
-    <Select
-      value={formData.sumberDana}
-      onValueChange={(value) => setFormData({ ...formData, sumberDana: value })}
-    >
-      <SelectTrigger className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded">
-        <SelectValue placeholder="Pilih sumber dana" />
-      </SelectTrigger>
-
-      <SelectContent>
-        <SelectItem value="gaji">Gaji</SelectItem>
-        <SelectItem value="usaha">Usaha</SelectItem>
-        <SelectItem value="warisan">Warisan</SelectItem>
-        <SelectItem value="orang-tua">Orang Tua</SelectItem>
-        <SelectItem value="investasi">Investasi</SelectItem>
-        <SelectItem value="lainnya">Lainnya</SelectItem>
-      </SelectContent>
-    </Select>
-  </div>
-  
-
-  {/* Tujuan Rekening */}
-  <div>
-    <Label htmlFor="tujuanRekening" className="text-gray-700">Tujuan Pembukaan Rekening</Label>
-    <Select
-      value={formData.tujuanRekening}
-      onValueChange={(value) => setFormData({ ...formData, tujuanRekening: value })}
-    >
-      <SelectTrigger className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded">
-        <SelectValue placeholder="Pilih tujuan pembukaan rekening" />
-      </SelectTrigger>
-
-      <SelectContent>
-        <SelectItem value="tabungan-personal">Tabungan Pribadi</SelectItem>
-        <SelectItem value="bisnis">Keperluan Bisnis</SelectItem>
-        <SelectItem value="investasi">Investasi</SelectItem>
-        <SelectItem value="pembayaran">Pembayaran / Transaksi</SelectItem>
-        <SelectItem value="lainnya">Lainnya</SelectItem>
-      </SelectContent>
-    </Select>
-  </div>
-</div>
-            <div className="pt-6 border-t border-gray-100">
-              <h3 className="text-emerald-900 mb-6 text-2xl">Informasi Kartu</h3>
-              <div className="space-y-5">
-                <div>
-                  <Label htmlFor="jenis_rekening" className="text-gray-700">Jenis Kartu</Label>
-                  <Select 
-                    value={formData.jenis_rekening}
-                    onValueChange={(value) => setFormData({...formData, jenis_rekening: value})}
-                  >
-                    <SelectTrigger className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded">
-                      <SelectValue placeholder="Pilih jenis" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="gold">Gold</SelectItem>
-                      <SelectItem value="silver">Silver</SelectItem>
-                      <SelectItem value="Platinum">Platinum</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
-
-            {/* Upload Dokumen */}
-          {/* ===== Upload Foto KTP ===== */}
-<div className="mb-4">
-  {errors.ktp && <p className="text-red-600 text-sm mb-1">{errors.ktp}</p>}
-  {!ktpFile && !ktpPreview ? (
-    <Upload
-      label="Upload Foto KTP"
-      description="Format: JPG, PNG (Max. 2MB)"
-      onChange={(file) => {
-        setKtpFile(file);
-        setKtpPreview(URL.createObjectURL(file));
-        setKtpUrl(null);
-        setErrors(prev => ({ ...prev, ktp: "" })); // reset error
-      }}
-    />
-  ) : (
-    <div className="mt-2">
-      <img
-        src={ktpPreview || ktpUrl!}
-        alt="KTP Preview"
-        className="mx-auto rounded-xl shadow-md max-h-48"
-      />
-      <button
-        type="button"
-        className="mt-2 text-sm text-red-600 hover:underline block mx-auto"
-        onClick={() => {
-          setKtpFile(null);
-          setKtpPreview(null);
-          setKtpUrl(null);
-        }}
-      >
-        Ganti Foto
-      </button>
-    </div>
-  )}
-</div>
-
-{/* ===== Upload Selfie dengan KTP ===== */}
-<div className="mb-4">
-  {errors.selfie && <p className="text-red-600 text-sm mb-1">{errors.selfie}</p>}
-  {!selfieFile && !selfiePreview ? (
-    <Upload
-      label="Upload Selfie dengan KTP"
-      description="Format: JPG, PNG (Max. 2MB)"
-      onChange={(file) => {
-        setSelfieFile(file);
-        setSelfiePreview(URL.createObjectURL(file));
-        setSelfieUrl(null);
-        setErrors(prev => ({ ...prev, selfie: "" })); // reset error
-      }}
-    />
-  ) : (
-    <div className="mt-2">
-      <img
-        src={selfiePreview || selfieUrl!}
-        alt="Selfie Preview"
-        className="mx-auto rounded-xl shadow-md max-h-48"
-      />
-      <button
-        type="button"
-        className="mt-2 text-sm text-red-600 hover:underline block mx-auto"
-        onClick={() => {
-          setSelfieFile(null);
-          setSelfiePreview(null);
-          setSelfieUrl(null);
-        }}
-      >
-        Ganti Foto
-      </button>
-    </div>
-  )}
-</div>
-
-
-            {/* Pilihan Kartu: dihapus, kini otomatis berdasarkan jenis tabungan */}
-            <div>
-              <h3 className="text-emerald-900 mb-6 text-2xl">Pilih Cabang</h3>
-                  <Label htmlFor="cabang_pengambilan" className="text-gray-700">Pilih Cabang Pengambilan</Label>
-                  <Select
-                    value={formData.cabang_pengambilan}
-                    onValueChange={(value) => setFormData({...formData, cabang_pengambilan: value})}
-                  >
-                    <SelectTrigger className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded">
-                      <SelectValue placeholder="Pilih cabang pengambilan" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Sleman">Cabang Sleman</SelectItem>
-                      <SelectItem value="Godean">Cabang Godean</SelectItem>
-                      <SelectItem value="Turi">Cabang Turi</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-            {/* Terms & Conditions */}
-            <div className="flex items-start gap-4 bg-gradient-to-br from-emerald-50 to-green-50 p-6 rounded-2xl shadow-inner">
-              <Checkbox 
-                id="terms"
-                checked={formData.agreeTerms}
-                onCheckedChange={(checked) => setFormData({...formData, agreeTerms: checked as boolean})}
-                required
-                className="mt-1"
-              />
-              <div>
-                <Label htmlFor="terms" className="cursor-pointer text-gray-800">
-                  Saya menyetujui <a href="#" className="text-emerald-700 hover:underline">Syarat dan Ketentuan</a> serta <a href="#" className="text-emerald-700 hover:underline">Kebijakan Privasi</a>
-                </Label>
-                <p className="text-xs text-gray-600 mt-2">
-                  Dengan mencentang kotak ini, saya menyatakan bahwa semua data yang saya berikan adalah benar dan saya bertanggung jawab penuh atas kebenaran data tersebut.
-                </p>
-              </div>
-            </div>
-
-            <Button 
-              type="submit"
-              disabled={loadingSubmit}
-              className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 py-7 text-lg shadow-lg hover:shadow-xl transition-all"
-            >
-             {loadingSubmit ? 'Mengirim...' : 'Kirim Permohonan'} {getSavingsTypeName()}
-            </Button>
-          </form>
+          {renderForm()}
            <OtpModal
             open={showOtpModal}
             onClose={() => setShowOtpModal(false)}

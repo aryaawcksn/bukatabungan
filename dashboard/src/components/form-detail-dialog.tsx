@@ -247,9 +247,13 @@ export function FormDetailDialog({
                 {submission.personalData.gender && (
                   <Field label="Jenis Kelamin" value={submission.personalData.gender} />
                 )}
-                {submission.personalData.maritalStatus && (
-                  <Field label="Status Pernikahan" value={submission.personalData.maritalStatus} />
-                )}
+                {submission.cardType !== 'Tabungan Simpel' &&
+                submission.personalData.maritalStatus && (
+                  <Field 
+                    label="Status Pernikahan" 
+                    value={submission.personalData.maritalStatus} 
+                  />
+              )}
                 {submission.personalData.citizenship && (
                   <Field label="Kewarganegaraan" value={submission.personalData.citizenship} />
                 )}
@@ -274,24 +278,45 @@ export function FormDetailDialog({
             <Separator />
 
             {/* JOB INFO */}
-            <Section title="Informasi Pekerjaan" icon={<Briefcase className="w-5 h-5 text-blue-600" />}>
+            <Section title={submission.cardType === 'Tabungan Simpel' ? "Informasi Sekolah" : "Informasi Pekerjaan"} icon={<Briefcase className="w-5 h-5 text-blue-600" />}>
               <TwoCol>
-                <Field label="Pekerjaan" value={submission.jobInfo.occupation} />
-                <Field label="Range Penghasilan" icon={<DollarSign className="w-4 h-4 text-gray-400" />} value={submission.jobInfo.salaryRange} />
-                {submission.jobInfo.workplace && (
-                  <Field 
-                    label="Nama Instansi/Perusahaan" 
-                    icon={<Building2 className="w-4 h-4 text-gray-400" />} 
-                    value={submission.jobInfo.workplace} 
-                  />
+                <Field 
+                  label={submission.cardType === 'Tabungan Simpel' ? "Status" : "Status Pekerjaan"} 
+                  value={submission.jobInfo.occupation} 
+                />
+                
+                {submission.jobInfo.occupation !== 'tidak-bekerja' && (
+                  <>
+
+                    {submission.jobInfo.occupation !== 'tidak-bekerja' && (
+  <>
+                        {/* SEMBUNYIKAN jika Tabungan Simpel */}
+                        <Field
+                          label={
+                            submission.cardType === 'Tabungan Simpel'
+                              ? "Range Penghasilan Orang Tua"
+                              : "Range Penghasilan"
+                          }
+                          icon={<DollarSign className="w-4 h-4 text-gray-400" />}
+                          value={submission.jobInfo.salaryRange}
+                        />
+
+                        {submission.jobInfo.workplace && (
+                          <Field
+                            label={
+                              submission.cardType === 'Tabungan Simpel'
+                                ? "Nama Sekolah"
+                                : "Nama Instansi/Perusahaan"
+                            }
+                            icon={<Building2 className="w-4 h-4 text-gray-400" />}
+                            value={submission.jobInfo.workplace}
+                          />
+                        )}
+                      </>
+                    )}
+                  </>
                 )}
-                {submission.jobInfo.officeAddress && (
-                  <Field 
-                    label="Alamat Instansi/Perusahaan" 
-                    icon={<MapPin className="w-4 h-4 text-gray-400" />} 
-                    value={submission.jobInfo.officeAddress} 
-                  />
-                )}
+
                 {submission.jobInfo.incomeSource && (
                   <Field 
                     label="Sumber Dana" 

@@ -50,6 +50,7 @@ export interface FormSubmission {
     selfiePhoto: string;
   };
   submittedAt: string;
+  savingsType?: string;
   status: 'pending' | 'approved' | 'rejected';
   approvedBy?: string;
   approvedAt?: string;
@@ -147,6 +148,7 @@ const mapBackendDataToFormSubmission = (data: any): FormSubmission => {
     id: data.id?.toString() || '',
     referenceCode: data.kode_referensi || '',
     cardType: mapJenisKartu(data.jenis_kartu),
+    savingsType: data.savings_type || '',
     personalData: {
       fullName: data.nama_lengkap || '',
       nik: data.nik || '',
