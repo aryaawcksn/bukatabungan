@@ -94,14 +94,22 @@ footerRow: {
   color: '#555',
 },
 
+
 });
 // ROW COMPONENT
-const InfoRow = ({ label, value }: { label: string; value?: string }) => (
-  <View style={styles.row}>
-    <Text style={styles.label}>{label}</Text>
-    <Text style={styles.value}>{value || '-'}</Text>
-  </View>
-);
+export const InfoRow = ({ label, value }: { label: string; value?: string }) => {
+  const safeValue = value || "-";
+  const formatted =
+    safeValue.charAt(0).toUpperCase() + safeValue.slice(1);
+
+  return (
+    <View style={styles.row}>
+      <Text style={styles.label}>{label}</Text>
+      <Text style={styles.value}>{formatted}</Text>
+    </View>
+  );
+};
+
 export const SubmissionPdf = ({ submission }: { submission: FormSubmission }) => (
   <Document>
     <Page size="A4" style={styles.page}>
@@ -109,7 +117,7 @@ export const SubmissionPdf = ({ submission }: { submission: FormSubmission }) =>
       {/* HEADER */}
       <View style={styles.headerBar}>
         <View style={styles.bankInfo}>
-          <Text style={styles.bankName}>{submission.cabangPengambilan}</Text>
+          <Text style={styles.bankName}>Cabang {submission.cabangPengambilan}</Text>
           <Text style={styles.bankSub}>Bukti Pendaftaran Nasabah</Text>
           <Text style={styles.bankSub}>Ref: {submission.referenceCode}</Text>
         </View>

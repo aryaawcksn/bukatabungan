@@ -149,7 +149,8 @@ const mapBackendDataToFormSubmission = (data: any): FormSubmission => {
     id: data.id?.toString() || '',
     referenceCode: data.kode_referensi || '',
     cardType: mapJenisKartu(data.jenis_kartu),
-    savingsType: data.savings_type || '',
+    savingsType: data.jenis_rekening || data.savings_type || '',
+    cabangPengambilan: data.cabang_pengambilan || '',
     personalData: {
       fullName: data.nama_lengkap || '',
       nik: data.nik || '',

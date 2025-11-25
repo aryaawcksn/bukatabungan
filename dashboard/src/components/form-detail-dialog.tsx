@@ -11,7 +11,8 @@ import {
   FileText, Image as ImageIcon, CheckCircle, XCircle, CreditCard, 
   UserCheck, UserX, Building2, Target, Wallet, AlertCircle, ShieldCheck
 } from 'lucide-react';
-import { PdfDownloadButton } from './PdfDownloadButton';
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import { SubmissionPdf } from '../SubmissionPdf';
 
 
 interface FormDetailDialogProps {
@@ -456,13 +457,23 @@ export function FormDetailDialog({
           {/* FOOTER */}
           {/* FOOTER */}
 <DialogFooter className="mt-8 gap-2">
-  {submission.status === 'approved' && (
-    <PdfDownloadButton submission={submission} />
-  )}
-  
-  <Button variant="outline" onClick={onClose}>
-    Tutup
-  </Button>
+            <Button variant="outline" onClick={onClose}>
+              Tutup
+            </Button>
+
+            {submission.status === 'approved' && (
+              <PDFDownloadLink
+                document={<SubmissionPdf submission={submission} />}
+                fileName={`Bukti-Pendaftaran-${submission.referenceCode}.pdf`}
+              >
+                {({ loading }) => (
+                  <Button variant="outline" className="border-blue-200 text-blue-700 hover:bg-blue-50">
+                    <FileText className="w-4 h-4 mr-2" />
+                    {loading ? 'Generating PDF...' : 'Export PDF'}
+                  </Button>
+                )}
+              </PDFDownloadLink>
+            )}
 
             {submission.status === "pending" && (
               <>
