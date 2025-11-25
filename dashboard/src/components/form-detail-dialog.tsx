@@ -11,7 +11,7 @@ import {
   FileText, Image as ImageIcon, CheckCircle, XCircle, CreditCard, 
   UserCheck, UserX, Building2, Target, Wallet, AlertCircle, ShieldCheck
 } from 'lucide-react';
-
+import { PdfDownloadButton } from './PdfDownloadButton';
 
 
 interface FormDetailDialogProps {
@@ -454,10 +454,15 @@ export function FormDetailDialog({
           </div>
 
           {/* FOOTER */}
-          <DialogFooter className="mt-8 gap-2">
-            <Button variant="outline" onClick={onClose}>
-              Tutup
-            </Button>
+          {/* FOOTER */}
+<DialogFooter className="mt-8 gap-2">
+  {submission.status === 'approved' && (
+    <PdfDownloadButton submission={submission} />
+  )}
+  
+  <Button variant="outline" onClick={onClose}>
+    Tutup
+  </Button>
 
             {submission.status === "pending" && (
               <>

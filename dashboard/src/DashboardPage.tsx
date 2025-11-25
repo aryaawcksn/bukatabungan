@@ -11,11 +11,12 @@ import { Button } from './components/ui/button';
 import { StatCard } from "./components/ui/StatCard";
 
 
-
 export interface FormSubmission {
   id: string;
   referenceCode: string;
   cardType?: string; // Jenis kartu debit yang dipilih
+  savingsType?: string;
+  cabangPengambilan?: string;
   personalData: {
     fullName: string;
     nik: string;
@@ -50,7 +51,6 @@ export interface FormSubmission {
     selfiePhoto: string;
   };
   submittedAt: string;
-  savingsType?: string;
   status: 'pending' | 'approved' | 'rejected';
   approvedBy?: string;
   approvedAt?: string;
@@ -58,6 +58,7 @@ export interface FormSubmission {
   rejectedAt?: string;
   dataAgreement?: boolean;
 }
+
 
 // Helper function untuk mapping data dari backend ke format FormSubmission
 const mapBackendDataToFormSubmission = (data: any): FormSubmission => {
