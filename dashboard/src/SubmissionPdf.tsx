@@ -117,7 +117,7 @@ export const SubmissionPdf = ({ submission }: { submission: FormSubmission }) =>
       {/* HEADER */}
       <View style={styles.headerBar}>
         <View style={styles.bankInfo}>
-          <Text style={styles.bankName}>Cabang {submission.cabangPengambilan}</Text>
+          <Text style={styles.bankName}>{submission.cabangName || `Cabang ${submission.cabangPengambilan}`}</Text>
           <Text style={styles.bankSub}>Bukti Pendaftaran Nasabah</Text>
           <Text style={styles.bankSub}>Ref: {submission.referenceCode}</Text>
         </View>
@@ -189,7 +189,7 @@ export const SubmissionPdf = ({ submission }: { submission: FormSubmission }) =>
 
   {/* Info Cabang */}
   <Text style={styles.footerText}>
-    Cabang {submission.cabangPengambilan} • Bank Sleman
+    {submission.cabangName || `Cabang ${submission.cabangPengambilan}`} • Bank Sleman
   </Text>
 </View>
 

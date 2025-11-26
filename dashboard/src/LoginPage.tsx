@@ -34,7 +34,8 @@ export default function LoginPage() {
       const { token, admin } = res.data;
 
       localStorage.setItem("token", token);
-      localStorage.setItem("admin_cabang", admin.cabang);
+     localStorage.setItem("admin_cabang_id", admin.cabang_id);
+      localStorage.setItem("admin_nama_cabang", admin.nama_cabang);
       localStorage.setItem("admin_username", admin.username);
       localStorage.setItem("lastLoginTime", Date.now().toString());
       localStorage.setItem("isLoggedIn", "true");
@@ -46,8 +47,6 @@ export default function LoginPage() {
         localStorage.removeItem("remember_username");
         localStorage.removeItem("remember_password");
       }
-
-
       navigate("/dashboard");
     } else {
       setError(res.data.message);

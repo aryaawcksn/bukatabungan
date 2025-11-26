@@ -12,9 +12,11 @@ import { StatCard } from "./components/ui/StatCard";
 export interface FormSubmission {
   id: string;
   referenceCode: string;
-  cardType?: string; // Jenis kartu debit yang dipilih
+  cardType?: string;
   savingsType?: string;
-  cabangPengambilan?: string;
+  cabangPengambilan?: number;
+  cabangId?: string;
+  cabangName?: string;
   personalData: {
     fullName: string;
     nik: string;
@@ -147,7 +149,9 @@ const mapBackendDataToFormSubmission = (data: any): FormSubmission => {
     referenceCode: data.kode_referensi || '',
     cardType: mapJenisKartu(data.jenis_kartu),
     savingsType: data.jenis_rekening || data.savings_type || '',
-    cabangPengambilan: data.cabang_pengambilan || '',
+    cabangPengambilan: Number(data.cabang_pengambilan) || undefined,
+    cabangId: data.cabang_id || '',
+    cabangName: data.nama_cabang || '',
     personalData: {
       fullName: data.nama_lengkap || '',
       nik: data.nik || '',
@@ -404,7 +408,7 @@ export default function DashboardPage() {
           // Jika token tidak valid atau expired, redirect ke login
           if (response.status === 401 || response.status === 403) {
             localStorage.removeItem("token");
-            localStorage.removeItem("admin_cabang");
+            localStorage.removeItem("admin_cabang_id");
             localStorage.removeItem("admin_username");
             localStorage.removeItem("isLoggedIn");
             toast.error("Session expired. Silakan login ulang.");
@@ -511,7 +515,7 @@ export default function DashboardPage() {
           <div className="flex items-center gap-6">
             <div className="hidden md:block text-right">
               <p className="text-xs font-medium text-slate-500 mb-0.5">
-                Cabang {localStorage.getItem("admin_cabang") || "Pusat"}
+                Cabang {localStorage.getItem("admin_cabang_id") || "Pusat"}
               </p>
               {lastFetchTime && (
                 <p className="text-[10px] text-slate-400 flex items-center justify-end gap-1">
