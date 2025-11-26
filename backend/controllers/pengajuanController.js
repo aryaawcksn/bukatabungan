@@ -24,7 +24,7 @@ const checkStatusColumn = async () => {
 export const createPengajuan = async (req, res) => {
   try {
     console.log("📥 Received request body:", JSON.stringify(req.body, null, 2));
-    
+
     const {
       nama_lengkap,
       nik,
@@ -57,26 +57,26 @@ export const createPengajuan = async (req, res) => {
     } = req.body;
 
     // Validasi field required
-    if (!nama_lengkap || !nik || !email || !no_hp || !tanggal_lahir || 
-    !alamat || !provinsi || !kota || !kode_pos || !cabang_id) {
+    if (!nama_lengkap || !nik || !email || !no_hp || !tanggal_lahir ||
+      !alamat || !provinsi || !kota || !kode_pos || !cabang_id) {
       console.error("❌ Missing required fields");
-      return res.status(400).json({ 
-        success: false, 
-        message: "Field wajib tidak lengkap. Pastikan nama, NIK, email, no HP, tanggal lahir, alamat, provinsi, kota, dan kode pos sudah diisi." 
+      return res.status(400).json({
+        success: false,
+        message: "Field wajib tidak lengkap. Pastikan nama, NIK, email, no HP, tanggal lahir, alamat, provinsi, kota, dan kode pos sudah diisi."
       });
     }
 
     // dukung beberapa nama field dari frontend
-   const jenis_kartu =
-    req.body.jenis_kartu ||
-    req.body.card_type ||
-    req.body.cardType ||
-    "debit";
+    const jenis_kartu =
+      req.body.jenis_kartu ||
+      req.body.card_type ||
+      req.body.cardType ||
+      "debit";
 
-    
+
     // Normalize status_pernikahan (support both naming)
     const statusPernikahan = status_pernikahan || status_perkawinan;
-    
+
     // Normalize setuju_data (convert 'Ya'/'Tidak' to boolean if needed)
     let setujuDataValue = setuju_data;
     if (typeof setuju_data === 'string') {
@@ -93,17 +93,17 @@ export const createPengajuan = async (req, res) => {
     console.log("📊 Has status column:", hasStatusColumn);
 
     const cabangCheck = await pool.query(
-  "SELECT is_active FROM cabang WHERE id = $1",
-  [cabang_id]
-);
+      "SELECT is_active FROM cabang WHERE id = $1",
+      [cabang_id]
+    );
 
-if (cabangCheck.rows.length === 0) {
-  return res.status(400).json({ success: false, message: "Cabang tidak valid" });
-}
+    if (cabangCheck.rows.length === 0) {
+      return res.status(400).json({ success: false, message: "Cabang tidak valid" });
+    }
 
-if (!cabangCheck.rows[0].is_active) {
-  return res.status(403).json({ success: false, message: "Cabang sedang maintenance" });
-}
+    if (!cabangCheck.rows[0].is_active) {
+      return res.status(403).json({ success: false, message: "Cabang sedang maintenance" });
+    }
 
     // Query SQL dengan semua field sesuai schema database
     let query = `
@@ -180,9 +180,9 @@ if (!cabangCheck.rows[0].is_active) {
 
     console.log("🔍 Executing query with", values.length, "parameters");
     console.log("📝 Query:", query.substring(0, 200) + "...");
-    
+
     const result = await pool.query(query, values);
-    
+
     console.log("✅ Data berhasil disimpan dengan ID:", result.rows[0]?.id);
     console.log("📋 Kode referensi:", kode_referensi);
 
@@ -202,7 +202,7 @@ if (!cabangCheck.rows[0].is_active) {
       table: err.table,
       column: err.column
     });
-    
+
     // Berikan error message yang lebih informatif
     let errorMessage = err.message;
     if (err.code === '23505') { // Unique violation
@@ -216,9 +216,9 @@ if (!cabangCheck.rows[0].is_active) {
     } else if (err.code === '42703') { // Undefined column
       errorMessage = `Kolom tidak ditemukan: ${err.column || 'unknown'}. Pastikan migrasi database sudah dijalankan.`;
     }
-    
-    res.status(500).json({ 
-      success: false, 
+
+    res.status(500).json({
+      success: false,
       message: errorMessage,
       error: process.env.NODE_ENV === 'development' ? {
         code: err.code,
@@ -244,83 +244,87 @@ export const getPengajuanById = async (req, res) => {
     const query = hasStatusColumn
       ? `
         SELECT 
-          id,
-          kode_referensi,
-          nama_lengkap,
-          nik,
-          email,
-          no_hp,
-          tanggal_lahir,
-          alamat,
-          provinsi,
-          kota,
-          kode_pos,
-          pekerjaan,
-          penghasilan,
-          cabang_id,
-          jenis_kartu,
-          jenis_rekening,
-          COALESCE(status, 'pending') AS status,
-          foto_ktp,
-          foto_selfie,
-          jenis_kelamin,
-          status_pernikahan,
-          nama_ibu_kandung,
-          kewarganegaraan,
-          tempat_bekerja,
-          alamat_kantor,
-          sumber_dana,
-          tujuan_rekening,
-          kontak_darurat_nama,
-          kontak_darurat_hp,
-          setuju_data,
-          created_at,
-          approved_by,
-          approved_at,
-          rejected_by,
-          rejected_at
-        FROM pengajuan_tabungan
-        WHERE id = $1 AND cabang_id = $2;
+          p.id,
+          p.kode_referensi,
+          p.nama_lengkap,
+          p.nik,
+          p.email,
+          p.no_hp,
+          p.tanggal_lahir,
+          p.alamat,
+          p.provinsi,
+          p.kota,
+          p.kode_pos,
+          p.pekerjaan,
+          p.penghasilan,
+          p.cabang_id AS cabang_pengambilan,
+          c.nama_cabang,
+          p.jenis_kartu,
+          p.jenis_rekening,
+          COALESCE(p.status, 'pending') AS status,
+          p.foto_ktp,
+          p.foto_selfie,
+          p.jenis_kelamin,
+          p.status_pernikahan,
+          p.nama_ibu_kandung,
+          p.kewarganegaraan,
+          p.tempat_bekerja,
+          p.alamat_kantor,
+          p.sumber_dana,
+          p.tujuan_rekening,
+          p.kontak_darurat_nama,
+          p.kontak_darurat_hp,
+          p.setuju_data,
+          p.created_at,
+          p.approved_by,
+          p.approved_at,
+          p.rejected_by,
+          p.rejected_at
+        FROM pengajuan_tabungan p
+        LEFT JOIN cabang c ON p.cabang_id = c.id
+        WHERE p.id = $1 AND p.cabang_id = $2;
       `
       : `
         SELECT 
-          id,
-          kode_referensi,
-          nama_lengkap,
-          nik,
-          email,
-          no_hp,
-          tanggal_lahir,
-          alamat,
-          provinsi,
-          kota,
-          kode_pos,
-          pekerjaan,
-          penghasilan,
-          cabang_id,
-          jenis_kartu,
-          jenis_rekening,
+          p.id,
+          p.kode_referensi,
+          p.nama_lengkap,
+          p.nik,
+          p.email,
+          p.no_hp,
+          p.tanggal_lahir,
+          p.alamat,
+          p.provinsi,
+          p.kota,
+          p.kode_pos,
+          p.pekerjaan,
+          p.penghasilan,
+          p.cabang_id AS cabang_pengambilan,
+          c.nama_cabang,
+          p.jenis_kartu,
+          p.jenis_rekening,
           'pending' AS status,
-          foto_ktp,
-          foto_selfie,
-          jenis_kelamin,
-          status_pernikahan,
-          nama_ibu_kandung,
-          kewarganegaraan,
-          tempat_bekerja,
-          alamat_kantor,
-          sumber_dana,
-          tujuan_rekening,
-          kontak_darurat_nama,
-          kontak_darurat_hp,
-          setuju_data,
-          created_at,
-          approved_by,
-          approved_at,
-          rejected_by,
-          rejected_at
-        FROM pengajuan_tabungan
-        WHERE id = $1 AND cabang_id = $2;
+          p.foto_ktp,
+          p.foto_selfie,
+          p.jenis_kelamin,
+          p.status_pernikahan,
+          p.nama_ibu_kandung,
+          p.kewarganegaraan,
+          p.tempat_bekerja,
+          p.alamat_kantor,
+          p.sumber_dana,
+          p.tujuan_rekening,
+          p.kontak_darurat_nama,
+          p.kontak_darurat_hp,
+          p.setuju_data,
+          p.created_at,
+          p.approved_by,
+          p.approved_at,
+          p.rejected_by,
+          p.rejected_at
+        FROM pengajuan_tabungan p
+        LEFT JOIN cabang c ON p.cabang_id = c.id
+        WHERE p.id = $1 AND p.cabang_id = $2;
       `;
 
     const result = await pool.query(query, [id, adminCabang]);
@@ -355,89 +359,93 @@ export const getAllPengajuan = async (req, res) => {
     const query = hasStatusColumn
       ? `
         SELECT 
-          id,
-          kode_referensi,
-          nama_lengkap,
-          nik,
-          email,
-          no_hp,
-          tanggal_lahir,
-          alamat,
-          provinsi,
-          kota,
-          kode_pos,
-          pekerjaan,
-          penghasilan,
-          cabang_id,
-          jenis_kartu,
-          jenis_rekening,
-          COALESCE(status, 'pending') AS status,
-          foto_ktp,
-          foto_selfie,
-          jenis_kelamin,
-          status_pernikahan,
-          nama_ibu_kandung,
-          kewarganegaraan,
-          tempat_bekerja,
-          alamat_kantor,
-          sumber_dana,
-          tujuan_rekening,
-          kontak_darurat_nama,
-          kontak_darurat_hp,
-          setuju_data,
-          created_at,
-          approved_by,
-          approved_at,
-          rejected_by,
-          rejected_at
-        FROM pengajuan_tabungan
-        WHERE cabang_id = $1
-        ORDER BY created_at DESC;
+          p.id,
+          p.kode_referensi,
+          p.nama_lengkap,
+          p.nik,
+          p.email,
+          p.no_hp,
+          p.tanggal_lahir,
+          p.alamat,
+          p.provinsi,
+          p.kota,
+          p.kode_pos,
+          p.pekerjaan,
+          p.penghasilan,
+          p.cabang_id AS cabang_pengambilan,
+          c.nama_cabang,
+          p.jenis_kartu,
+          p.jenis_rekening,
+          COALESCE(p.status, 'pending') AS status,
+          p.foto_ktp,
+          p.foto_selfie,
+          p.jenis_kelamin,
+          p.status_pernikahan,
+          p.nama_ibu_kandung,
+          p.kewarganegaraan,
+          p.tempat_bekerja,
+          p.alamat_kantor,
+          p.sumber_dana,
+          p.tujuan_rekening,
+          p.kontak_darurat_nama,
+          p.kontak_darurat_hp,
+          p.setuju_data,
+          p.created_at,
+          p.approved_by,
+          p.approved_at,
+          p.rejected_by,
+          p.rejected_at
+        FROM pengajuan_tabungan p
+        LEFT JOIN cabang c ON p.cabang_id = c.id
+        WHERE p.cabang_id = $1
+        ORDER BY p.created_at DESC;
       `
       : `
         SELECT 
-          id,
-          kode_referensi,
-          nama_lengkap,
-          nik,
-          email,
-          no_hp,
-          tanggal_lahir,
-          alamat,
-          provinsi,
-          kota,
-          kode_pos,
-          pekerjaan,
-          penghasilan,
-          cabang_id,
-          jenis_kartu,
-          jenis_rekening,
+          p.id,
+          p.kode_referensi,
+          p.nama_lengkap,
+          p.nik,
+          p.email,
+          p.no_hp,
+          p.tanggal_lahir,
+          p.alamat,
+          p.provinsi,
+          p.kota,
+          p.kode_pos,
+          p.pekerjaan,
+          p.penghasilan,
+          p.cabang_id AS cabang_pengambilan,
+          c.nama_cabang,
+          p.jenis_kartu,
+          p.jenis_rekening,
           'pending' AS status,
-          foto_ktp,
-          foto_selfie,
-          jenis_kelamin,
-          status_pernikahan,
-          nama_ibu_kandung,
-          kewarganegaraan,
-          tempat_bekerja,
-          alamat_kantor,
-          sumber_dana,
-          tujuan_rekening,
-          kontak_darurat_nama,
-          kontak_darurat_hp,
-          setuju_data,
-          created_at,
-          approved_by,
-          approved_at,
-          rejected_by,
-          rejected_at
-        FROM pengajuan_tabungan
-        WHERE cabang_id = $1
-        ORDER BY created_at DESC;
+          p.foto_ktp,
+          p.foto_selfie,
+          p.jenis_kelamin,
+          p.status_pernikahan,
+          p.nama_ibu_kandung,
+          p.kewarganegaraan,
+          p.tempat_bekerja,
+          p.alamat_kantor,
+          p.sumber_dana,
+          p.tujuan_rekening,
+          p.kontak_darurat_nama,
+          p.kontak_darurat_hp,
+          p.setuju_data,
+          p.created_at,
+          p.approved_by,
+          p.approved_at,
+          p.rejected_by,
+          p.rejected_at
+        FROM pengajuan_tabungan p
+        LEFT JOIN cabang c ON p.cabang_id = c.id
+        WHERE p.cabang_id = $1
+        ORDER BY p.created_at DESC;
       `;
 
     const result = await pool.query(query, [adminCabang]);
-    
+
     console.log("📊 getAllPengajuan - Total rows:", result.rows.length);
     if (result.rows.length > 0) {
       console.log("📊 Sample row fields:", Object.keys(result.rows[0]));
@@ -477,15 +485,15 @@ export const updatePengajuanStatus = async (req, res) => {
     // Update status di database dengan informasi siapa yang approve/reject
     let query, values;
     if (status === 'approved') {
-        query = `
+      query = `
           UPDATE pengajuan_tabungan 
           SET status = $1, approved_by = $2, approved_at = NOW(), rejected_by = NULL, rejected_at = NULL
           WHERE id = $3 AND cabang_id = $4
           RETURNING *;
         `;
-        values = [status, adminUsername, id, req.user.cabang_id];
-      }
-      else if (status === 'rejected') {
+      values = [status, adminUsername, id, req.user.cabang_id];
+    }
+    else if (status === 'rejected') {
       query = `
         UPDATE pengajuan_tabungan 
         SET status = $1, rejected_by = $2, rejected_at = NOW(), approved_by = NULL, approved_at = NULL
