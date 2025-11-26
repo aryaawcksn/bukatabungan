@@ -5,6 +5,18 @@ import { sendWhatsAppNotification } from "../services/whatsappService.js";
 /**
  * Cek apakah kolom status ada di tabel pengajuan_tabungan
  */
+const checkStatusColumn = async () => {
+  try {
+    const checkColumn = await pool.query(`
+      SELECT column_name 
+      FROM information_schema.columns 
+      WHERE table_name = 'pengajuan_tabungan' AND column_name = 'status'
+    `);
+    return checkColumn.rows.length > 0;
+  } catch (err) {
+    return false;
+  }
+};
 
 /**
  * Membuat pengajuan baru
@@ -77,6 +89,8 @@ export const createPengajuan = async (req, res) => {
     const kode_referensi = `REF-${Math.floor(Math.random() * 1000000)}`;
 
     // Cek apakah kolom status ada di tabel
+    const hasStatusColumn = await checkStatusColumn();
+    console.log("📊 Has status column:", hasStatusColumn);
 
     const cabangCheck = await pool.query(
   "SELECT is_active FROM cabang WHERE id = $1",
@@ -224,7 +238,7 @@ export const getPengajuanById = async (req, res) => {
     const adminCabang = req.user.cabang_id; // cabang dari token login
 
     // Cek apakah kolom status ada
-    
+    const hasStatusColumn = await checkStatusColumn();
 
     // Query dengan kolom foto_ktp dan foto_selfie, termasuk approved/rejected info, plus field baru
     const query = hasStatusColumn
@@ -333,6 +347,7 @@ export const getAllPengajuan = async (req, res) => {
     const adminCabang = req.user.cabang_id; // cabang dari token login
 
     // Cek apakah kolom status ada
+    const hasStatusColumn = await checkStatusColumn();
     console.log("📊 getAllPengajuan - Has status column:", hasStatusColumn);
     console.log("📊 getAllPengajuan - Admin cabang:", adminCabang);
 
