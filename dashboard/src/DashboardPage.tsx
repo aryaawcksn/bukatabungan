@@ -2,8 +2,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { FormSubmissionCard } from './components/form-submission-card';
 import { FormDetailDialog } from './components/form-detail-dialog';
 import { ApprovalDialog } from './components/approval-dialog';
-import { FileText, Search, Filter, LayoutDashboard, ClipboardCheck, FileBarChart, LogOut, FileCog, X, Clock3, Check } from 'lucide-react';
-import { Input } from './components/ui/input';
+import { Search, LayoutDashboard, ClipboardCheck, FileBarChart, LogOut, FileCog, X, Clock3, Check } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './components/ui/select';
 import { toast } from 'sonner';
 import { Toaster } from './components/ui/sonner';
@@ -449,10 +448,6 @@ export default function DashboardPage() {
       setSelectedSubmission(null);
     }
   }, [approvalDialog, fetchSubmissions]);
-
-  const handleViewDetails = useCallback((submission: FormSubmission) => {
-    setSelectedSubmission(submission);
-  }, []);
 
   const filteredSubmissions = useMemo(() => submissions.filter(sub => {
     const matchesSearch =
