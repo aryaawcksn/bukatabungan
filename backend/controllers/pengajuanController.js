@@ -5,18 +5,6 @@ import { sendWhatsAppNotification } from "../services/whatsappService.js";
 /**
  * Cek apakah kolom status ada di tabel pengajuan_tabungan
  */
-const checkStatusColumn = async () => {
-  try {
-    const checkColumn = await pool.query(`
-      SELECT column_name 
-      FROM information_schema.columns 
-      WHERE table_name = 'pengajuan_tabungan' AND column_name = 'status'
-    `);
-    return checkColumn.rows.length > 0;
-  } catch (err) {
-    return false;
-  }
-};
 
 /**
  * Membuat pengajuan baru
@@ -37,7 +25,7 @@ export const createPengajuan = async (req, res) => {
       kode_pos,
       pekerjaan,
       penghasilan,
-      cabang_pengambilan,
+      cabang_id,
       foto_ktp,
       foto_selfie,
       // Field baru
@@ -57,7 +45,8 @@ export const createPengajuan = async (req, res) => {
     } = req.body;
 
     // Validasi field required
-    if (!nama_lengkap || !nik || !email || !no_hp || !tanggal_lahir || !alamat || !provinsi || !kota || !kode_pos) {
+    if (!nama_lengkap || !nik || !email || !no_hp || !tanggal_lahir || 
+    !alamat || !provinsi || !kota || !kode_pos || !cabang_id) {
       console.error("❌ Missing required fields");
       return res.status(400).json({ 
         success: false, 
@@ -66,7 +55,12 @@ export const createPengajuan = async (req, res) => {
     }
 
     // dukung beberapa nama field dari frontend
-    const jenis_kartu = req.body.jenis_kartu || req.body.card_type || req.body.cardType;
+   const jenis_kartu =
+    req.body.jenis_kartu ||
+    req.body.card_type ||
+    req.body.cardType ||
+    "debit";
+
     
     // Normalize status_pernikahan (support both naming)
     const statusPernikahan = status_pernikahan || status_perkawinan;
@@ -83,8 +77,19 @@ export const createPengajuan = async (req, res) => {
     const kode_referensi = `REF-${Math.floor(Math.random() * 1000000)}`;
 
     // Cek apakah kolom status ada di tabel
-    const hasStatusColumn = await checkStatusColumn();
-    console.log("📊 Has status column:", hasStatusColumn);
+
+    const cabangCheck = await pool.query(
+  "SELECT is_active FROM cabang WHERE id = $1",
+  [cabang_id]
+);
+
+if (cabangCheck.rows.length === 0) {
+  return res.status(400).json({ success: false, message: "Cabang tidak valid" });
+}
+
+if (!cabangCheck.rows[0].is_active) {
+  return res.status(403).json({ success: false, message: "Cabang sedang maintenance" });
+}
 
     // Query SQL dengan semua field sesuai schema database
     let query = `
@@ -103,7 +108,7 @@ export const createPengajuan = async (req, res) => {
         pekerjaan,
         penghasilan,
         jenis_kartu,
-        cabang_pengambilan,
+        cabang_id,
         status,
         foto_ktp,
         foto_selfie,
@@ -141,7 +146,7 @@ export const createPengajuan = async (req, res) => {
       pekerjaan,               // $11
       penghasilan,             // $12
       jenis_kartu,             // $13
-      cabang_pengambilan,      // $14
+      cabang_id,      // $14
       req.body.status || "pending",  // $15 - status
       foto_ktp,                // $16
       foto_selfie,             // $17
@@ -216,10 +221,10 @@ export const createPengajuan = async (req, res) => {
 export const getPengajuanById = async (req, res) => {
   try {
     const { id } = req.params;
-    const adminCabang = req.user.cabang; // cabang dari token login
+    const adminCabang = req.user.cabang_id; // cabang dari token login
 
     // Cek apakah kolom status ada
-    const hasStatusColumn = await checkStatusColumn();
+    
 
     // Query dengan kolom foto_ktp dan foto_selfie, termasuk approved/rejected info, plus field baru
     const query = hasStatusColumn
@@ -238,7 +243,7 @@ export const getPengajuanById = async (req, res) => {
           kode_pos,
           pekerjaan,
           penghasilan,
-          cabang_pengambilan,
+          cabang_id,
           jenis_kartu,
           jenis_rekening,
           COALESCE(status, 'pending') AS status,
@@ -261,7 +266,7 @@ export const getPengajuanById = async (req, res) => {
           rejected_by,
           rejected_at
         FROM pengajuan_tabungan
-        WHERE id = $1 AND cabang_pengambilan = $2;
+        WHERE id = $1 AND cabang_id = $2;
       `
       : `
         SELECT 
@@ -278,7 +283,7 @@ export const getPengajuanById = async (req, res) => {
           kode_pos,
           pekerjaan,
           penghasilan,
-          cabang_pengambilan,
+          cabang_id,
           jenis_kartu,
           jenis_rekening,
           'pending' AS status,
@@ -301,7 +306,7 @@ export const getPengajuanById = async (req, res) => {
           rejected_by,
           rejected_at
         FROM pengajuan_tabungan
-        WHERE id = $1 AND cabang_pengambilan = $2;
+        WHERE id = $1 AND cabang_id = $2;
       `;
 
     const result = await pool.query(query, [id, adminCabang]);
@@ -325,10 +330,9 @@ export const getPengajuanById = async (req, res) => {
  */
 export const getAllPengajuan = async (req, res) => {
   try {
-    const adminCabang = req.user.cabang; // cabang dari token login
+    const adminCabang = req.user.cabang_id; // cabang dari token login
 
     // Cek apakah kolom status ada
-    const hasStatusColumn = await checkStatusColumn();
     console.log("📊 getAllPengajuan - Has status column:", hasStatusColumn);
     console.log("📊 getAllPengajuan - Admin cabang:", adminCabang);
 
@@ -349,7 +353,7 @@ export const getAllPengajuan = async (req, res) => {
           kode_pos,
           pekerjaan,
           penghasilan,
-          cabang_pengambilan,
+          cabang_id,
           jenis_kartu,
           jenis_rekening,
           COALESCE(status, 'pending') AS status,
@@ -372,7 +376,7 @@ export const getAllPengajuan = async (req, res) => {
           rejected_by,
           rejected_at
         FROM pengajuan_tabungan
-        WHERE cabang_pengambilan = $1
+        WHERE cabang_id = $1
         ORDER BY created_at DESC;
       `
       : `
@@ -390,7 +394,7 @@ export const getAllPengajuan = async (req, res) => {
           kode_pos,
           pekerjaan,
           penghasilan,
-          cabang_pengambilan,
+          cabang_id,
           jenis_kartu,
           jenis_rekening,
           'pending' AS status,
@@ -413,7 +417,7 @@ export const getAllPengajuan = async (req, res) => {
           rejected_by,
           rejected_at
         FROM pengajuan_tabungan
-        WHERE cabang_pengambilan = $1
+        WHERE cabang_id = $1
         ORDER BY created_at DESC;
       `;
 
@@ -458,30 +462,31 @@ export const updatePengajuanStatus = async (req, res) => {
     // Update status di database dengan informasi siapa yang approve/reject
     let query, values;
     if (status === 'approved') {
-      query = `
-        UPDATE pengajuan_tabungan 
-        SET status = $1, approved_by = $2, approved_at = NOW(), rejected_by = NULL, rejected_at = NULL
-        WHERE id = $3 
-        RETURNING *;
-      `;
-      values = [status, adminUsername, id];
-    } else if (status === 'rejected') {
+        query = `
+          UPDATE pengajuan_tabungan 
+          SET status = $1, approved_by = $2, approved_at = NOW(), rejected_by = NULL, rejected_at = NULL
+          WHERE id = $3 AND cabang_id = $4
+          RETURNING *;
+        `;
+        values = [status, adminUsername, id, req.user.cabang_id];
+      }
+      else if (status === 'rejected') {
       query = `
         UPDATE pengajuan_tabungan 
         SET status = $1, rejected_by = $2, rejected_at = NOW(), approved_by = NULL, approved_at = NULL
-        WHERE id = $3 
+        WHERE id = $3 AND cabang_id = $4 
         RETURNING *;
       `;
-      values = [status, adminUsername, id];
+      values = [status, adminUsername, id, req.user.cabang_id];
     } else {
       // Jika status pending, reset semua approval/rejection info
       query = `
         UPDATE pengajuan_tabungan 
         SET status = $1, approved_by = NULL, approved_at = NULL, rejected_by = NULL, rejected_at = NULL
-        WHERE id = $2 
+        WHERE id = $2 AND cabang_id = $3
         RETURNING *;
       `;
-      values = [status, id];
+      values = [status, id, req.user.cabang_id];
     }
 
     const result = await pool.query(query, values);

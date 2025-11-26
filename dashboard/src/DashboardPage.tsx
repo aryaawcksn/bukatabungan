@@ -9,7 +9,6 @@ import { Toaster } from './components/ui/sonner';
 import { Button } from './components/ui/button';
 import { StatCard } from "./components/ui/StatCard";
 
-
 export interface FormSubmission {
   id: string;
   referenceCode: string;
@@ -265,10 +264,10 @@ export default function DashboardPage() {
         credentials: 'include'
       });
       if (response.ok) {
-        console.log('✅ Backend server terhubung');
+        console.log('status koneksi backend: OK');
       }
     } catch (error) {
-      console.error('❌ Backend server tidak dapat diakses:', error);
+      console.error('Backend server tidak dapat diakses:', error);
       toast.error('Tidak dapat terhubung ke server', {
         duration: 5000,
       });
@@ -470,23 +469,40 @@ export default function DashboardPage() {
     window.location.href = "/login";    // redirect ke login
   };
 
+  const getGreeting = () => {
+  const hour = new Date().getHours();
+  if (hour >= 4 && hour < 10) return "Selamat Pagi";
+  if (hour >= 10 && hour < 15) return "Selamat Siang";
+  if (hour >= 15 && hour < 18) return "Selamat Sore";
+  return "Selamat Malam";
+};
+
+
 
   return (
     <div className="min-h-screen bg-slate-50/50 font-sans text-slate-900 selection:bg-blue-100 selection:text-blue-900">
       {/* Header */}
-      <header className="sticky top-0 z-50 w-full bg-white border-b border-slate-200">
+      <header className="sticky top-0 z-50 w-full bg-white/30 backdrop-blur-md border-b border-slate-200/50">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           {/* Left Side - Branding */}
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white">
-              <LayoutDashboard className="w-6 h-6" />
-            </div>
+            <div className="w-10 h-10 bg-transparent rounded-xl flex items-center justify-center">
+            <img 
+              src="./bss2.png" 
+              alt="Dashboard" 
+              className="w-10 h-10 object-contain"
+            />
+          </div>
+
             <div>
-              <h1 className="text-slate-900 font-bold text-lg tracking-tight leading-none">
+              <h1
+                className="text-slate-900 font-bold text-xl tracking-tight leading-none"
+                style={{ fontFamily: '"", sans-serif, text-sm' }}
+              >
                 Bank Sleman
               </h1>
               <p className="text-slate-500 text-xs font-medium mt-1">
-                Sistem Pemantauan Rekening
+                Sistem Pemantauan Permohonan Rekening
               </p>
             </div>
           </div>
@@ -500,7 +516,7 @@ export default function DashboardPage() {
               {lastFetchTime && (
                 <p className="text-[10px] text-slate-400 flex items-center justify-end gap-1">
                   <Clock3 className="w-3 h-3" />
-                  Updated {lastFetchTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                  Last Update {lastFetchTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
                 </p>
               )}
             </div>
@@ -558,15 +574,15 @@ export default function DashboardPage() {
         
         {/* Welcome Message */}
         {activeTab === 'dashboard' && (
-          <div className="mb-10">
-            <h2 className="text-3xl font-bold text-slate-900 tracking-tight">
-              Selamat Pagi, {localStorage.getItem("admin_username") || "Admin"}! 👋
-            </h2>
-            <p className="text-slate-500 mt-2 text-lg">
-              Berikut adalah ringkasan aktivitas permohonan rekening hari ini.
-            </p>
-          </div>
-        )}
+      <div className="mb-10">
+        <h2 className="text-3xl font-bold text-slate-900 tracking-tight">
+          {getGreeting()}, {localStorage.getItem("admin_username") || "Admin"}! 👋
+        </h2>
+        <p className="text-slate-500 mt-2 text-lg">
+          Berikut adalah ringkasan aktivitas permohonan rekening hari ini.
+        </p>
+      </div>
+    )}
 
         {activeTab === "dashboard" && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
