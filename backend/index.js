@@ -10,6 +10,8 @@ import pengajuanRoutes from "./routes/pengajuanRoutes.js";
 import testRoutes from "./routes/testRoutes.js";
 import checkNikRoute from "./routes/check-nik.js";
 import otpRoutes from "./routes/otpRoutes.js";
+import cabangRoutes from "./routes/cabangRoutes.js";
+
 dotenv.config();
 
 const app = express();
@@ -28,8 +30,8 @@ app.use(cors({
     if (allowedOrigins.includes(origin)) return callback(null, true);
     return callback(new Error("CORS not allowed"));
   },
-  methods: ["GET","POST","PUT","DELETE","OPTIONS"],
-  allowedHeaders: ["Content-Type","Authorization"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 }));
 
@@ -40,12 +42,14 @@ app.use(express.json());
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 // ===== ROUTES =====
-app.use("/upload", uploadRouter); 
+app.use("/upload", uploadRouter);
 app.use("/api", checkNikRoute);
 app.use("/api", authRoutes); // login route
 app.use("/api/pengajuan", pengajuanRoutes);
 app.use("/api", testRoutes);
 app.use("/otp", otpRoutes);
+app.use("/api/cabang", cabangRoutes);
+
 
 // ===== 404 =====
 app.use((req, res) => {

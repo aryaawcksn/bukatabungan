@@ -32,6 +32,7 @@ export default function FormIndividu({
   loadingSubmit,
   handleSubmit,
   getSavingsTypeName,
+  branches = [],
 }: AccountFormProps) {
 
   return (
@@ -556,17 +557,39 @@ export default function FormIndividu({
       <div>
         <h3 className="text-emerald-900 mb-6 text-2xl">Pilih Cabang</h3>
         <Label htmlFor="cabang_pengambilan" className="text-gray-700">Pilih Cabang Pengambilan</Label>
+        {errors.cabang_pengambilan && <p className="text-sm text-red-600 mb-1">{errors.cabang_pengambilan}</p>}
         <Select
           value={formData.cabang_pengambilan}
-          onValueChange={(value) => setFormData({ ...formData, cabang_pengambilan: value })}
+          onValueChange={(value) => {
+             // Find selected branch to check status
+             // Note: value is the ID now (as per AccountForm update), but let's double check if we are using ID or Name.
+             // In AccountForm I passed `cabang_pengambilan: data.cabang_pengambilan` which I said "This will now be the ID".
+             // But the SelectItem value needs to match.
+             // If I change SelectItem value to `branch.id`, then `formData.cabang_pengambilan` will store the ID.
+             // Let's assume we use ID.
+             const selectedBranch = branches.find(b => b.id.toString() === value.toString());
+             
+             if (selectedBranch && !selectedBranch.is_active) {
+                setErrors(prev => ({ ...prev, cabang_pengambilan: "Cabang sedang dalam perbaikan, silahkan pilih cabang lain" }));
+             } else {
+                setErrors(prev => {
+                  const next = { ...prev };
+                  delete next.cabang_pengambilan;
+                  return next;
+                });
+             }
+             setFormData({ ...formData, cabang_pengambilan: value });
+          }}
         >
-          <SelectTrigger className="mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded">
+          <SelectTrigger className={`mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded ${errors.cabang_pengambilan ? 'border-red-500' : ''}`}>
             <SelectValue placeholder="Pilih cabang pengambilan" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="Sleman">Cabang Sleman</SelectItem>
-            <SelectItem value="Godean">Cabang Godean</SelectItem>
-            <SelectItem value="Turi">Cabang Turi</SelectItem>
+            {branches.map((branch: any) => (
+              <SelectItem key={branch.id} value={branch.id.toString()}>
+                {branch.nama_cabang} {!branch.is_active ? '(Maintenance)' : ''}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>

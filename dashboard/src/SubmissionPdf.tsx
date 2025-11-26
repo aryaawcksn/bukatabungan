@@ -117,7 +117,7 @@ export const SubmissionPdf = ({ submission }: { submission: FormSubmission }) =>
       {/* HEADER */}
       <View style={styles.headerBar}>
         <View style={styles.bankInfo}>
-          <Text style={styles.bankName}>{submission.cabangName || `Cabang ${submission.cabangPengambilan}`}</Text>
+          <Text style={styles.bankName}>Cabang {submission.cabangName || `Cabang ${submission.cabangPengambilan}`}</Text>
           <Text style={styles.bankSub}>Bukti Pendaftaran Nasabah</Text>
           <Text style={styles.bankSub}>Ref: {submission.referenceCode}</Text>
         </View>

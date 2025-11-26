@@ -56,4 +56,6 @@ export interface AccountFormProps {
     handleSubmit: (e: FormEvent) => void;
     savingsType: string;
     getSavingsTypeName: () => string;
+    branches?: any[];
 }
+

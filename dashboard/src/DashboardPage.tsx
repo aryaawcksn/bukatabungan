@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { FormSubmissionCard } from './components/form-submission-card';
+import CabangSetting from './components/CabangSetting';
+
 import { FormDetailDialog } from './components/form-detail-dialog';
 import { ApprovalDialog } from './components/approval-dialog';
 import { Search, LayoutDashboard, ClipboardCheck, FileBarChart, LogOut, FileCog, X, Clock3, Check } from 'lucide-react';
@@ -515,7 +517,7 @@ export default function DashboardPage() {
           <div className="flex items-center gap-6">
             <div className="hidden md:block text-right">
               <p className="text-xs font-medium text-slate-500 mb-0.5">
-                Cabang {localStorage.getItem("admin_cabang_id") || "Pusat"}
+                Cabang {localStorage.getItem("admin_nama_cabang") || "Pusat"}
               </p>
               {lastFetchTime && (
                 <p className="text-[10px] text-slate-400 flex items-center justify-end gap-1">
@@ -700,59 +702,56 @@ export default function DashboardPage() {
 
         {activeTab === 'manage' && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-             <div className="mb-8">
-                <h3 className="text-2xl font-bold text-slate-900">Pengaturan Sistem</h3>
-                <p className="text-slate-500">Konfigurasi parameter dan akses admin.</p>
+             <div className="mb-8 flex items-center justify-between">
+                <div>
+                  <h3 className="text-2xl font-bold text-slate-900">Pengaturan Sistem</h3>
+                  <p className="text-slate-500">Konfigurasi parameter dan akses admin.</p>
+                </div>
+                {/* Back button if in sub-view */}
               </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* Cabang Pengambilan */}
-              <button className="group relative bg-white border border-slate-200 rounded-2xl p-6 hover:-lg hover:border-blue-200 transition-all duration-300 text-left overflow-hidden">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-                <div className="relative z-10">
-                  <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                    <LayoutDashboard className="w-6 h-6" />
-                  </div>
-                  <h3 className="font-bold text-slate-800 text-lg mb-2">Cabang Bank</h3>
-                  <p className="text-slate-500 text-sm leading-relaxed">
-                    Kelola daftar kantor cabang untuk lokasi pengambilan buku tabungan.
-                  </p>
-                </div>
-              </button>
+            {/* Simple toggle for now, or just render CabangSetting below for this task */}
+            <div className="space-y-8">
+              <CabangSetting />
+              
+              <div className="border-t border-slate-200 pt-8">
+                <h4 className="text-lg font-semibold text-slate-900 mb-4">Menu Lainnya</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {/* Admin User */}
+                  <button className="group relative bg-white border border-slate-200 rounded-2xl p-6 hover:-lg hover:border-indigo-200 transition-all duration-300 text-left overflow-hidden">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+                    <span className="absolute top-4 right-4 bg-indigo-100 text-indigo-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider z-20">
+                      High Admin
+                    </span>
+                    <div className="relative z-10">
+                      <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                        <FileCog className="w-6 h-6" />
+                      </div>
+                      <h3 className="font-bold text-slate-800 text-lg mb-2">Manajemen User</h3>
+                      <p className="text-slate-500 text-sm leading-relaxed">
+                        Tambah atau hapus akses admin untuk staff bank lainnya.
+                      </p>
+                    </div>
+                  </button>
 
-              {/* Admin User */}
-              <button className="group relative bg-white border border-slate-200 rounded-2xl p-6 hover:-lg hover:border-indigo-200 transition-all duration-300 text-left overflow-hidden">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-                <span className="absolute top-4 right-4 bg-indigo-100 text-indigo-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider z-20">
-                  High Admin
-                </span>
-                <div className="relative z-10">
-                  <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-                    <FileCog className="w-6 h-6" />
-                  </div>
-                  <h3 className="font-bold text-slate-800 text-lg mb-2">Manajemen User</h3>
-                  <p className="text-slate-500 text-sm leading-relaxed">
-                    Tambah atau hapus akses admin untuk staff bank lainnya.
-                  </p>
+                  {/* Dev Only */}
+                  <button className="group relative bg-white border border-slate-200 rounded-2xl p-6 hover:-lg hover:border-purple-200 transition-all duration-300 text-left overflow-hidden">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-purple-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+                    <span className="absolute top-4 right-4 bg-purple-100 text-purple-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider z-20">
+                      Dev Only
+                    </span>
+                    <div className="relative z-10">
+                      <div className="w-12 h-12 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                        <FileBarChart className="w-6 h-6" />
+                      </div>
+                      <h3 className="font-bold text-slate-800 text-lg mb-2">System Logs</h3>
+                      <p className="text-slate-500 text-sm leading-relaxed">
+                        Monitoring performa sistem dan error logs untuk developer.
+                      </p>
+                    </div>
+                  </button>
                 </div>
-              </button>
-
-              {/* Dev Only */}
-              <button className="group relative bg-white border border-slate-200 rounded-2xl p-6 hover:-lg hover:border-purple-200 transition-all duration-300 text-left overflow-hidden">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-purple-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-                <span className="absolute top-4 right-4 bg-purple-100 text-purple-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider z-20">
-                  Dev Only
-                </span>
-                <div className="relative z-10">
-                  <div className="w-12 h-12 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-purple-600 group-hover:text-white transition-colors">
-                    <FileBarChart className="w-6 h-6" />
-                  </div>
-                  <h3 className="font-bold text-slate-800 text-lg mb-2">System Logs</h3>
-                  <p className="text-slate-500 text-sm leading-relaxed">
-                    Monitoring performa sistem dan error logs untuk developer.
-                  </p>
-                </div>
-              </button>
+              </div>
             </div>
           </div>
         )}

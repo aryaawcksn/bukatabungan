@@ -106,7 +106,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     city: '',
     postalCode: '',
     monthlyIncome: '',
-    cabang_pengambilan: 'Sleman',
+    cabang_pengambilan: '',
     cardType: '',
     agreeTerms: false,
     jenis_rekening: '',
@@ -122,8 +122,24 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     tujuanRekening: '',
     kontakDaruratNama: '',
     kontakDaruratHp: '',
+    kontakDaruratHp: '',
     employmentStatus: '',
+    cabangId: '', // New field for ID
   });
+
+  const [branches, setBranches] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch("https://bukatabungan-production.up.railway.app/api/cabang")
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setBranches(data.data);
+          // Set default if needed, or leave empty
+        }
+      })
+      .catch(err => console.error("Failed to fetch branches", err));
+  }, []);
 
   // RESTORE OTP PROCESS IF ANY 
   useEffect(() => {
@@ -190,6 +206,16 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     if (phoneErr) newErrors.phone = phoneErr;
     if (!ktpFile && !ktpUrl) newErrors.ktp = "Silakan upload foto KTP!";
     if (!selfieFile && !selfieUrl) newErrors.selfie = "Silakan upload selfie dengan KTP!";
+
+    // Validate Branch
+    if (formData.cabang_pengambilan) {
+      const selectedBranch = branches.find(b => b.id.toString() === formData.cabang_pengambilan.toString());
+      if (selectedBranch && !selectedBranch.is_active) {
+        newErrors.cabang_pengambilan = "Cabang sedang dalam perbaikan, silahkan pilih cabang lain";
+      }
+    } else {
+       newErrors.cabang_pengambilan = "Silakan pilih cabang pengambilan";
+    }
    
     if (Object.keys(newErrors).length > 0) {
       setErrors(prev => ({ ...prev, ...newErrors }));
@@ -393,7 +419,10 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       card_type: data.cardType || getDefaultCardType(),
       savings_type: savingsType,
       savings_type_name: getSavingsTypeName(),
-      cabang_pengambilan: data.cabang_pengambilan,
+      savings_type_name: getSavingsTypeName(),
+      cabang_pengambilan: data.cabang_pengambilan, // This will now be the ID
+      cabang_id: data.cabang_pengambilan, // Send ID explicitly
+      foto_ktp: ktpUploadedUrl,
       foto_ktp: ktpUploadedUrl,
       foto_selfie: selfieUploadedUrl,
   
@@ -524,6 +553,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       handleSubmit,
       savingsType,
       getSavingsTypeName,
+      branches, // Pass branches to sub-forms
     };
 
     if (savingsType === 'simpel') {
