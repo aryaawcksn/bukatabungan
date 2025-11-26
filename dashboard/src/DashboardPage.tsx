@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { FormSubmissionCard } from './components/form-submission-card';
 import { FormDetailDialog } from './components/form-detail-dialog';
 import { ApprovalDialog } from './components/approval-dialog';
@@ -58,7 +58,6 @@ export interface FormSubmission {
   rejectedAt?: string;
   dataAgreement?: boolean;
 }
-
 
 // Helper function untuk mapping data dari backend ke format FormSubmission
 const mapBackendDataToFormSubmission = (data: any): FormSubmission => {
@@ -211,7 +210,7 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState('dashboard');
   
   // Interval untuk auto-refresh (5 detik)
-  const POLLING_INTERVAL = 5000; // 5 detik
+  const POLLING_INTERVAL = 300; // 5 detik
   
   // Refs untuk tracking state tanpa menyebabkan re-render
   const loadingRef = useRef(loading);
@@ -313,7 +312,15 @@ export default function DashboardPage() {
 
     if (result.success && result.data) {
       const mappedData = result.data.map(mapBackendDataToFormSubmission);
-      setSubmissions(mappedData);
+      
+      // Optimization: Only update state if data has actually changed
+      setSubmissions(prev => {
+        if (JSON.stringify(prev) === JSON.stringify(mappedData)) {
+          return prev;
+        }
+        return mappedData;
+      });
+      
       setLastFetchTime(new Date());
 
       if (showLoading) {
@@ -351,17 +358,17 @@ export default function DashboardPage() {
   }
 };
 
-  const handleApprove = (id: string) => {
+  const handleApprove = useCallback((id: string) => {
     const submission = submissions.find(sub => sub.id === id);
     if (submission) setApprovalDialog({ open: true, type: 'approve', submission });
-  };
+  }, [submissions]);
 
-  const handleReject = (id: string) => {
+  const handleReject = useCallback((id: string) => {
     const submission = submissions.find(sub => sub.id === id);
     if (submission) setApprovalDialog({ open: true, type: 'reject', submission });
-  };
+  }, [submissions]);
 
-  const handleApprovalConfirm = async (sendEmail: boolean, sendWhatsApp: boolean, message: string) => {
+  const handleApprovalConfirm = useCallback(async (sendEmail: boolean, sendWhatsApp: boolean, message: string) => {
     if (!approvalDialog.submission) return;
     
     const newStatus = approvalDialog.type === 'approve' ? 'approved' : 'rejected';
@@ -429,7 +436,6 @@ export default function DashboardPage() {
           }
         );
         
-        
         // Refresh data dari backend untuk memastikan data terbaru
         await fetchSubmissions(false);
       } else {
@@ -442,154 +448,200 @@ export default function DashboardPage() {
       setApprovalDialog({ open: false, type: 'approve', submission: null });
       setSelectedSubmission(null);
     }
-  };
+  }, [approvalDialog, fetchSubmissions]);
 
-  const filteredSubmissions = submissions.filter(sub => {
+  const handleViewDetails = useCallback((submission: FormSubmission) => {
+    setSelectedSubmission(submission);
+  }, []);
+
+  const filteredSubmissions = useMemo(() => submissions.filter(sub => {
     const matchesSearch =
       sub.personalData.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       sub.referenceCode.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || sub.status === statusFilter;
     return matchesSearch && matchesStatus;
-  });
+  }), [submissions, searchQuery, statusFilter]);
 
-  const stats = {
+  const stats = useMemo(() => ({
     total: submissions.length,
     pending: submissions.filter(s => s.status === 'pending').length,
     approved: submissions.filter(s => s.status === 'approved').length,
     rejected: submissions.filter(s => s.status === 'rejected').length
-  };
+  }), [submissions]);
 
   const handleLogout = () => {
-  localStorage.removeItem("token");   // kalau pakai token
-  sessionStorage.clear();             // kalau simpan session
-  window.location.href = "/login";    // redirect ke login
-};
+    localStorage.removeItem("token");   // kalau pakai token
+    sessionStorage.clear();             // kalau simpan session
+    window.location.href = "/login";    // redirect ke login
+  };
 
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50/50 font-sans text-slate-900 selection:bg-blue-100 selection:text-blue-900">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
-  {/* Left Side */}
-  <div className="flex items-center gap-3">
-    <div>
-      <h1 className="text-gray-900 font-semibold text-lg">Sistem Pemantauan Formulir Rekening</h1>
-      <p className="text-gray-500 text-sm">
-        Bank Sleman Cabang {localStorage.getItem("admin_cabang") || "not_found"}
-        {lastFetchTime && (
-          <span className="ml-2 text-xs">
-            • Terakhir update: {lastFetchTime.toLocaleTimeString('id-ID')}
-          </span>
-        )}
-      </p>
-    </div>
-  </div>
-
-  {/* Profile Badge */}
-  <div className="flex items-center gap-3 bg-blue-50v px-4 py-2">
-    <div className="text-right leading-tight">
-      <p className="text-xs text-gray-500">
-       Selamat datang
-      </p>
-      <p className="text-sm font-medium text-gray-800">
-        {localStorage.getItem("admin_username") || "Not_found"}
-      </p>
-      
-    </div>
-
-    <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center font-semibold">
-      { (localStorage.getItem("admin_username") || "U").charAt(0).toUpperCase() }
-    </div>
-    
-  </div>
-</div>
-
-
-        {/* Navigation Bar */}
-        <nav className="bg-gray-100 border-t border-gray-200">
-          <div className="max-w-7xl mx-auto flex">
-            {[
-              { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-4 h-4 mr-2" /> },
-              { id: 'submissions', label: 'Permohonan', icon: <ClipboardCheck className="w-4 h-4 mr-2" /> },
-              { id: 'manage', label: 'Kelola Data', icon: <FileCog className="w-4 h-4 mr-2" /> },
-              { id: 'logout', label: 'Logout', icon: <LogOut className="w-4 h-4 mr-2" /> }
-            ].map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center px-5 py-3 text-sm font-medium transition-colors ${
-                  activeTab === tab.id
-                    ? 'bg-white text-blue-600 border-b-2 border-blue-600'
-                    : 'text-gray-600 hover:bg-gray-50'
-                }`}
-              >
-                {tab.icon}
-                {tab.label}
-              </button>
-            ))}
+      <header className="sticky top-0 z-50 w-full bg-white border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+          {/* Left Side - Branding */}
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white">
+              <LayoutDashboard className="w-6 h-6" />
+            </div>
+            <div>
+              <h1 className="text-slate-900 font-bold text-lg tracking-tight leading-none">
+                Bank Sleman
+              </h1>
+              <p className="text-slate-500 text-xs font-medium mt-1">
+                Sistem Pemantauan Rekening
+              </p>
+            </div>
           </div>
-        </nav>
+
+          {/* Right Side - Profile & Info */}
+          <div className="flex items-center gap-6">
+            <div className="hidden md:block text-right">
+              <p className="text-xs font-medium text-slate-500 mb-0.5">
+                Cabang {localStorage.getItem("admin_cabang") || "Pusat"}
+              </p>
+              {lastFetchTime && (
+                <p className="text-[10px] text-slate-400 flex items-center justify-end gap-1">
+                  <Clock3 className="w-3 h-3" />
+                  Updated {lastFetchTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                </p>
+              )}
+            </div>
+            
+            <div className="h-8 w-[1px] bg-slate-200 hidden md:block"></div>
+
+            <div className="flex items-center gap-3 pl-2">
+              <div className="text-right hidden sm:block">
+                <p className="text-sm font-semibold text-slate-800 leading-tight">
+                  {localStorage.getItem("admin_username") || "Admin"}
+                </p>
+                <p className="text-xs text-slate-500">Administrator</p>
+              </div>
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold ring-2 ring-white">
+                {(localStorage.getItem("admin_username") || "A").charAt(0).toUpperCase()}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Navigation Tabs - Integrated into Header for cleaner look */}
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex items-center gap-1 -mb-px overflow-x-auto scrollbar-hide">
+            {[
+              { id: 'dashboard', label: 'Overview', icon: LayoutDashboard },
+              { id: 'submissions', label: 'Permohonan', icon: ClipboardCheck },
+              { id: 'manage', label: 'Pengaturan', icon: FileCog },
+              { id: 'logout', label: 'Keluar', icon: LogOut }
+            ].map(tab => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`
+                    group flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition-all duration-200 whitespace-nowrap
+                    ${isActive 
+                      ? 'border-blue-600 text-blue-600' 
+                      : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                    }
+                  `}
+                >
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600'}`} />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </header>
 
-      {/* Content */}
-     <main className="max-w-7xl mx-auto px-6 py-8">
-  {activeTab === "dashboard" && (
-    <>
-      <h3 className="mb-6 text-2xl">Informasi Permohonan</h3>
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-6 py-8">
+        
+        {/* Welcome Message */}
+        {activeTab === 'dashboard' && (
+          <div className="mb-10">
+            <h2 className="text-3xl font-bold text-slate-900 tracking-tight">
+              Selamat Pagi, {localStorage.getItem("admin_username") || "Admin"}! 👋
+            </h2>
+            <p className="text-slate-500 mt-2 text-lg">
+              Berikut adalah ringkasan aktivitas permohonan rekening hari ini.
+            </p>
+          </div>
+        )}
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <StatCard
-          title="Total Permohonan"
-          value={stats.total}
-          color="#3a7eea"
-          icon={FileBarChart}
-        />
-        <StatCard
-          title="Menunggu"
-          value={stats.pending}
-          color="#f6b53b"
-          icon={Clock3}
-        />
-        <StatCard
-          title="Disetujui"
-          value={stats.approved}
-          color="#1fb64c"
-          icon={Check}
-        />
-        <StatCard
-          title="Ditolak"
-          value={stats.rejected}
-          color="#e43333"
-          icon={X}
-        />
-      </div>
-    </>
-  )}
+        {activeTab === "dashboard" && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <StatCard
+                title="Total Permohonan"
+                value={stats.total}
+                color="#3b82f6"
+                icon={FileBarChart}
+                trend="+12% dari kemarin"
+                trendColor="text-emerald-600"
+              />
+              <StatCard
+                title="Menunggu Review"
+                value={stats.pending}
+                color="#f59e0b"
+                icon={Clock3}
+                trend="Butuh tindakan"
+                trendColor="text-amber-600"
+              />
+              <StatCard
+                title="Disetujui"
+                value={stats.approved}
+                color="#10b981"
+                icon={Check}
+                trend="Minggu ini"
+                trendColor="text-emerald-600"
+              />
+              <StatCard
+                title="Ditolak"
+                value={stats.rejected}
+                color="#ef4444"
+                icon={X}
+                trend="Minggu ini"
+                trendColor="text-rose-600"
+              />
+            </div>
+
+            {/* Recent Activity Section could go here */}
+          </div>
+        )}
 
 
         {activeTab === 'submissions' && (
-          <>
-            {/* Filter Section */}
-            <div className="bg-white border border-gray-200 rounded-xl p-6 mb-6 flex items-center gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <Input
-                  placeholder="Cari nama atau kode referensi..."
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+              <div>
+                <h3 className="text-2xl font-bold text-slate-900">Daftar Permohonan</h3>
+                <p className="text-slate-500">Kelola dan verifikasi data nasabah.</p>
               </div>
-              <div className="flex items-center gap-2">
-                <Filter className="w-5 h-5 text-gray-400" />
+              
+              {/* Filter Bar */}
+              <div className="flex items-center gap-3 bg-white p-1.5 rounded-2xl border border-slate-200">
+                <div className="relative group">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 group-focus-within:text-blue-500 transition-colors" />
+                  <input
+                    placeholder="Cari nama / ref..."
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    className="pl-9 pr-4 py-2 bg-transparent border-none text-sm focus:ring-0 w-[200px] placeholder:text-slate-400"
+                  />
+                </div>
+                <div className="h-6 w-[1px] bg-slate-200"></div>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Filter status" />
+                  <SelectTrigger className="w-[140px] border-none bg-transparent focus:ring-0 text-sm font-medium text-slate-600">
+                    <SelectValue placeholder="Status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Semua</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="all">Semua Status</SelectItem>
+                    <SelectItem value="pending">Menunggu</SelectItem>
                     <SelectItem value="approved">Disetujui</SelectItem>
                     <SelectItem value="rejected">Ditolak</SelectItem>
                   </SelectContent>
@@ -599,13 +651,21 @@ export default function DashboardPage() {
 
             {/* List */}
             {loading ? (
-              <div className="bg-white border border-gray-200 rounded-xl p-12 text-center">
-                <p className="text-gray-500">Memuat data...</p>
+              <div className="grid place-items-center py-20">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="w-10 h-10 border-4 border-blue-600/30 border-t-blue-600 rounded-full animate-spin"></div>
+                  <p className="text-slate-500 font-medium animate-pulse">Mengambil data...</p>
+                </div>
               </div>
             ) : filteredSubmissions.length === 0 ? (
-              <div className="bg-white border border-gray-200 rounded-xl p-12 text-center text-gray-500">
-                <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                <p>Tidak ada pengajuan yang ditemukan.</p>
+              <div className="bg-white border border-dashed border-slate-300 rounded-3xl p-16 text-center">
+                <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Search className="w-10 h-10 text-slate-300" />
+                </div>
+                <h3 className="text-lg font-semibold text-slate-900 mb-1">Tidak ada data ditemukan</h3>
+                <p className="text-slate-500 max-w-sm mx-auto">
+                  Coba ubah kata kunci pencarian atau filter status untuk menemukan data yang Anda cari.
+                </p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -620,66 +680,96 @@ export default function DashboardPage() {
                 ))}
               </div>
             )}
-          </>
+          </div>
         )}
 
         {activeTab === 'manage' && (
-  <div className="p-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+             <div className="mb-8">
+                <h3 className="text-2xl font-bold text-slate-900">Pengaturan Sistem</h3>
+                <p className="text-slate-500">Konfigurasi parameter dan akses admin.</p>
+              </div>
 
-    {/* Cabang Pengambilan */}
-    <button className="relative border rounded-xl p-6 hover:bg-gray-50 text-left shadow-sm">
-      <h3 className="font-semibold text-gray-800 text-lg mb-1">
-        Cabang Pengambilan
-      </h3>
-      <p className="text-gray-500 text-sm">Kelola daftar cabang bank.</p>
-    </button>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Cabang Pengambilan */}
+              <button className="group relative bg-white border border-slate-200 rounded-2xl p-6 hover:-lg hover:border-blue-200 transition-all duration-300 text-left overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+                <div className="relative z-10">
+                  <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                    <LayoutDashboard className="w-6 h-6" />
+                  </div>
+                  <h3 className="font-bold text-slate-800 text-lg mb-2">Cabang Bank</h3>
+                  <p className="text-slate-500 text-sm leading-relaxed">
+                    Kelola daftar kantor cabang untuk lokasi pengambilan buku tabungan.
+                  </p>
+                </div>
+              </button>
 
-    {/* Admin User - khusus high admin */}
-    <button className="relative border rounded-xl p-6 hover:bg-gray-50 text-left shadow-sm">
-      <span className="absolute top-3 right-3 bg-red-100 text-red-600 text-xs font-medium px-2 py-0.5 rounded-full">
-        High Admin
-      </span>
+              {/* Admin User */}
+              <button className="group relative bg-white border border-slate-200 rounded-2xl p-6 hover:-lg hover:border-indigo-200 transition-all duration-300 text-left overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+                <span className="absolute top-4 right-4 bg-indigo-100 text-indigo-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider z-20">
+                  High Admin
+                </span>
+                <div className="relative z-10">
+                  <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                    <FileCog className="w-6 h-6" />
+                  </div>
+                  <h3 className="font-bold text-slate-800 text-lg mb-2">Manajemen User</h3>
+                  <p className="text-slate-500 text-sm leading-relaxed">
+                    Tambah atau hapus akses admin untuk staff bank lainnya.
+                  </p>
+                </div>
+              </button>
 
-      <h3 className="font-semibold text-gray-800 text-lg mb-1">
-        Admin User
-      </h3>
-      <p className="text-gray-500 text-sm">Manajemen akun admin.</p>
-    </button>
-
-    {/* Kelola Daftar (untuk developer saja) */}
-    <button className="relative border rounded-xl p-6 hover:bg-gray-50 text-left shadow-sm">
-      <span className="absolute top-3 right-3 bg-purple-100 text-purple-700 text-xs font-medium px-2 py-0.5 rounded-full">
-        Dev Only
-      </span>
-
-      <h3 className="font-semibold text-gray-800 text-lg mb-1">
-        Kelola Sistem
-      </h3>
-      <p className="text-gray-500 text-sm">Menu khusus pengembangan.</p>
-    </button>
-
-  </div>
-)}
-
+              {/* Dev Only */}
+              <button className="group relative bg-white border border-slate-200 rounded-2xl p-6 hover:-lg hover:border-purple-200 transition-all duration-300 text-left overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-purple-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+                <span className="absolute top-4 right-4 bg-purple-100 text-purple-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider z-20">
+                  Dev Only
+                </span>
+                <div className="relative z-10">
+                  <div className="w-12 h-12 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                    <FileBarChart className="w-6 h-6" />
+                  </div>
+                  <h3 className="font-bold text-slate-800 text-lg mb-2">System Logs</h3>
+                  <p className="text-slate-500 text-sm leading-relaxed">
+                    Monitoring performa sistem dan error logs untuk developer.
+                  </p>
+                </div>
+              </button>
+            </div>
+          </div>
+        )}
 
         {activeTab === 'logout' && (
-  <div className="bg-white border border-gray-200 rounded-xl p-12 text-center text-gray-700">
-    <LogOut className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-    <h2 className="text-xl font-semibold mb-2">Yakin ingin logout?</h2>
-    <p className="text-gray-500 mb-6">
-      Anda akan keluar dari panel admin.
-    </p>
+          <div className="flex items-center justify-center min-h-[60vh] animate-in fade-in zoom-in duration-300">
+            <div className="bg-white border border-slate-200 rounded-3xl p-12 text-center -xl max-w-md w-full">
+              <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <LogOut className="w-10 h-10 ml-1" />
+              </div>
+              <h2 className="text-2xl font-bold text-slate-900 mb-3">Konfirmasi Logout</h2>
+              <p className="text-slate-500 mb-8 leading-relaxed">
+                Apakah Anda yakin ingin keluar dari sistem? Anda harus login kembali untuk mengakses data.
+              </p>
 
-    <div className="flex justify-center gap-4">
-      <Button
-        onClick={handleLogout}
-        className="px-6 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700"
-      >
-        Logout
-      </Button>
-    </div>
-  </div>
-)}
+              <div className="flex gap-4 justify-center">
+                <Button
+                  onClick={() => setActiveTab('dashboard')}
+                  className="px-6 py-2.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium border-none -none"
+                >
+                  Batal
+                </Button>
+                <Button
+                  onClick={handleLogout}
+                  className="px-6 py-2.5 rounded-xl bg-red-600 text-white hover:bg-red-700 font-medium -lg -red-600/20"
+                >
+                  Ya, Logout
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* Dialogs */}
