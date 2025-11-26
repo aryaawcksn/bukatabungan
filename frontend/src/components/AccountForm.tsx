@@ -122,9 +122,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     tujuanRekening: '',
     kontakDaruratNama: '',
     kontakDaruratHp: '',
-    kontakDaruratHp: '',
     employmentStatus: '',
-    cabangId: '', // New field for ID
   });
 
   const [branches, setBranches] = useState<any[]>([]);
@@ -419,13 +417,10 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       card_type: data.cardType || getDefaultCardType(),
       savings_type: savingsType,
       savings_type_name: getSavingsTypeName(),
-      savings_type_name: getSavingsTypeName(),
       cabang_pengambilan: data.cabang_pengambilan, // This will now be the ID
       cabang_id: data.cabang_pengambilan, // Send ID explicitly
       foto_ktp: ktpUploadedUrl,
-      foto_ktp: ktpUploadedUrl,
       foto_selfie: selfieUploadedUrl,
-  
     };
   
     // ============================

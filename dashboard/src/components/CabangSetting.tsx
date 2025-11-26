@@ -33,7 +33,8 @@ export default function CabangSetting() {
       const res = await fetch('https://bukatabungan-production.up.railway.app/api/cabang', {
         headers: {
           'Authorization': `Bearer ${token}`
-        }
+        },
+      credentials: 'include'
       });
       
       if (!res.ok) throw new Error('Gagal mengambil data cabang');
@@ -59,6 +60,7 @@ export default function CabangSetting() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
+        credentials: 'include',
         body: JSON.stringify({ is_active: !currentStatus })
       });
 
