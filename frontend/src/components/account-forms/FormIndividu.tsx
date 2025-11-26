@@ -570,7 +570,7 @@ export default function FormIndividu({
              const selectedBranch = branches.find(b => b.id.toString() === value.toString());
              
              if (selectedBranch && !selectedBranch.is_active) {
-                setErrors(prev => ({ ...prev, cabang_pengambilan: "Cabang sedang dalam perbaikan, silahkan pilih cabang lain" }));
+                setErrors(prev => ({ ...prev, cabang_pengambilan: "Cabang yang dipilih tidak tersedia, silahkan pilih cabang lain" }));
              } else {
                 setErrors(prev => {
                   const next = { ...prev };
@@ -587,7 +587,7 @@ export default function FormIndividu({
           <SelectContent>
             {branches.map((branch: any) => (
               <SelectItem key={branch.id} value={branch.id.toString()}>
-                {branch.nama_cabang} {!branch.is_active ? '(Maintenance)' : ''}
+                {branch.nama_cabang} {!branch.is_active ? '(Tidak tersedia)' : ''}
               </SelectItem>
             ))}
           </SelectContent>

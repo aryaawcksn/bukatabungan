@@ -490,7 +490,7 @@ export default function FormSimpel({
           <SelectContent>
             {branches.map((branch: any) => (
               <SelectItem key={branch.id} value={branch.id.toString()}>
-                {branch.nama_cabang} {!branch.is_active ? '(Maintenance)' : ''}
+                {branch.nama_cabang} {!branch.is_active ? '(Tidak tersedia)' : ''}
               </SelectItem>
             ))}
           </SelectContent>
