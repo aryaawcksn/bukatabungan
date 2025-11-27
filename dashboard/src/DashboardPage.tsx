@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { FormSubmissionCard } from './components/form-submission-card';
-import CabangSetting from './components/CabangSetting';
+import CabangSetting, { type Cabang } from './components/CabangSetting';
 
 import { FormDetailDialog } from './components/form-detail-dialog';
 import { ApprovalDialog } from './components/approval-dialog';
-import { Search, LayoutDashboard, ClipboardCheck, FileBarChart, LogOut, FileCog, X, Clock3, Check } from 'lucide-react';
+import { Search, LayoutDashboard, ClipboardCheck, FileBarChart, LogOut, FileCog, X, Clock3, Check, TrendingDown, TrendingUp } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './components/ui/select';
 import { toast } from 'sonner';
 import { Toaster } from './components/ui/sonner';
@@ -213,6 +213,11 @@ export default function DashboardPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [activeTab, setActiveTab] = useState('dashboard');
   
+  // State untuk CabangSetting
+  const [cabangList, setCabangList] = useState<Cabang[]>([]);
+  const [isCabangLoading, setIsCabangLoading] = useState(false);
+  const [cabangLoaded, setCabangLoaded] = useState(false); // To prevent re-fetching if already loaded
+  
   // Interval untuk auto-refresh (5 detik)
   const POLLING_INTERVAL = 300; // 5 detik
   
@@ -361,6 +366,85 @@ export default function DashboardPage() {
     }
   }
 };
+
+  const fetchCabang = async () => {
+    if (cabangLoaded) return; // Don't fetch if already loaded
+    
+    setIsCabangLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch('https://bukatabungan-production.up.railway.app/api/cabang', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        credentials: 'include'
+      });
+      
+      if (!res.ok) throw new Error('Gagal mengambil data cabang');
+      
+      const data = await res.json();
+      if (data.success) {
+        setCabangList(data.data);
+        setCabangLoaded(true);
+      }
+    } catch (error) {
+      toast.error('Gagal memuat daftar cabang');
+      console.error(error);
+    } finally {
+      setIsCabangLoading(false);
+    }
+  };
+
+  const handleToggleCabangStatus = async (id: number, currentStatus: boolean) => {
+  // ✅ Optimistic update sementara (tanpa updated_by dulu)
+  setCabangList(prev =>
+    prev.map(c => (c.id === id ? { ...c, is_active: !currentStatus } : c))
+  );
+
+  try {
+    const token = localStorage.getItem("token");
+
+    const res = await fetch(
+      `https://bukatabungan-production.up.railway.app/api/cabang/${id}/status`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+        body: JSON.stringify({ is_active: !currentStatus }),
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      throw new Error(data.message || 'Gagal mengubah status');
+    }
+
+    // ✅ UPDATE STATE DENGAN DATA ASLI DARI BACKEND (TERMAsUK updated_by)
+    setCabangList(prev =>
+      prev.map(c => (c.id === id ? data.data : c))
+    );
+
+    toast.success(`Status cabang diperbarui.`);
+  } catch (error) {
+    // ✅ Revert jika gagal
+    setCabangList(prev =>
+      prev.map(c => (c.id === id ? { ...c, is_active: currentStatus } : c))
+    );
+
+    toast.error('Gagal mengubah status!');
+  }
+};
+
+  // Fetch cabang data when tab changes to 'manage'
+  useEffect(() => {
+    if (activeTab === 'manage' && !cabangLoaded) {
+      fetchCabang();
+    }
+  }, [activeTab, cabangLoaded]);
 
   const handleApprove = useCallback((id: string) => {
     const submission = submissions.find(sub => sub.id === id);
@@ -592,40 +676,47 @@ export default function DashboardPage() {
 
         {activeTab === "dashboard" && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <StatCard
-                title="Total Permohonan"
-                value={stats.total}
-                color="#3b82f6"
-                icon={FileBarChart}
-                trend="+12% dari kemarin"
-                trendColor="text-emerald-600"
-              />
-              <StatCard
-                title="Menunggu Review"
-                value={stats.pending}
-                color="#f59e0b"
-                icon={Clock3}
-                trend="Butuh tindakan"
-                trendColor="text-amber-600"
-              />
-              <StatCard
-                title="Disetujui"
-                value={stats.approved}
-                color="#10b981"
-                icon={Check}
-                trend="Minggu ini"
-                trendColor="text-emerald-600"
-              />
-              <StatCard
-                title="Ditolak"
-                value={stats.rejected}
-                color="#ef4444"
-                icon={X}
-                trend="Minggu ini"
-                trendColor="text-rose-600"
-              />
-            </div>
+             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <StatCard
+        title="Total Permohonan"
+        value={stats.total}
+        color="#3b82f6"
+        icon={FileBarChart}
+        trend="+12% dari kemarin"
+        trendColor="text-emerald-600"
+        trendIcon={TrendingUp}
+      />
+
+      <StatCard
+        title="Menunggu Review"
+        value={stats.pending}
+        color="#f59e0b"
+        icon={Clock3}
+        trend="Butuh tindakan"
+        trendColor="text-amber-600"
+        trendIcon={TrendingDown}
+      />
+
+      <StatCard
+        title="Disetujui"
+        value={stats.approved}
+        color="#10b981"
+        icon={Check}
+        trend="Minggu ini"
+        trendColor="text-emerald-600"
+        trendIcon={TrendingUp}
+      />
+
+      <StatCard
+        title="Ditolak"
+        value={stats.rejected}
+        color="#ef4444"
+        icon={X}
+        trend="Minggu ini"
+        trendColor="text-rose-600"
+        trendIcon={TrendingDown}
+      />
+    </div>
 
             {/* Recent Activity Section could go here */}
           </div>
@@ -644,6 +735,7 @@ export default function DashboardPage() {
               <div className="flex items-center gap-3 bg-white p-1.5 rounded-2xl border border-slate-200">
                 <div className="relative group">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 group-focus-within:text-blue-500 transition-colors" />
+
                   <input
                     placeholder="Cari nama / ref..."
                     value={searchQuery}
@@ -712,7 +804,19 @@ export default function DashboardPage() {
 
             {/* Simple toggle for now, or just render CabangSetting below for this task */}
             <div className="space-y-8">
-              <CabangSetting />
+              {isCabangLoading ? (
+                 <div className="grid place-items-center py-20">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="w-10 h-10 border-4 border-blue-600/30 border-t-blue-600 rounded-full animate-spin"></div>
+                    <p className="text-slate-500 font-medium animate-pulse">Memuat Data Cabang...</p>
+                  </div>
+                </div>
+              ) : (
+                <CabangSetting 
+                  cabangList={cabangList} 
+                  onToggleStatus={handleToggleCabangStatus} 
+                />
+              )}
               
               <div className="border-t border-slate-200 pt-8">
                 <h4 className="text-lg font-semibold text-slate-900 mb-4">Menu Lainnya</h4>

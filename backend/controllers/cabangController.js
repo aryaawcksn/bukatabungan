@@ -28,46 +28,63 @@ export const getAllCabang = async (req, res) => {
     }
 };
 
+
+
 /**
  * Update branch status (is_active)
  * Protected: Admin only
  */
 export const updateCabangStatus = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { is_active } = req.body;
+  try {
+    const { id } = req.params;
+    const { is_active } = req.body;
 
-        if (typeof is_active !== 'boolean') {
-            return res.status(400).json({ success: false, message: "Status harus boolean" });
-        }
+    // ✅ Ambil user dari JWT / auth middleware
+    const userName = req.user?.nama || "Unknown";
 
-        // Optional: Check if user is authorized (High Admin / Dev / Owner)
-        // For now, we assume the route middleware handles basic auth, 
-        // and we can add specific role checks here if needed.
-        // Based on user request: "cabang yang bisa di blok hanya high admin, dev dan cabang pemilik akun"
-        // We'll implement this check in the controller or rely on middleware.
-        // Let's assume basic auth is done, and we check role here if available in req.user
+    if (typeof is_active !== 'boolean') {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Status harus boolean" 
+      });
+    }
 
-        const query = `
+    const query = `
       UPDATE cabang 
-      SET is_active = $1 
-      WHERE id = $2 
+      SET 
+        is_active = $1,
+        updated_by = $2
+      WHERE id = $3 
       RETURNING *
     `;
 
-        const result = await pool.query(query, [is_active, id]);
+    const result = await pool.query(query, [
+      is_active,
+      userName,
+      id
+    ]);
 
-        if (result.rows.length === 0) {
-            return res.status(404).json({ success: false, message: "Cabang tidak ditemukan" });
-        }
-
-        res.json({
-            success: true,
-            message: "Status cabang berhasil diperbarui",
-            data: result.rows[0],
-        });
-    } catch (err) {
-        console.error("Error updating branch status:", err);
-        res.status(500).json({ success: false, message: "Gagal memperbarui status cabang" });
+    if (result.rows.length === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "Cabang tidak ditemukan" 
+      });
     }
+
+    res.json({
+      success: true,
+      message: "Status cabang berhasil diperbarui",
+      data: result.rows[0],
+    });
+
+  } catch (err) {
+    console.error("Error updating branch status:", err);
+    res.status(500).json({ 
+      success: false, 
+      message: "Gagal memperbarui status cabang" 
+    });
+  }
 };
+
+
+

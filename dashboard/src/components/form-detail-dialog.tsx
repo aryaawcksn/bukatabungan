@@ -365,34 +365,42 @@ export function FormDetailDialog({ submission, open, onClose, onApprove, onRejec
 
           {/* FOOTER */}
           <DialogFooter className="mt-8 gap-2">
-            <Button variant="outline" onClick={onClose}>Tutup</Button>
-            {!pdfBlob && (
-              <Button variant="outline" onClick={handleGeneratePdf} disabled={loading} className="border-blue-200 text-blue-700 hover:bg-blue-50">
-                <FileText className="w-4 h-4 mr-2" />
-                {loading ? 'Generating PDF...' : 'Generate PDF'}
-              </Button>
-            )}
-            {pdfBlob && (
-              <a href={URL.createObjectURL(pdfBlob)} download={`Bukti-Pendaftaran-${submission.referenceCode}.pdf`}>
-                <Button variant="outline" className="border-blue-200 text-blue-700 hover:bg-blue-50">
+          <Button variant="outline" onClick={onClose}>Tutup</Button>
+
+          {/* PDF hanya muncul kalau sudah approved */}
+          {submission.status === 'approved' && (
+            <>
+              {!pdfBlob && (
+                <Button variant="outline" onClick={handleGeneratePdf} disabled={loading} className="border-blue-200 text-blue-700 hover:bg-blue-50">
                   <FileText className="w-4 h-4 mr-2" />
-                  Download PDF
+                  {loading ? 'Generating PDF...' : 'Generate PDF'}
                 </Button>
-              </a>
-            )}
-            {submission.status === 'pending' && (
-              <>
-                <Button variant="outline" onClick={onReject} className="text-red-600 border-red-300 hover:bg-red-50">
-                  <XCircle className="w-4 h-4 mr-2" />
-                  Tolak Permohonan
-                </Button>
-                <Button onClick={onApprove} className="bg-green-600 hover:bg-green-700 text-white">
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Setujui Permohonan
-                </Button>
-              </>
-            )}
-          </DialogFooter>
+              )}
+              {pdfBlob && (
+                <a href={URL.createObjectURL(pdfBlob)} download={`Bukti-Pendaftaran-${submission.referenceCode}.pdf`}>
+                  <Button variant="outline" className="border-blue-200 text-blue-700 hover:bg-blue-50">
+                    <FileText className="w-4 h-4 mr-2" />
+                    Download PDF
+                  </Button>
+                </a>
+              )}
+            </>
+          )}
+
+          {submission.status === 'pending' && (
+            <>
+              <Button variant="outline" onClick={onReject} className="text-red-600 border-red-300 hover:bg-red-50">
+                <XCircle className="w-4 h-4 mr-2" />
+                Tolak Permohonan
+              </Button>
+              <Button onClick={onApprove} className="bg-green-600 hover:bg-green-700 text-white">
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Setujui Permohonan
+              </Button>
+            </>
+          )}
+        </DialogFooter>
+
         </div>
         {/* Image preview modal */}
         <ImagePreviewModal image={previewImage} onClose={() => setPreviewImage(null)} />
