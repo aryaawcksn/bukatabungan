@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { TrendingUp} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import AnimatedNumber from "./AnimateNumber";
 

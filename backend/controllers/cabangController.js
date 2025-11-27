@@ -40,7 +40,7 @@ export const updateCabangStatus = async (req, res) => {
     const { is_active } = req.body;
 
     // ✅ Ambil user dari JWT / auth middleware
-    const userName = req.user?.nama || "Unknown";
+    const userName = req.user?.username || "Unknown";
 
     if (typeof is_active !== 'boolean') {
       return res.status(400).json({ 
