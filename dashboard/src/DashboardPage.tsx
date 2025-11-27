@@ -216,7 +216,11 @@ export default function DashboardPage() {
   // State untuk CabangSetting
   const [cabangList, setCabangList] = useState<Cabang[]>([]);
   const [isCabangLoading, setIsCabangLoading] = useState(false);
-  const [cabangLoaded, setCabangLoaded] = useState(false); // To prevent re-fetching if already loaded
+  
+  const [openAccordion, setOpenAccordion] = useState({
+    cabang: false,
+  });
+
   
   // Interval untuk auto-refresh (5 detik)
   const POLLING_INTERVAL = 300; // 5 detik
@@ -241,33 +245,32 @@ export default function DashboardPage() {
 
   // Fetch data dari backend dengan auto-refresh
   useEffect(() => {
-    let isMounted = true;
+  let isMounted = true;
 
-    // Cek koneksi backend terlebih dahulu
-    checkBackendConnection().then(() => {
-      if (isMounted) {
-        fetchSubmissions();
-      }
-    });
+  checkBackendConnection().then(() => {
+    if (isMounted) {
+      fetchSubmissions();
+      fetchCabang(); // ✅ TAMBAHKAN INI
+    }
+  });
 
-    // Setup auto-refresh interval
-    const intervalId = setInterval(() => {
-      // Jangan fetch jika sedang loading atau ada dialog terbuka
-      if (isMounted && 
-          !loadingRef.current && 
-          !approvalDialogRef.current.open && 
-          !selectedSubmissionRef.current) {
-        fetchSubmissions(false); // false = tidak show loading indicator
-      }
-    }, POLLING_INTERVAL);
+  const intervalId = setInterval(() => {
+    if (
+      isMounted &&
+      !loadingRef.current &&
+      !approvalDialogRef.current.open &&
+      !selectedSubmissionRef.current
+    ) {
+      fetchSubmissions(false);
+    }
+  }, POLLING_INTERVAL);
 
-    // Cleanup interval saat component unmount
-    return () => {
-      isMounted = false;
-      clearInterval(intervalId);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  return () => {
+    isMounted = false;
+    clearInterval(intervalId);
+  };
+}, []);
+
 
   const checkBackendConnection = async () => {
     try {
@@ -368,7 +371,7 @@ export default function DashboardPage() {
 };
 
   const fetchCabang = async () => {
-    if (cabangLoaded) return; // Don't fetch if already loaded
+    // Don't fetch if already loaded
     
     setIsCabangLoading(true);
     try {
@@ -385,7 +388,7 @@ export default function DashboardPage() {
       const data = await res.json();
       if (data.success) {
         setCabangList(data.data);
-        setCabangLoaded(true);
+       
       }
     } catch (error) {
       toast.error('Gagal memuat daftar cabang');
@@ -438,13 +441,6 @@ export default function DashboardPage() {
     toast.error('Gagal mengubah status!');
   }
 };
-
-  // Fetch cabang data when tab changes to 'manage'
-  useEffect(() => {
-    if (activeTab === 'manage' && !cabangLoaded) {
-      fetchCabang();
-    }
-  }, [activeTab, cabangLoaded]);
 
   const handleApprove = useCallback((id: string) => {
     const submission = submissions.find(sub => sub.id === id);
@@ -792,102 +788,163 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {activeTab === 'manage' && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-             <div className="mb-8 flex items-center justify-between">
-                <div>
-                  <h3 className="text-2xl font-bold text-slate-900">Pengaturan Sistem</h3>
-                  <p className="text-slate-500">Konfigurasi parameter dan akses admin.</p>
-                </div>
-                {/* Back button if in sub-view */}
-              </div>
+       {activeTab === 'manage' && (
+  <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
 
-            {/* Simple toggle for now, or just render CabangSetting below for this task */}
-            <div className="space-y-8">
-              {isCabangLoading ? (
-                 <div className="grid place-items-center py-20">
-                  <div className="flex flex-col items-center gap-3">
-                    <div className="w-10 h-10 border-4 border-blue-600/30 border-t-blue-600 rounded-full animate-spin"></div>
-                    <p className="text-slate-500 font-medium animate-pulse">Memuat Data Cabang...</p>
-                  </div>
-                </div>
-              ) : (
-                <CabangSetting 
-                  cabangList={cabangList} 
-                  onToggleStatus={handleToggleCabangStatus} 
-                />
-              )}
-              
-              <div className="border-t border-slate-200 pt-8">
-                <h4 className="text-lg font-semibold text-slate-900 mb-4">Menu Lainnya</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {/* Admin User */}
-                  <button className="group relative bg-white border border-slate-200 rounded-2xl p-6 hover:-lg hover:border-indigo-200 transition-all duration-300 text-left overflow-hidden">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-                    <span className="absolute top-4 right-4 bg-indigo-100 text-indigo-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider z-20">
-                      High Admin
-                    </span>
-                    <div className="relative z-10">
-                      <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-                        <FileCog className="w-6 h-6" />
-                      </div>
-                      <h3 className="font-bold text-slate-800 text-lg mb-2">Manajemen User</h3>
-                      <p className="text-slate-500 text-sm leading-relaxed">
-                        Tambah atau hapus akses admin untuk staff bank lainnya.
-                      </p>
-                    </div>
-                  </button>
+    {/* Header Section */}
+    <div>
+      <h3 className="text-3xl font-bold text-slate-900">Pengaturan Sistem</h3>
+      <p className="text-slate-500 mt-1">
+        Konfigurasi cabang, akses admin, dan fitur lanjutan.
+      </p>
+    </div>
 
-                  {/* Dev Only */}
-                  <button className="group relative bg-white border border-slate-200 rounded-2xl p-6 hover:-lg hover:border-purple-200 transition-all duration-300 text-left overflow-hidden">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-purple-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-                    <span className="absolute top-4 right-4 bg-purple-100 text-purple-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider z-20">
-                      Dev Only
-                    </span>
-                    <div className="relative z-10">
-                      <div className="w-12 h-12 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-purple-600 group-hover:text-white transition-colors">
-                        <FileBarChart className="w-6 h-6" />
-                      </div>
-                      <h3 className="font-bold text-slate-800 text-lg mb-2">System Logs</h3>
-                      <p className="text-slate-500 text-sm leading-relaxed">
-                        Monitoring performa sistem dan error logs untuk developer.
-                      </p>
-                    </div>
-                  </button>
-                </div>
+    {/* Accordion: Pengaturan Cabang */}
+    <div className="bg-white border border-slate-200 rounded-xl shadow-sm">
+      {/* Header Accordion */}
+      <button
+        onClick={() =>
+          setOpenAccordion(prev => ({ ...prev, cabang: !prev.cabang }))
+        }
+        className="w-full flex items-center justify-between p-5 text-left hover:bg-slate-50 transition-all duration-500"
+      >
+        <div>
+          <h4 className="text-xl font-semibold text-slate-900">Pengaturan Cabang</h4>
+          <p className="text-slate-500 text-sm">
+            Atur status dan akses cabang operasional.
+          </p>
+        </div>
+
+        <svg
+          className={`w-5 h-5 text-slate-600 transition-transform ${
+            openAccordion.cabang ? "rotate-180" : ""
+          }`}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {/* Body Accordion */}
+      <div
+        className={`overflow-hidden transition-all duration-500 ${
+          openAccordion.cabang ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        <div className="p-6 border-t border-slate-200">
+          {isCabangLoading ? (
+            <div className="grid place-items-center py-20">
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-10 h-10 border-4 border-blue-600/30 border-t-blue-600 rounded-full animate-spin"></div>
+                <p className="text-slate-500 font-medium animate-pulse">
+                  Memuat Data Cabang...
+                </p>
               </div>
             </div>
+          ) : (
+            <CabangSetting
+              cabangList={cabangList}
+              onToggleStatus={handleToggleCabangStatus}
+            />
+          )}
+        </div>
+      </div>
+    </div>
+
+    {/* Menu Lainnya */}
+    <div>
+      <h4 className="text-xl font-semibold text-slate-900 mb-4">
+        Menu Lainnya
+      </h4>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        {/* Manajemen User */}
+        <button className="group bg-white border border-slate-200 rounded-xl p-6 text-left hover:shadow-md transition-all duration-300">
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+              <FileCog className="w-6 h-6" />
+            </div>
+            <span className="bg-indigo-100 text-indigo-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">
+              High Admin
+            </span>
           </div>
-        )}
+
+          <h3 className="font-bold text-slate-800 text-lg mb-1">Manajemen User</h3>
+          <p className="text-slate-500 text-sm leading-relaxed">
+            Tambah atau hapus akses admin untuk staff bank lainnya.
+          </p>
+        </button>
+
+        {/* Dev Logs */}
+        <button className="group bg-white border border-slate-200 rounded-xl p-6 text-left hover:shadow-md transition-all duration-300">
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-12 h-12 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition-colors">
+              <FileBarChart className="w-6 h-6" />
+            </div>
+            <span className="bg-purple-100 text-purple-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">
+              Dev Only
+            </span>
+          </div>
+
+          <h3 className="font-bold text-slate-800 text-lg mb-1">System Logs</h3>
+          <p className="text-slate-500 text-sm leading-relaxed">
+            Monitoring performa sistem dan error logs untuk developer.
+          </p>
+        </button>
+
+      </div>
+    </div>
+
+  </div>
+)}
 
         {activeTab === 'logout' && (
-          <div className="flex items-center justify-center min-h-[60vh] animate-in fade-in zoom-in duration-300">
-            <div className="bg-white border border-slate-200 rounded-3xl p-12 text-center -xl max-w-md w-full">
-              <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                <LogOut className="w-10 h-10 ml-1" />
-              </div>
-              <h2 className="text-2xl font-bold text-slate-900 mb-3">Konfirmasi Logout</h2>
-              <p className="text-slate-500 mb-8 leading-relaxed">
-                Apakah Anda yakin ingin keluar dari sistem? Anda harus login kembali untuk mengakses data.
-              </p>
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-300">
+    <div className="bg-white border border-slate-200 rounded-3xl p-10 text-center shadow-2xl max-w-md w-full animate-in zoom-in duration-300">
 
-              <div className="flex gap-4 justify-center">
-                <Button
-                  onClick={() => setActiveTab('dashboard')}
-                  className="px-6 py-2.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium border-none -none"
-                >
-                  Batal
-                </Button>
-                <Button
-                  onClick={handleLogout}
-                  className="px-6 py-2.5 rounded-xl bg-red-600 text-white hover:bg-red-700 font-medium -lg -red-600/20"
-                >
-                  Ya, Logout
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
+      {/* ICON */}
+      <div className="relative w-24 h-24 mx-auto mb-6 flex items-center justify-center">
+        <div className="absolute inset-0 bg-red-100 rounded-full animate-ping opacity-30" />
+        <div className="relative w-20 h-20 bg-gradient-to-br from-red-500 to-rose-500 text-white rounded-full flex items-center justify-center shadow-lg">
+          <LogOut className="w-9 h-9 ml-1" />
+        </div>
+      </div>
+
+      {/* TITLE */}
+      <h2 className="text-2xl font-bold text-slate-900 mb-3">
+        Konfirmasi Logout
+      </h2>
+
+      {/* DESCRIPTION */}
+      <p className="text-slate-500 mb-8 leading-relaxed text-sm">
+        Anda akan keluar dari sistem dan perlu login kembali untuk melanjutkan aktivitas. 
+        Pastikan semua pekerjaan telah disimpan.
+      </p>
+
+      {/* ACTION BUTTON */}
+      <div className="flex gap-4 justify-center">
+        <Button
+          onClick={() => setActiveTab('dashboard')}
+          className="px-6 py-2.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium transition-all"
+        >
+          Batal
+        </Button>
+
+        <Button
+          onClick={handleLogout}
+          className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 text-white hover:opacity-90 font-semibold shadow-lg transition-all"
+        >
+          Ya, Logout
+        </Button>
+      </div>
+    </div>
+  </div>
+)}
+
       </main>
 
       {/* Dialogs */}
