@@ -12,6 +12,7 @@ import SavingsTypeSelection from "./components/SavingsTypeSelection";
 import ProcedureSteps from "./components/ProcedureSteps";
 import AccountForm from "./components/AccountForm";
 import ProductDetails from "./components/ProductDetails";
+import HeroLanding from "./pages/HeroLanding";
 
 function AppWrapper() {
   const navigate = useNavigate();
@@ -26,6 +27,10 @@ function AppWrapper() {
     setSelectedType(type);
     navigate(`/product/${type}`);
   };
+
+  const handleHeroLanding = () => {
+    navigate(`/herolanding`);
+  }
 
   const handleCompleteProcedure = () => {
     navigate(`/form/${selectedType}`);
@@ -47,7 +52,7 @@ function AppWrapper() {
     return (
       <ProductDetails
         savingsType={type}
-        onNext={() => navigate(`/procedure/${type}`)}
+        onNext={() => navigate(`/form/${type}`)}
         onBack={() => handleBack("/")}
       />
     );
@@ -83,7 +88,7 @@ function AppWrapper() {
     return (
       <AccountForm
         savingsType={type}
-        onBack={() => handleBack(`/procedure/${type}`)}
+        onBack={() => handleBack(`/product/${type}`)}
       />
     );
   }
@@ -95,6 +100,7 @@ function AppWrapper() {
           path="/"
           element={<HomePage onOpenSavings={handleOpenSavings} />}
         />
+           <Route path="/herolanding" element={<HeroLanding />} />
         <Route
           path="/selection"
           element={

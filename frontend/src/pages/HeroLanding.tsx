@@ -1,13 +1,18 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
-import { CheckCircle, ArrowRight } from "lucide-react";
 
-interface HomePageProps {
-  onOpenSavings: (type: string) => void;
+interface HeroLandingProps {
+  logoSrc?: string;
+  logoAlt?: string;
+  illustrationSrc?: string;
+  onPrimaryClick?: () => void;
 }
 
-export default function HomePage({ onOpenSavings }: HomePageProps) {
-  const navigate = useNavigate();
+export default function HeroLanding({
+  logoSrc = "/banksleman.png",
+  logoAlt = "Bank Sleman",
+  illustrationSrc = "/hero-illustration.png",
+  onPrimaryClick,
+}: HeroLandingProps) {
   const [isScrolled, setIsScrolled] = React.useState(false);
 
   React.useEffect(() => {
@@ -18,41 +23,14 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const products = [
-    {
-      id: 'mutiara',
-      title: 'Tabungan Mutiara',
-      description: 'Tingkatkan saldo, menangkan hadiahnya',
-      color: 'from-emerald-600 to-emerald-800',
-      features: ['Bunga kompetitif', 'Berhadiah', 'Tanpa biaya admin'],
-      cardBg: 'bg-gradient-to-br from-emerald-500 to-emerald-700'
-    },
-    {
-      id: 'bisnis',
-      title: 'Tabungan Bank Sleman',
-      description: 'Tabungan masyarakat Sleman',
-      color: 'from-indigo-600 to-purple-700',
-      features: ['Gratis biaya admin', 'Bunga hingga 3.5%', 'Kartu debit gratis'],
-      cardBg: 'bg-gradient-to-br from-indigo-600 to-purple-700'
-    },
-    {
-      id: 'simpel',
-      title: 'Tabungan Simpel',
-      description: 'Nabung sejak dini',
-      color: 'from-pink-500 to-rose-600',
-      features: ['Untuk pelajar', 'Setoran ringan', 'Edukasi finansial'],
-      cardBg: 'bg-gradient-to-br from-pink-500 to-rose-600'
-    }
-  ];
-
   return (
     <div className="min-h-screen flex flex-col font-sans text-slate-800">
       
-      {/* --- NAVBAR (From HeroLanding) --- */}
+      {/* --- NAVBAR --- */}
       <nav 
         className={`fixed top-0 w-full z-50 transition-all duration-500 ease-in-out ${
           isScrolled 
-            ? "bg-white/90 backdrop-blur-md py-4 shadow-sm" 
+            ? "bg-white/90 backdrop-blur-md py-4" 
             : "bg-transparent py-6"
         }`}
       >
@@ -67,14 +45,10 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
               }`}
             >
               <img
-              src="/banksleman.png"
-              alt="Bank Sleman"
-              className={`h-8 md:h-10 w-auto object-contain -mt-2 transition-all duration-500 ${
-                isScrolled
-                  ? "brightness-90 contrast-100"
-                  : "brightness-200 contrast-200"
-              }`}
-            />
+                src={logoSrc}
+                alt={logoAlt}
+               className="h-8 md:h-10 w-auto object-contain -mt-2"
+              />
             </div>
 
             {/* Right Menu (Desktop) */}
@@ -82,7 +56,7 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
               {["Produk", "Layanan", "Promo"].map((item) => (
                 <a 
                   key={item}
-                  href={item === "Produk" ? "#produk" : "#"} 
+                  href="#" 
                   className={`text-sm font-medium transition-colors duration-300 ${
                     isScrolled 
                       ? "text-slate-600 hover:text-green-600" 
@@ -97,8 +71,8 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
         </div>
       </nav>
       
-      {/* --- HERO SECTION (From HeroLanding) --- */}
-      <main className="relative bg-gradient-to-br from-[#0EA5E9] via-[#34d399] to-[#064e3b] overflow-hidden">
+      {/* --- HERO SECTION --- */}
+      <main className="flex-grow relative bg-gradient-to-br from-[#0EA5E9] via-[#34d399] to-[#064e3b] overflow-hidden">
 
         {/* Background Pattern Elements */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
@@ -111,6 +85,9 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
             
             {/* Text Content */}
             <div className="max-w-2xl text-center lg:text-left mx-auto lg:mx-0 order-2 lg:order-1">
+              {/* Badge */}
+              
+
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white mb-6 leading-[1.15]">
                 Masa Depan Finansial <br/>
                 <span className="text-green-200">Dimulai dari Sini.</span>
@@ -122,7 +99,7 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
 
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
                 <button
-                  onClick={() => navigate('/selection')}
+                  onClick={onPrimaryClick}
                   className="w-full sm:w-auto px-8 py-4 bg-yellow-500 hover:bg-yellow-400 text-green-900 font-bold rounded-xl shadow-lg shadow-yellow-500/20 transform transition hover:-translate-y-1"
                 >
                   Buka Tabungan Sekarang
@@ -151,27 +128,18 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
 
             {/* Illustration / Image Area */}
             <div className="relative lg:h-auto flex justify-center lg:justify-end order-1 lg:order-2">
-  <div className="relative w-full max-w-md lg:max-w-lg">
-
-    {/* GLASS – gerak diagonal + rotate */}
-    <div 
-  className="absolute inset-4 bg-white/5 border border-white/10 
-             rounded-[2rem] backdrop-blur-sm 
-             animate-glass"
-/>
-
-
-    {/* IMAGE – gerak naik turun saja */}
-    <img
-  src="/3dimage.png"
-  className="relative z-10 w-full h-auto drop-shadow-2xl 
-             animate-image transition hover:scale-[1.03] duration-500"
-/>
-
-
+              <div className="relative w-full max-w-md lg:max-w-lg">
+                {/* Glass card background behind image */}
+                <div className="absolute inset-4 bg-white/5 border border-white/10 rounded-[2rem] backdrop-blur-sm transform rotate-3 scale-95" />
+                
+                <img
+                  src="3dimage.png"
+                  alt="Aplikasi Bank Sleman Mobile"
+                  className="relative z-10 w-full h-auto drop-shadow-2xl transform transition hover:scale-[1.02] duration-500"
+                />
 
                 {/* Floating Card UI Element */}
-                {/* <div className="absolute -bottom-6 -left-6 z-20 bg-white p-4 rounded-xl shadow-xl flex items-center gap-4 max-w-[200px] animate">
+                <div className="absolute -bottom-6 -left-6 z-20 bg-white p-4 rounded-xl shadow-xl flex items-center gap-4 max-w-[200px] animate-bounce-slow">
                   <div className="bg-green-100 p-2 rounded-lg">
                      <ChartIcon className="w-6 h-6 text-green-700" />
                   </div>
@@ -179,29 +147,31 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
                     <p className="text-xs text-slate-500">Bunga Kompetitif</p>
                     <p className="text-sm font-bold text-slate-900">Hingga 4.5%</p>
                   </div>
-                </div> */}
+                </div>
               </div>
             </div>
           </div>
         </div>
         
         {/* Curved Divider */}
-        <div className="absolute -bottom-[1px] w-full overflow-hidden leading-[0]">
-          <svg
-            className="block w-full h-[60px] lg:h-[100px]"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 1200 120"
-            preserveAspectRatio="none"
-          >
-            <path
-              d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.26-17.34-168.06-16.33-250.45.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.8C1132.19,118.92,1055.71,111.31,985.66,92.83Z"
-              className="fill-slate-900"
-            />
-          </svg>
-        </div>
+        {/* Curved Divider */}
+<div className="absolute -bottom-[1px] w-full overflow-hidden leading-[0]">
+  <svg
+    className="block w-full h-[60px] lg:h-[100px]"
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 1200 120"
+    preserveAspectRatio="none"
+  >
+    <path
+      d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.26-17.34-168.06-16.33-250.45.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.8C1132.19,118.92,1055.71,111.31,985.66,92.83Z"
+      className="fill-slate-900"
+    />
+  </svg>
+</div>
+
       </main>
 
-      {/* --- CORPORATE FOOTER (From HeroLanding) --- */}
+      {/* --- CORPORATE FOOTER --- */}
       <footer className="bg-slate-900 text-slate-300 pt-16 pb-8">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
@@ -271,7 +241,7 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
               </p>
               
               <div className="flex flex-wrap justify-center md:justify-end gap-6">
-                 {/* OJK & LPS Disclaimers */}
+                 {/* OJK & LPS Disclaimers (Styled as text/badges) */}
                  <div className="flex items-center gap-2 opacity-70 hover:opacity-100 transition">
                     <div className="bg-white p-1 rounded w-12 h-auto flex items-center justify-center">
                         <span className="text-[8px] font-bold text-black text-center leading-tight">OJK</span>
@@ -294,6 +264,8 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
 }
 
 // --- Icons Components (SVG) ---
+// Menggunakan SVG langsung agar tidak perlu install lucide-react atau font-awesome
+
 const CheckShieldIcon = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" /><path d="m9 12 2 2 4-4" />

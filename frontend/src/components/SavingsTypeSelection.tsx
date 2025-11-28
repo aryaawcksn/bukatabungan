@@ -1,150 +1,142 @@
 import React from 'react';
 import { Button } from './ui/button';
-import { Card } from './ui/card';
-import { Building, User, Gift, ArrowLeft, CheckCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle, ArrowRight } from 'lucide-react';
+import { useEffect } from 'react';
+
 
 interface SavingsTypeSelectionProps {
   onSelectType: (type: string) => void;
   onBack: () => void;
 }
 
-export default function SavingsTypeSelection({ onSelectType, onBack }: SavingsTypeSelectionProps) {
+export default function SavingsTypeSelection({
+  onSelectType,
+  onBack,
+}: SavingsTypeSelectionProps) {
   const savingsTypes = [
     {
-      id: 'individu',
-      title: 'Tabungan Individu',
-      icon: User,
-      color: 'emerald',
-      description: 'Tabungan untuk kebutuhan pribadi dengan berbagai keuntungan dan kemudahan akses',
-      benefits: [
-        'Bunga hingga 3.5% per tahun',
-        'Gratis biaya administrasi bulanan',
-        'Free transfer antar bank 25x/bulan',
-        'Kartu debit gratis'
-      ]
+      id: 'mutiara',
+      title: 'Tabungan Mutiara',
+      description: 'Tingkatkan saldo',
+      cardBg: 'from-emerald-500 to-emerald-800',
+      features: ['Bunga kompetitif', 'Berhadiah', 'Tanpa biaya admin'],
     },
     {
       id: 'bisnis',
-      title: 'Tabungan Bisnis',
-      icon: Building,
-      color: 'blue',
-      featured: true,
-      description: 'Solusi tabungan untuk mengembangkan dan mengelola keuangan bisnis Anda',
-      benefits: [
-        'Bunga hingga 4% per tahun',
-        'Limit transaksi lebih tinggi',
-        'Layanan prioritas',
-        'Integrasi dengan software akuntansi'
-      ]
+      title: 'Tabungan Bank Sleman',
+      description: 'Tabungan masyarakat Sleman',
+      cardBg: 'from-indigo-500 to-purple-700',
+      features: ['Gratis biaya admin', 'Bunga hingga 3.5%', 'Kartu debit gratis'],
     },
     {
-      id: 'promosi',
-      title: 'Tabungan Promosi',
-      icon: Gift,
-      color: 'amber',
-      description: 'Paket tabungan spesial dengan bonus dan hadiah menarik untuk Anda',
-      benefits: [
-        'Bonus saldo awal hingga Rp 500.000',
-        'Bunga promo 5% untuk 3 bulan pertama',
-        'Voucher belanja senilai Rp 200.000',
-        'Cashback untuk transaksi tertentu'
-      ]
-    }
+      id: 'simpel',
+      title: 'Tabungan Simpel',
+      description: 'Nabung sejak dini',
+      cardBg: 'from-pink-500 to-rose-600',
+      features: ['Untuk pelajar', 'Setoran ringan', 'Edukasi finansial'],
+    },
   ];
 
+  useEffect(() => {
+  window.scrollTo({
+    top: 80, // jarak turun (bisa kamu sesuaikan)
+    behavior: "smooth",
+  });
+}, []);
+
   return (
-    <div className="min-h-screen py-12">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <Button 
-          variant="ghost" 
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-10">
+      <div className="max-w-6xl mx-auto px-6">
+        <Button
+          variant="ghost"
           onClick={onBack}
-          className="mb-8 hover:bg-white/50"
+          className="mb-10 text-slate-600 hover:bg-slate-200"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Kembali
         </Button>
 
-        <div className="text-center mb-16">
-          <h1 className="text-gray-900 mb-4 text-5xl">
-            Pilih Jenis Tabungan
-          </h1>
-          <p className="text-gray-700 text-xl">
-            Pilih jenis tabungan yang sesuai dengan kebutuhan Anda
-          </p>
-        </div>
+        {/* Header */}
+       <div className="text-center mb-14">
+  <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
+    Pilih Jenis Tabungan
+  </h1>
 
-        <div className="grid md:grid-cols-3 gap-8">
-          {savingsTypes.map((type) => {
-            const Icon = type.icon;
-            const isFeatured = type.featured;
-            
-            return (
-              <Card 
-                key={type.id}
-                className={`p-8 hover:shadow-2xl transition-all duration-300 cursor-pointer border-0 shadow-lg rounded-2xl group hover:-translate-y-2 ${
-                  isFeatured 
-                    ? 'bg-gradient-to-br from-emerald-600 to-emerald-800 relative' 
-                    : 'bg-white'
-                }`}
-                onClick={() => onSelectType(type.id)}
+  <div className="w-24 h-1 mx-auto rounded-full mb-4 bg-gradient-to-r from-blue-500 via-emerald-500 to-green-500" />
+
+  <p className="text-slate-600 max-w-xl mx-auto">
+    Pilih produk tabungan yang paling sesuai dengan kebutuhan finansial.
+  </p>
+</div>
+
+
+
+        {/* Cards */}
+        <div className="grid gap-8 md:grid-cols-3 place-items-center">
+          {savingsTypes.map((type) => (
+            <div
+              key={type.id}
+              onClick={() => onSelectType(type.id)}
+              className="group w-full max-w-sm bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer overflow-hidden hover:-translate-y-2"
+            >
+              {/* Header Visual */}
+              <div
+                className={`relative h-44 bg-gradient-to-br ${type.cardBg} p-6 text-white`}
               >
-                {isFeatured && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-yellow-400 text-yellow-900 px-4 py-1 rounded-full text-sm shadow-md">
-                    Rekomendasi
-                  </div>
-                )}
-                
-                <div className={`inline-flex items-center justify-center w-20 h-20 rounded-2xl mb-6 group-hover:scale-110 transition-transform ${
-                  isFeatured 
-                    ? 'bg-white/20 backdrop-blur-sm' 
-                    : type.color === 'amber' 
-                      ? 'bg-gradient-to-br from-amber-100 to-amber-200'
-                      : 'bg-gradient-to-br from-emerald-100 to-emerald-200'
-                }`}>
-                  <Icon className={`h-10 w-10 ${
-                    isFeatured 
-                      ? 'text-white' 
-                      : type.color === 'amber' 
-                        ? 'text-amber-700'
-                        : 'text-emerald-700'
-                  }`} />
+                <div className="absolute top-0 right-0 w-28 h-28 bg-white/20 rounded-full blur-2xl" />
+
+                <div className="flex justify-between items-start relative z-10">
+                  <img
+                    src="/banksleman.png"
+                    alt="Logo"
+                    className="h-6 brightness-0 invert"
+                  />
+                  <span className="text-xs tracking-widest opacity-80">
+                    PREMIUM
+                  </span>
                 </div>
-                
-                <h3 className={`mb-3 text-2xl ${isFeatured ? 'text-white' : 'text-gray-900'}`}>
+
+                <div className="absolute bottom-6 left-6 right-6 flex justify-between items-center">
+                  <span className="font-mono tracking-wider text-sm">
+                    •••• •••• •••• 8899
+                  </span>
+                  <img src="/chip.png" alt="Chip" className="h-7 opacity-80" />
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="p-7 flex flex-col">
+                <h3 className="text-xl font-bold text-slate-900 mb-1">
                   {type.title}
                 </h3>
-                
-                <p className={`mb-6 ${isFeatured ? 'text-emerald-50' : 'text-gray-600'}`}>
+                <p className="text-sm text-slate-500 mb-5">
                   {type.description}
                 </p>
 
-                <div className="space-y-3 mb-8">
-                  {type.benefits.map((benefit, index) => (
-                    <div key={index} className="flex items-start gap-3">
-                      <CheckCircle className={`h-5 w-5 flex-shrink-0 mt-0.5 ${
-                        isFeatured ? 'text-white' : 'text-emerald-600'
-                      }`} />
-                      <p className={`text-sm ${isFeatured ? 'text-emerald-50' : 'text-gray-700'}`}>
-                        {benefit}
-                      </p>
+                <div className="space-y-3 mb-6">
+                  {type.features.map((feature, idx) => (
+                    <div key={idx} className="flex items-center gap-3 text-sm">
+                      <CheckCircle className="w-5 h-5 text-green-500" />
+                      <span className="text-slate-700">{feature}</span>
                     </div>
                   ))}
                 </div>
 
-                <Button 
-                  className={`w-full shadow-md ${
-                    isFeatured 
-                      ? 'bg-white text-emerald-700 hover:bg-emerald-50' 
-                      : 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                  }`}
-                  onClick={() => onSelectType(type.id)}
-                >
-                  Pilih {type.title}
+                <Button className="mt-auto w-full py-5 rounded-xl bg-slate-900 hover:bg-green-600 transition-all font-semibold flex items-center justify-center gap-2">
+                  Pilih Tabungan
+                  <ArrowRight className="w-4 h-4" />
                 </Button>
-              </Card>
-            );
-          })}
+              </div>
+            </div>
+          ))}
         </div>
+        <div className="border-t border-slate-800 pt-8 mt-8">
+            <div className="items-center">
+              <p className="text-xs text-slate-500 text-center md:text-center">
+                &copy; {new Date().getFullYear()} PT BPR Bank Sleman (Perseroda). All rights reserved.
+              </p>
+            </div>
+          </div>
       </div>
     </div>
   );

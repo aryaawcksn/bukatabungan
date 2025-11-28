@@ -1,26 +1,31 @@
-// tailwind.config.js
-module.exports = {
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  darkMode: "class",
   theme: {
     extend: {
-  keyframes: {
-    floating: {
-      '0%, 100%': { transform: 'translate(0, 0)' },
-      '50%': { transform: 'translate(20px, -20px)' },
-      'pulse-slow': 'pulse 3s ease-in-out infinite'
-      
+      keyframes: {
+        floatSlow: {
+          "0%, 100%": { transform: "translateY(0px) rotate(3deg)" },
+          "50%": { transform: "translateY(-12px) rotate(4deg)" },
+        },
+        floatFast: {
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(-20px)" },
+        },
+        sway: {
+          "0%, 100%": { transform: "translateX(0px)" },
+          "50%": { transform: "translateX(10px)" },
+        },
+      },
+      animation: {
+        "float-slow": "floatSlow 6s ease-in-out infinite",
+        "float-fast": "floatFast 4s ease-in-out infinite",
+        "sway": "sway 5s ease-in-out infinite",
+      },
     },
-    gradientShift: {
-      '0%, 100%': { backgroundPosition: '0% 50%' },
-      '50%': { backgroundPosition: '100% 50%' },
-    },
-  },
-  animation: {
-    floating: 'floating 12s ease-in-out infinite',
-    'floating-slow': 'floating 20s ease-in-out infinite',
-    'floating-reverse': 'floating 18s ease-in-out infinite reverse',
-    gradientShift: 'gradientShift 8s ease infinite',
-  },
-},
   },
   plugins: [],
 };

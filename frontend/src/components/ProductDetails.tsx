@@ -1,19 +1,14 @@
 import React, { useEffect } from "react";
-import { Card } from "./ui/card";
 import { Button } from "./ui/button";
-import { FAQItem } from "./FAQItem";
 import {
-  Info,
-  ListChecks,
-  Coins,
-  AlertTriangle,
-  LifeBuoy,
   ArrowLeft,
   ArrowRight,
-  Phone,
-  Mail,
-  MapPin,
   CheckCircle,
+  FileText,
+  CreditCard,
+  Banknote,
+  ShieldCheck,
+  Info
 } from "lucide-react";
 
 interface ProductDetailsProps {
@@ -31,34 +26,12 @@ function ProductDetails({
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
   }, []);
 
-  const [navItems, setNavItems] = React.useState([
-  { icon: Info, label: "Ringkasan Produk", active: true },
-  { icon: ListChecks, label: "Perlu Diketahui", active: false },
-  { icon: AlertTriangle, label: "Syarat dan Ketentuan", active: false },
-  { icon: Coins, label: "Biaya, Limit dan Suku Bunga", active: false },
-]);
-
-const [activeTab, setActiveTab] = React.useState("Ringkasan Produk");
-
-const handleTabClick = (label: string) => {
-  setActiveTab(label);
-  setNavItems(prev =>
-    prev.map(item => ({
-      ...item,
-      active: item.label === label
-    }))
-  );
-};
-
-
-
   const getProductInfo = () => {
     switch (savingsType) {
       case "mutiara":
         return {
           title: "Tabungan Mutiara",
           subtitle: "Tingkatkan saldo, menangkan hadiahnya",
-          bankName: "PT BANK SLEMAN",
           description: "Tabungan Mutiara adalah produk tabungan berhadiah yang memberikan kesempatan untuk memenangkan hadiah menarik setiap bulannya. Semakin besar saldo, semakin besar peluang menang!",
           features: [
             "Bunga kompetitif untuk setiap saldo",
@@ -82,33 +55,31 @@ const handleTabClick = (label: string) => {
             "Biaya tarik tunai di ATM lain: Sesuai ketentuan",
             "Biaya transfer: Sesuai ketentuan",
           ],
-          interest: "Suku bunga: 3.5% per tahun (dapat berubah sewaktu-waktu)",
-          cardBg: "bg-gradient-to-br from-emerald-500 to-emerald-700",
-          image: "/mutiara.jpg",
+          interest: "3.5% p.a",
+          interestDesc: "Suku bunga kompetitif yang dapat berubah sewaktu-waktu",
+          cardBg: "from-emerald-500 to-emerald-800",
+          chipColor: "text-emerald-100",
           notes: [
-          {
-            jenis: "Perorangan belum dewasa yang diwakili oleh orang tua (< 12 tahun)",
-            dokumen: [
-              "Kartu identitas orang tua",
-              "NPWP orang tua",
-              "Akte Kelahiran Anak / Kartu Keluarga / Kartu Identitas Anak",
-            ]
-          },
-          {
-            jenis: "Perorangan belum dewasa yang diwakili oleh wali (< 12 tahun)",
-            dokumen: [
-              "Kartu identitas dan NPWP wali",
-              "Surat Penetapan Pengangkatan Wali dari Pengadilan Negeri"
-            ]
-          }
-        ]
-
+            {
+              jenis: "Perorangan belum dewasa (< 12 tahun)",
+              dokumen: [
+                "Kartu identitas orang tua & NPWP",
+                "Akte Kelahiran Anak / KIA",
+              ]
+            },
+            {
+              jenis: "Perorangan belum dewasa (Wali)",
+              dokumen: [
+                "Kartu identitas & NPWP wali",
+                "Surat Penetapan Wali dari Pengadilan"
+              ]
+            }
+          ]
         };
       case "bisnis":
         return {
           title: "Tabungan Bank Sleman",
           subtitle: "Tabungan masyarakat Sleman",
-          bankName: "PT BANK SLEMAN",
           description: "Tabungan Bank Sleman dirancang khusus untuk masyarakat Kabupaten Sleman. Dengan fitur lengkap dan kemudahan transaksi, tabungan ini menjadi pilihan tepat untuk mengelola keuangan Anda.",
           features: [
             "Gratis biaya administrasi bulanan",
@@ -133,449 +104,248 @@ const handleTabClick = (label: string) => {
             "Biaya tarik tunai di ATM lain: Sesuai ketentuan",
             "Biaya transfer: Sesuai ketentuan",
           ],
-          interest: "Suku bunga: 3.5% per tahun (dapat berubah sewaktu-waktu)",
-          cardBg: "bg-gradient-to-br from-indigo-600 to-purple-700",
-          image: "/sleman.jpg",
+          interest: "3.5% p.a",
+          interestDesc: "Suku bunga menarik untuk pertumbuhan dana Anda",
+          cardBg: "from-indigo-500 to-purple-700",
+          chipColor: "text-indigo-100",
           notes: [
-            {
-              jenis: "Perorangan belum dewasa yang diwakili oleh orang tua (< 12 tahun)",
+             {
+              jenis: "Perorangan belum dewasa (< 12 tahun)",
               dokumen: [
-                "Kartu identitas orang tua",
-                "NPWP orang tua",
-                "Akte Kelahiran Anak / Kartu Keluarga / Kartu Identitas Anak"
+                "Kartu identitas orang tua & NPWP",
+                "Akte Kelahiran Anak / KIA",
               ]
             },
-            {
-              jenis: "Perorangan belum dewasa yang diwakili oleh wali (< 12 tahun)",
-              dokumen: [
-                "Kartu identitas dan NPWP wali",
-                "Surat Penetapan Pengangkatan Wali dari Pengadilan Negeri"
-              ]
-            }
           ]
-
         };
       case "simpel":
         return {
           title: "Tabungan Simpel",
           subtitle: "Nabung sejak dini",
-          bankName: "PT BANK SLEMAN",
-          description: "Tabungan SimPel (Simpanan Pelajar) adalah tabungan untuk siswa yang diterbitkan secara nasional oleh bank-bank di Indonesia, dengan persyaratan mudah dan sederhana serta fitur yang menarik, dalam rangka edukasi dan inklusi keuangan untuk mendorong budaya menabung sejak dini.",
+          description: "Tabungan SimPel (Simpanan Pelajar) adalah tabungan untuk siswa yang diterbitkan secara nasional untuk mendorong budaya menabung sejak dini.",
           features: [
-            "Khusus untuk pelajar PAUD, TK, SD, SMP, SMA, atau sederajat",
+            "Khusus untuk pelajar PAUD, TK, SD, SMP, SMA",
             "Setoran ringan, mulai dari Rp5.000",
             "Tanpa biaya administrasi",
             "Edukasi finansial sejak dini",
             "Kartu debit khusus pelajar",
-            "Mendukung program inklusi keuangan nasional",
           ],
           terms: [
-            "Penabung Simpanan Pelajar adalah siswa PAUD, TK, SD, SMP, SMA, Madrasah (MI, MTs, MA) atau sederajat yang berusia di bawah 17 tahun dan belum memiliki KTP",
-            "Penabung hanya diperbolehkan membuka 1 (satu) rekening Simpanan Pelajar di Bank Sleman",
-            "Rekening Simpanan Pelajar hanya dapat dibuka dalam bentuk rekening tunggal (tidak dapat dibuka dalam bentuk rekening gabungan)",
+            "Siswa PAUD - SMA berusia di bawah 17 tahun",
+            "Belum memiliki KTP",
+            "Hanya boleh memiliki 1 rekening SimPel",
             "Setoran awal minimal Rp50.000",
-            "Setoran selanjutnya minimum Rp5.000",
-            "Saldo minimum yang harus dipertahankan adalah Rp10.000",
+            "Saldo minimum Rp10.000",
           ],
           fees: [
             "Biaya administrasi: Gratis",
             "Biaya kartu debit: Gratis",
             "Biaya tarik tunai di ATM Bank Sleman: Gratis",
-            "Biaya tarik tunai di ATM lain: Sesuai ketentuan",
-            "Biaya transfer: Sesuai ketentuan",
+            "Biaya ganti buku: Gratis",
           ],
-          interest: "Suku bunga: 2.5% per tahun (dapat berubah sewaktu-waktu)",
-          cardBg: "bg-gradient-to-br from-pink-500 to-rose-600",
-          image: "/SD.jpg",
+          interest: "2.5% p.a",
+          interestDesc: "Bunga simpanan pelajar yang menguntungkan",
+          cardBg: "from-pink-500 to-rose-600",
+          chipColor: "text-pink-100",
           notes: [
-            {
-              jenis: "Perorangan belum dewasa yang diwakili oleh orang tua (< 12 tahun)",
+             {
+              jenis: "Siswa PAUD/TK/SD/SMP/SMA",
               dokumen: [
                 "Kartu identitas orang tua",
-                "NPWP orang tua",
-                "Akte Kelahiran Anak / Kartu Keluarga / Kartu Identitas Anak"
+                "Akte Kelahiran / KIA / Kartu Pelajar",
+                "Surat persetujuan orang tua"
               ]
             },
-            {
-              jenis: "Perorangan belum dewasa yang diwakili oleh wali (< 12 tahun)",
-              dokumen: [
-                "Kartu identitas dan NPWP wali",
-                "Surat Penetapan Pengangkatan Wali dari Pengadilan Negeri"
-              ]
-            }
           ]
-
         };
       default:
         return {
           title: "Tabungan",
           subtitle: "",
-          bankName: "PT BANK SLEMAN",
           description: "",
           features: [],
           terms: [],
           fees: [],
           interest: "",
-          cardBg: "bg-gradient-to-br from-emerald-500 to-emerald-700",
-          notes: [
-  {
-    jenis: "Perorangan belum dewasa yang diwakili oleh orang tua (< 12 tahun)",
-    dokumen: [
-      "Kartu identitas orang tua",
-      "NPWP orang tua",
-      "Akte Kelahiran Anak / Kartu Keluarga / Kartu Identitas Anak"
-    ]
-  },
-  {
-    jenis: "Perorangan belum dewasa yang diwakili oleh wali (< 12 tahun)",
-    dokumen: [
-      "Kartu identitas dan NPWP wali",
-      "Surat Penetapan Pengangkatan Wali dari Pengadilan Negeri"
-    ]
-  }
-]
-
+          interestDesc: "",
+          cardBg: "from-gray-500 to-gray-700",
+          chipColor: "text-gray-100",
+          notes: []
         };
     }
   };
 
-  const productInfo = getProductInfo();
-  
+  const product = getProductInfo();
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Top Bar */}
-          <div className="flex items-center justify-between py-3 border-b border-gray-100">
-            <div className="flex items-center gap-6 text-sm text-gray-600">
-              <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4" />
-                <span>(0274) 868051</span>
-              </div>
-              <div className="hidden md:flex items-center gap-2">
-                <MapPin className="h-4 w-4" />
-                <span>Jl. Kragilan No.1 Sinduharjo, Sleman</span>
-              </div>
-              <div className="hidden md:flex items-center gap-2">
-                <Mail className="h-4 w-4" />
-                <span>info@banksleman.co.id</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <a href="#" className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-colors">
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                </svg>
-              </a>
-              <a href="#" className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-colors">
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                </svg>
-              </a>
-              <a href="#" className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-colors">
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                </svg>
-              </a>
-            </div>
-          </div>
-
-          {/* Main Navigation */}
-          <div className="flex items-center justify-between py-5">
-            <div className="flex items-center gap-3">
-              <img 
-                src="/banksleman.png" 
-                alt="Bank Sleman Logo" 
-                className="w-40 h-auto -mt-3"
-              />
-            </div>
-            <nav className="hidden lg:flex gap-8">
-              <a href="#" className="text-gray-700 hover:text-emerald-600 transition-colors">HOME</a>
-              <a href="#" className="text-gray-700 hover:text-emerald-600 transition-colors">PROFIL</a>
-              <a href="#" className="text-gray-700 hover:text-emerald-600 transition-colors">PRODUK & LAYANAN</a>
-              <a href="#" className="text-gray-700 hover:text-emerald-600 transition-colors">E-BANKING</a>
-              <a href="#" className="text-gray-700 hover:text-emerald-600 transition-colors">INFO</a>
-              <a href="#" className="text-gray-700 hover:text-emerald-600 transition-colors">HUBUNGI KAMI</a>
-            </nav>
-           
-          </div>
-        </div>
-      </header>
-
-      {/* Hero Banner with Pattern */}
-      <section 
-        className="relative bg-gradient-to-br from-slate-800 via-slate-900 to-indigo-950 py-24 overflow-hidden"
-        style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1726406569540-eb2c5bc000b4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmbG9yYWwlMjBwYXR0ZXJuJTIwZGFya3xlbnwxfHx8fDE3NjI3MzY2MjN8MA&ixlib=rb-4.1.0&q=80&w=1080')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundBlendMode: 'overlay'
-        }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-indigo-950/80 to-slate-900/90"></div>
+    <div className="min-h-screen bg-slate-50 py-12 font-sans text-slate-800">
+      <div className="max-w-5xl mx-auto px-6">
         
-        {/* Decorative Pattern Overlay */}
-        <div className="absolute inset-0 opacity-20" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-        }}></div>
+        {/* Navigation */}
+        <Button 
+          variant="ghost" 
+          onClick={onBack}
+          className="mb-8 hover:bg-slate-200 text-slate-600"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Kembali ke Pilihan
+        </Button>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center">
-            <h1 className="text-white mb-4 text-5xl md:text-6xl">{productInfo.title}</h1>
-            <p className="text-white/90 text-xl mb-2">{productInfo.subtitle}</p>
-            <div className="flex items-center justify-center gap-2 text-gray-300">
-              <a href="#" className="hover:text-white transition-colors">Home</a>
-              <span>/</span>
-              <a href="#" className="hover:text-white transition-colors">Produk</a>
-              <span>/</span>
-              <span className="text-emerald-400">{productInfo.title}</span>
+        {/* Header Section */}
+        <div className="text-center mb-12">
+          <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3">{product.title}</h1>
+          <p className="text-lg text-slate-600">{product.subtitle}</p>
+        </div>
+
+        <div className="grid gap-8">
+          
+          {/* Top Section: Visual & Quick Stats */}
+          <div className="grid md:grid-cols-2 gap-8 items-stretch">
+            
+            {/* Visual Card (Credit Card Look) */}
+            <div className={`relative h-56 md:h-64 rounded-3xl bg-gradient-to-br ${product.cardBg} p-8 text-white shadow-xl flex flex-col justify-between overflow-hidden group`}>
+               {/* Decoration */}
+               <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/20 rounded-full blur-2xl" />
+               <div className="absolute bottom-0 left-0 w-48 h-48 bg-black/10 rounded-full blur-3xl" />
+
+               <div className="relative z-10 flex justify-between items-start">
+                  <img src="/banksleman.png" alt="Logo" className="h-8 brightness-0 invert opacity-90" />
+                  <span className={`text-xs font-bold tracking-widest border border-white/30 px-2 py-1 rounded ${product.chipColor}`}>
+                    DEBIT CARD
+                  </span>
+               </div>
+               
+               <div className="relative z-10">
+                  <img src="/chip.png" alt="Chip" className="h-10 w-auto opacity-90 mb-4" />
+                  <p className="font-mono text-xl md:text-2xl tracking-widest shadow-black/10 drop-shadow-md">
+                    •••• •••• •••• 8899
+                  </p>
+               </div>
+            </div>
+
+            {/* Quick Stats / Interest */}
+            <div className="bg-white rounded-3xl p-8 shadow-lg flex flex-col justify-center border border-slate-100">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2 bg-green-100 rounded-lg text-green-600">
+                  <Banknote className="w-6 h-6" />
+                </div>
+                <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">Suku Bunga</span>
+              </div>
+              <div className="text-4xl font-bold text-slate-900 mb-2">{product.interest}</div>
+              <p className="text-slate-500 text-sm">{product.interestDesc}</p>
+              
+              <div className="mt-6 pt-6 border-t border-slate-100 flex items-center gap-3">
+                 <ShieldCheck className="w-5 h-5 text-green-500" />
+                 <span className="text-sm text-slate-600">Dijamin oleh <strong>LPS</strong> hingga Rp 2 Miliar</span>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* Product Details Section */}
-      <section className="py-20 bg-gray-50">
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div className="grid lg:grid-cols-4 gap-8">
-
-      {/* Sidebar Navigation */}
-      <aside className="lg:col-span-1">
-        <Card className="p-6 bg-white shadow-lg rounded-2xl sticky top-24">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Menu</h2>
-
-          <nav className="space-y-2">
-            {navItems.map((item, idx) => {
-              const Icon = item.icon;
-              return (
-                <div
-                  key={idx}
-                  onClick={() => setActiveTab(item.label)}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-all ${
-                    activeTab === item.label
-                      ? "bg-emerald-50 text-emerald-700 font-medium border-l-4 border-emerald-500"
-                      : "text-gray-600 hover:bg-gray-100"
-                  }`}
-                >
-                  <Icon
-                    className={`h-5 w-5 ${
-                      activeTab === item.label ? "text-emerald-600" : "text-gray-500"
-                    }`}
-                  />
-                  <span className="text-sm">{item.label}</span>
-                </div>
-              );
-            })}
-          </nav>
-        </Card>
-      </aside>
-
-      {/* Main Content */}
-      <main className="lg:col-span-3 space-y-6">
-
-        {/* TAB 1 — RINGKASAN PRODUK */}
-        {activeTab === "Ringkasan Produk" && (
-          <>
-            {/* Description */}
-            <Card className="relative overflow-hidden p-8 shadow-lg bg-white rounded-2xl">
-              <div
-                className="absolute inset-0 bg-cover bg-right opacity-30"
-                style={{ backgroundImage: `url('${productInfo.image}')` }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-white via-white/80 to-transparent" />
-              <div className="relative z-10">
-                <h3 className="text-2xl font-semibold text-gray-800 mb-4">
-                  Deskripsi Produk
+          {/* Details Grid */}
+          <div className="grid md:grid-cols-3 gap-8">
+            
+            {/* Column 1: Description & Features */}
+            <div className="md:col-span-2 space-y-8">
+              <div className="bg-white rounded-3xl p-8 shadow-lg border border-slate-100">
+                <h3 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+                  <Info className="w-5 h-5 text-blue-500" />
+                  Tentang Produk
                 </h3>
-                <p className="text-gray-700 leading-relaxed text-lg">
-                  {productInfo.description}
+                <p className="text-slate-600 leading-relaxed mb-6">
+                  {product.description}
                 </p>
-              </div>
-            </Card>
-
-            {/* Features */}
-            <Card className="p-8 shadow-lg bg-white rounded-2xl">
-              <h3 className="text-2xl font-semibold text-gray-800 mb-6">
-                Keunggulan Produk
-              </h3>
-              <div className="grid md:grid-cols-2 gap-4">
-                {productInfo.features.map((feature, idx) => (
-                  <div key={idx} className="flex items-start gap-3 text-gray-700">
-                    <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                    <span>{feature}</span>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          </>
-        )}
-
-        {/* TAB 2 — PERLU DIKETAHUI */}
-       {activeTab === "Perlu Diketahui" && (
-  <Card className="p-8 shadow-lg bg-white rounded-2xl">
-    <h3 className="text-2xl font-semibold text-gray-800 mb-6">
-      Dokumen yang Diperlukan
-    </h3>
-
-    <div className="overflow-x-auto">
-      <table className="w-full border-collapse">
-  <thead>
-    <tr className="bg-green-600 text-white">
-      <th className="p-4 text-left w-1/3 rounded-tl-xl">Jenis Nasabah</th>
-      <th className="p-4 text-left rounded-tr-xl">Dokumen</th>
-    </tr>
-  </thead>
-
-  <tbody>
-    {productInfo.notes.map((row, idx) => (
-      <tr key={idx} className="bg-gray-50">
-        <td className="p-4 align-top text-gray-800 w-1/3">
-          {row.jenis}
-        </td>
-
-        <td className="p-4 align-top w-full text-gray-700">
-          {row.dokumen.map((doc, dIdx) => (
-            <p key={dIdx} className="leading-relaxed">
-              {doc}
-            </p>
-          ))}
-        </td>
-      </tr>
-    ))}
-  </tbody>
-</table>
-
-    </div>
-  </Card>
-)}
-
-
-        {/* TAB 3 — SYARAT DAN KETENTUAN */}
-        {activeTab === "Syarat dan Ketentuan" && (
-          <Card className="p-8 shadow-lg bg-white rounded-2xl">
-            <h3 className="text-2xl font-semibold text-gray-800 mb-6">
-              Syarat dan Ketentuan
-            </h3>
-            <ol className="list-decimal list-inside space-y-4 text-gray-700 leading-relaxed">
-              {productInfo.terms.map((term, idx) => (
-                <li key={idx} className="pl-2">{term}</li>
-              ))}
-            </ol>
-          </Card>
-        )}
-
-        {/* TAB 4 — BIAYA, LIMIT, SUKU BUNGA */}
-        {activeTab === "Biaya, Limit dan Suku Bunga" && (
-          <Card className="p-8 shadow-lg bg-white rounded-2xl">
-            <h3 className="text-2xl font-semibold text-gray-800 mb-6">
-              Biaya, Limit dan Suku Bunga
-            </h3>
-
-            <div className="space-y-4 mb-6">
-              {productInfo.fees.map((fee, idx) => (
-                <div key={idx} className="flex items-center gap-3 text-gray-700">
-                  <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0" />
-                  <span>{fee}</span>
+                
+                <h4 className="font-semibold text-slate-900 mb-4">Keunggulan Utama</h4>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {product.features.map((feature, idx) => (
+                    <div key={idx} className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                      <span className="text-sm text-slate-700">{feature}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-
-            <div className="pt-4 border-t border-gray-200">
-              <p className="text-gray-700 font-semibold text-lg">
-                {productInfo.interest}
-              </p>
-            </div>
-          </Card>
-        )}
-
-        {/* ACTION BUTTONS */}
-        <div className="flex justify-between gap-4 pt-4">
-          <Button
-            onClick={onBack}
-            variant="outline"
-            className="flex-1 bg-gray-100 hover:bg-gray-200 px-8 py-6 text-lg font-medium shadow rounded-xl border-0"
-          >
-            <ArrowLeft className="h-5 w-5 mr-2" />
-            Kembali
-          </Button>
-
-          <Button
-            onClick={onNext}
-            className="flex-1 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 px-10 py-6 text-lg font-medium shadow-lg hover:shadow-xl transition-all rounded-xl"
-          >
-            Lanjut ke Prosedur
-            <ArrowRight className="h-5 w-5 ml-2" />
-          </Button>
-        </div>
-
-      </main>
-    </div>
-  </div>
-</section>
-
-      {/* Footer */}
-      <footer className="bg-slate-900 text-gray-300 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <div className="flex items-center gap-3 mb-4">
-                <img
-                  src="/banksleman.png"
-                  alt="Bank Sleman Logo"
-                  className="w-40 h-auto brightness-[100] contrast-[0.1]"
-                />
               </div>
-              <p className="text-sm text-gray-400">
-                Bank Perkreditan Rakyat terpercaya yang melayani masyarakat dengan sepenuh hati.
-              </p>
+
+              <div className="bg-white rounded-3xl p-8 shadow-lg border border-slate-100">
+                <h3 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-purple-500" />
+                  Syarat & Ketentuan
+                </h3>
+                <ul className="space-y-3">
+                  {product.terms.map((term, idx) => (
+                    <li key={idx} className="flex gap-3 text-sm text-slate-700">
+                      <span className="font-bold text-slate-300 select-none">{idx + 1}.</span>
+                      <span>{term}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
 
-            <div>
-              <h4 className="text-white mb-4">Layanan</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:text-emerald-400 transition-colors">Tabungan</a></li>
-                <li><a href="#" className="hover:text-emerald-400 transition-colors">Deposito</a></li>
-                <li><a href="#" className="hover:text-emerald-400 transition-colors">Kredit</a></li>
-                <li><a href="#" className="hover:text-emerald-400 transition-colors">E-Banking</a></li>
-              </ul>
-            </div>
+            {/* Column 2: Fees & Docs */}
+            <div className="space-y-8">
+              <div className="bg-white rounded-3xl p-8 shadow-lg border border-slate-100">
+                <h3 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-orange-500" />
+                  Biaya & Limit
+                </h3>
+                <div className="space-y-4">
+                  {product.fees.map((fee, idx) => (
+                    <div key={idx} className="pb-3 border-b border-slate-50 last:border-0 last:pb-0">
+                      <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">{fee.split(':')[0]}</p>
+                      <p className="text-slate-900 font-medium">{fee.split(':')[1] || "Gratis"}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-            <div>
-              <h4 className="text-white mb-4">Informasi</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:text-emerald-400 transition-colors">Tentang Kami</a></li>
-                <li><a href="#" className="hover:text-emerald-400 transition-colors">Berita</a></li>
-                <li><a href="#" className="hover:text-emerald-400 transition-colors">Karir</a></li>
-                <li><a href="#" className="hover:text-emerald-400 transition-colors">Hubungi Kami</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="text-white mb-4">Kontak</h4>
-              <ul className="space-y-3 text-sm">
-                <li className="flex items-start gap-2">
-                  <Phone className="h-4 w-4 mt-1 flex-shrink-0" />
-                  <span>(0274) 868051</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Mail className="h-4 w-4 mt-1 flex-shrink-0" />
-                  <span>info@banksleman.co.id</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <MapPin className="h-4 w-4 mt-1 flex-shrink-0" />
-                  <span>Jl. Kragilan No.1 Sinduharjo, Sleman</span>
-                </li>
-              </ul>
+              <div className="bg-white rounded-3xl p-8 shadow-lg border border-slate-100">
+                <h3 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+                   <FileText className="w-5 h-5 text-slate-500" />
+                   Dokumen
+                </h3>
+                <div className="space-y-4">
+                   {product.notes.map((note, idx) => (
+                     <div key={idx} className="bg-slate-50 p-4 rounded-xl">
+                       <p className="text-xs font-bold text-slate-700 mb-2 uppercase">{note.jenis}</p>
+                       <ul className="list-disc list-inside space-y-1">
+                         {note.dokumen.map((doc, dIdx) => (
+                           <li key={dIdx} className="text-xs text-slate-600">{doc}</li>
+                         ))}
+                       </ul>
+                     </div>
+                   ))}
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="border-t border-gray-800 pt-8 text-center text-sm">
-            <p>&copy; 2025 Bank Sleman. All rights reserved. | Terdaftar dan diawasi oleh OJK</p>
+          {/* Action Bar */}
+          <div className="sticky bottom-6 z-20">
+            <div className="bg-slate-900/90 backdrop-blur-md p-4 rounded-2xl shadow-2xl flex items-center justify-between gap-4 max-w-3xl mx-auto border border-white/10">
+              <div className="hidden sm:block pl-2">
+                <p className="text-white font-bold">Sudah siap?</p>
+                <p className="text-slate-400 text-xs">Lanjutkan untuk pengisian formulir</p>
+              </div>
+              <Button 
+                onClick={onNext}
+                className="w-full sm:w-auto px-8 py-6 bg-green-500 hover:bg-green-400 text-slate-900 font-bold rounded-xl transition-all flex items-center justify-center gap-2"
+              >
+                Buka Rekening Sekarang <ArrowRight className="w-5 h-5" />
+              </Button>
+            </div>
           </div>
+
         </div>
-      </footer>
+
+        {/* Simple Footer */}
+        <div className="mt-16 pt-8 border-t border-slate-200 text-center">
+          <p className="text-slate-500 text-sm">
+            &copy; {new Date().getFullYear()} PT BPR Bank Sleman (Perseroda). Terdaftar dan diawasi oleh OJK.
+          </p>
+        </div>
+
+      </div>
     </div>
   );
 }

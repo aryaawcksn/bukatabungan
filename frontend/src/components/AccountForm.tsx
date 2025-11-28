@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
-import { ArrowLeft, CheckCircle, Sparkles, Phone, Mail, MapPin } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Sparkles, Phone, Mail, MapPin, ChevronRight, User, Building2, FileText, Check } from 'lucide-react';
 import OtpModal from './OtpModal';
 import FormSimpel from './account-forms/FormSimpel';
 import FormBusiness from './account-forms/FormBusiness';
@@ -26,6 +26,10 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [currentPhone, setCurrentPhone] = useState("");
   const [pendingSubmitData, setPendingSubmitData] = useState<any>(null); // simpan data sebelum OTP
+
+  // Stepper State
+  const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = 3;
 
   // Validation errors (simple server-backed uniqueness + basic client hints)
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -191,45 +195,95 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     }
   };
 
+  const handleNextStep = async () => {
+    const newErrors: Record<string, string> = {};
+    
+    if (currentStep === 1) {
+       // Validate Branch
+       if (!formData.cabang_pengambilan) {
+          newErrors.cabang_pengambilan = "Silakan pilih cabang pengambilan";
+       } else {
+          const selectedBranch = branches.find(b => b.id.toString() === formData.cabang_pengambilan.toString());
+          if (selectedBranch && !selectedBranch.is_active) {
+            newErrors.cabang_pengambilan = "Cabang sedang dalam perbaikan, silahkan pilih cabang lain";
+          }
+       }
+    } else if (currentStep === 2) {
+       // Validate Personal Data & Uploads
+       if (!formData.fullName) newErrors.fullName = "Nama lengkap wajib diisi";
+       if (!formData.nik) newErrors.nik = "NIK wajib diisi";
+       if (!formData.email) newErrors.email = "Email wajib diisi";
+       if (!formData.phone) newErrors.phone = "Nomor telepon wajib diisi";
+       if (!formData.birthDate) newErrors.birthDate = "Tanggal lahir wajib diisi";
+       if (!formData.gender) newErrors.gender = "Jenis kelamin wajib diisi";
+       if (!formData.citizenship) newErrors.citizenship = "Kewarganegaraan wajib diisi";
+       if (!formData.motherName) newErrors.motherName = "Nama ibu kandung wajib diisi";
+       
+       if (!ktpFile && !ktpUrl) newErrors.ktp = "Silakan upload foto KTP!";
+       if (!selfieFile && !selfieUrl) newErrors.selfie = "Silakan upload selfie dengan KTP!";
+
+       // Async validations
+       if (!newErrors.nik) {
+          const nikErr = await validateNikAsync(formData.nik);
+          if (nikErr) newErrors.nik = nikErr;
+       }
+       if (!newErrors.email) {
+          const emailErr = await validateEmailAsync(formData.email);
+          if (emailErr) newErrors.email = emailErr;
+       }
+       if (!newErrors.phone) {
+          const phoneErr = await validatePhoneAsync(formData.phone);
+          if (phoneErr) newErrors.phone = phoneErr;
+       }
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(prev => ({ ...prev, ...newErrors }));
+      // focus first error
+      const first = Object.keys(newErrors)[0];
+      const el = document.getElementById(first);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    // Clear errors for current step fields
+    setErrors({});
+    setCurrentStep(prev => prev + 1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handlePrevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(prev => prev - 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      onBack();
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoadingSubmit(true);
-    // Run server-side uniqueness checks for nik/email/phone (emergency phone is excluded)
-    const nikErr = await validateNikAsync(formData.nik);
-    const emailErr = await validateEmailAsync(formData.email);
-    const phoneErr = await validatePhoneAsync(formData.phone);
+    
+    // Final Step Validation
     const newErrors: Record<string,string> = {};
-    if (nikErr) newErrors.nik = nikErr;
-    if (emailErr) newErrors.email = emailErr;
-    if (phoneErr) newErrors.phone = phoneErr;
-    if (!ktpFile && !ktpUrl) newErrors.ktp = "Silakan upload foto KTP!";
-    if (!selfieFile && !selfieUrl) newErrors.selfie = "Silakan upload selfie dengan KTP!";
+    if (!formData.address) newErrors.address = "Alamat wajib diisi";
+    if (!formData.province) newErrors.province = "Provinsi wajib diisi";
+    if (!formData.city) newErrors.city = "Kota/Kabupaten wajib diisi";
+    if (!formData.postalCode) newErrors.postalCode = "Kode pos wajib diisi";
+    if (!formData.employmentStatus) newErrors.employmentStatus = "Status pekerjaan wajib diisi";
+    if (!formData.sumberDana) newErrors.sumberDana = "Sumber dana wajib diisi";
+    if (!formData.tujuanRekening) newErrors.tujuanRekening = "Tujuan rekening wajib diisi";
+    if (!formData.agreeTerms) newErrors.agreeTerms = "Anda harus menyetujui syarat dan ketentuan";
 
-    // Validate Branch
-    if (formData.cabang_pengambilan) {
-      const selectedBranch = branches.find(b => b.id.toString() === formData.cabang_pengambilan.toString());
-      if (selectedBranch && !selectedBranch.is_active) {
-        newErrors.cabang_pengambilan = "Cabang sedang dalam perbaikan, silahkan pilih cabang lain";
-      }
-    } else {
-       newErrors.cabang_pengambilan = "Silakan pilih cabang pengambilan";
-    }
-   
     if (Object.keys(newErrors).length > 0) {
       setErrors(prev => ({ ...prev, ...newErrors }));
       setLoadingSubmit(false);
-      // focus the first invalid field
       const first = Object.keys(newErrors)[0];
-      const el = first ? document.getElementById(first) : null;
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        try { (el as HTMLElement).focus(); } catch {}
-      }
+      const el = document.getElementById(first);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
-    }else {
-    // hapus error jika semua valid
-    setErrors(prev => ({ ...prev, ktp: "", selfie: "" }));
-  }
+    }
 
     // ============================
     // UPLOAD FILES FIRST
@@ -297,7 +351,6 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       setPendingSubmitData(formData);
       setCurrentPhone(formData.phone);
       
-
       // Tampilkan modal OTP
       setShowOtpModal(true);
 
@@ -548,7 +601,8 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       handleSubmit,
       savingsType,
       getSavingsTypeName,
-      branches, // Pass branches to sub-forms
+      branches,
+      currentStep, // Pass current step
     };
 
     if (savingsType === 'simpel') {
@@ -561,127 +615,123 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Top Bar */}
-          <div className="flex items-center justify-between py-3 border-b border-gray-100">
-            <div className="flex items-center gap-6 text-sm text-gray-600">
-              <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4" />
-                <span>(0274) 868051</span>
-              </div>
-              <div className="hidden md:flex items-center gap-2">
-                <MapPin className="h-4 w-4" />
-                <span>Jl. Kragilan No.1 Sinduharjo, Sleman</span>
-              </div>
-              <div className="hidden md:flex items-center gap-2">
-                <Mail className="h-4 w-4" />
-                <span>info@banksleman.co.id</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <a href="#" className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-colors">
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                </svg>
-              </a>
-              <a href="#" className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-colors">
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                </svg>
-              </a>
-              <a href="#" className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-colors">
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                </svg>
-              </a>
-            </div>
-          </div>
+  const steps = [
+    { number: 1, title: "Pilih Cabang", icon: Building2 },
+    { number: 2, title: "Data Diri", icon: User },
+    { number: 3, title: "Data Pekerjaan", icon: FileText },
+  ];
 
-          {/* Main Navigation */}
-          <div className="flex items-center justify-between py-5">
+  return (
+    <div className="min-h-screen bg-slate-50 font-sans">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between py-4">
             <div className="flex items-center gap-3">
               <img 
                 src="/banksleman.png" 
                 alt="Bank Sleman Logo" 
-                className="w-40 h-auto -mt-3"
+                className="h-10 w-auto"
               />
             </div>
-            <nav className="hidden lg:flex gap-8">
-              <a href="#" className="text-gray-700 hover:text-emerald-600 transition-colors">HOME</a>
-              <a href="#" className="text-gray-700 hover:text-emerald-600 transition-colors">PROFIL</a>
-              <a href="#" className="text-gray-700 hover:text-emerald-600 transition-colors">PRODUK & LAYANAN</a>
-              <a href="#" className="text-gray-700 hover:text-emerald-600 transition-colors">E-BANKING</a>
-              <a href="#" className="text-gray-700 hover:text-emerald-600 transition-colors">INFO</a>
-              <a href="#" className="text-gray-700 hover:text-emerald-600 transition-colors">HUBUNGI KAMI</a>
-            </nav>
-           
+            <div className="text-sm font-medium text-slate-600 hidden md:block">
+              Pembukaan Rekening Online
+            </div>
           </div>
         </div>
       </header>
 
-      {/* Hero Banner */}
-      <section 
-        className="relative bg-gradient-to-br from-slate-800 via-slate-900 to-indigo-950 py-20 overflow-hidden"
-        style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1726406569540-eb2c5bc000b4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmbG9yYWwlMjBwYXR0ZXJuJTIwZGFya3xlbnwxfHx8fDE3NjI3MzY2MjN8MA&ixlib=rb-4.1.0&q=80&w=1080')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundBlendMode: 'overlay'
-        }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-indigo-950/80 to-slate-900/90"></div>
-        
-        <div className="absolute inset-0 opacity-20" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-        }}></div>
+      {/* Stepper */}
+      <div className="bg-white border-b border-slate-200 py-6">
+        <div className="max-w-3xl mx-auto px-6">
+          <div className="flex items-center justify-between relative">
+            {/* Progress Bar Background */}
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-slate-100 -z-10" />
+            
+            {/* Active Progress Bar */}
+            <div 
+              className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-green-500 transition-all duration-500 -z-10"
+              style={{ width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%` }}
+            />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center">
-            <h1 className="text-white mb-4 text-5xl md:text-6xl">
-              Formulir Pembukaan {getSavingsTypeName()}
-            </h1>
-            <div className="flex items-center justify-center gap-2 text-gray-300">
-              <a href="#" className="hover:text-white transition-colors">Home</a>
-              <span>/</span>
-              <a href="#" className="hover:text-white transition-colors">Produk</a>
-              <span>/</span>
-              <span className="text-emerald-400">{getSavingsTypeName()}</span>
-            </div>
+            {steps.map((step) => {
+              const Icon = step.icon;
+              const isActive = step.number === currentStep;
+              const isCompleted = step.number < currentStep;
+
+              return (
+                <div key={step.number} className="flex flex-col items-center gap-2 bg-white px-2">
+                  <div 
+                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+                      isActive 
+                        ? "bg-green-500 text-white shadow-lg shadow-green-500/30 scale-110" 
+                        : isCompleted 
+                          ? "bg-green-100 text-green-600" 
+                          : "bg-slate-100 text-slate-400"
+                    }`}
+                  >
+                    {isCompleted ? <Check className="w-6 h-6" /> : <Icon className="w-5 h-5" />}
+                  </div>
+                  <span className={`text-xs font-bold ${isActive ? "text-slate-900" : "text-slate-500"}`}>
+                    {step.title}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </div>
-      </section>
+      </div>
 
       {/* Form Section */}
-      <section className="py-12 bg-gray-50">
+      <section className="py-12">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-         <Button
-          variant="ghost"
-          onClick={onBack}
-          className="mb-8 hover:bg-gray-100 hover:text-emerald-700 transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Kembali ke Prosedur
-        </Button>
-          <div className="text-center mb-8">
-            <p className="text-gray-600 text-lg">
-              Lengkapi data berikut untuk membuka rekening Anda
-            </p>
+          <div className="mb-8 flex items-center justify-between">
+             <Button
+              variant="ghost"
+              onClick={handlePrevStep}
+              className="hover:bg-slate-200 text-slate-600"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              {currentStep === 1 ? "Kembali" : "Sebelumnya"}
+            </Button>
+            <div className="text-right">
+               <h2 className="text-2xl font-bold text-slate-900">{steps[currentStep-1].title}</h2>
+               <p className="text-slate-500 text-sm">Langkah {currentStep} dari {totalSteps}</p>
+            </div>
           </div>
 
-        <Card className="bg-white p-10 border-0 shadow-xl rounded-2xl w-full max-w-4xl mx-auto">
-          {renderForm()}
-           <OtpModal
-            open={showOtpModal}
-            onClose={() => setShowOtpModal(false)}
-            phone={currentPhone}
-            onVerified={handleOtpVerified}
-          />
+          <Card className="bg-white p-8 md:p-10 border-0 shadow-xl rounded-3xl w-full">
+            {renderForm()}
+            
+            {/* Navigation Buttons */}
+            <div className="mt-8 pt-6 border-t border-slate-100 flex justify-end">
+               {currentStep < totalSteps ? (
+                 <Button 
+                    type="button" 
+                    onClick={handleNextStep}
+                    className="bg-green-600 hover:bg-green-700 text-white px-8 py-6 rounded-xl text-lg shadow-lg hover:shadow-green-600/20 transition-all"
+                 >
+                    Lanjut <ChevronRight className="ml-2 h-5 w-5" />
+                 </Button>
+               ) : (
+                 <Button 
+                    type="button" 
+                    onClick={handleSubmit}
+                    disabled={loadingSubmit}
+                    className="bg-yellow-500 hover:bg-yellow-400 text-green-900 font-bold px-8 py-6 rounded-xl text-lg shadow-lg hover:shadow-yellow-500/20 transition-all"
+                 >
+                    {loadingSubmit ? 'Mengirim...' : 'Kirim Permohonan'}
+                 </Button>
+               )}
+            </div>
 
-        </Card>
+            <OtpModal
+              open={showOtpModal}
+              onClose={() => setShowOtpModal(false)}
+              phone={currentPhone}
+              onVerified={handleOtpVerified}
+            />
+          </Card>
         </div>
       </section>
     </div>
