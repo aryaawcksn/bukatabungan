@@ -59,6 +59,7 @@ function ProductDetails({
           interestDesc: "Suku bunga kompetitif yang dapat berubah sewaktu-waktu",
           cardBg: "from-emerald-500 to-emerald-800",
           chipColor: "text-emerald-100",
+          img: "/mutiara.png",
           notes: [
             {
               jenis: "Perorangan belum dewasa (< 12 tahun)",
@@ -108,11 +109,12 @@ function ProductDetails({
           interestDesc: "Suku bunga menarik untuk pertumbuhan dana Anda",
           cardBg: "from-indigo-500 to-purple-700",
           chipColor: "text-indigo-100",
+          img: "/umum.png",
           notes: [
              {
               jenis: "Perorangan belum dewasa (< 12 tahun)",
               dokumen: [
-                "Kartu identitas orang tua & NPWP",
+                "Kartu identitas orang tua",
                 "Akte Kelahiran Anak / KIA",
               ]
             },
@@ -147,6 +149,7 @@ function ProductDetails({
           interestDesc: "Bunga simpanan pelajar yang menguntungkan",
           cardBg: "from-pink-500 to-rose-600",
           chipColor: "text-pink-100",
+          img: "/simpel.png",
           notes: [
              {
               jenis: "Siswa PAUD/TK/SD/SMP/SMA",
@@ -200,45 +203,13 @@ function ProductDetails({
         <div className="grid gap-8">
           
           {/* Top Section: Visual & Quick Stats */}
-          <div className="grid md:grid-cols-2 gap-8 items-stretch">
+          <div className="grid md:grid-cols-1 gap-8 items-stretch">
             
-            {/* Visual Card (Credit Card Look) */}
-            <div className={`relative h-56 md:h-64 rounded-3xl bg-gradient-to-br ${product.cardBg} p-8 text-white shadow-xl flex flex-col justify-between overflow-hidden group`}>
-               {/* Decoration */}
-               <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/20 rounded-full blur-2xl" />
-               <div className="absolute bottom-0 left-0 w-48 h-48 bg-black/10 rounded-full blur-3xl" />
-
-               <div className="relative z-10 flex justify-between items-start">
-                  <img src="/banksleman.png" alt="Logo" className="h-8 brightness-0 invert opacity-90" />
-                  <span className={`text-xs font-bold tracking-widest border border-white/30 px-2 py-1 rounded ${product.chipColor}`}>
-                    DEBIT CARD
-                  </span>
-               </div>
-               
-               <div className="relative z-10">
-                  <img src="/chip.png" alt="Chip" className="h-10 w-auto opacity-90 mb-4" />
-                  <p className="font-mono text-xl md:text-2xl tracking-widest shadow-black/10 drop-shadow-md">
-                    •••• •••• •••• 8899
-                  </p>
-               </div>
-            </div>
-
-            {/* Quick Stats / Interest */}
-            <div className="bg-white rounded-3xl p-8 shadow-lg flex flex-col justify-center border border-slate-100">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-green-100 rounded-lg text-green-600">
-                  <Banknote className="w-6 h-6" />
-                </div>
-                <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">Suku Bunga</span>
-              </div>
-              <div className="text-4xl font-bold text-slate-900 mb-2">{product.interest}</div>
-              <p className="text-slate-500 text-sm">{product.interestDesc}</p>
-              
-              <div className="mt-6 pt-6 border-t border-slate-100 flex items-center gap-3">
-                 <ShieldCheck className="w-5 h-5 text-green-500" />
-                 <span className="text-sm text-slate-600">Dijamin oleh <strong>LPS</strong> hingga Rp 2 Miliar</span>
-              </div>
-            </div>
+            <img
+              src={product.img}
+              alt={`${product.title} Card`}
+              className="w-full max-w-md mx-auto h-auto"
+            />
           </div>
 
           {/* Details Grid */}
@@ -324,7 +295,7 @@ function ProductDetails({
           <div className="sticky bottom-6 z-20">
             <div className="bg-slate-900/90 backdrop-blur-md p-4 rounded-2xl shadow-2xl flex items-center justify-between gap-4 max-w-3xl mx-auto border border-white/10">
               <div className="hidden sm:block pl-2">
-                <p className="text-white font-bold">Sudah siap?</p>
+                <p className="text-white font-bold">Pilih Ini?</p>
                 <p className="text-slate-400 text-xs">Lanjutkan untuk pengisian formulir</p>
               </div>
               <Button 

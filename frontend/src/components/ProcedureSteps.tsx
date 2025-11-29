@@ -79,7 +79,7 @@ export default function ProcedureSteps({
         icon: FileText,
         description: "Dokumen untuk Tabungan Bisnis.",
         details: [
-          "KTP & NPWP perusahaan.",
+          "KTP.",
           "SIUP/TDP (jika ada).",
           "Email aktif & nomor HP.",
         ],

@@ -117,7 +117,7 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
               </h1>
               
               <p className="text-lg text-green-50 mb-8 leading-relaxed max-w-lg mx-auto lg:mx-0">
-                Buka tabungan Bank Sleman langsung dari smartphone Anda. Aman, cepat, dan tanpa perlu antre di kantor cabang.
+                Buka tabungan Bank Sleman langsung secara. Aman, cepat, dan tanpa perlu antre di kantor cabang.
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
