@@ -96,7 +96,6 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
           </div>
         </div>
       </nav>
-      
       {/* --- HERO SECTION (From HeroLanding) --- */}
       <main className="relative bg-gradient-to-br from-[#0EA5E9] via-[#34d399] to-[#064e3b] overflow-hidden">
 
@@ -112,12 +111,12 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
             {/* Text Content */}
             <div className="max-w-2xl text-center lg:text-left mx-auto lg:mx-0 order-2 lg:order-1">
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white mb-6 leading-[1.15]">
-                Masa Depan Finansial <br/>
-                <span className="text-green-200">Dimulai dari Sini.</span>
+                Selamat Datang <br/>
+                <span className="text-green-200"></span>
               </h1>
               
               <p className="text-lg text-green-50 mb-8 leading-relaxed max-w-lg mx-auto lg:mx-0">
-                Buka tabungan Bank Sleman langsung secara. Aman, cepat, dan tanpa perlu antre di kantor cabang.
+                Di layanan pembukaan tabungan online Bank Sleman.
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
@@ -125,7 +124,7 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
                   onClick={() => navigate('/selection')}
                   className="w-full sm:w-auto px-8 py-4 bg-yellow-500 hover:bg-yellow-400 text-green-900 font-bold rounded-xl shadow-lg shadow-yellow-500/20 transform transition hover:-translate-y-1"
                 >
-                  Buka Tabungan Sekarang
+                  Buka Tabungan
                 </button>
                 <a
                   href="#info"
@@ -151,25 +150,20 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
 
             {/* Illustration / Image Area */}
             <div className="relative lg:h-auto flex justify-center lg:justify-end order-1 lg:order-2">
-  <div className="relative w-full max-w-md lg:max-w-lg">
+                  <div className="relative w-full max-w-md lg:max-w-lg">
 
-    {/* GLASS – gerak diagonal + rotate */}
-    <div 
-  className="absolute inset-4 bg-white/5 border border-white/10 
-             rounded-[2rem] backdrop-blur-sm 
-             animate-glass"
-/>
-
-
-    {/* IMAGE – gerak naik turun saja */}
-    <img
-  src="/3dimage.png"
-  className="relative z-10 w-full h-auto drop-shadow-2xl 
-             animate-image transition hover:scale-[1.03] duration-500"
-/>
-
-
-
+                    {/* GLASS – gerak diagonal + rotate */}
+                    <div 
+                  className="absolute inset-4 bg-white/5 border border-white/10 
+                            rounded-[2rem] backdrop-blur-sm 
+                            animate-glass"
+                />
+                    {/* IMAGE – gerak naik turun saja */}
+                    <img
+                  src="/3dimage.png"
+                  className="relative z-10 w-full h-auto drop-shadow-2xl 
+                            animate-image transition hover:scale-[1.03] duration-500"
+                />
                 {/* Floating Card UI Element */}
                 {/* <div className="absolute -bottom-6 -left-6 z-20 bg-white p-4 rounded-xl shadow-xl flex items-center gap-4 max-w-[200px] animate">
                   <div className="bg-green-100 p-2 rounded-lg">

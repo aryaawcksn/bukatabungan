@@ -45,7 +45,7 @@ export default function FormIndividu({
           <h3 className="text-emerald-900 mb-6 text-2xl font-bold">Pilih Lokasi Cabang</h3>
           <p className="text-slate-500 mb-6">Silakan pilih kantor cabang Bank Sleman terdekat untuk pengambilan buku tabungan dan kartu debit Anda.</p>
           
-          <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+          <div className="bg-slate-50 p-6 rounded-md border border-slate-100">
             <Label htmlFor="cabang_pengambilan" className="text-gray-700 font-semibold mb-2 block">Kantor Cabang</Label>
             {errors.cabang_pengambilan && <p className="text-sm text-red-600 mb-1">{errors.cabang_pengambilan}</p>}
             <Select
@@ -64,7 +64,7 @@ export default function FormIndividu({
                  setFormData({ ...formData, cabang_pengambilan: value });
               }}
             >
-              <SelectTrigger className={`h-12 bg-white border-slate-200 focus:border-emerald-500 focus:ring-emerald-500 rounded-xl ${errors.cabang_pengambilan ? 'border-red-500' : ''}`}>
+              <SelectTrigger className={`h-12 bg-white border-slate-200 focus:border-emerald-500 focus:ring-emerald-500 ${errors.cabang_pengambilan ? 'border-red-500' : ''}`}>
                 <SelectValue placeholder="Pilih cabang pengambilan" />
               </SelectTrigger>
               <SelectContent>
@@ -109,11 +109,11 @@ export default function FormIndividu({
                     <img
                       src={ktpPreview || ktpUrl!}
                       alt="KTP Preview"
-                      className="w-full h-48 object-cover rounded-xl shadow-md"
+                      className="w-full h-48 object-cover shadow-md"
                     />
                     <button
                       type="button"
-                      className="absolute inset-0 bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl font-medium"
+                      className="absolute inset-0 bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center font-medium"
                       onClick={() => {
                         setKtpFile(null);
                         setKtpPreview(null);
@@ -145,11 +145,11 @@ export default function FormIndividu({
                     <img
                       src={selfiePreview || selfieUrl!}
                       alt="Selfie Preview"
-                      className="w-full h-48 object-cover rounded-xl shadow-md"
+                      className="w-full h-48 object-cover shadow-md"
                     />
                     <button
                       type="button"
-                      className="absolute inset-0 bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl font-medium"
+                      className="absolute inset-0 bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center font-medium"
                       onClick={() => {
                         setSelfieFile(null);
                         setSelfiePreview(null);
@@ -177,7 +177,7 @@ export default function FormIndividu({
                   placeholder="Masukkan nama lengkap"
                   value={formData.fullName}
                   onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                  className="mt-2 h-12 rounded-xl"
+                  className="mt-2 h-12"
                 />
               </div>
 
@@ -202,7 +202,7 @@ export default function FormIndividu({
                       return next;
                     });
                   }}
-                  className={`${getFieldClass('nik')} h-12 rounded-xl`}
+                  className={`${getFieldClass('nik')} h-12`}
                 />
               </div>
 
@@ -214,7 +214,7 @@ export default function FormIndividu({
                     value={formData.gender}
                     onValueChange={(value) => setFormData({ ...formData, gender: value })}
                   >
-                    <SelectTrigger className="mt-2 h-12 rounded-xl">
+                    <SelectTrigger className="mt-2 h-12">
                       <SelectValue placeholder="Pilih jenis kelamin" />
                     </SelectTrigger>
                     <SelectContent>
@@ -230,7 +230,7 @@ export default function FormIndividu({
                     value={formData.maritalStatus}
                     onValueChange={(value) => setFormData({ ...formData, maritalStatus: value })}
                   >
-                    <SelectTrigger className="mt-2 h-12 rounded-xl">
+                    <SelectTrigger className="mt-2 h-12">
                       <SelectValue placeholder="Pilih status" />
                     </SelectTrigger>
                     <SelectContent>
@@ -264,7 +264,7 @@ export default function FormIndividu({
                         return next;
                       });
                     }}
-                    className={`${getFieldClass('email')} h-12 rounded-xl`}
+                    className={`${getFieldClass('email')} h-12`}
                   />
                 </div>
 
@@ -288,7 +288,7 @@ export default function FormIndividu({
                         return next;
                       });
                     }}
-                    className={`${getFieldClass('phone')} h-12 rounded-xl`}
+                    className={`${getFieldClass('phone')} h-12`}
                   />
                 </div>
               </div>
@@ -302,7 +302,7 @@ export default function FormIndividu({
                   required
                   value={formData.birthDate}
                   onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
-                  className="mt-2 h-12 rounded-xl"
+                  className="mt-2 h-12"
                 />
               </div>
 
@@ -315,7 +315,7 @@ export default function FormIndividu({
                     placeholder="Contoh: Indonesia"
                     value={formData.citizenship}
                     onChange={(e) => setFormData({ ...formData, citizenship: e.target.value })}
-                    className="mt-2 h-12 rounded-xl"
+                    className="mt-2 h-12"
                   />
                 </div>
 
@@ -327,7 +327,7 @@ export default function FormIndividu({
                     placeholder="Masukkan nama ibu kandung"
                     value={formData.motherName}
                     onChange={(e) => setFormData({ ...formData, motherName: e.target.value })}
-                    className="mt-2 h-12 rounded-xl"
+                    className="mt-2 h-12"
                   />
                 </div>
               </div>
@@ -341,7 +341,7 @@ export default function FormIndividu({
                     placeholder="Nama kerabat dekat"
                     value={formData.kontakDaruratNama}
                     onChange={(e) => setFormData({ ...formData, kontakDaruratNama: e.target.value })}
-                    className="mt-2 h-12 rounded-xl"
+                    className="mt-2 h-12"
                   />
                 </div>
 
@@ -353,7 +353,7 @@ export default function FormIndividu({
                     placeholder="08xxxxxxxxxx"
                     value={formData.kontakDaruratHp}
                     onChange={(e) => setFormData({ ...formData, kontakDaruratHp: e.target.value })}
-                    className="mt-2 h-12 rounded-xl"
+                    className="mt-2 h-12"
                   />
                 </div>
               </div>
@@ -380,7 +380,7 @@ export default function FormIndividu({
                   rows={3}
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  className="mt-2 rounded-xl"
+                  className="mt-2"
                 />
               </div>
 
@@ -393,7 +393,7 @@ export default function FormIndividu({
                     placeholder="Nama Provinsi"
                     value={formData.province}
                     onChange={(e) => setFormData({ ...formData, province: e.target.value })}
-                    className="mt-2 h-12 rounded-xl"
+                    className="mt-2 h-12"
                   />
                 </div>
 
@@ -405,7 +405,7 @@ export default function FormIndividu({
                     placeholder="Nama Kota"
                     value={formData.city}
                     onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                    className="mt-2 h-12 rounded-xl"
+                    className="mt-2 h-12"
                   />
                 </div>
 
@@ -418,7 +418,7 @@ export default function FormIndividu({
                     maxLength={5}
                     value={formData.postalCode}
                     onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
-                    className="mt-2 h-12 rounded-xl"
+                    className="mt-2 h-12"
                   />
                 </div>
               </div>
@@ -435,7 +435,7 @@ export default function FormIndividu({
                   value={formData.employmentStatus}
                   onValueChange={(value) => setFormData({ ...formData, employmentStatus: value })}
                 >
-                  <SelectTrigger className="mt-2 h-12 rounded-xl">
+                  <SelectTrigger className="mt-2 h-12">
                     <SelectValue placeholder="Pilih status pekerjaan" />
                   </SelectTrigger>
                   <SelectContent>
@@ -457,7 +457,7 @@ export default function FormIndividu({
                       placeholder={formData.cardType === "Tabungan Simpel" ? "Nama sekolah" : "Nama perusahaan atau instansi"}
                       value={formData.tempatBekerja}
                       onChange={(e) => setFormData({ ...formData, tempatBekerja: e.target.value })}
-                      className="mt-2 h-12 rounded-xl"
+                      className="mt-2 h-12"
                     />
                   </div>
 
@@ -469,7 +469,7 @@ export default function FormIndividu({
                         placeholder="Alamat lengkap kantor"
                         value={formData.alamatKantor}
                         onChange={(e) => setFormData({ ...formData, alamatKantor: e.target.value })}
-                        className="mt-2 rounded-xl"
+                        className="mt-2"
                       />
                     </div>
                   )}
@@ -482,7 +482,7 @@ export default function FormIndividu({
                       value={formData.monthlyIncome}
                       onValueChange={(value) => setFormData({ ...formData, monthlyIncome: value })}
                     >
-                      <SelectTrigger className="mt-2 h-12 rounded-xl">
+                      <SelectTrigger className="mt-2 h-12">
                         <SelectValue placeholder="Pilih range penghasilan" />
                       </SelectTrigger>
                       <SelectContent>
@@ -503,7 +503,7 @@ export default function FormIndividu({
                     value={formData.sumberDana}
                     onValueChange={(value) => setFormData({ ...formData, sumberDana: value })}
                   >
-                    <SelectTrigger className="mt-2 h-12 rounded-xl">
+                    <SelectTrigger className="mt-2 h-12">
                       <SelectValue placeholder="Pilih sumber dana" />
                     </SelectTrigger>
                     <SelectContent>
@@ -527,7 +527,7 @@ export default function FormIndividu({
                     value={formData.tujuanRekening}
                     onValueChange={(value) => setFormData({ ...formData, tujuanRekening: value })}
                   >
-                    <SelectTrigger className="mt-2 h-12 rounded-xl">
+                    <SelectTrigger className="mt-2 h-12">
                       <SelectValue placeholder="Pilih tujuan" />
                     </SelectTrigger>
                     <SelectContent>
@@ -553,7 +553,7 @@ export default function FormIndividu({
                 value={formData.jenis_rekening}
                 onValueChange={(value) => setFormData({ ...formData, jenis_rekening: value })}
               >
-                <SelectTrigger className="mt-2 h-12 rounded-xl">
+                <SelectTrigger className="mt-2 h-12">
                   <SelectValue placeholder="Pilih jenis kartu" />
                 </SelectTrigger>
                 <SelectContent>

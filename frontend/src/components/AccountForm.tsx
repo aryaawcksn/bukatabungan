@@ -700,30 +700,44 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
             </div>
           </div>
 
-          <Card className="bg-white p-8 md:p-10 border-0 shadow-xl rounded-3xl w-full">
+          <Card className="bg-white p-8 md:p-10 border-0 shadow-sm rounded-md w-full">
             {renderForm()}
             
             {/* Navigation Buttons */}
-            <div className="mt-8 pt-6 border-t border-slate-100 flex justify-end">
-               {currentStep < totalSteps ? (
-                 <Button 
-                    type="button" 
-                    onClick={handleNextStep}
-                    className="bg-green-600 hover:bg-green-700 text-white px-8 py-6 rounded-xl text-lg shadow-lg hover:shadow-green-600/20 transition-all"
-                 >
-                    Lanjut <ChevronRight className="ml-2 h-5 w-5" />
-                 </Button>
-               ) : (
-                 <Button 
-                    type="button" 
-                    onClick={handleSubmit}
-                    disabled={loadingSubmit}
-                    className="bg-yellow-500 hover:bg-yellow-400 text-green-900 font-bold px-8 py-6 rounded-xl text-lg shadow-lg hover:shadow-yellow-500/20 transition-all"
-                 >
-                    {loadingSubmit ? 'Mengirim...' : 'Kirim Permohonan'}
-                 </Button>
-               )}
-            </div>
+            <div className="mt-8 pt-6 border-t border-slate-100 flex justify-between items-center">
+
+  {/* ✅ BACK BUTTON (KIRI) */}
+  <Button
+    type="button"
+    onClick={handlePrevStep}
+    disabled={currentStep === 1}
+    className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-6 py-2 rounded-sm text-lg shadow-sm transition-all disabled:opacity-50"
+  >
+    Kembali
+  </Button>
+
+  {/* ✅ NEXT / SUBMIT BUTTON (KANAN) */}
+  {currentStep < totalSteps ? (
+    <Button 
+      type="button" 
+      onClick={handleNextStep}
+      className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-sm text-lg shadow-sm hover:shadow-green-300/20 transition-all"
+    >
+      Lanjut <ChevronRight className="ml-2 h-5 w-5" />
+    </Button>
+  ) : (
+    <Button 
+      type="button" 
+      onClick={handleSubmit}
+      disabled={loadingSubmit}
+      className="bg-yellow-500 hover:bg-yellow-400 text-green-900 font-bold px-6 py-2 rounded-sm text-lg shadow-sm transition-all disabled:opacity-50"
+    >
+      {loadingSubmit ? 'Mengirim...' : 'Kirim Permohonan'}
+    </Button>
+  )}
+
+</div>
+
 
             <OtpModal
               open={showOtpModal}

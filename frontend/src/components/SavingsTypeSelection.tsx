@@ -47,15 +47,14 @@ export default function SavingsTypeSelection({
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-10">
       <div className="max-w-6xl mx-auto px-6">
-        <Button
-          variant="ghost"
-          onClick={onBack}
-          className="mb-10 text-slate-600 hover:bg-slate-200"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Kembali
-        </Button>
-
+       <Button 
+                         variant="ghost" 
+                         onClick={onBack} 
+                         className="pl-0 mb-10 text-slate-500 hover:text-blue-700 hover:bg-transparent"
+                     >
+                         <ArrowLeft className="w-4 h-4 mr-2" /> Kembali ke Halaman Utama
+                     </Button>
+ 
         {/* Header */}
        <div className="text-center mb-14">
   <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
@@ -77,7 +76,7 @@ export default function SavingsTypeSelection({
             <div
               key={type.id}
               onClick={() => onSelectType(type.id)}
-              className="group w-full max-w-sm bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer overflow-hidden hover:-translate-y-2"
+              className="group w-full max-w-sm bg-white rounded-md shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer overflow-hidden hover:-translate-y-2"
             >
               {/* Header Visual */}
               <div
@@ -123,19 +122,18 @@ export default function SavingsTypeSelection({
                 </div>
 
                 <Button className="mt-auto w-full py-5 rounded-xl bg-slate-900 hover:bg-green-600 transition-all font-semibold flex items-center justify-center gap-2">
-                  Pilih Tabungan
+                  Lihat Detail
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </div>
             </div>
           ))}
         </div>
-        <div className="border-t border-slate-800 pt-8 mt-8">
-            <div className="items-center">
-              <p className="text-xs text-slate-500 text-center md:text-center">
-                &copy; {new Date().getFullYear()} PT BPR Bank Sleman (Perseroda). All rights reserved.
-              </p>
-            </div>
+        <div className="mt-24 lg:mt-32"></div>
+          <div className="mt-16 lg:mt-24 pt-6 pb-6 border-t border-slate-200 text-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <p className="text-slate-500 text-sm m-0">
+              &copy; {new Date().getFullYear()} PT BPR Bank Sleman (Perseroda) All rights reserved.
+            </p>
           </div>
       </div>
     </div>
