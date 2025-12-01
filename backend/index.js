@@ -45,7 +45,7 @@ app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 // ===== ROUTES =====
 app.use("/upload", uploadRouter);
 app.use("/api", checkNikRoute);
-app.use("/api", authRoutes); // login route
+app.use("/api/auth", authRoutes); // login route
 app.use("/api/pengajuan", pengajuanRoutes);
 app.use("/api", testRoutes);
 app.use("/otp", otpRoutes);

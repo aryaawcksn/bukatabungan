@@ -29,9 +29,9 @@ export default function LoginPage() {
   }
 
   try {
-    const res = await axios.post("https://bukatabungan-production.up.railway.app/api/login", { username, password, credentials: 'include'});
+    const res = await axios.post("https://bukatabungan-production.up.railway.app/api/auth/login", { username, password, credentials: 'include'});
     if (res.data.success) {
-      const { token, admin } = res.data;
+      const { token, user: admin } = res.data;
 
       localStorage.setItem("token", token);
      localStorage.setItem("admin_cabang_id", admin.cabang_id);
