@@ -61,6 +61,8 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
   };
 
   const handleOpenDialog = (user?: User) => {
+    const adminCabangId = localStorage.getItem("admin_cabang_id");
+    
     if (user) {
       setIsEditing(true);
       setSelectedUser(user);
@@ -77,7 +79,7 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
         username: "",
         password: "",
         role: "employement",
-        cabang_id: "",
+        cabang_id: adminCabangId || "",
       });
     }
     setDialogOpen(true);
@@ -278,6 +280,7 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
               <Select
                 value={formData.cabang_id}
                 onValueChange={(val) => setFormData({ ...formData, cabang_id: val })}
+                disabled={!!localStorage.getItem("admin_cabang_id")}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Pilih Cabang" />

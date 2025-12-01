@@ -5,27 +5,40 @@ import pool from "../config/db.js";
  * Query params: active=true (optional) to filter only active branches
  */
 export const getAllCabang = async (req, res) => {
-    try {
-        const { active } = req.query;
-        let query = "SELECT * FROM cabang";
-        const values = [];
+  try {
+    const { active } = req.query;
+    // Jika request dari authenticated user (misal admin cabang), filter cabang
+    const userCabangId = req.user?.cabang_id;
 
-        if (active === 'true') {
-            query += " WHERE is_active = true";
-        }
+    let query = "SELECT * FROM cabang";
+    const values = [];
+    let whereClauses = [];
 
-        query += " ORDER BY id ASC";
-
-        const result = await pool.query(query, values);
-
-        res.json({
-            success: true,
-            data: result.rows,
-        });
-    } catch (err) {
-        console.error("Error fetching branches:", err);
-        res.status(500).json({ success: false, message: "Gagal mengambil data cabang" });
+    if (active === 'true') {
+      whereClauses.push("is_active = true");
     }
+
+    if (userCabangId) {
+      whereClauses.push(`id = $${values.length + 1}`);
+      values.push(userCabangId);
+    }
+
+    if (whereClauses.length > 0) {
+      query += " WHERE " + whereClauses.join(" AND ");
+    }
+
+    query += " ORDER BY id ASC";
+
+    const result = await pool.query(query, values);
+
+    res.json({
+      success: true,
+      data: result.rows,
+    });
+  } catch (err) {
+    console.error("Error fetching branches:", err);
+    res.status(500).json({ success: false, message: "Gagal mengambil data cabang" });
+  }
 };
 
 
@@ -43,9 +56,9 @@ export const updateCabangStatus = async (req, res) => {
     const userName = req.user?.username || "Unknown";
 
     if (typeof is_active !== 'boolean') {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Status harus boolean" 
+      return res.status(400).json({
+        success: false,
+        message: "Status harus boolean"
       });
     }
 
@@ -65,9 +78,9 @@ export const updateCabangStatus = async (req, res) => {
     ]);
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ 
-        success: false, 
-        message: "Cabang tidak ditemukan" 
+      return res.status(404).json({
+        success: false,
+        message: "Cabang tidak ditemukan"
       });
     }
 
@@ -79,9 +92,9 @@ export const updateCabangStatus = async (req, res) => {
 
   } catch (err) {
     console.error("Error updating branch status:", err);
-    res.status(500).json({ 
-      success: false, 
-      message: "Gagal memperbarui status cabang" 
+    res.status(500).json({
+      success: false,
+      message: "Gagal memperbarui status cabang"
     });
   }
 };

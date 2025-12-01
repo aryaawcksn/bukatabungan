@@ -34,11 +34,12 @@ export default function LoginPage() {
       const { token, user: admin } = res.data;
 
       localStorage.setItem("token", token);
-     localStorage.setItem("admin_cabang_id", admin.cabang_id);
+      localStorage.setItem("admin_cabang_id", admin.cabang_id);
       localStorage.setItem("admin_nama_cabang", admin.nama_cabang);
       localStorage.setItem("admin_username", admin.username);
       localStorage.setItem("lastLoginTime", Date.now().toString());
       localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("role", admin.role);
 
       if (rememberMe) {
         localStorage.setItem("remember_username", username);

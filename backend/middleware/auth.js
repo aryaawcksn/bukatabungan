@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 
+
 export const verifyToken = (req, res, next) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
@@ -12,3 +13,20 @@ export const verifyToken = (req, res, next) => {
     next();
   });
 };
+
+export const optionalVerifyToken = (req, res, next) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (!token) {
+    return next();
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET || "secretkey", (err, user) => {
+    if (!err) {
+      req.user = user;
+    }
+    next();
+  });
+};
+

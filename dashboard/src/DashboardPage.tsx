@@ -493,6 +493,7 @@ export default function DashboardPage() {
             localStorage.removeItem("admin_cabang_id");
             localStorage.removeItem("admin_username");
             localStorage.removeItem("isLoggedIn");
+            localStorage.removeItem("role");
             toast.error("Session expired. Silakan login ulang.");
             window.location.href = "/";
             return;
@@ -613,7 +614,7 @@ export default function DashboardPage() {
                 <p className="text-sm font-semibold text-slate-800 leading-tight">
                   {localStorage.getItem("admin_username") || "Admin"}
                 </p>
-                <p className="text-xs text-slate-500">Administrator</p>
+                <p className="text-xs text-slate-500">{localStorage.getItem("role")}</p>
               </div>
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold ring-2 ring-white">
                 {(localStorage.getItem("admin_username") || "A").charAt(0).toUpperCase()}
@@ -628,9 +629,9 @@ export default function DashboardPage() {
             {[
               { id: 'dashboard', label: 'Overview', icon: LayoutDashboard },
               { id: 'submissions', label: 'Permohonan', icon: ClipboardCheck },
-              { id: 'manage', label: 'Pengaturan', icon: FileCog },
+              { id: 'manage', label: 'Pengaturan', icon: FileCog, hidden: localStorage.getItem("role") === "employement" },
               { id: 'logout', label: 'Keluar', icon: LogOut }
-            ].map(tab => {
+            ].filter(tab => !tab.hidden).map(tab => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
               return (

@@ -124,9 +124,11 @@ export const register = async (req, res) => {
   }
 };
 
+
 export const getUsers = async (req, res) => {
   try {
-    const result = await pool.query(`
+    const { cabang_id } = req.user;
+    let query = `
       SELECT 
         u.id,
         u.username,
@@ -135,8 +137,17 @@ export const getUsers = async (req, res) => {
         c.nama_cabang
       FROM users u
       LEFT JOIN cabang c ON u.cabang_id = c.id
-      ORDER BY u.id ASC
-    `);
+    `;
+    const params = [];
+
+    if (cabang_id) {
+      query += ` WHERE u.cabang_id = $1`;
+      params.push(cabang_id);
+    }
+
+    query += ` ORDER BY u.id ASC`;
+
+    const result = await pool.query(query, params);
 
     res.json({
       success: true,
@@ -154,14 +165,23 @@ export const getUsers = async (req, res) => {
 export const updateUser = async (req, res) => {
   const { id } = req.params;
   const { username, password, role, cabang_id } = req.body;
+  const adminCabangId = req.user.cabang_id;
 
   try {
-    // Cek apakah user ada
-    const userCheck = await pool.query("SELECT * FROM users WHERE id = $1", [id]);
+    // Cek apakah user ada dan valid untuk diedit oleh admin ini
+    let queryCheck = "SELECT * FROM users WHERE id = $1";
+    let paramsCheck = [id];
+
+    if (adminCabangId) {
+      queryCheck += " AND cabang_id = $2";
+      paramsCheck.push(adminCabangId);
+    }
+
+    const userCheck = await pool.query(queryCheck, paramsCheck);
     if (userCheck.rows.length === 0) {
       return res.status(404).json({
         success: false,
-        message: "User tidak ditemukan"
+        message: "User tidak ditemukan atau Anda tidak memiliki akses"
       });
     }
 
@@ -176,8 +196,11 @@ export const updateUser = async (req, res) => {
       }
     }
 
+    // Paksa cabang_id sesuai admin jika admin punya cabang
+    const targetCabangId = adminCabangId || cabang_id;
+
     let query = "UPDATE users SET username = $1, role = $2, cabang_id = $3";
-    let params = [username, role, cabang_id];
+    let params = [username, role, targetCabangId];
     let paramIndex = 4;
 
     if (password) {
@@ -209,9 +232,10 @@ export const updateUser = async (req, res) => {
 
 export const deleteUser = async (req, res) => {
   const { id } = req.params;
+  const adminCabangId = req.user.cabang_id;
 
   try {
-    // Prevent deleting self (optional but good practice)
+    // Prevent deleting self
     if (req.user.id === parseInt(id)) {
       return res.status(400).json({
         success: false,
@@ -219,12 +243,22 @@ export const deleteUser = async (req, res) => {
       });
     }
 
-    const result = await pool.query("DELETE FROM users WHERE id = $1 RETURNING id", [id]);
+    let query = "DELETE FROM users WHERE id = $1";
+    let params = [id];
+
+    if (adminCabangId) {
+      query += " AND cabang_id = $2";
+      params.push(adminCabangId);
+    }
+
+    query += " RETURNING id";
+
+    const result = await pool.query(query, params);
 
     if (result.rows.length === 0) {
       return res.status(404).json({
         success: false,
-        message: "User tidak ditemukan"
+        message: "User tidak ditemukan atau Anda tidak memiliki akses"
       });
     }
 
@@ -241,3 +275,4 @@ export const deleteUser = async (req, res) => {
     });
   }
 };
+
