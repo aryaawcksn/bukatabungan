@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
-import { ArrowLeft, CheckCircle, Sparkles, Phone, Mail, MapPin, ChevronRight, User, Building2, FileText, Check } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Sparkles, Phone, Mail, MapPin, ChevronRight, User, Building2, FileText, Check, CircleCheckBig } from 'lucide-react';
 import OtpModal from './OtpModal';
 import FormSimpel from './account-forms/FormSimpel';
 import FormBusiness from './account-forms/FormBusiness';
@@ -619,6 +619,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     { number: 1, title: "Pilih Cabang", icon: Building2 },
     { number: 2, title: "Data Diri", icon: User },
     { number: 3, title: "Data Pekerjaan", icon: FileText },
+    { number: 4, title: "Selesai", icon: CircleCheckBig },
   ];
 
   return (
@@ -689,7 +690,8 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
              <Button
               variant="ghost"
               onClick={handlePrevStep}
-              className="hover:bg-slate-200 text-slate-600"
+              className="pl-0 text-slate-500 hover:text-blue-700 hover:bg-transparent"
+
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               {currentStep === 1 ? "Kembali" : "Sebelumnya"}

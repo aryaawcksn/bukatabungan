@@ -183,8 +183,11 @@ function ProductDetails({
 
   const product = getProductInfo();
 
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+   useEffect(() => {
+    window.scrollTo({
+      top: 80, // jarak turun (bisa kamu sesuaikan)
+      behavior: "smooth",
+    });
   }, []);
 
   return (
@@ -346,7 +349,7 @@ function ProductDetails({
               {product.notes.length > 0 && (
                 <section>
                   <h3 className="text-lg font-bold text-slate-900 border-b border-slate-200 pb-2 mb-6 flex items-center gap-2">
-                    <File className="w-5 h-5 text-slate-700" /> Dokumen Persyaratan
+                    <File className="w-5 h-5 text-blue-600" /> Dokumen Persyaratan
                   </h3>
                   <div className="space-y-4">
                     {product.notes.map((note, idx) => (

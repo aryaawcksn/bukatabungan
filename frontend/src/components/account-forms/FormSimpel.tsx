@@ -71,7 +71,7 @@ export default function FormSimpel({
                  setFormData({ ...formData, cabang_pengambilan: value });
               }}
             >
-              <SelectTrigger className={`h-12 bg-white border-slate-200 focus:border-emerald-500 focus:ring-emerald-500 rounded-xl ${errors.cabang_pengambilan ? 'border-red-500' : ''}`}>
+              <SelectTrigger className={`h-12 bg-white border-slate-200 focus:border-emerald-500 focus:ring-emerald-500 rounded-md ${errors.cabang_pengambilan ? 'border-red-500' : ''}`}>
                 <SelectValue placeholder="Pilih cabang pengambilan" />
               </SelectTrigger>
               <SelectContent>
@@ -113,11 +113,11 @@ export default function FormSimpel({
                     <img
                       src={ktpPreview || ktpUrl!}
                       alt="KTP Preview"
-                      className="w-full h-48 object-cover rounded-xl shadow-md"
+                      className="w-full h-48 object-cover rounded-md shadow-md"
                     />
                     <button
                       type="button"
-                      className="absolute inset-0 bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl font-medium"
+                      className="absolute inset-0 bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-md font-medium"
                       onClick={() => {
                         setKtpFile(null);
                         setKtpPreview(null);
@@ -149,11 +149,11 @@ export default function FormSimpel({
                     <img
                       src={selfiePreview || selfieUrl!}
                       alt="Selfie Preview"
-                      className="w-full h-48 object-cover rounded-xl shadow-md"
+                      className="w-full h-48 object-cover rounded-md shadow-md"
                     />
                     <button
                       type="button"
-                      className="absolute inset-0 bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl font-medium"
+                      className="absolute inset-0 bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-md font-medium"
                       onClick={() => {
                         setSelfieFile(null);
                         setSelfiePreview(null);
@@ -181,7 +181,7 @@ export default function FormSimpel({
                   placeholder="Masukkan nama lengkap"
                   value={formData.fullName}
                   onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                  className="mt-2 h-12 rounded-xl"
+                  className="mt-2 h-12 rounded-md border-slate-300 focus:border-blue-300 focus:ring-blue-300"
                 />
               </div>
 
@@ -206,7 +206,7 @@ export default function FormSimpel({
                       return next;
                     });
                   }}
-                  className={`${getFieldClass('nik')} h-12 rounded-xl`}
+                  className={`${getFieldClass('nik')} h-12 rounded-md`}
                 />
               </div>
 
@@ -218,7 +218,7 @@ export default function FormSimpel({
                     value={formData.gender}
                     onValueChange={(value) => setFormData({ ...formData, gender: value })}
                   >
-                    <SelectTrigger className="mt-2 h-12 rounded-xl">
+                    <SelectTrigger className="mt-2 h-12 rounded-md">
                       <SelectValue placeholder="Pilih jenis kelamin" />
                     </SelectTrigger>
                     <SelectContent>
@@ -251,7 +251,7 @@ export default function FormSimpel({
                         return next;
                       });
                     }}
-                    className={`${getFieldClass('email')} h-12 rounded-xl`}
+                    className={`${getFieldClass('email')} h-12 rounded-md`}
                   />
                 </div>
 
@@ -275,7 +275,7 @@ export default function FormSimpel({
                         return next;
                       });
                     }}
-                    className={`${getFieldClass('phone')} h-12 rounded-xl`}
+                    className={`${getFieldClass('phone')} h-12 rounded-md`}
                   />
                 </div>
               </div>
@@ -289,7 +289,7 @@ export default function FormSimpel({
                   required
                   value={formData.birthDate}
                   onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
-                  className="mt-2 h-12 rounded-xl"
+                  className="mt-2 h-12 rounded-md"
                 />
               </div>
 
@@ -302,7 +302,7 @@ export default function FormSimpel({
                     placeholder="Contoh: Indonesia"
                     value={formData.citizenship}
                     onChange={(e) => setFormData({ ...formData, citizenship: e.target.value })}
-                    className="mt-2 h-12 rounded-xl"
+                    className="mt-2 h-12 rounded-md"
                   />
                 </div>
 
@@ -314,7 +314,7 @@ export default function FormSimpel({
                     placeholder="Masukkan nama ibu kandung"
                     value={formData.motherName}
                     onChange={(e) => setFormData({ ...formData, motherName: e.target.value })}
-                    className="mt-2 h-12 rounded-xl"
+                    className="mt-2 h-12 rounded-md"
                   />
                 </div>
               </div>
@@ -328,7 +328,7 @@ export default function FormSimpel({
                     placeholder="Nama kerabat dekat"
                     value={formData.kontakDaruratNama}
                     onChange={(e) => setFormData({ ...formData, kontakDaruratNama: e.target.value })}
-                    className="mt-2 h-12 rounded-xl"
+                    className="mt-2 h-12 rounded-md"
                   />
                 </div>
 
@@ -340,7 +340,7 @@ export default function FormSimpel({
                     placeholder="08xxxxxxxxxx"
                     value={formData.kontakDaruratHp}
                     onChange={(e) => setFormData({ ...formData, kontakDaruratHp: e.target.value })}
-                    className="mt-2 h-12 rounded-xl"
+                    className="mt-2 h-12 rounded-md"
                   />
                 </div>
               </div>
@@ -367,7 +367,7 @@ export default function FormSimpel({
                   rows={3}
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  className="mt-2 rounded-xl"
+                  className="mt-2 rounded-md"
                 />
               </div>
 
@@ -380,7 +380,7 @@ export default function FormSimpel({
                     placeholder="Nama Provinsi"
                     value={formData.province}
                     onChange={(e) => setFormData({ ...formData, province: e.target.value })}
-                    className="mt-2 h-12 rounded-xl"
+                    className="mt-2 h-12 rounded-md"
                   />
                 </div>
 
@@ -392,7 +392,7 @@ export default function FormSimpel({
                     placeholder="Nama Kota"
                     value={formData.city}
                     onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                    className="mt-2 h-12 rounded-xl"
+                    className="mt-2 h-12 rounded-md"
                   />
                 </div>
 
@@ -405,7 +405,7 @@ export default function FormSimpel({
                     maxLength={5}
                     value={formData.postalCode}
                     onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
-                    className="mt-2 h-12 rounded-xl"
+                    className="mt-2 h-12 rounded-md"
                   />
                 </div>
               </div>
@@ -424,7 +424,7 @@ export default function FormSimpel({
                   placeholder="Nama sekolah"
                   value={formData.tempatBekerja}
                   onChange={(e) => setFormData({ ...formData, tempatBekerja: e.target.value })}
-                  className="mt-2 h-12 rounded-xl"
+                  className="mt-2 h-12 rounded-md"
                 />
               </div>
 
@@ -435,7 +435,7 @@ export default function FormSimpel({
                   placeholder="Alamat lengkap sekolah"
                   value={formData.alamatKantor}
                   onChange={(e) => setFormData({ ...formData, alamatKantor: e.target.value })}
-                  className="mt-2 rounded-xl"
+                  className="mt-2 rounded-md"
                 />
               </div>
 
@@ -446,7 +446,7 @@ export default function FormSimpel({
                     value={formData.sumberDana}
                     onValueChange={(value) => setFormData({ ...formData, sumberDana: value })}
                   >
-                    <SelectTrigger className="mt-2 h-12 rounded-xl">
+                    <SelectTrigger className="mt-2 h-12 rounded-md">
                       <SelectValue placeholder="Pilih sumber dana" />
                     </SelectTrigger>
                     <SelectContent>
@@ -464,7 +464,7 @@ export default function FormSimpel({
                     value={formData.tujuanRekening}
                     onValueChange={(value) => setFormData({ ...formData, tujuanRekening: value })}
                   >
-                    <SelectTrigger className="mt-2 h-12 rounded-xl">
+                    <SelectTrigger className="mt-2 h-12 rounded-md">
                       <SelectValue placeholder="Pilih tujuan" />
                     </SelectTrigger>
                     <SelectContent>
@@ -486,7 +486,7 @@ export default function FormSimpel({
                 value={formData.jenis_rekening}
                 onValueChange={(value) => setFormData({ ...formData, jenis_rekening: value })}
               >
-                <SelectTrigger className="mt-2 h-12 rounded-xl">
+                <SelectTrigger className="mt-2 h-12 rounded-md">
                   <SelectValue placeholder="Pilih jenis kartu" />
                 </SelectTrigger>
                 <SelectContent>

@@ -53,7 +53,7 @@ function AppWrapper() {
       <ProductDetails
         savingsType={type}
         onNext={() => navigate(`/form/${type}`)}
-        onBack={() => handleBack("/")}
+        onBack={() => handleBack("/selection")}
       />
     );
   }
