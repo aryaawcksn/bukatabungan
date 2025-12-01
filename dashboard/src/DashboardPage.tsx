@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { FormSubmissionCard } from './components/form-submission-card';
 import CabangSetting, { type Cabang } from './components/CabangSetting';
+import AccountSetting from './components/AccountSetting';
 
 import { FormDetailDialog } from './components/form-detail-dialog';
 import { ApprovalDialog } from './components/approval-dialog';
@@ -217,6 +218,7 @@ export default function DashboardPage() {
   
   const [openAccordion, setOpenAccordion] = useState({
     cabang: false,
+    account: false,
   });
 
   
@@ -445,7 +447,7 @@ export default function DashboardPage() {
     if (submission) setApprovalDialog({ open: true, type: 'approve', submission });
   }, [submissions]);
 
-  const handleReject = useCallback((id: string) => {
+    const handleReject = useCallback((id: string) => {
     const submission = submissions.find(sub => sub.id === id);
     if (submission) setApprovalDialog({ open: true, type: 'reject', submission });
   }, [submissions]);
@@ -562,7 +564,6 @@ export default function DashboardPage() {
 };
 
 
-
   return (
     <div className="min-h-screen bg-slate-50/50 font-sans text-slate-900 selection:bg-blue-100 selection:text-blue-900">
       {/* Header */}
@@ -595,7 +596,7 @@ export default function DashboardPage() {
           <div className="flex items-center gap-6">
             <div className="hidden md:block text-right">
               <p className="text-xs font-medium text-slate-500 mb-0.5">
-                Cabang {localStorage.getItem("admin_nama_cabang") || "Pusat"}
+                {localStorage.getItem("admin_nama_cabang") || "Pusat"}
               </p>
               {lastFetchTime && (
                 <p className="text-[10px] text-slate-400 flex items-center justify-end gap-1">
@@ -715,8 +716,6 @@ export default function DashboardPage() {
             {/* Recent Activity Section could go here */}
           </div>
         )}
-
-
         {activeTab === 'submissions' && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -852,6 +851,47 @@ export default function DashboardPage() {
       </div>
     </div>
 
+    {/* Accordion: Pengaturan Akun */}
+    <div className="bg-white border border-slate-200 rounded-xl shadow-sm">
+      {/* Header Accordion */}
+      <button
+        onClick={() =>
+          setOpenAccordion(prev => ({ ...prev, account: !prev.account }))
+        }
+        className="w-full flex items-center justify-between p-5 text-left hover:bg-slate-50 transition-all duration-500"
+      >
+        <div>
+          <h4 className="text-xl font-semibold text-slate-900">Pengaturan Akun</h4>
+          <p className="text-slate-500 text-sm">
+            Manajemen user dan hak akses sistem.
+          </p>
+        </div>
+
+        <svg
+          className={`w-5 h-5 text-slate-600 transition-transform ${
+            openAccordion.account ? "rotate-180" : ""
+          }`}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {/* Body Accordion */}
+      <div
+        className={`overflow-hidden transition-all duration-500 ${
+          openAccordion.account ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        <div className="p-6 border-t border-slate-200">
+           <AccountSetting cabangList={cabangList} />
+        </div>
+      </div>
+    </div>
+
     {/* Menu Lainnya */}
     <div>
       <h4 className="text-xl font-semibold text-slate-900 mb-4">
@@ -859,23 +899,6 @@ export default function DashboardPage() {
       </h4>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-
-        {/* Manajemen User */}
-        <button className="group bg-white border border-slate-200 rounded-xl p-6 text-left hover:shadow-md transition-all duration-300">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-              <FileCog className="w-6 h-6" />
-            </div>
-            <span className="bg-indigo-100 text-indigo-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">
-              High Admin
-            </span>
-          </div>
-
-          <h3 className="font-bold text-slate-800 text-lg mb-1">Manajemen User</h3>
-          <p className="text-slate-500 text-sm leading-relaxed">
-            Tambah atau hapus akses admin untuk staff bank lainnya.
-          </p>
-        </button>
 
         {/* Dev Logs */}
         <button className="group bg-white border border-slate-200 rounded-xl p-6 text-left hover:shadow-md transition-all duration-300">

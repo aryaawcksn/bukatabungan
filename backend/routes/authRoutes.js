@@ -1,5 +1,5 @@
 import express from "express";
-import { login, register } from "../controllers/authController.js";
+import { login, register, getUsers, updateUser, deleteUser } from "../controllers/authController.js";
 import { verifyToken } from "../middleware/auth.js";
 import { authorizeRole } from "../middleware/role.js";
 
@@ -14,6 +14,28 @@ router.post(
   verifyToken,
   authorizeRole("admin"),
   register
+);
+
+// ✅ CRUD USERS (HANYA ADMIN)
+router.get(
+  "/users",
+  verifyToken,
+  authorizeRole("admin"),
+  getUsers
+);
+
+router.put(
+  "/users/:id",
+  verifyToken,
+  authorizeRole("admin"),
+  updateUser
+);
+
+router.delete(
+  "/users/:id",
+  verifyToken,
+  authorizeRole("admin"),
+  deleteUser
 );
 
 export default router;

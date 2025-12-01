@@ -290,7 +290,7 @@ export function FormDetailDialog({ submission, open, onClose, onApprove, onRejec
 
             {/* DOCUMENTS */}
             <Section title="Dokumen" icon={<FileText className="w-5 h-5 text-blue-600" />}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
                 <ImageCard
                   label="Foto KTP"
                   src={submission.documents.ktpPhoto}
