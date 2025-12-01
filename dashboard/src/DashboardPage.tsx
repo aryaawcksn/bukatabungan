@@ -452,7 +452,7 @@ export default function DashboardPage() {
     if (submission) setApprovalDialog({ open: true, type: 'reject', submission });
   }, [submissions]);
 
-  const handleApprovalConfirm = useCallback(async (sendEmail: boolean, sendWhatsApp: boolean, message: string) => {
+  const handleApprovalConfirm = useCallback(async (sendWhatsApp: boolean, message: string) => {
     if (!approvalDialog.submission) return;
     
     const newStatus = approvalDialog.type === 'approve' ? 'approved' : 'rejected';
@@ -473,7 +473,6 @@ export default function DashboardPage() {
         },
         body: JSON.stringify({ 
           status: newStatus,
-          sendEmail: sendEmail,
           sendWhatsApp: sendWhatsApp,
           message
         }),
@@ -509,7 +508,6 @@ export default function DashboardPage() {
 
       if (result.success) {
         const notificationMethods = [];
-        if (sendEmail) notificationMethods.push('Email');
         if (sendWhatsApp) notificationMethods.push('WhatsApp');
         
         toast.success(
@@ -612,9 +610,12 @@ export default function DashboardPage() {
             <div className="flex items-center gap-3 pl-2">
               <div className="text-right hidden sm:block">
                 <p className="text-sm font-semibold text-slate-800 leading-tight">
-                  {localStorage.getItem("admin_username") || "Admin"}
+                  {(localStorage.getItem("admin_username") || "Admin").charAt(0).toUpperCase() + (localStorage.getItem("admin_username") || "Admin").slice(1)}
                 </p>
-                <p className="text-xs text-slate-500">{localStorage.getItem("role")}</p>
+                <p className="text-xs text-slate-500">
+                {(localStorage.getItem("role") || "Admin").charAt(0).toUpperCase() + (localStorage.getItem("role") || "Admin").slice(1)}
+
+                </p>
               </div>
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold ring-2 ring-white">
                 {(localStorage.getItem("admin_username") || "A").charAt(0).toUpperCase()}
@@ -898,27 +899,6 @@ export default function DashboardPage() {
       <h4 className="text-xl font-semibold text-slate-900 mb-4">
         Menu Lainnya
       </h4>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-
-        {/* Dev Logs */}
-        <button className="group bg-white border border-slate-200 rounded-xl p-6 text-left hover:shadow-md transition-all duration-300">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition-colors">
-              <FileBarChart className="w-6 h-6" />
-            </div>
-            <span className="bg-purple-100 text-purple-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">
-              Dev Only
-            </span>
-          </div>
-
-          <h3 className="font-bold text-slate-800 text-lg mb-1">System Logs</h3>
-          <p className="text-slate-500 text-sm leading-relaxed">
-            Monitoring performa sistem dan error logs untuk developer.
-          </p>
-        </button>
-
-      </div>
     </div>
 
   </div>
@@ -987,7 +967,6 @@ export default function DashboardPage() {
           onConfirm={handleApprovalConfirm}
           type={approvalDialog.type}
           applicantName={approvalDialog.submission.personalData.fullName}
-          email={approvalDialog.submission.personalData.email}
           phone={approvalDialog.submission.personalData.phone}
         />
       )}

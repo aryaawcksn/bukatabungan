@@ -4,19 +4,18 @@ import { Button } from './ui/button';
 import { Checkbox } from './ui/checkbox';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
-import { CheckCircle, XCircle, Mail, MessageCircle } from 'lucide-react';
+import { CheckCircle, XCircle, MessageCircle } from 'lucide-react';
 
 interface ApprovalDialogProps {
   open: boolean;
   onClose: () => void;
-  onConfirm: (sendEmail: boolean, sendWhatsApp: boolean, message: string) => void;
+  onConfirm: (sendWhatsApp: boolean, message: string) => void;
   type: 'approve' | 'reject';
   applicantName: string;
-  email: string;
   phone: string;
 }
 
-// Default messages (outside component to avoid re-creation)
+// Default messages
 const defaultApproveMessage = `Selamat! Permohonan pembukaan rekening tabungan Anda telah disetujui.\n\nSilakan kunjungi kantor cabang terdekat dengan membawa dokumen asli untuk proses aktivasi rekening.\n\nTerima kasih telah mempercayai layanan kami.`;
 const defaultRejectMessage = `Mohon maaf, permohonan pembukaan rekening tabungan Anda tidak dapat kami setujui saat ini.\n\nHal ini dikarenakan data atau dokumen yang Anda berikan belum memenuhi persyaratan.\n\nAnda dapat mengajukan permohonan kembali setelah melengkapi dokumen yang diperlukan.`;
 
@@ -26,23 +25,27 @@ export function ApprovalDialog({
   onConfirm,
   type,
   applicantName,
-  email,
   phone
 }: ApprovalDialogProps) {
-  const [sendEmail, setSendEmail] = useState(true);
   const [sendWhatsApp, setSendWhatsApp] = useState(false);
-  
   const [message, setMessage] = useState(
     type === 'approve' ? defaultApproveMessage : defaultRejectMessage
   );
 
-  // Update message when type changes
+  // Auto-check WhatsApp saat modal dibuka
+  useEffect(() => {
+    if (open) {
+      setSendWhatsApp(true);
+    }
+  }, [open]);
+
+  // Update message saat type berubah
   useEffect(() => {
     setMessage(type === 'approve' ? defaultApproveMessage : defaultRejectMessage);
   }, [type]);
 
   const handleConfirm = () => {
-    onConfirm(sendEmail, sendWhatsApp, message);
+    onConfirm(sendWhatsApp, message);
   };
 
   return (
@@ -71,7 +74,7 @@ export function ApprovalDialog({
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Message */}
+          {/* Pesan Notifikasi */}
           <div>
             <Label htmlFor="message" className="mb-2 block">
               Pesan Notifikasi
@@ -85,24 +88,9 @@ export function ApprovalDialog({
             />
           </div>
 
-          {/* Send Options */}
+          {/* Pilihan Kirim */}
           <div className="space-y-4">
             <Label>Kirim Notifikasi Melalui:</Label>
-            
-            <div className="flex items-center space-x-2 p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
-              <Checkbox
-                id="email"
-                checked={sendEmail}
-                onCheckedChange={(checked) => setSendEmail(checked as boolean)}
-              />
-              <div className="flex-1">
-                <Label htmlFor="email" className="flex items-center gap-2 cursor-pointer">
-                  <Mail className="w-4 h-4 text-blue-600" />
-                  <span>Email</span>
-                </Label>
-                <p className="text-gray-500 ml-6">{email}</p>
-              </div>
-            </div>
 
             <div className="flex items-center space-x-2 p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
               <Checkbox
@@ -120,7 +108,8 @@ export function ApprovalDialog({
             </div>
           </div>
 
-          {!sendEmail && !sendWhatsApp && (
+          {/* Peringatan jika tidak ada metode dipilih */}
+          {!sendWhatsApp && (
             <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
               <p className="text-orange-700">
                 Peringatan: Tidak ada metode notifikasi yang dipilih. Pemohon tidak akan menerima pemberitahuan.

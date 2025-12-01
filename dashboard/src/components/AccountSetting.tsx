@@ -233,76 +233,93 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{isEditing ? "Edit User" : "Tambah User Baru"}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Username</label>
-              <Input
-                value={formData.username}
-                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                placeholder="Masukkan username"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium">
-                Password {isEditing && <span className="text-slate-400 font-normal">(Kosongkan jika tidak ingin mengubah)</span>}
-              </label>
-              <Input
-                type="password"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                placeholder="Masukkan password"
-              />
-            </div>
+  <DialogContent className="w-full max-w-md">
+    <DialogHeader>
+      <DialogTitle>{isEditing ? "Edit User" : "Tambah User Baru"}</DialogTitle>
+    </DialogHeader>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Role</label>
-              <Select
-                value={formData.role}
-                onValueChange={(val) => setFormData({ ...formData, role: val })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Pilih Role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="employement">Staff Cabang</SelectItem>
-                  <SelectItem value="admin">Administrator</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+    <div className="space-y-4 py-4">
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Username</label>
+        <Input
+          value={formData.username}
+          onChange={(e) =>
+            setFormData({ ...formData, username: e.target.value })
+          }
+          placeholder="Masukkan username"
+        />
+      </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Cabang</label>
-              <Select
-                value={formData.cabang_id}
-                onValueChange={(val) => setFormData({ ...formData, cabang_id: val })}
-                disabled={!!localStorage.getItem("admin_cabang_id")}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Pilih Cabang" />
-                </SelectTrigger>
-                <SelectContent>
-                  {cabangList.map((cabang) => (
-                    <SelectItem key={cabang.id} value={cabang.id.toString()}>
-                      {cabang.nama_cabang}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Batal</Button>
-            <Button onClick={handleSubmit} className="bg-indigo-600 hover:bg-indigo-700 text-white">
-              {isEditing ? "Simpan Perubahan" : "Buat User"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <div className="space-y-2">
+        <label className="text-sm font-medium">
+          Password{" "}
+          {isEditing && (
+            <span className="text-slate-400 font-normal">
+              (Kosongkan jika tidak ingin mengubah)
+            </span>
+          )}
+        </label>
+        <Input
+          type="password"
+          value={formData.password}
+          onChange={(e) =>
+            setFormData({ ...formData, password: e.target.value })
+          }
+          placeholder="Masukkan password"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Role</label>
+        <Select
+          value={formData.role}
+          onValueChange={(val) =>
+            setFormData({ ...formData, role: val })
+          }
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Pilih Role" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="employement">Staff Cabang</SelectItem>
+            <SelectItem value="admin">Administrator</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Cabang</label>
+        <Select
+          value={formData.cabang_id}
+          onValueChange={(val) =>
+            setFormData({ ...formData, cabang_id: val })
+          }
+          disabled={!!localStorage.getItem("admin_cabang_id")}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Pilih Cabang" />
+          </SelectTrigger>
+          <SelectContent>
+            {cabangList.map((cabang) => (
+              <SelectItem key={cabang.id} value={cabang.id.toString()}>
+                {cabang.nama_cabang}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+
+    <DialogFooter className="flex justify-end gap-2">
+      <Button variant="outline" onClick={() => setDialogOpen(false)}>
+        Batal
+      </Button>
+      <Button className="bg-indigo-600 hover:bg-indigo-700 text-white" onClick={handleSubmit}>
+        {isEditing ? "Simpan Perubahan" : "Buat User"}
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
     </div>
   );
 }
