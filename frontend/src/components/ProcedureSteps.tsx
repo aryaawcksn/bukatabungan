@@ -51,7 +51,7 @@ export default function ProcedureSteps({
         details: [
           "KTP asli yang masih berlaku.",
           "NPWP jika ingin ikut promo berhadiah.",
-          "Foto selfie dengan KTP.",
+
           "Email aktif untuk verifikasi.",
           "Nomor HP yang aktif.",
         ],
@@ -61,7 +61,7 @@ export default function ProcedureSteps({
         icon: UserCheck,
         description: "Pastikan data diverifikasi untuk keamanan transaksi.",
         details: [
-          "Unggah foto KTP & selfie.",
+          "Unggah foto KTP.",
           "OTP verifikasi nomor HP.",
           "Verifikasi email aktif.",
         ],

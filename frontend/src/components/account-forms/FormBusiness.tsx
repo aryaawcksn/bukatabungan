@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
@@ -6,6 +6,7 @@ import { Textarea } from '../ui/textarea';
 import { Checkbox } from '../ui/checkbox';
 import { Upload } from "../Upload";
 import type { AccountFormProps } from './types';
+import TermsModal from '../TermsModal';
 
 interface FormBusinessProps extends AccountFormProps {
   currentStep?: number;
@@ -26,15 +27,11 @@ export default function FormBusiness({
   setKtpPreview,
   ktpUrl,
   setKtpUrl,
-  selfieFile,
-  setSelfieFile,
-  selfiePreview,
-  setSelfiePreview,
-  selfieUrl,
-  setSelfieUrl,
+
   branches = [],
   currentStep = 1,
 }: FormBusinessProps) {
+  const [showTermsModal, setShowTermsModal] = useState(false);
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -43,9 +40,9 @@ export default function FormBusiness({
       {currentStep === 1 && (
         <div>
           <h3 className="text-emerald-900 mb-6 text-2xl font-bold">Pilih Lokasi Cabang</h3>
-          <p className="text-slate-500 mb-6">Silakan pilih kantor cabang Bank Sleman terdekat untuk keperluan bisnis Anda.</p>
+          <p className="text-slate-500 mb-6">Silakan pilih kantor cabang Bank Sleman terdekat untuk pengambilan buku tabungan dan kartu debit bisnis Anda.</p>
           
-          <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+          <div className="bg-slate-50 p-6 rounded-md border border-slate-100">
             <Label htmlFor="cabang_pengambilan" className="text-gray-700 font-semibold mb-2 block">Kantor Cabang</Label>
             {errors.cabang_pengambilan && <p className="text-sm text-red-600 mb-1">{errors.cabang_pengambilan}</p>}
             <Select
@@ -64,7 +61,7 @@ export default function FormBusiness({
                  setFormData({ ...formData, cabang_pengambilan: value });
               }}
             >
-              <SelectTrigger className={`h-12 bg-white border-slate-200 focus:border-emerald-500 focus:ring-emerald-500 rounded-xl ${errors.cabang_pengambilan ? 'border-red-500' : ''}`}>
+              <SelectTrigger className={`h-12 bg-white border-slate-200 focus:border-emerald-500 focus:ring-emerald-500 ${errors.cabang_pengambilan ? 'border-red-500' : ''}`}>
                 <SelectValue placeholder="Pilih cabang pengambilan" />
               </SelectTrigger>
               <SelectContent>
@@ -75,6 +72,9 @@ export default function FormBusiness({
                 ))}
               </SelectContent>
             </Select>
+            <p className="text-xs text-slate-500 mt-3">
+              *Pastikan Anda dapat mengunjungi cabang ini pada jam operasional.
+            </p>
           </div>
         </div>
       )}
@@ -85,14 +85,14 @@ export default function FormBusiness({
           
           {/* Upload Section */}
           <div>
-            <h3 className="text-emerald-900 mb-6 text-2xl font-bold">Dokumen Identitas</h3>
-            <div className="grid md:grid-cols-2 gap-6">
+            <h3 className="text-emerald-900 mb-6 text-2xl font-bold">Dokumen Identitas Penanggung Jawab</h3>
+            <div className="grid md:grid-cols-1 gap-6">
               {/* ===== Upload Foto KTP ===== */}
               <div>
                 {errors.ktp && <p className="text-red-600 text-sm mb-1">{errors.ktp}</p>}
                 {!ktpFile && !ktpPreview ? (
                   <Upload
-                    label="Foto KTP"
+                    label="Foto KTP Penanggung Jawab"
                     description="Format: JPG, PNG (Max. 2MB)"
                     onChange={(file) => {
                       setKtpFile(file);
@@ -106,11 +106,11 @@ export default function FormBusiness({
                     <img
                       src={ktpPreview || ktpUrl!}
                       alt="KTP Preview"
-                      className="w-full h-48 object-cover rounded-xl shadow-md"
+                      className="w-full h-48 object-cover shadow-md"
                     />
                     <button
                       type="button"
-                      className="absolute inset-0 bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl font-medium"
+                      className="absolute inset-0 bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center font-medium"
                       onClick={() => {
                         setKtpFile(null);
                         setKtpPreview(null);
@@ -123,46 +123,12 @@ export default function FormBusiness({
                 )}
               </div>
 
-              {/* ===== Upload Selfie ===== */}
-              <div>
-                {errors.selfie && <p className="text-red-600 text-sm mb-1">{errors.selfie}</p>}
-                {!selfieFile && !selfiePreview ? (
-                  <Upload
-                    label="Selfie dengan KTP"
-                    description="Pastikan wajah terlihat jelas"
-                    onChange={(file) => {
-                      setSelfieFile(file);
-                      setSelfiePreview(URL.createObjectURL(file));
-                      setSelfieUrl(null);
-                      setErrors(prev => ({ ...prev, selfie: "" }));
-                    }}
-                  />
-                ) : (
-                  <div className="mt-2 relative group">
-                    <img
-                      src={selfiePreview || selfieUrl!}
-                      alt="Selfie Preview"
-                      className="w-full h-48 object-cover rounded-xl shadow-md"
-                    />
-                    <button
-                      type="button"
-                      className="absolute inset-0 bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl font-medium"
-                      onClick={() => {
-                        setSelfieFile(null);
-                        setSelfiePreview(null);
-                        setSelfieUrl(null);
-                      }}
-                    >
-                      Ganti Foto
-                    </button>
-                  </div>
-                )}
-              </div>
+
             </div>
           </div>
 
           <div className="border-t border-slate-100 pt-8">
-            <h3 className="text-emerald-900 mb-6 text-2xl font-bold">Data Pribadi (Bisnis)</h3>
+            <h3 className="text-emerald-900 mb-6 text-2xl font-bold">Data Penanggung Jawab</h3>
             <div className="space-y-5">
 
               {/* Nama Lengkap */}
@@ -174,7 +140,7 @@ export default function FormBusiness({
                   placeholder="Masukkan nama lengkap"
                   value={formData.fullName}
                   onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                  className="mt-2 h-12 rounded-xl"
+                  className="mt-2 h-12"
                 />
               </div>
 
@@ -199,7 +165,7 @@ export default function FormBusiness({
                       return next;
                     });
                   }}
-                  className={`${getFieldClass('nik')} h-12 rounded-xl`}
+                  className={`${getFieldClass('nik')} h-12`}
                 />
               </div>
 
@@ -211,7 +177,7 @@ export default function FormBusiness({
                     value={formData.gender}
                     onValueChange={(value) => setFormData({ ...formData, gender: value })}
                   >
-                    <SelectTrigger className="mt-2 h-12 rounded-xl">
+                    <SelectTrigger className="mt-2 h-12">
                       <SelectValue placeholder="Pilih jenis kelamin" />
                     </SelectTrigger>
                     <SelectContent>
@@ -222,33 +188,26 @@ export default function FormBusiness({
                 </div>
 
                 <div>
-                  <Label className="text-gray-700">Status Pernikahan</Label>
-                  <Select
-                    value={formData.maritalStatus}
-                    onValueChange={(value) => setFormData({ ...formData, maritalStatus: value })}
-                  >
-                    <SelectTrigger className="mt-2 h-12 rounded-xl">
-                      <SelectValue placeholder="Pilih status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Belum Menikah">Belum Menikah</SelectItem>
-                      <SelectItem value="Menikah">Menikah</SelectItem>
-                      <SelectItem value="Cerai">Cerai</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label className="text-gray-700">Jabatan</Label>
+                  <Input
+                    placeholder="Contoh: Direktur / Pemilik"
+                    value={formData.employmentStatus} // Using employmentStatus to store Jabatan for business
+                    onChange={(e) => setFormData({ ...formData, employmentStatus: e.target.value })}
+                    className="mt-2 h-12"
+                  />
                 </div>
               </div>
 
               {/* Email + Phone */}
               <div className="grid md:grid-cols-2 gap-5">
                 <div>
-                  <Label htmlFor="email" className="text-gray-700">Email</Label>
+                  <Label htmlFor="email" className="text-gray-700">Email Bisnis</Label>
                   {errors.email && <p className="text-sm text-red-600 mb-1">{errors.email}</p>}
                   <Input
                     id="email"
                     type="email"
                     required
-                    placeholder="email@example.com"
+                    placeholder="email@bisnis.com"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     onBlur={async (e) => {
@@ -261,7 +220,7 @@ export default function FormBusiness({
                         return next;
                       });
                     }}
-                    className={`${getFieldClass('email')} h-12 rounded-xl`}
+                    className={`${getFieldClass('email')} h-12`}
                   />
                 </div>
 
@@ -285,7 +244,7 @@ export default function FormBusiness({
                         return next;
                       });
                     }}
-                    className={`${getFieldClass('phone')} h-12 rounded-xl`}
+                    className={`${getFieldClass('phone')} h-12`}
                   />
                 </div>
               </div>
@@ -299,7 +258,7 @@ export default function FormBusiness({
                   required
                   value={formData.birthDate}
                   onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
-                  className="mt-2 h-12 rounded-xl"
+                  className="mt-2 h-12"
                 />
               </div>
 
@@ -312,7 +271,7 @@ export default function FormBusiness({
                     placeholder="Contoh: Indonesia"
                     value={formData.citizenship}
                     onChange={(e) => setFormData({ ...formData, citizenship: e.target.value })}
-                    className="mt-2 h-12 rounded-xl"
+                    className="mt-2 h-12"
                   />
                 </div>
 
@@ -324,33 +283,7 @@ export default function FormBusiness({
                     placeholder="Masukkan nama ibu kandung"
                     value={formData.motherName}
                     onChange={(e) => setFormData({ ...formData, motherName: e.target.value })}
-                    className="mt-2 h-12 rounded-xl"
-                  />
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-5">
-                 <div>
-                  <Label htmlFor="kontakDaruratNama" className="text-gray-700">Nama Kontak Darurat</Label>
-                  <Input
-                    id="kontakDaruratNama"
-                    required
-                    placeholder="Nama kerabat dekat"
-                    value={formData.kontakDaruratNama}
-                    onChange={(e) => setFormData({ ...formData, kontakDaruratNama: e.target.value })}
-                    className="mt-2 h-12 rounded-xl"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="kontakDaruratHp" className="text-gray-700">Nomor Kontak Darurat</Label>
-                  <Input
-                    id="kontakDaruratHp"
-                    required
-                    placeholder="08xxxxxxxxxx"
-                    value={formData.kontakDaruratHp}
-                    onChange={(e) => setFormData({ ...formData, kontakDaruratHp: e.target.value })}
-                    className="mt-2 h-12 rounded-xl"
+                    className="mt-2 h-12"
                   />
                 </div>
               </div>
@@ -360,16 +293,16 @@ export default function FormBusiness({
         </div>
       )}
 
-      {/* STEP 3: DATA PEKERJAAN & ALAMAT */}
+      {/* STEP 3: DATA USAHA & ALAMAT */}
       {currentStep === 3 && (
         <div className="space-y-8">
           
           {/* Alamat */}
           <div>
-            <h3 className="text-emerald-900 mb-6 text-2xl font-bold">Alamat Usaha/Domisili</h3>
+            <h3 className="text-emerald-900 mb-6 text-2xl font-bold">Alamat Usaha</h3>
             <div className="space-y-5">
               <div>
-                <Label htmlFor="address" className="text-gray-700">Alamat Lengkap</Label>
+                <Label htmlFor="address" className="text-gray-700">Alamat Lengkap Usaha</Label>
                 <Textarea
                   id="address"
                   required
@@ -377,7 +310,7 @@ export default function FormBusiness({
                   rows={3}
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  className="mt-2 rounded-xl"
+                  className="mt-2"
                 />
               </div>
 
@@ -390,7 +323,7 @@ export default function FormBusiness({
                     placeholder="Nama Provinsi"
                     value={formData.province}
                     onChange={(e) => setFormData({ ...formData, province: e.target.value })}
-                    className="mt-2 h-12 rounded-xl"
+                    className="mt-2 h-12"
                   />
                 </div>
 
@@ -402,7 +335,7 @@ export default function FormBusiness({
                     placeholder="Nama Kota"
                     value={formData.city}
                     onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                    className="mt-2 h-12 rounded-xl"
+                    className="mt-2 h-12"
                   />
                 </div>
 
@@ -415,103 +348,55 @@ export default function FormBusiness({
                     maxLength={5}
                     value={formData.postalCode}
                     onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
-                    className="mt-2 h-12 rounded-xl"
+                    className="mt-2 h-12"
                   />
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Informasi Pekerjaan */}
+          {/* Informasi Usaha */}
           <div className="border-t border-slate-100 pt-8">
             <h3 className="text-emerald-900 mb-6 text-2xl font-bold">Informasi Usaha</h3>
             <div className="space-y-5">
+              
               <div>
-                <Label htmlFor="employmentStatus" className="text-gray-700">Status Pekerjaan</Label>
-                <Select
-                  value={formData.employmentStatus}
-                  onValueChange={(value) => setFormData({ ...formData, employmentStatus: value })}
-                >
-                  <SelectTrigger className="mt-2 h-12 rounded-xl">
-                    <SelectValue placeholder="Pilih status pekerjaan" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="bekerja">Sudah Bekerja</SelectItem>
-                    <SelectItem value="tidak-bekerja">Belum Bekerja</SelectItem>
-                    <SelectItem value="pelajar-mahasiswa">Pelajar / Mahasiswa</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="tempatBekerja" className="text-gray-700">Nama Usaha / Perusahaan</Label>
+                <Input
+                  id="tempatBekerja"
+                  placeholder="Nama usaha"
+                  value={formData.tempatBekerja}
+                  onChange={(e) => setFormData({ ...formData, tempatBekerja: e.target.value })}
+                  className="mt-2 h-12"
+                />
               </div>
 
-              {formData.employmentStatus !== "tidak-bekerja" && (
-                <>
-                  <div>
-                    <Label htmlFor="tempatBekerja" className="text-gray-700">
-                      Nama Usaha / Tempat Bekerja
-                    </Label>
-                    <Input
-                      id="tempatBekerja"
-                      placeholder="Nama usaha atau perusahaan"
-                      value={formData.tempatBekerja}
-                      onChange={(e) => setFormData({ ...formData, tempatBekerja: e.target.value })}
-                      className="mt-2 h-12 rounded-xl"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="alamatKantor" className="text-gray-700">Alamat Usaha</Label>
-                    <Textarea
-                      id="alamatKantor"
-                      placeholder="Alamat lengkap tempat usaha"
-                      value={formData.alamatKantor}
-                      onChange={(e) => setFormData({ ...formData, alamatKantor: e.target.value })}
-                      className="mt-2 rounded-xl"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="monthlyIncome" className="text-gray-700">
-                      Omset / Penghasilan per Bulan
-                    </Label>
-                    <Select
-                      value={formData.monthlyIncome}
-                      onValueChange={(value) => setFormData({ ...formData, monthlyIncome: value })}
-                    >
-                      <SelectTrigger className="mt-2 h-12 rounded-xl">
-                        <SelectValue placeholder="Pilih range penghasilan" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="below5">&lt; Rp 5.000.000</SelectItem>
-                        <SelectItem value="5-10jt">Rp 5.000.000 - Rp 10.000.000</SelectItem>
-                        <SelectItem value="10-20jt">Rp 10.000.000 - Rp 20.000.000</SelectItem>
-                        <SelectItem value="above20">&gt; Rp 20.000.000</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </>
-              )}
+              <div>
+                <Label htmlFor="alamatKantor" className="text-gray-700">Bidang Usaha</Label>
+                <Input
+                  id="alamatKantor"
+                  placeholder="Contoh: Perdagangan, Jasa, Manufaktur"
+                  value={formData.alamatKantor} // Using alamatKantor to store Bidang Usaha temporarily or add new field
+                  onChange={(e) => setFormData({ ...formData, alamatKantor: e.target.value })}
+                  className="mt-2 h-12"
+                />
+              </div>
 
               <div className="grid md:grid-cols-2 gap-5">
                 <div>
-                  <Label htmlFor="sumberDana" className="text-gray-700">Sumber Dana</Label>
+                  <Label htmlFor="monthlyIncome" className="text-gray-700">Omset per Bulan</Label>
                   <Select
-                    value={formData.sumberDana}
-                    onValueChange={(value) => setFormData({ ...formData, sumberDana: value })}
+                    value={formData.monthlyIncome}
+                    onValueChange={(value) => setFormData({ ...formData, monthlyIncome: value })}
                   >
-                    <SelectTrigger className="mt-2 h-12 rounded-xl">
-                      <SelectValue placeholder="Pilih sumber dana" />
+                    <SelectTrigger className="mt-2 h-12">
+                      <SelectValue placeholder="Pilih omset" />
                     </SelectTrigger>
                     <SelectContent>
-                      {formData.employmentStatus !== "tidak-bekerja" && (
-                        <>
-                          <SelectItem value="gaji">Gaji</SelectItem>
-                          <SelectItem value="usaha">Usaha</SelectItem>
-                        </>
-                      )}
-                      <SelectItem value="warisan">Warisan</SelectItem>
-                      <SelectItem value="orang-tua">Orang Tua</SelectItem>
-                      <SelectItem value="investasi">Investasi</SelectItem>
-                      <SelectItem value="lainnya">Lainnya</SelectItem>
+                      <SelectItem value="below10">&lt; Rp 10.000.000</SelectItem>
+                      <SelectItem value="10-50jt">Rp 10.000.000 - Rp 50.000.000</SelectItem>
+                      <SelectItem value="50-100jt">Rp 50.000.000 - Rp 100.000.000</SelectItem>
+                      <SelectItem value="above100">&gt; Rp 100.000.000</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -522,41 +407,18 @@ export default function FormBusiness({
                     value={formData.tujuanRekening}
                     onValueChange={(value) => setFormData({ ...formData, tujuanRekening: value })}
                   >
-                    <SelectTrigger className="mt-2 h-12 rounded-xl">
+                    <SelectTrigger className="mt-2 h-12">
                       <SelectValue placeholder="Pilih tujuan" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="tabungan-personal">Tabungan Pribadi</SelectItem>
-                      {formData.employmentStatus !== "tidak-bekerja" && (
-                        <SelectItem value="bisnis">Keperluan Bisnis</SelectItem>
-                      )}
-                      <SelectItem value="investasi">Investasi</SelectItem>
-                      <SelectItem value="pembayaran">Pembayaran / Transaksi</SelectItem>
+                      <SelectItem value="operasional">Operasional Usaha</SelectItem>
+                      <SelectItem value="investasi">Investasi Bisnis</SelectItem>
+                      <SelectItem value="simpanan">Simpanan Usaha</SelectItem>
                       <SelectItem value="lainnya">Lainnya</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
-            </div>
-          </div>
-
-          <div className="border-t border-slate-100 pt-8">
-            <h3 className="text-emerald-900 mb-6 text-2xl font-bold">Informasi Kartu</h3>
-            <div>
-              <Label htmlFor="jenis_rekening" className="text-gray-700">Jenis Kartu Debit</Label>
-              <Select
-                value={formData.jenis_rekening}
-                onValueChange={(value) => setFormData({ ...formData, jenis_rekening: value })}
-              >
-                <SelectTrigger className="mt-2 h-12 rounded-xl">
-                  <SelectValue placeholder="Pilih jenis kartu" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="gold">Gold</SelectItem>
-                  <SelectItem value="silver">Silver</SelectItem>
-                  <SelectItem value="Platinum">Platinum</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
           </div>
 
@@ -571,13 +433,15 @@ export default function FormBusiness({
             />
             <div>
               <Label htmlFor="terms" className="cursor-pointer text-gray-800 font-medium">
-                Saya menyetujui <a href="#" className="text-emerald-700 hover:underline font-bold">Syarat dan Ketentuan</a> serta <a href="#" className="text-emerald-700 hover:underline font-bold">Kebijakan Privasi</a>
+                Saya menyetujui <button type="button" onClick={() => setShowTermsModal(true)} className="text-emerald-700 hover:underline font-bold">Syarat dan Ketentuan</button>
               </Label>
               <p className="text-xs text-gray-600 mt-2 leading-relaxed">
                 Dengan mencentang kotak ini, saya menyatakan bahwa semua data yang saya berikan adalah benar dan saya bertanggung jawab penuh atas kebenaran data tersebut.
               </p>
             </div>
           </div>
+
+          <TermsModal open={showTermsModal} onClose={() => setShowTermsModal(false)} />
         </div>
       )}
     </div>

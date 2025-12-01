@@ -50,7 +50,6 @@ export interface FormSubmission {
   };
   documents: {
     ktpPhoto: string;
-    selfiePhoto: string;
   };
   submittedAt: string;
   status: 'pending' | 'approved' | 'rejected';
@@ -186,7 +185,6 @@ const mapBackendDataToFormSubmission = (data: any): FormSubmission => {
     } : undefined,
     documents: {
       ktpPhoto: (data.foto_ktp && data.foto_ktp.trim() !== '') ? data.foto_ktp : '',
-      selfiePhoto: (data.foto_selfie && data.foto_selfie.trim() !== '') ? data.foto_selfie : '',
     },
     submittedAt: formatDateTime(data.created_at),
     status: (data.status || 'pending') as 'pending' | 'approved' | 'rejected',

@@ -7,6 +7,7 @@ import FormSimpel from './account-forms/FormSimpel';
 import FormBusiness from './account-forms/FormBusiness';
 import FormIndividu from './account-forms/FormIndividu';
 import type { AccountFormData } from './account-forms/types';
+import { useNavigate } from 'react-router-dom';
 
 interface AccountFormProps {
   savingsType: string;
@@ -14,14 +15,12 @@ interface AccountFormProps {
 }
 
 export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
+  const navigate = useNavigate();
   const [submitted, setSubmitted] = useState(false);
   const [referenceCode, setReferenceCode] = useState<string | null>(null);
   const [ktpFile, setKtpFile] = useState<File | null>(null);
-  const [selfieFile, setSelfieFile] = useState<File | null>(null);
   const [ktpPreview, setKtpPreview] = useState<string | null>(null);
-  const [selfiePreview, setSelfiePreview] = useState<string | null>(null);
   const [ktpUrl, setKtpUrl] = useState<string | null>(null);
-  const [selfieUrl, setSelfieUrl] = useState<string | null>(null);
   const [loadingSubmit, setLoadingSubmit] = useState(false);
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [currentPhone, setCurrentPhone] = useState("");
@@ -29,7 +28,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
 
   // Stepper State
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 3;
+  const totalSteps = 4;
 
   // Validation errors (simple server-backed uniqueness + basic client hints)
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -151,7 +150,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     const savedData = localStorage.getItem("pendingSubmitData");
     const savedPhone = localStorage.getItem("currentPhone");
     const savedKtpUrl = localStorage.getItem("savedKtpUrl");
-    const savedSelfieUrl = localStorage.getItem("savedSelfieUrl");
+
   
     if (savedData) {
       const parsed = JSON.parse(savedData);
@@ -162,7 +161,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       setCurrentPhone(savedPhone);
     }
     if (savedKtpUrl) setKtpUrl(savedKtpUrl);
-    if (savedSelfieUrl) setSelfieUrl(savedSelfieUrl);
+
   
     // Buka modal OTP
     setShowOtpModal(true);
@@ -220,7 +219,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
        if (!formData.motherName) newErrors.motherName = "Nama ibu kandung wajib diisi";
        
        if (!ktpFile && !ktpUrl) newErrors.ktp = "Silakan upload foto KTP!";
-       if (!selfieFile && !selfieUrl) newErrors.selfie = "Silakan upload selfie dengan KTP!";
+
 
        // Async validations
        if (!newErrors.nik) {
@@ -289,7 +288,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     // UPLOAD FILES FIRST
     // ============================
     let currentKtpUrl = ktpUrl;
-    let currentSelfieUrl = selfieUrl;
+
 
     try {
         if (ktpFile && !currentKtpUrl) {
@@ -306,19 +305,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
             setKtpUrl(currentKtpUrl);
         }
 
-        if (selfieFile && !currentSelfieUrl) {
-            const formDataSelfie = new FormData();
-            formDataSelfie.append("gambar", selfieFile);
-            const resSelfie = await fetch("https://bukatabungan-production.up.railway.app/upload", {
-                method: "POST",
-                body: formDataSelfie,
-                credentials: "include",
-            });
-            if (!resSelfie.ok) throw new Error("Gagal upload Selfie");
-            const dataSelfie = await resSelfie.json();
-            currentSelfieUrl = dataSelfie.url;
-            setSelfieUrl(currentSelfieUrl);
-        }
+
     } catch (err) {
         alert("Gagal mengupload dokumen. Silakan coba lagi.");
         setLoadingSubmit(false);
@@ -345,7 +332,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       localStorage.setItem("pendingSubmitData", JSON.stringify(formData));
       localStorage.setItem("currentPhone", formData.phone);
       if (currentKtpUrl) localStorage.setItem("savedKtpUrl", currentKtpUrl);
-      if (currentSelfieUrl) localStorage.setItem("savedSelfieUrl", currentSelfieUrl);
+
 
       // Simpan data form sementara
       setPendingSubmitData(formData);
@@ -367,7 +354,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     localStorage.removeItem("pendingSubmitData");
     localStorage.removeItem("currentPhone");
     localStorage.removeItem("savedKtpUrl");
-    localStorage.removeItem("savedSelfieUrl");
+
   
     setShowOtpModal(false);
     await submitFinalForm(pendingSubmitData);
@@ -409,35 +396,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       }
     }
   
-    // ============================
-    // 2. Upload Selfie
-    // ============================
-    let selfieUploadedUrl = selfieUrl;
-    if (selfieFile && !selfieUploadedUrl) {
-      try {
-        const formDataSelfie = new FormData();
-        formDataSelfie.append("gambar", selfieFile);
-  
-        const resSelfie = await fetch(
-          "https://bukatabungan-production.up.railway.app/upload",
-          {
-            method: "POST",
-            body: formDataSelfie,
-            credentials: "include",
-          }
-        );
-  
-        if (!resSelfie.ok) throw new Error("Gagal upload selfie");
-  
-        const dataSelfie = await resSelfie.json();
-        selfieUploadedUrl = dataSelfie.url;
-        setSelfieUrl(selfieUploadedUrl);
-      } catch (err) {
-        alert("Upload selfie gagal, coba lagi!");
-        setLoadingSubmit(false);
-        return;
-      }
-    }
+
   
     // ============================
     // 3. Siapkan data submit
@@ -473,7 +432,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       cabang_pengambilan: data.cabang_pengambilan, // This will now be the ID
       cabang_id: data.cabang_pengambilan, // Send ID explicitly
       foto_ktp: ktpUploadedUrl,
-      foto_selfie: selfieUploadedUrl,
+
     };
   
     // ============================
@@ -504,6 +463,8 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       if (response.ok && result.success) {
         setReferenceCode(result.kode_referensi ?? null);
         setSubmitted(true);
+        setCurrentStep(4); // Move to success step
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         const errorMessage =
           result.message ||
@@ -518,62 +479,67 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     setLoadingSubmit(false);
   };
 
-  if (submitted) {
+  const renderSuccess = () => {
     return (
-      <div className="min-h-screen flex items-center justify-center py-12">
-        <Card className="max-w-2xl mx-4 p-12 text-center border-0 shadow-2xl rounded-3xl bg-white">
-          <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-emerald-100 to-emerald-200 rounded-3xl mb-8 shadow-lg">
-            <CheckCircle className="h-14 w-14 text-emerald-700" />
-          </div>
-          <h1 className="text-emerald-900 mb-6 text-4xl">
-            Pendaftaran Berhasil!
-          </h1>
-          <p className="text-gray-600 mb-8 text-lg">
-            Terima kasih telah mendaftar {getSavingsTypeName()}. Kami akan memproses aplikasi Anda dalam 1-2 hari kerja.
+      <div className="text-center py-8">
+        <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-emerald-100 to-emerald-200 rounded-3xl mb-8 shadow-lg">
+          <CheckCircle className="h-14 w-14 text-emerald-700" />
+        </div>
+        <h1 className="text-emerald-900 mb-6 text-4xl">
+          Pendaftaran Berhasil!
+        </h1>
+        <p className="text-gray-600 mb-8 text-lg">
+          Terima kasih telah mendaftar {getSavingsTypeName()}. Kami akan memproses aplikasi Anda dalam 1-2 hari kerja.
+        </p>
+        <div className="bg-gradient-to-br from-emerald-50 to-green-50 rounded-2xl p-8 mb-8 text-left shadow-inner">
+          <h3 className="text-emerald-900 mb-5 text-xl flex items-center gap-2">
+            <Sparkles className="h-5 w-5" />
+            Langkah Selanjutnya:
+          </h3>
+          <ul className="space-y-4 text-gray-700">
+            <li className="flex items-start gap-3">
+              <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+              <span>Kami akan mengirimkan email konfirmasi ke alamat email Anda</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+              <span>Tim verifikasi akan memeriksa dokumen Anda</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+              <span>Anda akan menerima nomor virtual account untuk setoran awal</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+              <span>Setelah setoran diterima, rekening Anda akan aktif</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+              <span>Kartu debit akan dikirim ke alamat Anda dalam 7-10 hari kerja</span>
+            </li>
+          </ul>
+        </div>
+        <div className="space-y-3 bg-white p-6 rounded-2xl shadow-md mb-8">
+          <p className="text-sm text-gray-600">
+            Nomor Referensi:
           </p>
-          <div className="bg-gradient-to-br from-emerald-50 to-green-50 rounded-2xl p-8 mb-8 text-left shadow-inner">
-            <h3 className="text-emerald-900 mb-5 text-xl flex items-center gap-2">
-              <Sparkles className="h-5 w-5" />
-              Langkah Selanjutnya:
-            </h3>
-            <ul className="space-y-4 text-gray-700">
-              <li className="flex items-start gap-3">
-                <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                <span>Kami akan mengirimkan email konfirmasi ke alamat email Anda</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                <span>Tim verifikasi akan memeriksa dokumen Anda</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                <span>Anda akan menerima nomor virtual account untuk setoran awal</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                <span>Setelah setoran diterima, rekening Anda akan aktif</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                <span>Kartu debit akan dikirim ke alamat Anda dalam 7-10 hari kerja</span>
-              </li>
-            </ul>
-          </div>
-          <div className="space-y-3 bg-white p-6 rounded-2xl shadow-md">
-            <p className="text-sm text-gray-600">
-              Nomor Referensi:
-            </p>
-            <p className="text-2xl font-mono text-emerald-700">
-              {referenceCode ?? `BKU-2025-${Math.floor(Math.random() * 100000)}`}
-            </p>
-            <p className="text-sm text-gray-600">
-              Simpan nomor ini untuk keperluan tracking aplikasi Anda
-            </p>
-          </div>
-        </Card>
+          <p className="text-2xl font-mono text-emerald-700">
+            {referenceCode ?? `BKU-2025-${Math.floor(Math.random() * 100000)}`}
+          </p>
+          <p className="text-sm text-gray-600">
+            Simpan nomor ini untuk keperluan tracking aplikasi Anda
+          </p>
+        </div>
+        
+        <Button 
+          onClick={() => navigate('/')}
+          className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-full text-lg shadow-lg hover:shadow-emerald-500/30 transition-all"
+        >
+          Kembali ke Beranda
+        </Button>
       </div>
     );
-  }
+  };
 
   const renderForm = () => {
     const commonProps = {
@@ -591,12 +557,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       setKtpPreview,
       ktpUrl,
       setKtpUrl,
-      selfieFile,
-      setSelfieFile,
-      selfiePreview,
-      setSelfiePreview,
-      selfieUrl,
-      setSelfieUrl,
+
       loadingSubmit,
       handleSubmit,
       savingsType,
@@ -616,11 +577,16 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
   };
 
   const steps = [
-    { number: 1, title: "Pilih Cabang", icon: Building2 },
-    { number: 2, title: "Data Diri", icon: User },
-    { number: 3, title: "Data Pekerjaan", icon: FileText },
-    { number: 4, title: "Selesai", icon: CircleCheckBig },
-  ];
+  { number: 1, title: "Pilih Cabang", icon: Building2 },
+  { number: 2, title: "Data Diri", icon: User },
+  {
+    number: 3,
+    title: savingsType === "simpel" ? "Data Sekolah" : "Data Pekerjaan",
+    icon: FileText,
+  },
+  { number: 4, title: "Selesai", icon: CircleCheckBig },
+];
+
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
@@ -687,59 +653,60 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       <section className="py-12">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8 flex items-center justify-between">
-             <Button
-              variant="ghost"
-              onClick={handlePrevStep}
-              className="pl-0 text-slate-500 hover:text-blue-700 hover:bg-transparent"
-
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              {currentStep === 1 ? "Kembali" : "Sebelumnya"}
-            </Button>
-            <div className="text-right">
+             {currentStep < 4 && (
+               <Button
+                variant="ghost"
+                onClick={handlePrevStep}
+                className="pl-0 text-slate-500 hover:text-blue-700 hover:bg-transparent"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                {currentStep === 1 ? "Kembali" : "Sebelumnya"}
+              </Button>
+             )}
+            <div className="text-right ml-auto">
                <h2 className="text-2xl font-bold text-slate-900">{steps[currentStep-1].title}</h2>
                <p className="text-slate-500 text-sm">Langkah {currentStep} dari {totalSteps}</p>
             </div>
           </div>
 
           <Card className="bg-white p-8 md:p-10 border-0 shadow-sm rounded-md w-full">
-            {renderForm()}
+            {currentStep === 4 ? renderSuccess() : renderForm()}
             
             {/* Navigation Buttons */}
-            <div className="mt-8 pt-6 border-t border-slate-100 flex justify-between items-center">
+            {currentStep < 4 && (
+              <div className="mt-8 pt-6 border-t border-slate-100 flex justify-between items-center">
 
-  {/* ✅ BACK BUTTON (KIRI) */}
-  <Button
-    type="button"
-    onClick={handlePrevStep}
-    disabled={currentStep === 1}
-    className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-6 py-2 rounded-sm text-lg shadow-sm transition-all disabled:opacity-50"
-  >
-    Kembali
-  </Button>
+                {/* ✅ BACK BUTTON (KIRI) */}
+                <Button
+                  type="button"
+                  onClick={handlePrevStep}
+                  disabled={currentStep === 1}
+                  className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-6 py-2 rounded-sm text-lg shadow-sm transition-all disabled:opacity-50"
+                >
+                  Kembali
+                </Button>
 
-  {/* ✅ NEXT / SUBMIT BUTTON (KANAN) */}
-  {currentStep < totalSteps ? (
-    <Button 
-      type="button" 
-      onClick={handleNextStep}
-      className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-sm text-lg shadow-sm hover:shadow-green-300/20 transition-all"
-    >
-      Lanjut <ChevronRight className="ml-2 h-5 w-5" />
-    </Button>
-  ) : (
-    <Button 
-      type="button" 
-      onClick={handleSubmit}
-      disabled={loadingSubmit}
-      className="bg-yellow-500 hover:bg-yellow-400 text-green-900 font-bold px-6 py-2 rounded-sm text-lg shadow-sm transition-all disabled:opacity-50"
-    >
-      {loadingSubmit ? 'Mengirim...' : 'Kirim Permohonan'}
-    </Button>
-  )}
-
-</div>
-
+                {/* ✅ NEXT / SUBMIT BUTTON (KANAN) */}
+                {currentStep < 3 ? (
+                  <Button 
+                    type="button" 
+                    onClick={handleNextStep}
+                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-sm text-lg shadow-sm hover:shadow-green-300/20 transition-all"
+                  >
+                    Lanjut <ChevronRight className="ml-2 h-5 w-5" />
+                  </Button>
+                ) : (
+                  <Button 
+                    type="button" 
+                    onClick={handleSubmit}
+                    disabled={loadingSubmit}
+                    className="bg-yellow-500 hover:bg-yellow-400 text-green-900 font-bold px-6 py-2 rounded-sm text-lg shadow-sm transition-all disabled:opacity-50"
+                  >
+                    {loadingSubmit ? 'Mengirim...' : 'Kirim Permohonan'}
+                  </Button>
+                )}
+              </div>
+            )}
 
             <OtpModal
               open={showOtpModal}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
@@ -6,6 +6,7 @@ import { Textarea } from '../ui/textarea';
 import { Checkbox } from '../ui/checkbox';
 import { Upload } from "../Upload";
 import type { AccountFormProps } from './types';
+import TermsModal from '../TermsModal';
 
 interface FormSimpelProps extends AccountFormProps {
   currentStep?: number;
@@ -26,15 +27,11 @@ export default function FormSimpel({
   setKtpPreview,
   ktpUrl,
   setKtpUrl,
-  selfieFile,
-  setSelfieFile,
-  selfiePreview,
-  setSelfiePreview,
-  selfieUrl,
-  setSelfieUrl,
+
   branches = [],
   currentStep = 1,
 }: FormSimpelProps) {
+  const [showTermsModal, setShowTermsModal] = useState(false);
 
   // Auto-set employment status for Simpel
   React.useEffect(() => {
@@ -93,7 +90,7 @@ export default function FormSimpel({
           {/* Upload Section */}
           <div>
             <h3 className="text-emerald-900 mb-6 text-2xl font-bold">Dokumen Identitas</h3>
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-1 gap-6">
               {/* ===== Upload Foto KTP ===== */}
               <div>
                 {errors.ktp && <p className="text-red-600 text-sm mb-1">{errors.ktp}</p>}
@@ -130,41 +127,7 @@ export default function FormSimpel({
                 )}
               </div>
 
-              {/* ===== Upload Selfie ===== */}
-              <div>
-                {errors.selfie && <p className="text-red-600 text-sm mb-1">{errors.selfie}</p>}
-                {!selfieFile && !selfiePreview ? (
-                  <Upload
-                    label="Selfie dengan KTP / Kartu Pelajar"
-                    description="Pastikan wajah terlihat jelas"
-                    onChange={(file) => {
-                      setSelfieFile(file);
-                      setSelfiePreview(URL.createObjectURL(file));
-                      setSelfieUrl(null);
-                      setErrors(prev => ({ ...prev, selfie: "" }));
-                    }}
-                  />
-                ) : (
-                  <div className="mt-2 relative group">
-                    <img
-                      src={selfiePreview || selfieUrl!}
-                      alt="Selfie Preview"
-                      className="w-full h-48 object-cover rounded-md shadow-md"
-                    />
-                    <button
-                      type="button"
-                      className="absolute inset-0 bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-md font-medium"
-                      onClick={() => {
-                        setSelfieFile(null);
-                        setSelfiePreview(null);
-                        setSelfieUrl(null);
-                      }}
-                    >
-                      Ganti Foto
-                    </button>
-                  </div>
-                )}
-              </div>
+
             </div>
           </div>
 
@@ -478,26 +441,6 @@ export default function FormSimpel({
             </div>
           </div>
 
-          <div className="border-t border-slate-100 pt-8">
-            <h3 className="text-emerald-900 mb-6 text-2xl font-bold">Informasi Kartu</h3>
-            <div>
-              <Label htmlFor="jenis_rekening" className="text-gray-700">Jenis Kartu Debit</Label>
-              <Select
-                value={formData.jenis_rekening}
-                onValueChange={(value) => setFormData({ ...formData, jenis_rekening: value })}
-              >
-                <SelectTrigger className="mt-2 h-12 rounded-md">
-                  <SelectValue placeholder="Pilih jenis kartu" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="gold">Gold</SelectItem>
-                  <SelectItem value="silver">Silver</SelectItem>
-                  <SelectItem value="Platinum">Platinum</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
           {/* Terms & Conditions */}
           <div className="flex items-start gap-4 bg-gradient-to-br from-emerald-50 to-green-50 p-6 rounded-2xl shadow-inner border border-green-100">
             <Checkbox
@@ -509,13 +452,15 @@ export default function FormSimpel({
             />
             <div>
               <Label htmlFor="terms" className="cursor-pointer text-gray-800 font-medium">
-                Saya menyetujui <a href="#" className="text-emerald-700 hover:underline font-bold">Syarat dan Ketentuan</a> serta <a href="#" className="text-emerald-700 hover:underline font-bold">Kebijakan Privasi</a>
+                Saya menyetujui <button type="button" onClick={() => setShowTermsModal(true)} className="text-emerald-700 hover:underline font-bold">Syarat dan Ketentuan</button>
               </Label>
               <p className="text-xs text-gray-600 mt-2 leading-relaxed">
                 Dengan mencentang kotak ini, saya menyatakan bahwa semua data yang saya berikan adalah benar dan saya bertanggung jawab penuh atas kebenaran data tersebut.
               </p>
             </div>
           </div>
+
+          <TermsModal open={showTermsModal} onClose={() => setShowTermsModal(false)} />
         </div>
       )}
     </div>

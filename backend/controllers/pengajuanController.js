@@ -39,7 +39,6 @@ export const createPengajuan = async (req, res) => {
       penghasilan,
       cabang_id,
       foto_ktp,
-      foto_selfie,
       // Field baru
       jenis_kelamin,
       status_pernikahan,
@@ -125,7 +124,6 @@ export const createPengajuan = async (req, res) => {
         cabang_id,
         status,
         foto_ktp,
-        foto_selfie,
         jenis_rekening,
         jenis_kelamin,
         setuju_data,
@@ -141,42 +139,44 @@ export const createPengajuan = async (req, res) => {
       )
       VALUES
       (
-        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,
-        $16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29
+        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,
+        $11,$12,$13,$14,$15,
+        $16,$17,$18,$19,$20,
+        $21,$22,$23,$24,$25,
+        $26,$27,$28
       )
       RETURNING *;
     `;
     let values = [
-      kode_referensi,          // $1
-      nama_lengkap,            // $2
-      nik,                     // $3
-      email,                   // $4
-      no_hp,                   // $5
-      tanggal_lahir,           // $6
-      alamat,                  // $7
-      provinsi,                // $8
-      kota,                    // $9
-      kode_pos,                // $10
-      pekerjaan,               // $11
-      penghasilan,             // $12
-      jenis_kartu,             // $13
-      cabang_id,      // $14
-      req.body.status || "pending",  // $15 - status
-      foto_ktp,                // $16
-      foto_selfie,             // $17
-      jenis_rekening,          // $18
-      jenis_kelamin,           // $19
-      setujuDataValue,         // $20 - setuju_data
-      kontak_darurat_hp,       // $21
-      kontak_darurat_nama,     // $22
-      tujuan_rekening,         // $23
-      sumber_dana,             // $24
-      alamat_kantor,           // $25
-      tempat_bekerja,          // $26
-      kewarganegaraan,         // $27
-      nama_ibu_kandung,        // $28
-      statusPernikahan         // $29 - status_pernikahan
-    ];
+  kode_referensi,          // $1
+  nama_lengkap,            // $2
+  nik,                     // $3
+  email,                   // $4
+  no_hp,                   // $5
+  tanggal_lahir,           // $6
+  alamat,                  // $7
+  provinsi,                // $8
+  kota,                    // $9
+  kode_pos,                // $10
+  pekerjaan,               // $11
+  penghasilan,             // $12
+  jenis_kartu,             // $13
+  cabang_id,               // $14
+  req.body.status || "pending", // $15
+  foto_ktp,                // $16
+  jenis_rekening,          // $17
+  jenis_kelamin,           // $18
+  setujuDataValue,         // $19
+  kontak_darurat_hp,       // $20
+  kontak_darurat_nama,     // $21
+  tujuan_rekening,         // $22
+  sumber_dana,             // $23
+  alamat_kantor,           // $24
+  tempat_bekerja,          // $25
+  kewarganegaraan,         // $26
+  nama_ibu_kandung,        // $27
+  statusPernikahan         // $28 ✅ STOP DI SINI
+];
 
     console.log("🔍 Executing query with", values.length, "parameters");
     console.log("📝 Query:", query.substring(0, 200) + "...");
@@ -263,7 +263,6 @@ export const getPengajuanById = async (req, res) => {
           p.jenis_rekening,
           COALESCE(p.status, 'pending') AS status,
           p.foto_ktp,
-          p.foto_selfie,
           p.jenis_kelamin,
           p.status_pernikahan,
           p.nama_ibu_kandung,
@@ -305,7 +304,6 @@ export const getPengajuanById = async (req, res) => {
           p.jenis_rekening,
           'pending' AS status,
           p.foto_ktp,
-          p.foto_selfie,
           p.jenis_kelamin,
           p.status_pernikahan,
           p.nama_ibu_kandung,
@@ -378,7 +376,6 @@ export const getAllPengajuan = async (req, res) => {
           p.jenis_rekening,
           COALESCE(p.status, 'pending') AS status,
           p.foto_ktp,
-          p.foto_selfie,
           p.jenis_kelamin,
           p.status_pernikahan,
           p.nama_ibu_kandung,
@@ -421,7 +418,6 @@ export const getAllPengajuan = async (req, res) => {
           p.jenis_rekening,
           'pending' AS status,
           p.foto_ktp,
-          p.foto_selfie,
           p.jenis_kelamin,
           p.status_pernikahan,
           p.nama_ibu_kandung,

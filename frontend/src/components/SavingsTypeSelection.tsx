@@ -38,11 +38,8 @@ export default function SavingsTypeSelection({
   ];
 
   useEffect(() => {
-  window.scrollTo({
-    top: 80, // jarak turun (bisa kamu sesuaikan)
-    behavior: "smooth",
-  });
-}, []);
+     window.scrollTo({ top: 0, behavior: "auto" });
+   }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-10">

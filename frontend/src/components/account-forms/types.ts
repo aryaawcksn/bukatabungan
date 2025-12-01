@@ -45,12 +45,7 @@ export interface AccountFormProps {
     ktpUrl: string | null;
     setKtpUrl: Dispatch<SetStateAction<string | null>>;
 
-    selfieFile: File | null;
-    setSelfieFile: Dispatch<SetStateAction<File | null>>;
-    selfiePreview: string | null;
-    setSelfiePreview: Dispatch<SetStateAction<string | null>>;
-    selfieUrl: string | null;
-    setSelfieUrl: Dispatch<SetStateAction<string | null>>;
+
 
     loadingSubmit: boolean;
     handleSubmit: (e: FormEvent) => void;

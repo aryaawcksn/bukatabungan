@@ -296,11 +296,6 @@ export function FormDetailDialog({ submission, open, onClose, onApprove, onRejec
                   src={submission.documents.ktpPhoto}
                   onClick={() => setPreviewImage(submission.documents.ktpPhoto)}
                 />
-                <ImageCard
-                  label="Foto Selfie dengan KTP"
-                  src={submission.documents.selfiePhoto}
-                  onClick={() => setPreviewImage(submission.documents.selfiePhoto)}
-                />
               </div>
             </Section>
 

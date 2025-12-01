@@ -68,15 +68,15 @@ function ProductDetails({
             {
               jenis: "Perorangan belum dewasa (< 12 tahun)",
               dokumen: [
-                "Kartu identitas orang tua & NPWP",
+                "Kartu identitas orang tua",
                 "Akte Kelahiran Anak / KIA",
               ]
             },
             {
               jenis: "Perorangan belum dewasa (Wali)",
               dokumen: [
-                "Kartu identitas & NPWP wali",
-                "Surat Penetapan Wali dari Pengadilan"
+                "Lorem ipsum dolor sit amet",
+                "Lorem ipsum dolor sit amet",
               ]
             }
           ]
@@ -183,12 +183,9 @@ function ProductDetails({
 
   const product = getProductInfo();
 
-   useEffect(() => {
-    window.scrollTo({
-      top: 80, // jarak turun (bisa kamu sesuaikan)
-      behavior: "smooth",
-    });
-  }, []);
+    useEffect(() => {
+       window.scrollTo({ top: 0, behavior: "auto" });
+     }, []);
 
   return (
     // START: Perubahan Utama di Elemen Pembungkus Utama
