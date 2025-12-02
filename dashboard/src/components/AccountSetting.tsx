@@ -378,7 +378,10 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
         {isEditing ? "Simpan Perubahan" : "Buat User"}
       </Button>
     </DialogFooter>
-    <Dialog open={logOpen} onOpenChange={setLogOpen}>
+  </DialogContent>
+</Dialog>
+
+<Dialog open={logOpen} onOpenChange={setLogOpen}>
   <DialogContent className="w-full max-w-4xl">
     <DialogHeader>
       <DialogTitle>Log Aktivitas User</DialogTitle>
@@ -389,9 +392,9 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
         <TableHeader className="bg-slate-50">
           <TableRow>
             <TableHead>Waktu</TableHead>
-            <TableHead>Aksi</TableHead>
-            <TableHead>User</TableHead>
-            <TableHead>Oleh</TableHead>
+            <TableHead>Tindakan</TableHead>
+            <TableHead>Untuk User</TableHead>
+            <TableHead>Dilakukan oleh</TableHead>
             <TableHead>IP</TableHead>
           </TableRow>
         </TableHeader>
@@ -473,8 +476,7 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
   </DialogContent>
 </Dialog>
 
-  </DialogContent>
-</Dialog>
+
     </div>
   );
 }

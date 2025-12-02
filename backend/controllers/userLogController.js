@@ -5,6 +5,10 @@ export const getUserLogs = async (req, res) => {
   try {
     const adminCabangId = req.user.cabang_id;
 
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+
     const result = await pool.query(`
       SELECT 
         ul.id,
@@ -26,11 +30,14 @@ export const getUserLogs = async (req, res) => {
 
       WHERE ul.cabang_id = $1
       ORDER BY ul.created_at DESC
-    `, [adminCabangId]);
+      LIMIT $2 OFFSET $3
+    `, [adminCabangId, limit, offset]);
 
     res.json({
       success: true,
-      data: result.rows
+      data: result.rows,
+      page,
+      limit
     });
 
   } catch (err) {
