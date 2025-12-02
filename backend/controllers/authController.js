@@ -162,7 +162,6 @@ export const register = async (req, res) => {
   }
 };
 
-
 /* =========================
    GET USERS (PER CABANG)
 ========================= */

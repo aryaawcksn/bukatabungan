@@ -1,4 +1,4 @@
-import pool from "../db.js"; // koneksi postgres kamu
+import pool from "../config/db.js";
 
 export async function logUserActivity({
   userId = null,
