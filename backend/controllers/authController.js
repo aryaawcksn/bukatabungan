@@ -241,7 +241,7 @@ export const updateUser = async (req, res) => {
       performedBy: req.user.id,
       cabangId: adminCabangId,
       action: "UPDATE_USER",
-      description: `Admin mengupdate user ID ${id}`,
+      description: `Admin mengupdate user ${result.rows[0].username}`,
       ipAddress: req.ip,
       userAgent: req.headers["user-agent"]
     });
@@ -277,7 +277,7 @@ export const deleteUser = async (req, res) => {
     }
 
     const result = await pool.query(
-      "DELETE FROM users WHERE id = $1 AND cabang_id = $2 RETURNING id",
+      "DELETE FROM users WHERE id = $1 AND cabang_id = $2 RETURNING id, username",
       [id, adminCabangId]
     );
 
@@ -294,7 +294,7 @@ export const deleteUser = async (req, res) => {
       performedBy: req.user.id,
       cabangId: adminCabangId,
       action: "DELETE_USER",
-      description: `Admin menghapus user ID ${id}`,
+      description: `Admin menghapus user ${result.rows[0].username}`,
       ipAddress: req.ip,
       userAgent: req.headers["user-agent"]
     });

@@ -393,6 +393,7 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
           <TableRow>
             <TableHead>Waktu</TableHead>
             <TableHead>Tindakan</TableHead>
+            <TableHead>Deskripsi</TableHead>
             <TableHead>Untuk User</TableHead>
             <TableHead>Dilakukan oleh</TableHead>
             <TableHead>IP</TableHead>
@@ -402,13 +403,13 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
         <TableBody>
           {logLoading ? (
             <TableRow>
-              <TableCell colSpan={5} className="text-center py-6 text-slate-500">
+              <TableCell colSpan={6} className="text-center py-6 text-slate-500">
                 Memuat log aktivitas...
               </TableCell>
             </TableRow>
           ) : logs.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={5} className="text-center py-6 text-slate-500">
+              <TableCell colSpan={6} className="text-center py-6 text-slate-500">
                 Belum ada log aktivitas.
               </TableCell>
             </TableRow>
@@ -430,6 +431,9 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
                   >
                     {log.action}
                   </span>
+                </TableCell>
+                <TableCell className="max-w-[200px] truncate" title={log.description}>
+                  {log.description}
                 </TableCell>
                 <TableCell>{log.target_username || "-"}</TableCell>
                 <TableCell>{log.performed_by}</TableCell>
