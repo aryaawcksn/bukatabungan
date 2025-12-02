@@ -78,6 +78,7 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        credentials: 'include',
       }
     );
 

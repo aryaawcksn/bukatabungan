@@ -19,7 +19,7 @@ export const getUserLogs = async (req, res) => {
 
         c.nama_cabang
 
-      FROM user_logs ul
+      FROM user_log ul
       LEFT JOIN users u ON ul.user_id = u.id
       LEFT JOIN users a ON ul.performed_by = a.id
       LEFT JOIN cabang c ON ul.cabang_id = c.id
