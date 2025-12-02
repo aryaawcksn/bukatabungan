@@ -276,25 +276,32 @@ export const deleteUser = async (req, res) => {
       });
     }
 
-    const result = await pool.query(
-      "DELETE FROM users WHERE id = $1 AND cabang_id = $2 RETURNING id, username",
+    // ✅ 1. AMBIL DATA USER DULU (SEBELUM DIHAPUS)
+    const userData = await pool.query(
+      "SELECT id, username FROM users WHERE id = $1 AND cabang_id = $2",
       [id, adminCabangId]
     );
 
-    if (result.rows.length === 0) {
+    if (userData.rows.length === 0) {
       return res.status(404).json({
         success: false,
         message: "User tidak ditemukan atau Anda tidak memiliki akses"
       });
     }
 
-    // ✅ LOG DELETE
+    // ✅ 2. HAPUS USER
+    await pool.query(
+      "DELETE FROM users WHERE id = $1 AND cabang_id = $2",
+      [id, adminCabangId]
+    );
+
+    // ✅ 3. LOG SETELAH DELETE (userId = null BIAR AMAN FK)
     await logUserActivity({
-      userId: id,
+      userId: null, // ⬅️ PENTING! jangan pakai id user yang sudah dihapus
       performedBy: req.user.id,
       cabangId: adminCabangId,
       action: "DELETE_USER",
-      description: `Admin menghapus user ${result.rows[0].username}`,
+      description: `menghapus user ${userData.rows[0].username}`,
       ipAddress: req.ip,
       userAgent: req.headers["user-agent"]
     });
