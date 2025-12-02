@@ -382,7 +382,7 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
 </Dialog>
 
 <Dialog open={logOpen} onOpenChange={setLogOpen}>
-  <DialogContent className="w-full max-w-4xl">
+  <DialogContent className="w-full max-w-6xl">
     <DialogHeader>
       <DialogTitle>Log Aktivitas User</DialogTitle>
     </DialogHeader>
@@ -392,11 +392,11 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
         <TableHeader className="bg-slate-50">
           <TableRow>
             <TableHead>Waktu</TableHead>
-            <TableHead>Tindakan</TableHead>
-            <TableHead>Deskripsi</TableHead>
-            <TableHead>Untuk User</TableHead>
-            <TableHead>Dilakukan oleh</TableHead>
-            <TableHead>IP</TableHead>
+          <TableHead>Aktivitas</TableHead>
+          <TableHead>Detail</TableHead>
+          <TableHead>User Terkait</TableHead>
+          <TableHead>Oleh Admin</TableHead>
+          <TableHead>Alamat IP</TableHead>
           </TableRow>
         </TableHeader>
 
@@ -435,8 +435,10 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
                 <TableCell className="max-w-[200px] truncate" title={log.description}>
                   {log.description}
                 </TableCell>
-                <TableCell>{log.target_username || "-"}</TableCell>
-                <TableCell>{log.performed_by}</TableCell>
+                <TableCell>{log.target_username || <span className="italic text-slate-400">User telah dihapus</span>}</TableCell>
+                <TableCell>
+                {log.performed_by || <span className="italic text-slate-400">User telah dihapus</span>}
+              </TableCell>
                 <TableCell className="text-xs text-slate-500">
                   {log.ip_address}
                 </TableCell>

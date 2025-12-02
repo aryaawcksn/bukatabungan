@@ -46,7 +46,7 @@ export const login = async (req, res) => {
       performedBy: user.id,
       cabangId: user.cabang_id,
       action: "LOGIN",
-      description: `User ${user.username} login`,
+      description: `${user.username} login`,
       ipAddress: req.ip,
       userAgent: req.headers["user-agent"]
     });
@@ -142,7 +142,7 @@ export const register = async (req, res) => {
       performedBy: req.user.id,
       cabangId: cabangIdFinal,
       action: "CREATE_USER",
-      description: `User ${newUser.username} didaftarkan`,
+      description: `${newUser.username} didaftarkan`,
       ipAddress: req.ip,
       userAgent: req.headers["user-agent"]
     });
@@ -241,7 +241,7 @@ export const updateUser = async (req, res) => {
       performedBy: req.user.id,
       cabangId: adminCabangId,
       action: "UPDATE_USER",
-      description: `Admin mengupdate user ${result.rows[0].username}`,
+      description: `mengupdate user ${result.rows[0].username}`,
       ipAddress: req.ip,
       userAgent: req.headers["user-agent"]
     });
