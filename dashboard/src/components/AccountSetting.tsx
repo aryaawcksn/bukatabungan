@@ -4,7 +4,7 @@ import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "./ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
-import { Trash2, Edit, Plus, UserCog } from "lucide-react";
+import { Trash2, Edit, Plus, UserCog, ScrollText } from "lucide-react";
 import { toast } from "sonner";
 import type { Cabang } from "./CabangSetting";
 
@@ -26,6 +26,12 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [logOpen, setLogOpen] = useState(false);
+  const [logs, setLogs] = useState<any[]>([]);
+  const [logLoading, setLogLoading] = useState(false);
+  const [page, setPage] = useState(1);
+
+  const LOG_LIMIT = 5;
 
   // Form State
   const [formData, setFormData] = useState({
@@ -45,6 +51,7 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
       const token = localStorage.getItem("token");
       const res = await fetch("https://bukatabungan-production.up.railway.app/api/auth/users", {
         headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include',
       });
       const data = await res.json();
       if (data.success) {
@@ -59,6 +66,36 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
       setLoading(false);
     }
   };
+
+  const fetchLogs = async (currentPage = 1) => {
+  setLogLoading(true);
+  try {
+    const token = localStorage.getItem("token");
+
+    const res = await fetch(
+      `https://bukatabungan-production.up.railway.app/api/user-logs?page=${currentPage}&limit=${LOG_LIMIT}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const data = await res.json();
+
+    if (data.success) {
+      setLogs(data.data);
+    } else {
+      toast.error(data.message || "Gagal mengambil log");
+    }
+  } catch (err) {
+    console.error(err);
+    toast.error("Gagal mengambil log user");
+  } finally {
+    setLogLoading(false);
+  }
+};
+
 
   const handleOpenDialog = (user?: User) => {
     const adminCabangId = localStorage.getItem("admin_cabang_id");
@@ -158,15 +195,37 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
-          <UserCog className="w-5 h-5 text-indigo-600" />
-          Daftar User
-        </h3>
-        <Button onClick={() => handleOpenDialog()} className="bg-indigo-600 hover:bg-indigo-700 text-white">
-          <Plus className="w-4 h-4 mr-2" />
-          Tambah User
-        </Button>
-      </div>
+  <h3 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
+    <UserCog className="w-5 h-5 text-indigo-600" />
+    Daftar User
+  </h3>
+
+  <div className="flex gap-2">
+    {/* ✅ BUTTON ICON LOG USER */}
+    <Button
+      variant="outline"
+      size="icon"
+      onClick={() => {
+        setLogOpen(true);
+        setPage(1);
+        fetchLogs(1);
+      }}
+      className="border-indigo-200 text-indigo-600 hover:bg-indigo-50"
+      title="Lihat Log Aktivitas"
+    >
+      <ScrollText className="w-4 h-4" />
+    </Button>
+    {/* ✅ BUTTON TAMBAH USER */}
+    <Button
+      onClick={() => handleOpenDialog()}
+      className="bg-indigo-600 hover:bg-indigo-700 text-white"
+    >
+      <Plus className="w-4 h-4 mr-2" />
+      Tambah User
+    </Button>
+  </div>
+</div>
+
 
       <div className="border rounded-lg overflow-hidden">
         <Table>
@@ -318,6 +377,101 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
         {isEditing ? "Simpan Perubahan" : "Buat User"}
       </Button>
     </DialogFooter>
+    <Dialog open={logOpen} onOpenChange={setLogOpen}>
+  <DialogContent className="w-full max-w-4xl">
+    <DialogHeader>
+      <DialogTitle>Log Aktivitas User</DialogTitle>
+    </DialogHeader>
+
+    <div className="border rounded-lg overflow-hidden">
+      <Table>
+        <TableHeader className="bg-slate-50">
+          <TableRow>
+            <TableHead>Waktu</TableHead>
+            <TableHead>Aksi</TableHead>
+            <TableHead>User</TableHead>
+            <TableHead>Oleh</TableHead>
+            <TableHead>IP</TableHead>
+          </TableRow>
+        </TableHeader>
+
+        <TableBody>
+          {logLoading ? (
+            <TableRow>
+              <TableCell colSpan={5} className="text-center py-6 text-slate-500">
+                Memuat log aktivitas...
+              </TableCell>
+            </TableRow>
+          ) : logs.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={5} className="text-center py-6 text-slate-500">
+                Belum ada log aktivitas.
+              </TableCell>
+            </TableRow>
+          ) : (
+            logs.map((log) => (
+              <TableRow key={log.id}>
+                <TableCell>
+                  {new Date(log.created_at).toLocaleString("id-ID")}
+                </TableCell>
+                <TableCell>
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                      log.action.includes("DELETE")
+                        ? "bg-red-100 text-red-700"
+                        : log.action.includes("UPDATE")
+                        ? "bg-yellow-100 text-yellow-700"
+                        : "bg-green-100 text-green-700"
+                    }`}
+                  >
+                    {log.action}
+                  </span>
+                </TableCell>
+                <TableCell>{log.target_username || "-"}</TableCell>
+                <TableCell>{log.performed_by}</TableCell>
+                <TableCell className="text-xs text-slate-500">
+                  {log.ip_address}
+                </TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
+    </div>
+
+    {/* ✅ PAGINATION */}
+    <div className="flex justify-between items-center pt-4">
+      <Button
+        variant="outline"
+        disabled={page === 1}
+        onClick={() => {
+          const newPage = page - 1;
+          setPage(newPage);
+          fetchLogs(newPage);
+        }}
+      >
+        Prev
+      </Button>
+
+      <span className="text-sm text-slate-600">
+        Halaman {page}
+      </span>
+
+      <Button
+        variant="outline"
+        disabled={logs.length < LOG_LIMIT}
+        onClick={() => {
+          const newPage = page + 1;
+          setPage(newPage);
+          fetchLogs(newPage);
+        }}
+      >
+        Next
+      </Button>
+    </div>
+  </DialogContent>
+</Dialog>
+
   </DialogContent>
 </Dialog>
     </div>

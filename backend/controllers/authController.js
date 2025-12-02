@@ -1,7 +1,11 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import pool from "../config/db.js";
+import { logUserActivity } from "../utils/userLogger.js";
 
+/* =========================
+   LOGIN
+========================= */
 export const login = async (req, res) => {
   const { username, password } = req.body;
 
@@ -36,6 +40,17 @@ export const login = async (req, res) => {
       });
     }
 
+    // ✅ LOG LOGIN
+    await logUserActivity({
+      userId: user.id,
+      performedBy: user.id,
+      cabangId: user.cabang_id,
+      action: "LOGIN",
+      description: `User ${user.username} login`,
+      ipAddress: req.ip,
+      userAgent: req.headers["user-agent"]
+    });
+
     const token = jwt.sign(
       {
         id: user.id,
@@ -69,19 +84,27 @@ export const login = async (req, res) => {
   }
 };
 
-
+/* =========================
+   REGISTER USER (ADMIN)
+========================= */
 export const register = async (req, res) => {
   try {
-    const { username, password, role, cabang_id } = req.body;
+    const { username, password, role } = req.body;
 
-    if (!username || !password || !role || !cabang_id) {
+    if (req.user.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Anda tidak memiliki akses untuk menambahkan user"
+      });
+    }
+
+    if (!username || !password || !role) {
       return res.status(400).json({
         success: false,
         message: "Semua field wajib diisi"
       });
     }
 
-    // Validasi role
     if (!["admin", "employement"].includes(role)) {
       return res.status(400).json({
         success: false,
@@ -103,16 +126,31 @@ export const register = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // ✅ FIX: cabang pasti ikut admin yang membuat
+    const cabangIdFinal = req.user.cabang_id;
+
     const result = await pool.query(`
       INSERT INTO users (username, password, role, cabang_id)
       VALUES ($1, $2, $3, $4)
       RETURNING id, username, role, cabang_id
-    `, [username, hashedPassword, role, cabang_id]);
+    `, [username, hashedPassword, role, cabangIdFinal]);
+
+    const newUser = result.rows[0];
+
+    await logUserActivity({
+      userId: newUser.id,
+      performedBy: req.user.id,
+      cabangId: cabangIdFinal,
+      action: "CREATE_USER",
+      description: `User ${newUser.username} didaftarkan`,
+      ipAddress: req.ip,
+      userAgent: req.headers["user-agent"]
+    });
 
     res.json({
       success: true,
       message: "User berhasil didaftarkan",
-      user: result.rows[0]
+      user: newUser
     });
 
   } catch (err) {
@@ -125,9 +163,13 @@ export const register = async (req, res) => {
 };
 
 
+/* =========================
+   GET USERS (PER CABANG)
+========================= */
 export const getUsers = async (req, res) => {
   try {
     const { cabang_id } = req.user;
+
     let query = `
       SELECT 
         u.id,
@@ -137,22 +179,17 @@ export const getUsers = async (req, res) => {
         c.nama_cabang
       FROM users u
       LEFT JOIN cabang c ON u.cabang_id = c.id
+      WHERE u.cabang_id = $1
+      ORDER BY u.id ASC
     `;
-    const params = [];
 
-    if (cabang_id) {
-      query += ` WHERE u.cabang_id = $1`;
-      params.push(cabang_id);
-    }
-
-    query += ` ORDER BY u.id ASC`;
-
-    const result = await pool.query(query, params);
+    const result = await pool.query(query, [cabang_id]);
 
     res.json({
       success: true,
       data: result.rows
     });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({
@@ -162,22 +199,20 @@ export const getUsers = async (req, res) => {
   }
 };
 
+/* =========================
+   UPDATE USER
+========================= */
 export const updateUser = async (req, res) => {
   const { id } = req.params;
-  const { username, password, role, cabang_id } = req.body;
+  const { username, password, role } = req.body;
   const adminCabangId = req.user.cabang_id;
 
   try {
-    // Cek apakah user ada dan valid untuk diedit oleh admin ini
-    let queryCheck = "SELECT * FROM users WHERE id = $1";
-    let paramsCheck = [id];
+    const userCheck = await pool.query(
+      "SELECT * FROM users WHERE id = $1 AND cabang_id = $2",
+      [id, adminCabangId]
+    );
 
-    if (adminCabangId) {
-      queryCheck += " AND cabang_id = $2";
-      paramsCheck.push(adminCabangId);
-    }
-
-    const userCheck = await pool.query(queryCheck, paramsCheck);
     if (userCheck.rows.length === 0) {
       return res.status(404).json({
         success: false,
@@ -185,23 +220,9 @@ export const updateUser = async (req, res) => {
       });
     }
 
-    // Cek username duplicate jika diganti
-    if (username && username !== userCheck.rows[0].username) {
-      const usernameCheck = await pool.query("SELECT id FROM users WHERE username = $1", [username]);
-      if (usernameCheck.rows.length > 0) {
-        return res.status(400).json({
-          success: false,
-          message: "Username sudah digunakan"
-        });
-      }
-    }
-
-    // Paksa cabang_id sesuai admin jika admin punya cabang
-    const targetCabangId = adminCabangId || cabang_id;
-
-    let query = "UPDATE users SET username = $1, role = $2, cabang_id = $3";
-    let params = [username, role, targetCabangId];
-    let paramIndex = 4;
+    let query = "UPDATE users SET username = $1, role = $2";
+    let params = [username, role];
+    let paramIndex = 3;
 
     if (password) {
       const hashedPassword = await bcrypt.hash(password, 10);
@@ -214,6 +235,17 @@ export const updateUser = async (req, res) => {
     params.push(id);
 
     const result = await pool.query(query, params);
+
+    // ✅ LOG UPDATE
+    await logUserActivity({
+      userId: id,
+      performedBy: req.user.id,
+      cabangId: adminCabangId,
+      action: "UPDATE_USER",
+      description: `Admin mengupdate user ID ${id}`,
+      ipAddress: req.ip,
+      userAgent: req.headers["user-agent"]
+    });
 
     res.json({
       success: true,
@@ -230,12 +262,14 @@ export const updateUser = async (req, res) => {
   }
 };
 
+/* =========================
+   DELETE USER
+========================= */
 export const deleteUser = async (req, res) => {
   const { id } = req.params;
   const adminCabangId = req.user.cabang_id;
 
   try {
-    // Prevent deleting self
     if (req.user.id === parseInt(id)) {
       return res.status(400).json({
         success: false,
@@ -243,17 +277,10 @@ export const deleteUser = async (req, res) => {
       });
     }
 
-    let query = "DELETE FROM users WHERE id = $1";
-    let params = [id];
-
-    if (adminCabangId) {
-      query += " AND cabang_id = $2";
-      params.push(adminCabangId);
-    }
-
-    query += " RETURNING id";
-
-    const result = await pool.query(query, params);
+    const result = await pool.query(
+      "DELETE FROM users WHERE id = $1 AND cabang_id = $2 RETURNING id",
+      [id, adminCabangId]
+    );
 
     if (result.rows.length === 0) {
       return res.status(404).json({
@@ -261,6 +288,17 @@ export const deleteUser = async (req, res) => {
         message: "User tidak ditemukan atau Anda tidak memiliki akses"
       });
     }
+
+    // ✅ LOG DELETE
+    await logUserActivity({
+      userId: id,
+      performedBy: req.user.id,
+      cabangId: adminCabangId,
+      action: "DELETE_USER",
+      description: `Admin menghapus user ID ${id}`,
+      ipAddress: req.ip,
+      userAgent: req.headers["user-agent"]
+    });
 
     res.json({
       success: true,
@@ -275,4 +313,3 @@ export const deleteUser = async (req, res) => {
     });
   }
 };
-

@@ -5,7 +5,7 @@ import AccountSetting from './components/AccountSetting';
 
 import { FormDetailDialog } from './components/form-detail-dialog';
 import { ApprovalDialog } from './components/approval-dialog';
-import { Search, LayoutDashboard, ClipboardCheck, FileBarChart, LogOut, FileCog, X, Clock3, Check, TrendingDown, TrendingUp } from 'lucide-react';
+import { Search, LayoutDashboard, ClipboardCheck, FileBarChart, LogOut, FileCog, X, Clock3, Check, TrendingDown, TrendingUp, LayoutGrid, List, ArrowUp } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './components/ui/select';
 import { toast } from 'sonner';
 import { Toaster } from './components/ui/sonner';
@@ -211,7 +211,10 @@ export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [activeTab, setActiveTab] = useState('dashboard');
-  
+  const [viewMode, setViewMode] = useState<"vertical" | "horizontal">("vertical");
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+
   // State untuk CabangSetting
   const [cabangList, setCabangList] = useState<Cabang[]>([]);
   const [isCabangLoading, setIsCabangLoading] = useState(false);
@@ -562,6 +565,24 @@ export default function DashboardPage() {
   return "Selamat Malam";
 };
 
+useEffect(() => {
+  const handleScroll = () => {
+    setShowScrollTop(window.scrollY > 300);
+  };
+
+  window.addEventListener("scroll", handleScroll);
+  return () => window.removeEventListener("scroll", handleScroll);
+}, []);
+
+const scrollToTop = () => {
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+};
+
+
+
 
   return (
     <div className="min-h-screen bg-slate-50/50 font-sans text-slate-900 selection:bg-blue-100 selection:text-blue-900">
@@ -728,6 +749,34 @@ export default function DashboardPage() {
               
               {/* Filter Bar */}
               <div className="flex items-center gap-3 bg-white p-1.5 rounded-2xl border border-slate-200">
+              <div className="flex bg-slate-100 rounded-xl overflow-hidden border border-slate-200">
+  {/* LIST / VERTICAL */}
+  <button
+    onClick={() => setViewMode("vertical")}
+    className={`p-2 transition-all flex items-center justify-center ${
+      viewMode === "vertical"
+        ? "bg-blue-600 text-white shadow"
+        : "text-slate-600 hover:bg-slate-200"
+    }`}
+    title="Tampilan List"
+  >
+    <List className="w-4 h-4" />
+  </button>
+
+  {/* GRID / HORIZONTAL */}
+  <button
+    onClick={() => setViewMode("horizontal")}
+    className={`p-2 transition-all flex items-center justify-center ${
+      viewMode === "horizontal"
+        ? "bg-blue-600 text-white shadow"
+        : "text-slate-600 hover:bg-slate-200"
+    }`}
+    title="Tampilan Grid"
+  >
+    <LayoutGrid className="w-4 h-4" />
+  </button>
+</div>
+
                 <div className="relative group">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 group-focus-within:text-blue-500 transition-colors" />
 
@@ -772,15 +821,23 @@ export default function DashboardPage() {
                 </p>
               </div>
             ) : (
-              <div className="space-y-4">
-                {filteredSubmissions.map(sub => (
-                  <FormSubmissionCard
-                    key={sub.id}
-                    submission={sub}
-                    onViewDetails={() => setSelectedSubmission(sub)}
-                    onApprove={() => handleApprove(sub.id)}
-                    onReject={() => handleReject(sub.id)}
-                  />
+              <div
+                  className={
+                    viewMode === "vertical"
+                      ? "flex flex-col gap-4"
+                      : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+                  }
+                >
+
+                  {filteredSubmissions.map(sub => (
+                                  <FormSubmissionCard
+                  key={sub.id}
+                  submission={sub}
+                  viewMode={viewMode}
+                  onViewDetails={() => setSelectedSubmission(sub)}
+                  onApprove={() => handleApprove(sub.id)}
+                  onReject={() => handleReject(sub.id)}
+                />
                 ))}
               </div>
             )}
@@ -894,12 +951,6 @@ export default function DashboardPage() {
       </div>
     </div>
 
-    {/* Menu Lainnya */}
-    <div>
-      <h4 className="text-xl font-semibold text-slate-900 mb-4">
-        Menu Lainnya
-      </h4>
-    </div>
 
   </div>
 )}
@@ -972,6 +1023,16 @@ export default function DashboardPage() {
       )}
 
       <Toaster />
+      {showScrollTop && (
+  <button
+    onClick={scrollToTop}
+    className="fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shadow-lg transition-all animate-in fade-in zoom-in"
+    aria-label="Scroll to top"
+  >
+    <ArrowUp className="w-5 h-5" />
+  </button>
+)}
+
     </div>
   );
 }

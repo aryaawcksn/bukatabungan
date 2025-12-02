@@ -6,17 +6,21 @@ import { User, Mail, Phone, MapPin, Briefcase, Calendar, CheckCircle, XCircle, E
 
 interface FormSubmissionCardProps {
   submission: FormSubmission;
+  viewMode: "vertical" | "horizontal";
   onViewDetails: () => void;
   onApprove: () => void;
   onReject: () => void;
 }
 
+
 export function FormSubmissionCard({
   submission,
+  viewMode,
   onViewDetails,
   onApprove,
   onReject
 }: FormSubmissionCardProps) {
+
   const statusConfig = {
     pending: {
       label: 'Menunggu Review',
@@ -39,9 +43,23 @@ export function FormSubmissionCard({
   const status = statusConfig[statusKey] || statusConfig.pending;
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card
+  className={`hover:shadow-md transition-all duration-300 ${
+    viewMode === "horizontal"
+      ? "h-full"
+      : ""
+  }`}
+>
+
       <CardContent className="p-6">
-        <div className="flex items-start justify-between mb-4">
+        <div
+  className={`mb-4 ${
+    viewMode === "horizontal"
+      ? "flex flex-col gap-3"
+      : "flex items-start justify-between"
+  }`}
+>
+
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
               <User className="w-6 h-6 text-blue-600" />
@@ -70,7 +88,14 @@ export function FormSubmissionCard({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 p-4 bg-gray-50 rounded-lg">
+        <div
+  className={`gap-4 mb-4 p-4 bg-gray-50 rounded-lg ${
+    viewMode === "horizontal"
+      ? "grid grid-cols-1"
+      : "grid grid-cols-1 md:grid-cols-3"
+  }`}
+>
+
           <div className="flex items-start gap-2">
             <Mail className="w-4 h-4 text-gray-400 mt-0.5" />
             <div>
@@ -99,7 +124,14 @@ export function FormSubmissionCard({
           <span>{submission.personalData.address.city}, {submission.personalData.address.province}</span>
         </div>
 
-        <div className="flex items-center justify-end gap-2 pt-4 border-t border-gray-200">
+       <div
+  className={`pt-4 border-t border-gray-200 gap-2 ${
+    viewMode === "horizontal"
+      ? "flex flex-col"
+      : "flex items-center justify-end"
+  }`}
+>
+
           <Button variant="outline" onClick={onViewDetails}>
             <Eye className="w-4 h-4 mr-2" />
             Lihat Detail

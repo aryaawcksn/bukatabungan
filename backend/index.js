@@ -11,6 +11,7 @@ import testRoutes from "./routes/testRoutes.js";
 import checkNikRoute from "./routes/check-nik.js";
 import otpRoutes from "./routes/otpRoutes.js";
 import cabangRoutes from "./routes/cabangRoutes.js";
+import userLogRoutes from "./routes/userLogRoutes.js";
 
 dotenv.config();
 
@@ -50,6 +51,7 @@ app.use("/api/pengajuan", pengajuanRoutes);
 app.use("/api", testRoutes);
 app.use("/otp", otpRoutes);
 app.use("/api/cabang", cabangRoutes);
+app.use("/api", userLogRoutes);
 
 
 // ===== 404 =====
