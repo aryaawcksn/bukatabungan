@@ -82,7 +82,9 @@ export const SubmissionPdf = ({ submission }: { submission: FormSubmission }) =>
       {/* DATA NASABAH */}
       <View style={styles.sectionBox}>
         <Text style={styles.sectionTitle}>DATA NASABAH</Text>
-        <InfoRow label="Jenis Rekening" value={submission.savingsType} />
+          {submission.cardType === "Tabungan Mutiara" && (
+            <InfoRow label="Jenis Rekening" value={submission.savingsType} />
+          )}
         <InfoRow label="Jenis Kartu" value={submission.cardType} />
         <InfoRow label="Nama Lengkap" value={submission.personalData.fullName} />
         <InfoRow label="NIK" value={submission.personalData.nik} />
@@ -98,13 +100,30 @@ export const SubmissionPdf = ({ submission }: { submission: FormSubmission }) =>
 
       {/* DATA PEKERJAAN / SEKOLAH */}
       <View style={styles.sectionBox}>
-        <Text style={styles.sectionTitle}>
-          {submission.cardType === 'Tabungan Simpel' ? 'DATA SEKOLAH' : 'DATA PEKERJAAN'}
-        </Text>
-        <InfoRow label={submission.cardType === 'Tabungan Simpel' ? 'Status' : 'Pekerjaan'} value={submission.jobInfo.occupation} />
-        <InfoRow label={submission.cardType === 'Tabungan Simpel' ? 'Nama Sekolah' : 'Nama Instansi'} value={submission.jobInfo.workplace} />
-        <InfoRow label={submission.cardType === 'Tabungan Simpel' ? 'Penghasilan Ortu' : 'Penghasilan'} value={submission.jobInfo.salaryRange} />
-        <InfoRow label="Sumber Dana" value={submission.jobInfo.incomeSource} />
+       <Text style={styles.sectionTitle}>
+  {submission.cardType === 'Tabungan Simpel' ? 'DATA SEKOLAH' : 'DATA PEKERJAAN'}
+</Text>
+<InfoRow label="Status" value={submission.jobInfo.occupation} />
+
+{submission.jobInfo.occupation === "Tidak-bekerja" && (
+  <>
+    <InfoRow 
+      label={submission.cardType === 'Tabungan Simpel' ? 'Status' : 'Pekerjaan'} 
+      value={submission.jobInfo.occupation} 
+    />
+    <InfoRow 
+      label={submission.cardType === 'Tabungan Simpel' ? 'Nama Sekolah' : 'Nama Instansi'} 
+      value={submission.jobInfo.workplace} 
+    />
+    <InfoRow 
+      label={submission.cardType === 'Tabungan Simpel' ? 'Penghasilan Ortu' : 'Penghasilan'} 
+      value={submission.jobInfo.salaryRange} 
+    />
+  </>
+)}
+
+<InfoRow label="Sumber Dana" value={submission.jobInfo.incomeSource} />
+
         <InfoRow label="Tujuan Pembukaan Rekening" value={submission.jobInfo.accountPurpose} />
       </View>
 

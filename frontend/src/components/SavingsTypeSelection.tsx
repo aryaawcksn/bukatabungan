@@ -22,7 +22,7 @@ export default function SavingsTypeSelection({
       features: ['Bunga kompetitif', 'Berhadiah', 'Tanpa biaya admin'],
     },
     {
-      id: 'bisnis',
+      id: 'regular',
       title: 'Tabungan Bank Sleman',
       description: 'Tabungan masyarakat Sleman',
       cardBg: 'from-indigo-500 to-purple-700',

@@ -4,8 +4,8 @@ import { Card } from './ui/card';
 import { ArrowLeft, CheckCircle, Sparkles, Phone, Mail, MapPin, ChevronRight, User, Building2, FileText, Check, CircleCheckBig } from 'lucide-react';
 import OtpModal from './OtpModal';
 import FormSimpel from './account-forms/FormSimpel';
-import FormBusiness from './account-forms/FormBusiness';
-import FormIndividu from './account-forms/FormIndividu';
+import FormBusiness from './account-forms/FormReguler';
+import FormIndividu from './account-forms/FormMutiara';
 import type { AccountFormData } from './account-forms/types';
 import { useNavigate } from 'react-router-dom';
 
@@ -181,7 +181,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     switch (savingsType) {
       case 'mutiara':
         return 'Tabungan Mutiara';
-      case 'bisnis':
+      case 'regular':
         return 'Tabungan Bank Sleman';
       case 'simpel':
         return 'Tabungan Simpel';
@@ -568,7 +568,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
 
     if (savingsType === 'simpel') {
       return <FormSimpel {...commonProps} />;
-    } else if (savingsType === 'bisnis') {
+    } else if (savingsType === 'regular') {
       return <FormBusiness {...commonProps} />;
     } else {
       // Default for individu, mutiara, promosi

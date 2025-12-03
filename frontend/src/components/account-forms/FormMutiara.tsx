@@ -508,6 +508,24 @@ export default function FormIndividu({
             </div>
           </div>
 
+           <div className="grid md:grid-cols-2 gap-5">
+                                      <div>
+                                        <Label className="text-gray-700">Jenis Rekening</Label>
+                                        <Select
+                                          value={formData.jenis_rekening}
+                                          onValueChange={(value) => setFormData({ ...formData, jenis_rekening: value})}
+                                        >
+                                          <SelectTrigger className="mt-2 h-12 rounded-md">
+                                            <SelectValue placeholder="Pilih jenis Rekening" />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            <SelectItem value="Platinum">Platinum</SelectItem>
+                                            <SelectItem value="Silver">Silver</SelectItem>
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
+                                    </div>
+
           {/* Terms & Conditions */}
           <div className="flex items-start gap-4 bg-gradient-to-br from-emerald-50 to-green-50 p-6 rounded-2xl shadow-inner border border-green-100">
             <Checkbox

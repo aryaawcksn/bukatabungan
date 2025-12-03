@@ -1,5 +1,5 @@
 // FormDetailDialog component – displays submission details and allows PDF export
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { FormSubmission } from '../DashboardPage';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from './ui/dialog';
@@ -163,6 +163,10 @@ export function FormDetailDialog({ submission, open, onClose, onApprove, onRejec
     if (!isOpen && previewImage) return; // keep open while preview shown
     if (!isOpen) onClose();
   };
+  
+useEffect(() => {
+  setPdfBlob(null); // reset PDF setiap ganti data
+}, [submission]);
 
   return (
     <Dialog open={open} onOpenChange={handleDialogOpenChange}>
@@ -182,10 +186,21 @@ export function FormDetailDialog({ submission, open, onClose, onApprove, onRejec
                       <span className="font-mono text-emerald-700 ml-2">{submission.referenceCode}</span>
                     </div>
                     {submission.cardType && (
-                      <div className="flex items-center gap-2 text-blue-600 mt-1">
-                        <CreditCard className="w-4 h-4" />
-                        <span className="font-medium">Jenis Kartu: {submission.cardType}</span>
-                      </div>
+                      <div className="flex flex-col gap-1 text-blue-600 mt-1">
+                    <div className="flex items-center gap-2">
+                      <CreditCard className="w-4 h-4" />
+                      <span className="font-medium">
+                        Jenis Kartu: {submission.cardType}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Wallet className="w-4 h-4" />
+                      <span className="font-medium">
+                        Jenis Rekening: {submission.savingsType || "None"}
+                      </span>
+                    </div>
+                  </div>
                     )}
                   </div>
                 </DialogDescription>

@@ -28,7 +28,7 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
       cardBg: 'bg-gradient-to-br from-emerald-500 to-emerald-700'
     },
     {
-      id: 'bisnis',
+      id: 'regular',
       title: 'Tabungan Bank Sleman',
       description: 'Tabungan masyarakat Sleman',
       color: 'from-indigo-600 to-purple-700',

@@ -382,7 +382,8 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
 </Dialog>
 
 <Dialog open={logOpen} onOpenChange={setLogOpen}>
-  <DialogContent className="w-full max-w-6xl">
+  <DialogContent className="w-full max-w-6xl" aria-describedby={undefined}>
+
     <DialogHeader>
       <DialogTitle>Log Aktivitas User</DialogTitle>
     </DialogHeader>

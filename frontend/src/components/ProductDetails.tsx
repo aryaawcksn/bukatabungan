@@ -81,7 +81,7 @@ function ProductDetails({
             }
           ]
         };
-      case "bisnis":
+      case "regular":
         return {
           title: "Tabungan Bank Sleman",
           subtitle: "Tabungan masyarakat Sleman",

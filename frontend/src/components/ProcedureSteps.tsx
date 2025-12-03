@@ -73,7 +73,7 @@ export default function ProcedureSteps({
         details: ["Setoran minimal Rp100.000.", "Transfer via VA atau e-wallet."],
       },
     ],
-    bisnis: [
+    regular: [
       {
         title: "Persiapan Dokumen",
         icon: FileText,
@@ -146,8 +146,8 @@ export default function ProcedureSteps({
     switch (savingsType) {
       case "mutiara":
         return "Tabungan Mutiara";
-      case "bisnis":
-        return "Tabungan Bisnis";
+      case "regular":
+        return "Tabungan Regular";
       case "simpel":
         return "Tabungan Simpel";
       default:
