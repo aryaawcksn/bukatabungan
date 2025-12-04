@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { CheckCircle, ArrowRight } from "lucide-react";
+
+
 
 interface HomePageProps {
   onOpenSavings: (type: string) => void;
@@ -18,63 +19,29 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const products = [
-    {
-      id: 'mutiara',
-      title: 'Tabungan Mutiara',
-      description: 'Tingkatkan saldo, menangkan hadiahnya',
-      color: 'from-emerald-600 to-emerald-800',
-      features: ['Bunga kompetitif', 'Berhadiah', 'Tanpa biaya admin'],
-      cardBg: 'bg-gradient-to-br from-emerald-500 to-emerald-700'
-    },
-    {
-      id: 'regular',
-      title: 'Tabungan Bank Sleman',
-      description: 'Tabungan masyarakat Sleman',
-      color: 'from-indigo-600 to-purple-700',
-      features: ['Gratis biaya admin', 'Bunga hingga 3.5%', 'Kartu debit gratis'],
-      cardBg: 'bg-gradient-to-br from-indigo-600 to-purple-700'
-    },
-    {
-      id: 'simpel',
-      title: 'Tabungan Simpel',
-      description: 'Nabung sejak dini',
-      color: 'from-pink-500 to-rose-600',
-      features: ['Untuk pelajar', 'Setoran ringan', 'Edukasi finansial'],
-      cardBg: 'bg-gradient-to-br from-pink-500 to-rose-600'
-    }
-  ];
-
   return (
-    <div className="min-h-screen flex flex-col font-sans text-slate-800">
-      
-      {/* --- NAVBAR (From HeroLanding) --- */}
+    <div className="min-h-screen flex flex-col font-sans text-slate-800 bg-slate-50">
+      {/* Inject Custom CSS */}
+
+      {/* --- NAVBAR --- */}
       <nav 
-        className={`fixed top-0 w-full z-50 transition-all duration-500 ease-in-out ${
+        className={`fixed top-0 w-full z-50 transition-all duration-300 border-b ${
           isScrolled 
-            ? "bg-white/90 backdrop-blur-md py-4 shadow-sm" 
-            : "bg-transparent py-6"
+            ? "bg-white/95 backdrop-blur-sm py-3 shadow-md border-slate-200" 
+            : "bg-transparent py-5 border-transparent"
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex items-center justify-between">
             {/* Logo Area */}
-            <div 
-              className={`flex-shrink-0 flex items-center gap-2 transition-all duration-500 ${
-                isScrolled 
-                  ? "scale-95" 
-                  : "scale-100"
-              }`}
-            >
+            <div className="flex-shrink-0 flex items-center gap-3">
               <img
-              src="/banksleman.png"
-              alt="Bank Sleman"
-              className={`h-8 md:h-10 w-auto object-contain -mt-2 transition-all duration-500 ${
-                isScrolled
-                  ? "brightness-90 contrast-100"
-                  : "brightness-200 contrast-200"
-              }`}
-            />
+                src="/banksleman.png"
+                alt="Bank Sleman"
+                className={`h-10 w-auto object-contain transition-all duration-300 ${
+                  isScrolled ? "" : "brightness-0 invert" 
+                }`}
+              />
             </div>
 
             {/* Right Menu (Desktop) */}
@@ -82,11 +49,11 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
               {["Produk", "Layanan", "Promo"].map((item) => (
                 <a 
                   key={item}
-                  href={item === "Produk" ? "#produk" : "#"} 
-                  className={`text-sm font-medium transition-colors duration-300 ${
+                  href="#" 
+                  className={`text-sm font-semibold tracking-wide transition-colors duration-300 ${
                     isScrolled 
-                      ? "text-slate-600 hover:text-green-600" 
-                      : "text-white/90 hover:text-white"
+                      ? "text-slate-700 hover:text-emerald-700" 
+                      : "text-slate-100 hover:text-white"
                   }`}
                 >
                   {item}
@@ -96,189 +63,165 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
           </div>
         </div>
       </nav>
-      {/* --- HERO SECTION (From HeroLanding) --- */}
-      <main className="relative bg-gradient-to-br from-[#0EA5E9] via-[#34d399] to-[#064e3b] overflow-hidden">
 
-        {/* Background Pattern Elements */}
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
-            <div className="absolute -top-[20%] -right-[10%] w-[600px] h-[600px] rounded-full bg-green-400/20 blur-[100px]" />
-            <div className="absolute top-[40%] -left-[10%] w-[400px] h-[400px] rounded-full bg-yellow-400/10 blur-[80px]" />
+      {/* --- HERO SECTION --- */}
+      <main className="relative bg-slate-900 overflow-hidden">
+        
+        {/* Background Gradient & Pattern (Formal Style) */}
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-[#0f392b] to-emerald-900 z-0"></div>
+        
+        {/* Subtle Grid Pattern for Texture */}
+        <div className="absolute inset-0 z-0 opacity-10" 
+             style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 pt-32 pb-20 lg:pt-40 lg:pb-32">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+        <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 pt-32 pb-24 lg:pt-48 lg:pb-40">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             
             {/* Text Content */}
             <div className="max-w-2xl text-center lg:text-left mx-auto lg:mx-0 order-2 lg:order-1">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white mb-6 leading-[1.15]">
-                Selamat Datang <br/>
-                <span className="text-green-200"></span>
+            
+
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white mb-6 leading-tight">
+                Tabungan <br/>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-200 to-teal-100">
+                  Aman & Terpercaya
+                </span>
               </h1>
-              
-              <p className="text-lg text-green-50 mb-8 leading-relaxed max-w-lg mx-auto lg:mx-0">
-                Di layanan pembukaan tabungan online Bank Sleman.
+
+              <p className="text-lg text-slate-300 mb-10 leading-relaxed max-w-lg mx-auto lg:mx-0">
+                Buka rekening Bank Sleman secara online dengan proses verifikasi yang cepat. Solusi keuangan resmi untuk masyarakat Sleman dan sekitarnya.
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
                 <button
                   onClick={() => navigate('/selection')}
-                  className="w-full sm:w-auto px-8 py-4 bg-yellow-500 hover:bg-yellow-400 text-green-900 font-bold rounded-xl shadow-lg shadow-yellow-500/20 transform transition hover:-translate-y-1"
+                  className="w-full sm:w-auto px-18 py-3.5 bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold text-sm uppercase tracking-wide rounded-lg shadow-lg shadow-amber-500/20 transition-transform transform hover:-translate-y-0.5"
                 >
-                  Buka Tabungan
+                  Buka Rekening
                 </button>
-                <a
-                  href="#info"
-                  className="w-full sm:w-auto px-8 py-4 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-xl backdrop-blur-sm border border-white/10 transition flex items-center justify-center gap-2"
-                >
-                   Pelajari Syarat
-                </a>
+                
               </div>
 
               {/* Trust Indicators */}
-              <div className="mt-10 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-6 text-sm text-green-100/80">
-                <div className="flex items-center gap-2">
-                   <CheckShieldIcon className="w-5 h-5 text-green-300" />
-                   <span>Terdaftar & Diawasi <strong>OJK</strong></span>
+              <div className="mt-12 pt-8 border-t border-slate-700/50 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-8 text-sm text-slate-400">
+                <div className="flex items-center gap-3">
+                   <div className="p-1.5 bg-slate-800 rounded border border-slate-700">
+                      <CheckShieldIcon className="w-5 h-5 text-emerald-400" />
+                   </div>
+                   <div className="flex flex-col text-left">
+                      <span className="text-xs uppercase tracking-wider opacity-70">Diawasi Oleh</span>
+                      <strong className="text-white">Otoritas Jasa Keuangan</strong>
+                   </div>
                 </div>
-                <div className="hidden sm:block text-white/20">|</div>
-                <div className="flex items-center gap-2">
-                   <UmbrellaIcon className="w-5 h-5 text-green-300" />
-                   <span>Simpanan Dijamin <strong>LPS</strong></span>
+                <div className="hidden sm:block w-px h-8 bg-slate-700"></div>
+                <div className="flex items-center gap-3">
+                   <div className="p-1.5 bg-slate-800 rounded border border-slate-700">
+                      <UmbrellaIcon className="w-5 h-5 text-emerald-400" />
+                   </div>
+                   <div className="flex flex-col text-left">
+                      <span className="text-xs uppercase tracking-wider opacity-70">Dijamin Oleh</span>
+                      <strong className="text-white">Lembaga Penjamin Simpanan</strong>
+                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Illustration / Image Area */}
-            <div className="relative lg:h-auto flex justify-center lg:justify-end order-1 lg:order-2">
-                  <div className="relative w-full max-w-md lg:max-w-lg">
-
-                    {/* GLASS – gerak diagonal + rotate */}
-                    <div 
-                  className="absolute inset-4 bg-white/5 border border-white/10 
-                            rounded-[2rem] backdrop-blur-sm 
-                            animate-glass"
-                />
-                    {/* IMAGE – gerak naik turun saja */}
-                    <img
-                  src="/3dimage.png"
-                  className="relative z-10 w-full h-auto drop-shadow-2xl 
-                            animate-image transition hover:scale-[1.03] duration-500"
-                />
-                {/* Floating Card UI Element */}
-                {/* <div className="absolute -bottom-6 -left-6 z-20 bg-white p-4 rounded-xl shadow-xl flex items-center gap-4 max-w-[200px] animate">
-                  <div className="bg-green-100 p-2 rounded-lg">
-                     <ChartIcon className="w-6 h-6 text-green-700" />
+            {/* Illustration Area - UPDATED */}
+            {/* Added negative margin top (-mt-...) to move the whole image area up */}
+            <div className="relative flex justify-center lg:justify-end order-1 lg:order-2 -mt-12 lg:-mt-24">
+                <div className="relative w-full max-w-md lg:max-w-lg">
+                  
+                  {/* Formal decorative backdrop (The "Glass" glow behind) */}
+                  {/* Added animate-float-slower class */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-emerald-500/10 rounded-full blur-3xl -z-10 animate-float-slower"></div>
+                  
+                  {/* Main Image Container (The actual glass card frame) */}
+                  {/* Added animate-float-slow class and removed group-hover effects */}
+                  <div className="relative z-10 p-2 rounded-2xl backdrop-blur-sm shadow-2xl animate-float-slow">
+                     <img
+                        src="/3dimage.png"
+                        alt="Mobile Banking Illustration"
+                        className="w-full h-auto rounded-xl "
+                      />
+                      
+                      {/* Floating Badge REMOVED from here */}
                   </div>
-                  <div>
-                    <p className="text-xs text-slate-500">Bunga Kompetitif</p>
-                    <p className="text-sm font-bold text-slate-900">Hingga 4.5%</p>
-                  </div>
-                </div> */}
-              </div>
+                </div>
             </div>
           </div>
         </div>
-        
-        {/* Curved Divider */}
-        <div className="absolute -bottom-[1px] w-full overflow-hidden leading-[0]">
-          <svg
-            className="block w-full h-[60px] lg:h-[100px]"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 1200 120"
-            preserveAspectRatio="none"
-          >
-            <path
-              d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.26-17.34-168.06-16.33-250.45.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.8C1132.19,118.92,1055.71,111.31,985.66,92.83Z"
-              className="fill-slate-900"
-            />
-          </svg>
-        </div>
       </main>
 
-      {/* --- CORPORATE FOOTER (From HeroLanding) --- */}
-      <footer className="bg-slate-900 text-slate-300 pt-16 pb-8">
+      {/* --- CORPORATE FOOTER --- */}
+      <footer className="bg-slate-950 text-slate-400 pt-20 pb-10 border-t border-slate-900">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-12 gap-y-10 mb-16">
             
-            {/* Column 1: Identity */}
-            <div className="space-y-4">
-              <h3 className="text-white text-lg font-bold">Bank Sleman</h3>
-              <p className="text-sm leading-relaxed text-slate-400">
-                Mitra keuangan terpercaya untuk membangun masa depan Anda. Melayani dengan hati, berinovasi dengan teknologi.
+            {/* Identity */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-2">
+                 <h3 className="text-white text-xl font-bold tracking-tight">Bank Sleman</h3>
+              </div>
+              <p className="text-sm leading-7 text-slate-400">
+                PT BPR Bank Sleman (Perseroda) hadir sebagai mitra keuangan terpercaya untuk membangun ekonomi daerah yang berkelanjutan.
               </p>
-              <div className="flex gap-4 mt-4">
-                {/* Social Placeholders */}
+              <div className="flex gap-3">
                 <SocialIconWrapper><FacebookIcon /></SocialIconWrapper>
                 <SocialIconWrapper><InstagramIcon /></SocialIconWrapper>
                 <SocialIconWrapper><YoutubeIcon /></SocialIconWrapper>
               </div>
             </div>
 
-            {/* Column 2: Quick Links */}
+            {/* Links Columns */}
             <div>
-              <h4 className="text-white font-semibold mb-4">Perusahaan</h4>
+              <h4 className="text-white font-bold text-sm uppercase tracking-wider mb-6">Perusahaan</h4>
               <ul className="space-y-3 text-sm">
-                <li><a href="#" className="hover:text-green-400 transition">Tentang Kami</a></li>
-                <li><a href="#" className="hover:text-green-400 transition">Karir</a></li>
-                <li><a href="#" className="hover:text-green-400 transition">Berita & Artikel</a></li>
-                <li><a href="#" className="hover:text-green-400 transition">Laporan Tahunan</a></li>
-                <li><a href="#" className="hover:text-green-400 transition">Jaringan Kantor</a></li>
+                {['Profil Korporasi', 'Tata Kelola', 'Laporan Tahunan', 'Karir', 'Berita Terkini'].map(item => (
+                    <li key={item}><a href="#" className="hover:text-emerald-400 transition-colors">{item}</a></li>
+                ))}
               </ul>
             </div>
 
-            {/* Column 3: Products */}
             <div>
-              <h4 className="text-white font-semibold mb-4">Produk & Layanan</h4>
+              <h4 className="text-white font-bold text-sm uppercase tracking-wider mb-6">Produk</h4>
               <ul className="space-y-3 text-sm">
-                <li><a href="#" className="hover:text-green-400 transition">Tabungan</a></li>
-                <li><a href="#" className="hover:text-green-400 transition">Deposito</a></li>
-                <li><a href="#" className="hover:text-green-400 transition">Kredit Usaha</a></li>
-                <li><a href="#" className="hover:text-green-400 transition">Internet Banking</a></li>
-                <li><a href="#" className="hover:text-green-400 transition">Simulasi Kredit</a></li>
+                {['Tabungan Mutiara', 'Deposito Berjangka', 'Kredit Usaha Rakyat', 'Kredit Pegawai', 'Simulasi Kredit'].map(item => (
+                    <li key={item}><a href="#" className="hover:text-emerald-400 transition-colors">{item}</a></li>
+                ))}
               </ul>
             </div>
 
-            {/* Column 4: Contact */}
+            {/* Contact */}
             <div>
-              <h4 className="text-white font-semibold mb-4">Hubungi Kami</h4>
+              <h4 className="text-white font-bold text-sm uppercase tracking-wider mb-6">Kantor Pusat</h4>
               <ul className="space-y-4 text-sm">
                 <li className="flex items-start gap-3">
-                  <MapPinIcon className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
-                  <span>Jl. Magelang KM 10, Tridadi, Sleman, Yogyakarta 55511</span>
+                  <MapPinIcon className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+                  <span className="leading-relaxed">Jl. Magelang KM 10, Tridadi, Sleman, Daerah Istimewa Yogyakarta 55511</span>
                 </li>
                 <li className="flex items-center gap-3">
-                  <PhoneIcon className="w-5 h-5 text-green-500 shrink-0" />
-                  <span>(0274) 868xxx / Call Center 1500xxx</span>
+                  <PhoneIcon className="w-5 h-5 text-emerald-500 shrink-0" />
+                  <span>(0274) 868xxx</span>
                 </li>
                 <li className="flex items-center gap-3">
-                  <MailIcon className="w-5 h-5 text-green-500 shrink-0" />
+                  <MailIcon className="w-5 h-5 text-emerald-500 shrink-0" />
                   <span>cs@banksleman.co.id</span>
                 </li>
               </ul>
             </div>
           </div>
 
-          <div className="border-t border-slate-800 pt-8 mt-8">
-            <div className="grid md:grid-cols-2 gap-6 items-center">
-              <p className="text-xs text-slate-500 text-center md:text-left">
-                &copy; {new Date().getFullYear()} PT BPR Bank Sleman (Perseroda). All rights reserved.
-              </p>
-              
-              <div className="flex flex-wrap justify-center md:justify-end gap-6">
-                 {/* OJK & LPS Disclaimers */}
-                 <div className="flex items-center gap-2 opacity-70 hover:opacity-100 transition">
-                    <div className="bg-white p-1 rounded w-12 h-auto flex items-center justify-center">
-                        <span className="text-[8px] font-bold text-black text-center leading-tight">OJK</span>
-                    </div>
-                    <span className="text-[10px] uppercase font-semibold tracking-wider">Terdaftar & Diawasi</span>
+          <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
+            <p className="text-xs text-slate-500 text-center md:text-left">
+              &copy; {new Date().getFullYear()} PT BPR Bank Sleman (Perseroda). Seluruh Hak Cipta Dilindungi.
+            </p>
+            
+            <div className="flex items-center gap-6">
+                 <div className="flex items-center gap-3">
+                    <div className="bg-white px-2 py-1 rounded text-[10px] font-bold text-black border border-slate-600">OJK</div>
+                    <div className="bg-white px-2 py-1 rounded text-[10px] font-bold text-purple-900 border border-slate-600">LPS</div>
                  </div>
-                 <div className="flex items-center gap-2 opacity-70 hover:opacity-100 transition">
-                    <div className="bg-white p-1 rounded w-12 h-auto flex items-center justify-center">
-                        <span className="text-[8px] font-bold text-purple-900 text-center leading-tight">LPS</span>
-                    </div>
-                    <span className="text-[10px] uppercase font-semibold tracking-wider">Peserta Penjaminan</span>
-                 </div>
-              </div>
             </div>
           </div>
         </div>
@@ -287,7 +230,7 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
   );
 }
 
-// --- Icons Components (SVG) ---
+// --- Icons (Tetap sama) ---
 const CheckShieldIcon = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" /><path d="m9 12 2 2 4-4" />
@@ -297,12 +240,6 @@ const CheckShieldIcon = ({ className }: { className?: string }) => (
 const UmbrellaIcon = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <path d="M12 2v20" /><path d="m17 5 3 2.8c.8.8 1.2 2 .5 3.5S17 15 12 15s-9.3-3.2-8.5-4.5S6 5.8 9 5" />
-  </svg>
-)
-
-const ChartIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="M3 3v18h18" /><path d="m19 9-5 5-4-4-3 3" />
   </svg>
 )
 
@@ -325,23 +262,23 @@ const MailIcon = ({ className }: { className?: string }) => (
 )
 
 const FacebookIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
     </svg>
 )
 const InstagramIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
     </svg>
 )
 const YoutubeIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path d="m10 15 5-3-5-3z"/>
     </svg>
 )
 
 const SocialIconWrapper = ({ children }: { children: React.ReactNode }) => (
-    <a href="#" className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-green-600 hover:text-white transition-all duration-300">
+    <a href="#" className="w-9 h-9 rounded bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 hover:bg-emerald-600 hover:text-white hover:border-emerald-500 transition-all duration-300">
         {children}
     </a>
 )

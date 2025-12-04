@@ -31,13 +31,13 @@ export default function LoginPage() {
   try {
     const res = await axios.post("https://bukatabungan-production.up.railway.app/api/auth/login", { username, password, credentials: 'include'});
     if (res.data.success) {
-      const { token, user: admin } = res.data;
+      const { user: admin } = res.data;
 
-      localStorage.setItem("token", token);
+      // localStorage.setItem("token", token); // ❌ No longer needed
       localStorage.setItem("admin_cabang_id", admin.cabang_id);
       localStorage.setItem("admin_nama_cabang", admin.nama_cabang);
       localStorage.setItem("admin_username", admin.username);
-      localStorage.setItem("lastLoginTime", Date.now().toString());
+      // localStorage.setItem("lastLoginTime", Date.now().toString());
       localStorage.setItem("isLoggedIn", "true");
       localStorage.setItem("role", admin.role);
 

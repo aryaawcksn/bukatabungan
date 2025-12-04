@@ -13,6 +13,8 @@ import ProcedureSteps from "./components/ProcedureSteps";
 import AccountForm from "./components/AccountForm";
 import ProductDetails from "./components/ProductDetails";
 import HeroLanding from "./pages/HeroLanding";
+import InvalidRequestPage from "./pages/InvalidRequestPage";
+import { VALID_SAVING_TYPES } from "./data/savingsTypes";
 
 function AppWrapper() {
   const navigate = useNavigate();
@@ -43,9 +45,16 @@ function AppWrapper() {
   function ProductDetailsRoute() {
     const params = useParams();
     const type = params.type ?? selectedType;
+    
     if (!type) {
       return <Navigate to="/" replace />;
     }
+
+    // ✅ VALIDASI ROUTE
+    if (!VALID_SAVING_TYPES.includes(type)) {
+      return <InvalidRequestPage />;
+    }
+
     React.useEffect(() => {
       setSelectedType(type);
     }, [type]);
@@ -61,9 +70,16 @@ function AppWrapper() {
   function ProcedureRoute() {
     const params = useParams();
     const type = params.type ?? selectedType;
+    
     if (!type) {
       return <Navigate to="/" replace />;
     }
+
+    // ✅ VALIDASI ROUTE
+    if (!VALID_SAVING_TYPES.includes(type)) {
+      return <InvalidRequestPage />;
+    }
+
     React.useEffect(() => {
       setSelectedType(type);
     }, [type]);
@@ -79,9 +95,16 @@ function AppWrapper() {
   function FormRoute() {
     const params = useParams();
     const type = params.type ?? selectedType;
+    
     if (!type) {
       return <Navigate to="/" replace />;
     }
+
+    // ✅ VALIDASI ROUTE
+    if (!VALID_SAVING_TYPES.includes(type)) {
+      return <InvalidRequestPage />;
+    }
+
     React.useEffect(() => {
       setSelectedType(type);
     }, [type]);

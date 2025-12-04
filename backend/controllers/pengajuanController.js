@@ -65,6 +65,25 @@ export const createPengajuan = async (req, res) => {
       });
     }
 
+    // ✅ VALIDASI JENIS REKENING (WHITELIST)
+    const VALID_SAVING_TYPES = [
+      'mutiara',
+      'regular',
+      'simpel',
+      'arofah',
+      'tamasya',
+      'tabunganku',
+      'pensiun'
+    ];
+
+    if (jenis_rekening && !VALID_SAVING_TYPES.includes(jenis_rekening)) {
+      console.error(`❌ Invalid saving type: ${jenis_rekening}`);
+      return res.status(400).json({
+        success: false,
+        message: "Jenis tabungan tidak valid."
+      });
+    }
+
     // dukung beberapa nama field dari frontend
     const jenis_kartu =
       req.body.jenis_kartu ||
@@ -148,35 +167,35 @@ export const createPengajuan = async (req, res) => {
       RETURNING *;
     `;
     let values = [
-  kode_referensi,          // $1
-  nama_lengkap,            // $2
-  nik,                     // $3
-  email,                   // $4
-  no_hp,                   // $5
-  tanggal_lahir,           // $6
-  alamat,                  // $7
-  provinsi,                // $8
-  kota,                    // $9
-  kode_pos,                // $10
-  pekerjaan,               // $11
-  penghasilan,             // $12
-  jenis_kartu,             // $13
-  cabang_id,               // $14
-  req.body.status || "pending", // $15
-  foto_ktp,                // $16
-  jenis_rekening,          // $17
-  jenis_kelamin,           // $18
-  setujuDataValue,         // $19
-  kontak_darurat_hp,       // $20
-  kontak_darurat_nama,     // $21
-  tujuan_rekening,         // $22
-  sumber_dana,             // $23
-  alamat_kantor,           // $24
-  tempat_bekerja,          // $25
-  kewarganegaraan,         // $26
-  nama_ibu_kandung,        // $27
-  statusPernikahan         // $28 ✅ STOP DI SINI
-];
+      kode_referensi,          // $1
+      nama_lengkap,            // $2
+      nik,                     // $3
+      email,                   // $4
+      no_hp,                   // $5
+      tanggal_lahir,           // $6
+      alamat,                  // $7
+      provinsi,                // $8
+      kota,                    // $9
+      kode_pos,                // $10
+      pekerjaan,               // $11
+      penghasilan,             // $12
+      jenis_kartu,             // $13
+      cabang_id,               // $14
+      req.body.status || "pending", // $15
+      foto_ktp,                // $16
+      jenis_rekening,          // $17
+      jenis_kelamin,           // $18
+      setujuDataValue,         // $19
+      kontak_darurat_hp,       // $20
+      kontak_darurat_nama,     // $21
+      tujuan_rekening,         // $22
+      sumber_dana,             // $23
+      alamat_kantor,           // $24
+      tempat_bekerja,          // $25
+      kewarganegaraan,         // $26
+      nama_ibu_kandung,        // $27
+      statusPernikahan         // $28 ✅ STOP DI SINI
+    ];
 
     console.log("🔍 Executing query with", values.length, "parameters");
     console.log("📝 Query:", query.substring(0, 200) + "...");

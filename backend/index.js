@@ -37,8 +37,11 @@ app.use(cors({
   credentials: true,
 }));
 
+import cookieParser from "cookie-parser";
+
 // ===== BODY PARSER =====
 app.use(express.json());
+app.use(cookieParser());
 
 // ===== STATIC FILES =====
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));

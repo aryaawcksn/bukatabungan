@@ -6,6 +6,11 @@ import { logUserActivity } from "../utils/userLogger.js";
 /* =========================
    LOGIN
 ========================= */
+import crypto from "crypto";
+
+/* =========================
+   LOGIN
+========================= */
 export const login = async (req, res) => {
   const { username, password } = req.body;
 
@@ -51,21 +56,26 @@ export const login = async (req, res) => {
       userAgent: req.headers["user-agent"]
     });
 
-    const token = jwt.sign(
-      {
-        id: user.id,
-        username: user.username,
-        role: user.role,
-        cabang_id: user.cabang_id
-      },
-      process.env.JWT_SECRET || "secretkey",
-      { expiresIn: "8h" }
-    );
+    // ✅ CREATE SESSION
+    const sessionToken = crypto.randomBytes(64).toString("hex");
+    const expiredAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+    await pool.query(`
+      INSERT INTO auth_sessions (user_id, session_token, user_agent, ip_address, expired_at)
+      VALUES ($1, $2, $3, $4, $5)
+    `, [user.id, sessionToken, req.headers["user-agent"], req.ip, expiredAt]);
+
+    // ✅ SET COOKIE
+    res.cookie("session_token", sessionToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    });
 
     res.json({
       success: true,
       message: "Login berhasil",
-      token,
       user: {
         id: user.id,
         username: user.username,
@@ -81,6 +91,32 @@ export const login = async (req, res) => {
       success: false,
       message: "Terjadi kesalahan server"
     });
+  }
+};
+
+/* =========================
+   LOGOUT
+========================= */
+export const logout = async (req, res) => {
+  const sessionToken = req.cookies.session_token;
+
+  if (!sessionToken) {
+    return res.status(200).json({ success: true, message: "Already logged out" });
+  }
+
+  try {
+    await pool.query("DELETE FROM auth_sessions WHERE session_token = $1", [sessionToken]);
+
+    res.clearCookie("session_token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax"
+    });
+
+    res.json({ success: true, message: "Logout berhasil" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Gagal logout" });
   }
 };
 
@@ -245,6 +281,9 @@ export const updateUser = async (req, res) => {
       ipAddress: req.ip,
       userAgent: req.headers["user-agent"]
     });
+
+    // ✅ FORCE LOGOUT (Invalidate all sessions for this user)
+    await pool.query("DELETE FROM auth_sessions WHERE user_id = $1", [id]);
 
     res.json({
       success: true,

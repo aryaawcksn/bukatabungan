@@ -1,137 +1,188 @@
-import React from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Button } from './ui/button';
 import { ArrowLeft, CheckCircle, ArrowRight } from 'lucide-react';
-import { useEffect } from 'react';
-
 
 interface SavingsTypeSelectionProps {
   onSelectType: (type: string) => void;
   onBack: () => void;
 }
 
+import { savingsTypes } from '../data/savingsTypes';
+
 export default function SavingsTypeSelection({
   onSelectType,
   onBack,
 }: SavingsTypeSelectionProps) {
-  const savingsTypes = [
-    {
-      id: 'mutiara',
-      title: 'Tabungan Mutiara',
-      description: 'Tingkatkan saldo',
-      cardBg: 'from-emerald-500 to-emerald-800',
-      features: ['Bunga kompetitif', 'Berhadiah', 'Tanpa biaya admin'],
-    },
-    {
-      id: 'regular',
-      title: 'Tabungan Bank Sleman',
-      description: 'Tabungan masyarakat Sleman',
-      cardBg: 'from-indigo-500 to-purple-700',
-      features: ['Gratis biaya admin', 'Bunga hingga 3.5%', 'Kartu debit gratis'],
-    },
-    {
-      id: 'simpel',
-      title: 'Tabungan Simpel',
-      description: 'Nabung sejak dini',
-      cardBg: 'from-pink-500 to-rose-600',
-      features: ['Untuk pelajar', 'Setoran ringan', 'Edukasi finansial'],
-    },
-  ];
+
+  const [index, setIndex] = useState(0);
+  const [itemsPerView, setItemsPerView] = useState(3);
+
+  const startX = useRef(0);
+  const isDragging = useRef(false);
 
   useEffect(() => {
-     window.scrollTo({ top: 0, behavior: "auto" });
-   }, []);
+    const updateView = () => {
+      if (window.innerWidth < 640) setItemsPerView(1);
+      else if (window.innerWidth < 1024) setItemsPerView(2);
+      else setItemsPerView(3);
+    };
+
+    updateView();
+    window.addEventListener('resize', updateView);
+    return () => window.removeEventListener('resize', updateView);
+  }, []);
+
+  const maxIndex = Math.max(savingsTypes.length - itemsPerView, 0);
+
+  const next = () => {
+    setIndex(prev => (prev >= maxIndex ? 0 : prev + 1));
+  };
+
+  const prev = () => {
+    setIndex(prev => (prev <= 0 ? maxIndex : prev - 1));
+  };
+
+  // ✅ DRAG / SWIPE HANDLER
+  const handleStart = (x: number) => {
+    startX.current = x;
+    isDragging.current = true;
+  };
+
+  const handleEnd = (x: number) => {
+    if (!isDragging.current) return;
+    const diff = startX.current - x;
+
+    if (diff > 50) next();
+    if (diff < -50) prev();
+
+    isDragging.current = false;
+  };
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-10">
-      <div className="max-w-6xl mx-auto px-6">
-       <Button 
-                         variant="ghost" 
-                         onClick={onBack} 
-                         className="pl-0 mb-10 text-slate-500 hover:text-blue-700 hover:bg-transparent"
-                     >
-                         <ArrowLeft className="w-4 h-4 mr-2" /> Kembali ke Halaman Utama
-                     </Button>
- 
-        {/* Header */}
-       <div className="text-center mb-14">
-  <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
-    Pilih Jenis Tabungan
-  </h1>
+    <div className="min-h-screen bg-slate-50 py-16">
+      <div className="max-w-7xl mx-auto px-6">
 
-  <div className="w-24 h-1 mx-auto rounded-full mb-4 bg-gradient-to-r from-blue-500 via-emerald-500 to-green-500" />
+        {/* BACK */}
+        <Button
+          variant="ghost"
+          onClick={onBack}
+          className="pl-0 mb-12 text-slate-600 hover:text-emerald-700 hover:bg-transparent"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" /> Kembali
+        </Button>
 
-  <p className="text-slate-600 max-w-xl mx-auto">
-    Pilih produk tabungan yang paling sesuai dengan kebutuhan finansial.
-  </p>
-</div>
+        {/* HEADER */}
+        <div className="text-center mb-16">
+          <h1 className="text-4xl font-bold text-slate-900 mb-4">
+            Pilih Jenis Tabungan
+          </h1>
+          <div className="w-20 h-1 mx-auto bg-emerald-700 rounded-full mb-4" />
+          <p className="text-slate-600 max-w-xl mx-auto">
+            Pilih produk tabungan yang paling cocok untuk kebutuhan finansial kamu.
+          </p>
+        </div>
 
+        {/* ✅ CAROUSEL */}
+        <div className="relative flex items-center">
 
+          <button
+            onClick={prev}
+            className="absolute left-0 z-20 -translate-x-6 bg-white p-3 shadow-lg rounded-full"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
 
-        {/* Cards */}
-        <div className="grid gap-8 md:grid-cols-3 place-items-center">
-          {savingsTypes.map((type) => (
+          <div
+            className="overflow-hidden w-full px-12"
+            onMouseDown={(e) => handleStart(e.clientX)}
+            onMouseUp={(e) => handleEnd(e.clientX)}
+            onTouchStart={(e) => handleStart(e.touches[0].clientX)}
+            onTouchEnd={(e) => handleEnd(e.changedTouches[0].clientX)}
+          >
             <div
-              key={type.id}
-              onClick={() => onSelectType(type.id)}
-              className="group w-full max-w-sm bg-white rounded-md shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer overflow-hidden hover:-translate-y-2"
+              className="flex transition-transform duration-500"
+              style={{ transform: `translateX(-${index * (100 / itemsPerView)}%)` }}
             >
-              {/* Header Visual */}
-              <div
-                className={`relative h-44 bg-gradient-to-br ${type.cardBg} p-6 text-white`}
-              >
-                <div className="absolute top-0 right-0 w-28 h-28 bg-white/20 rounded-full blur-2xl" />
-
-                <div className="flex justify-between items-start relative z-10">
-                  <img
-                    src="/banksleman.png"
-                    alt="Logo"
-                    className="h-6 brightness-0 invert"
-                  />
-                  <span className="text-xs tracking-widest opacity-80">
-                    PREMIUM
-                  </span>
-                </div>
-
-                <div className="absolute bottom-6 left-6 right-6 flex justify-between items-center">
-                  <span className="font-mono tracking-wider text-sm">
-                    •••• •••• •••• 8899
-                  </span>
-                  <img src="/chip.png" alt="Chip" className="h-7 opacity-80" />
-                </div>
-              </div>
-
-              {/* Content */}
-              <div className="p-7 flex flex-col">
-                <h3 className="text-xl font-bold text-slate-900 mb-1">
-                  {type.title}
-                </h3>
-                <p className="text-sm text-slate-500 mb-5">
-                  {type.description}
-                </p>
-
-                <div className="space-y-3 mb-6">
-                  {type.features.map((feature, idx) => (
-                    <div key={idx} className="flex items-center gap-3 text-sm">
-                      <CheckCircle className="w-5 h-5 text-green-500" />
-                      <span className="text-slate-700">{feature}</span>
+              {savingsTypes.map((type) => (
+                <div
+                  key={type.id}
+                  className="min-w-full sm:min-w-[50%] lg:min-w-[33.3333%] px-4 select-none"
+                >
+                  <div
+                    onClick={() => onSelectType(type.id)}
+                    className="group bg-white rounded-xl border border-slate-200 shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden hover:-translate-y-1"
+                  >
+                    <div
+                      className="relative h-44 p-6 text-white bg-cover bg-center"
+                      style={{ backgroundImage: `url(${type.bgImage})` }}
+                    >
+                      <div className="absolute inset-0 bg-black/40" />
+                      <div className="relative z-10 flex justify-between items-end">
+                        <img src="/banksleman.png" alt="Logo" className="h-6 brightness-0 invert" />
+                        <span className="text-xs opacity-80">VISA / GPN</span>
+                      </div>
                     </div>
-                  ))}
-                </div>
 
-                <Button className="mt-auto w-full py-5 rounded-xl bg-slate-900 hover:bg-green-600 transition-all font-semibold flex items-center justify-center gap-2">
-                  Lihat Detail
-                  <ArrowRight className="w-4 h-4" />
-                </Button>
-              </div>
+                    <div className="p-7 flex flex-col h-full">
+                      <h3 className="text-xl font-bold text-slate-900 mb-1">
+                        {type.title}
+                      </h3>
+                      <p className="text-sm text-slate-600 mb-6">
+                        {type.description}
+                      </p>
+
+                      <div className="space-y-3 mb-8">
+                        {type.features.map((feature, idx) => (
+                          <div key={idx} className="flex items-center gap-3 text-sm">
+                            <CheckCircle className="w-5 h-5 text-emerald-700" />
+                            <span className="text-slate-700">{feature}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <Button className="mt-auto w-full bg-emerald-800 hover:bg-emerald-900">
+                        Lihat Detail
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
+          </div>
+
+          <button
+            onClick={next}
+            className="absolute right-0 z-20 translate-x-6 bg-white p-3 shadow-lg rounded-full"
+          >
+            <ArrowRight className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* DOT */}
+        <div className="flex justify-center gap-2 mt-6">
+          {Array.from({ length: maxIndex + 1 }).map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setIndex(i)}
+              className={`w-3 h-3 rounded-full ${
+                index === i ? 'bg-emerald-700' : 'bg-slate-300'
+              }`}
+            />
           ))}
         </div>
-        <div className="mt-24 lg:mt-32"></div>
-          <div className="mt-16 lg:mt-24 pt-6 pb-6 border-t border-slate-200 text-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <p className="text-slate-500 text-sm m-0">
-              &copy; {new Date().getFullYear()} PT BPR Bank Sleman (Perseroda) All rights reserved.
-            </p>
-          </div>
+
+        {/* FOOTER */}
+        <div className="mt-24 pt-8 border-t border-slate-200 text-center">
+          <p className="text-slate-500 text-sm">
+            &copy; {new Date().getFullYear()} PT BPR Bank Sleman (Perseroda). Seluruh Hak Cipta Dilindungi.
+          </p>
+        </div>
+
       </div>
     </div>
   );

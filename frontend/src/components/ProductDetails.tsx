@@ -63,22 +63,15 @@ function ProductDetails({
           interestDesc: "Suku bunga kompetitif yang dapat berubah sewaktu-waktu",
           cardBg: "from-emerald-500 to-emerald-800",
           chipColor: "text-emerald-100",
-          img: "/mutiara.png",
+          img: "/mutiara1.png",
           notes: [
             {
-              jenis: "Perorangan belum dewasa (< 12 tahun)",
+              jenis: "Perorangan (> 18 tahun)",
               dokumen: [
                 "Kartu identitas orang tua",
-                "Akte Kelahiran Anak / KIA",
               ]
             },
-            {
-              jenis: "Perorangan belum dewasa (Wali)",
-              dokumen: [
-                "Lorem ipsum dolor sit amet",
-                "Lorem ipsum dolor sit amet",
-              ]
-            }
+            
           ]
         };
       case "regular":
@@ -112,10 +105,9 @@ function ProductDetails({
           img: "/umum.png",
           notes: [
             {
-              jenis: "Perorangan belum dewasa (< 12 tahun)",
+              jenis: "Perorangan (>18 Tahun)",
               dokumen: [
-                "Kartu identitas orang tua",
-                "Akte Kelahiran Anak / KIA",
+                "Kartu Tanda Penduduk (KTP)",
               ]
             },
           ]
@@ -153,16 +145,166 @@ function ProductDetails({
           img: "/simpel.png",
           notes: [
             {
-              jenis: "Siswa PAUD/TK/SD/SMP/SMA",
+              jenis: "Siswa PAUD/TK/SD/SMP/SMA (< 18 Tahun)",
               dokumen: [
-                "Kartu identitas orang tua",
-                "Akte Kelahiran / KIA / Kartu Pelajar",
-                "Surat persetujuan orang tua"
+                "Kartu Indentitas Anak (KIA)",
               ]
             },
           ]
         };
 
+        case "arofah":
+        return {
+          title: "Tabungan Arofah",
+          subtitle: "Tabungan Aman Ibadah Jadi Kenyataan",
+          description: "Tabungan arofah adalah produk tabungan berhadiah yang diperuntukan untuk menghimpun dana persiapan perjalanan religi dan berhadiah uang tunai wisata religi yang diundi setahun sekali.",
+          features: [
+            "Perorangan",
+          ],
+          terms: [
+            "Perorangan",
+            "Penabung wajib mngisi aplikasi pembukaan rekening dan menyerahkan dokuen pesyaratan pembukaan rekening sesuai ketentuan",
+            "Setoran awal minimal Rp100.000 (seratus ribu rupiah)",
+            "Setoran selanjutnya minimal Rp10.000 (sepuluh ribu rupiah)",
+            "Saldo minimal Rp100.000 (seratus ribu rupiah)",
+          ],
+          fees: [
+            "Biaya administrasi: Gratis",
+            "Biaya kartu debit: Gratis",
+            "Biaya tarik tunai di ATM Bank Sleman: Gratis",
+            "Biaya ganti buku: Gratis",
+          ],
+          interest: "2.5% p.a",
+          interestDesc: "Bunga simpanan pelajar yang menguntungkan",
+          cardBg: "from-pink-500 to-rose-600",
+          chipColor: "text-pink-100",
+          img: "/arofah.png",
+          notes: [
+            {
+              jenis: "Perorangan (> 18 Tahun)",
+              dokumen: [
+                "Kartu Indentitas Penduduk (KTP)",
+              ]
+            },
+          ]
+        };
+        case "tamasya":
+        return {
+          title: "Tabungan Tamasya Plus",
+          subtitle: "Sering nabung, banyak untung",
+          description: "Tabungan Tamasya Plus adalah tabungan berhadiah bersama BPR anggota Perbarindo Daerah Istimewa Yogyakarta yang diundi melalui mekanisme undian pada periode tertentu atas dasar poin undian yang diperoleh pada setiap bulannya.",
+          features: [
+            "Perorangan atau Non Perorangan",
+          ],
+          terms: [
+            "Perorangan atau Non Perorangan",
+            "Penabung wajib mngisi aplikasi pembukaan rekening dan menyerahkan dokuen pesyaratan pembukaan rekening sesuai ketentuan",
+            "Setoran awal minimal Rp20.000 (dua puluh ribu rupiah)",
+            "Saldo minimal Rp10.000 (sepuluh ribu rupiah)",
+          ],
+          fees: [
+            "Biaya administrasi: Gratis",
+            "Biaya kartu debit: Gratis",
+            "Biaya tarik tunai di ATM Bank Sleman: Gratis",
+            "Biaya ganti buku: Gratis",
+          ],
+          interest: "2.5% p.a",
+          interestDesc: "Bunga simpanan pelajar yang menguntungkan",
+          cardBg: "from-pink-500 to-rose-600",
+          chipColor: "text-pink-100",
+          img: "/tamasya.png",
+          notes: [
+            {
+              jenis: "Perorangan",
+              dokumen: [
+                "Kartu Indentitas Penduduk (KTP)",
+              ]
+            },
+             {
+              jenis: "Non Perorangan",
+              dokumen: [
+                "Kartu Indentitas Penduduk (KTP)",
+              ]
+            },
+          ]
+        };
+        case "tabunganku":
+        return {
+          title: "Tabungan Ku",
+          subtitle: "Ringan dan Mudah",
+          description: "TabunganKu adalah produk simpanan yang diselenggarakan secara bersama oleh bank-bank di Indonesia dengan persyaratan mudah dan ringan.",
+          features: [
+            "Perorangan atau Non Perorangan",
+          ],
+          terms: [
+            "Perorangan atau Non Perorangan",
+            "Penabung wajib mngisi aplikasi pembukaan rekening dan menyerahkan dokuen pesyaratan pembukaan rekening sesuai ketentuan",
+            "Setoran awal minimal Rp10.000 (dua puluh ribu rupiah)",
+            "Setoran selanjutnya minimal Rp10.000 (sepuluh ribu rupiah)",
+            "Saldo minimal Rp10.000 (sepuluh ribu rupiah)",
+          ],
+          fees: [
+            "Biaya administrasi: Gratis",
+            "Biaya kartu debit: Gratis",
+            "Biaya tarik tunai di ATM Bank Sleman: Gratis",
+            "Biaya ganti buku: Gratis",
+          ],
+          interest: "2.5% p.a",
+          interestDesc: "Bunga simpanan pelajar yang menguntungkan",
+          cardBg: "from-pink-500 to-rose-600",
+          chipColor: "text-pink-100",
+          img: "/tabunganku.png",
+          notes: [
+            {
+              jenis: "Perorangan",
+              dokumen: [
+                "Kartu Indentitas Penduduk (KTP)",
+              ]
+            },
+             {
+              jenis: "Non Perorangan",
+              dokumen: [
+                "Kartu Indentitas Penduduk (KTP)",
+              ]
+            },
+          ]
+        };
+        case "pensiun":
+        return {
+          title: "Tabungan Pensiun",
+          subtitle: "Simpanan untuk masa tua",
+          description: "Tabungan Pensiun (Tapen) adalah simpanan yang setoran dan penarikannya hanya dapat dilakukan menurut syarat dtertentu yang disepakati.",
+          features: [
+            "Perorangan",
+          ],
+          terms: [
+            "Perorangan atau Non Perorangan",
+            "Penabung wajib mngisi aplikasi pembukaan rekening dan menyerahkan dokuen pesyaratan pembukaan rekening sesuai ketentuan",
+            "Usia maksimal 64 tahun",
+            "Setoran awal minimal Rp25.000 (dua puluh ribu rupiah)",
+            "Setoran selanjutnya minimal Rp10.000 (sepuluh ribu rupiah)",
+            "Saldo minimal Rp25.000 (sepuluh ribu rupiah)",
+          ],
+          fees: [
+            "Biaya administrasi: Gratis",
+            "Biaya kartu debit: Gratis",
+            "Biaya tarik tunai di ATM Bank Sleman: Gratis",
+            "Biaya ganti buku: Gratis",
+          ],
+          interest: "2.5% p.a",
+          interestDesc: "Bunga simpanan pelajar yang menguntungkan",
+          cardBg: "from-pink-500 to-rose-600",
+          chipColor: "text-pink-100",
+          img: "/taspen.png",
+          notes: [
+            {
+              jenis: "Perorangan",
+              dokumen: [
+                "Kartu Indentitas Penduduk (KTP)",
+              ]
+            },
+          ]
+        };
       default:
         return {
           title: "Tabungan Tidak Ditemukan",
@@ -188,220 +330,250 @@ function ProductDetails({
      }, []);
 
   return (
-    // START: Perubahan Utama di Elemen Pembungkus Utama
-    <div
-      className="min-h-screen relative font-sans text-slate-800 pb-20 lg:pb-0" // Hapus bg-slate-50, tambahkan relative
-      style={{
-        backgroundImage: `url('/bs.png')`, // Panggil gambar dari folder public
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed', // Agar gambar tetap saat di-scroll
-      }}
-    >
-      {/* Layer Overlay Putih (Opacity 90%) agar teks mudah dibaca */}
-      <div className="absolute inset-0 bg-white/70 backdrop-blur-sm"></div>
+  <div
+    className="min-h-screen relative font-sans text-slate-800 pb-20 lg:pb-0"
+    style={{
+      backgroundImage: `url('/Gunung-Merapi.jpg')`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundAttachment: 'fixed',
+    }}
+  >
+    {/* Overlay */}
+    <div className="absolute inset-0 bg-white/75 backdrop-blur-sm"></div>
 
+    <div className="relative z-10">
+      <div className="max-w-7xl mx-auto px-6 py-10">
 
-      {/* Bungkus Semua Konten di div Z-10 agar berada di atas overlay */}
-      <div className="relative z-10">
+        {/* Breadcrumb */}
+        <div className="mb-10">
+          <Button
+            variant="ghost"
+            onClick={onBack}
+            className="pl-0 text-slate-500 hover:text-blue-700 hover:bg-transparent"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" /> Kembali ke Produk
+          </Button>
+        </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-2">
+        <div className="grid lg:grid-cols-12 gap-12 items-start">
 
-          {/* Navigation Breadcrumb */}
-          <div className="mb-8">
-            <Button
-              variant="ghost"
-              onClick={onBack}
-              className="pl-0 text-slate-500 hover:text-blue-700 hover:bg-transparent"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" /> Kembali ke Produk
-            </Button>
-          </div>
-
-          <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-
-            {/* --- LEFT SIDEBAR (STICKY) --- */}
-            <div className="lg:col-span-4 lg:order-1">
-              <div className="sticky top-20">
-
-
-                {/* Main Product Card (Mengandung Gambar) */}
-                <div className="bg-white p-6 rounded-sm shadow-sm border border-slate-200 text-center">
-                  <div className="bg-slate-50 rounded-sm p-8 mb-6 flex items-center justify-center">
-                    {product.img ? (
-                      <img
-                        src={product.img}
-                        alt={product.title}
-                        // UBAH DARI w-48 menjadi w-64 atau w-80
-                        className="w-80 mx-auto"
-                      />
-                    ) : (
-                      // UBAH DARI w-48 menjadi w-64 pada placeholder <div> juga
-                      <div className={`w-64 h-32 rounded-sm bg-gradient-to-br ${product.cardBg}`}></div>
-                    )}
-                  </div>
-
-                  <h1 className="text-2xl font-bold text-slate-900">{product.title}</h1>
-                  <p className="text-slate-500 mt-2 text-sm">{product.subtitle}</p>
-
-                  {/* Desktop Action Button */}
-                  <div className="mt-6 pt-6 border-t border-slate-100 hidden lg:block">
-                    <Button
-                      onClick={onNext}
-                      className="w-full bg-blue-700 hover:bg-blue-800 h-12 text-sm font-semibold rounded-xl shadow-lg shadow-blue-900/10"
-
-                    >
-                      Buka Tabungan
-                    </Button>
-                    <p className="text-xs text-slate-400 mt-3 text-center">Proses cepat & aman</p>
-                  </div>
+          {/* LEFT SIDEBAR */}
+          <div className="lg:col-span-4">
+            <div className="sticky top-20">
+              <div className="bg-white p-7 rounded-2xl border border-slate-200 shadow-md text-center">
+                <div className="bg-slate-50 rounded-xl p-8 mb-6 flex items-center justify-center">
+                  {product.img ? (
+                    <img
+                      src={product.img}
+                      alt={product.title}
+                      className="w-72 mx-auto"
+                    />
+                  ) : (
+                    <div className={`w-64 h-32 rounded-lg bg-gradient-to-br ${product.cardBg}`}></div>
+                  )}
                 </div>
 
-                {/* Process Flow Card */}
-                
+                <h1 className="text-2xl font-bold text-slate-900">
+                  {product.title}
+                </h1>
+                <p className="text-slate-600 mt-2 text-sm">
+                  {product.subtitle}
+                </p>
+
+                <div className="mt-8 pt-6 border-t border-slate-200 hidden lg:block">
+                  <Button
+                    onClick={onNext}
+                    className="w-full bg-blue-700 hover:bg-blue-800 h-11 text-sm font-semibold rounded-xl shadow"
+                  >
+                    Buka Tabungan
+                  </Button>
+                  <p className="text-xs text-slate-500 mt-3">
+                    Aman • Resmi • Terpercaya
+                  </p>
+                </div>
               </div>
             </div>
+          </div>
 
-            {/* --- RIGHT CONTENT (SCROLLABLE) --- */}
-            <div className="lg:col-span-8 lg:order-2 space-y-10">
+          {/* RIGHT CONTENT */}
+          <div className="lg:col-span-8 space-y-12">
 
-              {/* Section: Description */}
-              <section>
-                <div className="flex items-center gap-2 mb-4">
-                  <ShieldCheck className="w-5 h-5 text-blue-600" />
-                  <h3 className="text-lg font-bold text-slate-900 border-b border-slate-200">Deskripsi Produk</h3>
-                </div>
-                <p className="text-slate-600 leading-relaxed text-lg border-l-4 border-blue-400 pl-4">
-                  {product.description}
-                </p>
-              </section>
+            {/* DESKRIPSI */}
+            <section>
+              <div className="flex items-center gap-2 mb-4">
+                <ShieldCheck className="w-5 h-5 text-blue-700" />
+                <h3 className="text-lg font-bold text-slate-900">
+                  Deskripsi Produk
+                </h3>
+              </div>
+              <p className="text-slate-700 leading-relaxed text-base border-l-4 border-blue-500 pl-4">
+                {product.description}
+              </p>
+            </section>
 
-              {/* Section: Features Grid */}
-              <section>
-                <div className="flex items-center gap-2 mb-4">
-                  <Gem className="w-5 h-5 text-blue-600" />
-                <h3 className="text-lg font-bold text-slate-900 border-b border-slate-200 ">
+            {/* KEUNTUNGAN */}
+            <section>
+              <div className="flex items-center gap-2 mb-4">
+                <Gem className="w-5 h-5 text-blue-700" />
+                <h3 className="text-lg font-bold text-slate-900">
                   Keuntungan Utama
                 </h3>
+              </div>
+
+              <div className="grid sm:grid-cols-2 gap-4">
+                {product.features.map((feat, i) => (
+                  <div
+                    key={i}
+                    className="flex items-start p-4 bg-white rounded-xl border border-slate-200 shadow-sm"
+                  >
+                    <CheckCircle2 className="w-5 h-5 text-blue-700 mr-3 shrink-0 mt-0.5" />
+                    <span className="font-medium text-slate-700 text-sm">
+                      {feat}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* SYARAT & BIAYA */}
+            <div className="grid md:grid-cols-2 gap-8">
+
+              {/* SYARAT */}
+              <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="bg-slate-50 px-6 py-4 border-b border-slate-200">
+                  <h4 className="font-bold text-slate-800 text-sm">
+                    Syarat & Ketentuan
+                  </h4>
                 </div>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  {product.features.map((feat, i) => (
-                    <div key={i} className="flex items-start p-4 bg-white rounded-sm border border-slate-200 shadow-sm">
-                      <CheckCircle2 className="w-5 h-5 text-green-500 mr-3 shrink-0 mt-0.5"/>
-                      <span className="font-medium text-slate-700 text-sm">{feat}</span>
+                <div className="p-6">
+                  <ul className="space-y-4">
+                    {product.terms.map((term, i) => (
+                      <li key={i} className="flex items-start gap-3 text-sm text-slate-700">
+                        <span className="w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center shrink-0">
+                          {i + 1}
+                        </span>
+                        <span>{term}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </section>
+
+              {/* BIAYA */}
+              <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="bg-slate-50 px-6 py-4 border-b border-slate-200">
+                  <h4 className="font-bold text-slate-800 text-sm">
+                    Informasi Biaya
+                  </h4>
+                </div>
+                <table className="w-full text-sm text-left">
+                  <tbody>
+                    {product.fees.map((fee, i) => (
+                      <tr key={i} className="border-b border-slate-100 last:border-0">
+                        <td className="px-6 py-3 text-slate-600 w-1/2">
+                          {fee.split(':')[0]}
+                        </td>
+                        <td className="px-6 py-3 font-semibold text-slate-900 text-right w-1/2">
+                          {fee.split(':')[1] || 'Gratis'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </section>
+
+            </div>
+
+            {/* ========================= */}
+            {/* DOKUMEN PERSYARATAN */}
+            {/* ========================= */}
+            {product.notes.length > 0 && (
+              <section className="mt-16">
+                <div className="flex items-center gap-2 mb-5">
+                  <FileText className="w-5 h-5 text-blue-700" />
+                  <h3 className="text-lg font-bold text-slate-900">
+                    Dokumen Persyaratan
+                  </h3>
+                </div>
+
+                <div className="space-y-6">
+                  {product.notes.map((note, i) => (
+                    <div
+                      key={i}
+                      className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden"
+                    >
+                      <div className="flex items-center justify-between px-6 py-4 bg-slate-50 border-b border-slate-200">
+                        <div className="flex items-center gap-2">
+                          <UserPlus className="w-4 h-4 text-blue-700" />
+                          <h4 className="font-semibold text-slate-800 text-sm">
+                            {note.jenis}
+                          </h4>
+                        </div>
+                        <span className="text-xs text-slate-500">
+                          Wajib Disiapkan
+                        </span>
+                      </div>
+
+                      <div className="p-6 grid sm:grid-cols-2 gap-4">
+                        {note.dokumen.map((doc, j) => (
+                          <div
+                            key={j}
+                            className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl p-4"
+                          >
+                            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                              <File className="w-4 h-4 text-blue-700" />
+                            </div>
+                            <p className="text-sm font-medium text-slate-700">
+                              {doc}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   ))}
                 </div>
+
+                <p className="mt-6 text-xs text-slate-500 leading-relaxed">
+                  Dokumen dibawa saat pembukaan rekening di kantor cabang. Data diproses sesuai kebijakan privasi Bank Sleman.
+                </p>
               </section>
+            )}
 
-              {/* Section: Data Tables (Terms & Fees) */}
-              <div className="grid md:grid-cols-2 gap-8">
-
-                {/* Syarat */}
-                <section className="bg-white rounded-sm border border-slate-200 overflow-hidden shadow-sm h-full">
-                  <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-slate-500" />
-                    <h4 className="font-bold text-slate-800 text-sm">Syarat & Ketentuan</h4>
-                  </div>
-                  <div className="p-6">
-                    <ul className="space-y-4">
-                      {product.terms.map((term, i) => (
-                        <li key={i} className="flex items-start gap-3 text-sm text-slate-600">
-                          <span className="w-5 h-5 rounded-full bg-blue-50 text-blue-600 text-xs font-bold flex items-center justify-center shrink-0 border border-blue-100">
-                            {i + 1}
-                          </span>
-                          <span>{term}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </section>
-
-                {/* Biaya */}
-                <section className="bg-white rounded-sm border border-slate-200 overflow-hidden shadow-sm h-full">
-                  <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex items-center gap-2">
-                    <Banknote className="w-4 h-4 text-slate-500" />
-                    <h4 className="font-bold text-slate-800 text-sm">Informasi Biaya</h4>
-                  </div>
-                  <div className="p-0">
-                    <table className="w-full text-sm text-left">
-                      <tbody>
-                        {product.fees.map((fee, i) => (
-                          <tr key={i} className="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
-                            <td className="px-6 py-3 text-slate-500 w-1/2 align-top">
-                              {fee.split(':')[0]}
-                            </td>
-                            <td className="px-6 py-3 font-semibold text-slate-900 text-right w-1/2 align-top">
-                              {fee.split(':')[1] || "Gratis"}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </section>
-              </div>
-
-              {/* Section: Documents (Notes) */}
-              {product.notes.length > 0 && (
-                <section>
-                  <h3 className="text-lg font-bold text-slate-900 border-b border-slate-200 pb-2 mb-6 flex items-center gap-2">
-                    <File className="w-5 h-5 text-blue-600" /> Dokumen Persyaratan
-                  </h3>
-                  <div className="space-y-4">
-                    {product.notes.map((note, idx) => (
-                      <div key={idx} className="bg-blue-50/50 rounded-sm p-5 border border-blue-100 flex flex-col sm:flex-row gap-4">
-                        <div className="bg-white p-2 rounded-lg h-fit w-fit border border-blue-100 shadow-sm hidden sm:block">
-                          <FileText className="w-6 h-6 text-blue-600" />
-                        </div>
-                        <div className="flex-1">
-                          <h5 className="text-sm font-bold text-slate-900 uppercase tracking-wide mb-2">
-                            {note.jenis}
-                          </h5>
-                          <ul className="grid sm:grid-cols-2 gap-x-4 gap-y-2">
-                            {note.dokumen.map((doc, dIdx) => (
-                              <li key={dIdx} className="flex items-center gap-2 text-sm text-slate-600">
-                                <ChevronRight className="w-3 h-3 text-blue-400" />
-                                {doc}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              )}
-            </div>
           </div>
         </div>
 
-        {/* Mobile Sticky Action Bar (Hidden on Desktop) */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 lg:hidden z-40 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
+        {/* MOBILE ACTION BAR */}
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 lg:hidden z-40 shadow">
           <div className="flex items-center gap-4 max-w-lg mx-auto">
             <div className="flex-1">
               <p className="text-xs text-slate-500">Produk Pilihan</p>
-              <p className="font-bold text-slate-900 truncate">{product.title}</p>
+              <p className="font-bold text-slate-900 truncate">
+                {product.title}
+              </p>
             </div>
-            <Button onClick={onNext} className="bg-blue-700 hover:bg-blue-800 text-white font-bold px-6">
-              Buka Tabungan
+            <Button
+              onClick={onNext}
+              className="bg-blue-700 hover:bg-blue-800 text-white font-bold px-6 rounded-xl"
+            >
+              Buka
             </Button>
           </div>
         </div>
 
-        {/* NEW COPYRIGHT FOOTER */}
-        <div className="mt-24 lg:mt-32"></div>
-        <div className="mt-16 lg:mt-24 pt-6 pb-6 border-t border-slate-200 text-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-slate-500 text-sm m-0">
-            &copy; {new Date().getFullYear()} PT BPR Bank Sleman (Perseroda) All rights reserved.
+        {/* FOOTER */}
+        <div className="mt-24 pt-6 border-t border-slate-200 text-center">
+          <p className="text-slate-500 text-sm">
+            &copy; {new Date().getFullYear()} PT BPR Bank Sleman (Perseroda)
           </p>
         </div>
-      </div>
-      {/* END: Wrapper Konten Z-10 */}
 
+      </div>
     </div>
-    // END: Perubahan Utama
-  );
+  </div>
+);
+
+
 }
 
 export default ProductDetails;
