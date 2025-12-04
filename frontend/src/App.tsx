@@ -19,7 +19,7 @@ import { VALID_SAVING_TYPES } from "./data/savingsTypes";
 function AppWrapper() {
   const navigate = useNavigate();
   const [selectedType, setSelectedType] = React.useState<string>("");
-  // Arahkan ke ProductDetails dulu, kemudian ke procedure
+
   const handleOpenSavings = (type: string) => {
     setSelectedType(type);
     navigate(`/product/${type}`);
@@ -45,12 +45,9 @@ function AppWrapper() {
   function ProductDetailsRoute() {
     const params = useParams();
     const type = params.type ?? selectedType;
-    
-    if (!type) {
-      return <Navigate to="/" replace />;
-    }
 
-    // ✅ VALIDASI ROUTE
+    if (!type) return <Navigate to="/" replace />;
+
     if (!VALID_SAVING_TYPES.includes(type)) {
       return <InvalidRequestPage />;
     }
@@ -58,6 +55,7 @@ function AppWrapper() {
     React.useEffect(() => {
       setSelectedType(type);
     }, [type]);
+
     return (
       <ProductDetails
         savingsType={type}
@@ -70,12 +68,9 @@ function AppWrapper() {
   function ProcedureRoute() {
     const params = useParams();
     const type = params.type ?? selectedType;
-    
-    if (!type) {
-      return <Navigate to="/" replace />;
-    }
 
-    // ✅ VALIDASI ROUTE
+    if (!type) return <Navigate to="/" replace />;
+
     if (!VALID_SAVING_TYPES.includes(type)) {
       return <InvalidRequestPage />;
     }
@@ -83,6 +78,7 @@ function AppWrapper() {
     React.useEffect(() => {
       setSelectedType(type);
     }, [type]);
+
     return (
       <ProcedureSteps
         savingsType={type}
@@ -95,12 +91,9 @@ function AppWrapper() {
   function FormRoute() {
     const params = useParams();
     const type = params.type ?? selectedType;
-    
-    if (!type) {
-      return <Navigate to="/" replace />;
-    }
 
-    // ✅ VALIDASI ROUTE
+    if (!type) return <Navigate to="/" replace />;
+
     if (!VALID_SAVING_TYPES.includes(type)) {
       return <InvalidRequestPage />;
     }
@@ -108,6 +101,7 @@ function AppWrapper() {
     React.useEffect(() => {
       setSelectedType(type);
     }, [type]);
+
     return (
       <AccountForm
         savingsType={type}
@@ -123,7 +117,9 @@ function AppWrapper() {
           path="/"
           element={<HomePage onOpenSavings={handleOpenSavings} />}
         />
-           <Route path="/herolanding" element={<HeroLanding />} />
+
+        <Route path="/herolanding" element={<HeroLanding />} />
+
         <Route
           path="/selection"
           element={
@@ -133,9 +129,13 @@ function AppWrapper() {
             />
           }
         />
+
         <Route path="/product/:type" element={<ProductDetailsRoute />} />
         <Route path="/procedure/:type" element={<ProcedureRoute />} />
         <Route path="/form/:type" element={<FormRoute />} />
+
+        {/* ✅ INI ROUTE INVALID / 404 */}
+        <Route path="*" element={<InvalidRequestPage />} />
       </Routes>
     </div>
   );
@@ -146,5 +146,6 @@ export default function App() {
     <Router>
       <AppWrapper />
     </Router>
+    
   );
 }

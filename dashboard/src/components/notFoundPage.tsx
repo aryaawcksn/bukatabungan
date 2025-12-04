@@ -1,9 +1,8 @@
-import { Link } from 'lucide-react';
-import { Button } from '../components/ui/button';
+import { Link } from "react-router-dom";
+import { Button } from "./ui/button";
 
-export default function InvalidRequestPage() {
-
-   return (
+export default function NotFoundPage() {
+  return (
     <div
       className="relative min-h-screen flex items-center justify-center 
       bg-cover bg-center overflow-hidden transition-all duration-700 animate-pageEnter"
@@ -23,13 +22,13 @@ export default function InvalidRequestPage() {
         </p>
 
         <div className="mt-10 flex justify-center gap-4">
-          <Link to="/">
+          <Link to="/dashboard">
             <Button className="bg-indigo-600 hover:bg-indigo-700 shadow-lg transition-all duration-300 hover:scale-105">
               Ke Dashboard
             </Button>
           </Link>
 
-          <Link to="/">
+          <Link to="/login">
             <Button
               variant="outline"
               className="bg-white/20 text-white border-white/40 

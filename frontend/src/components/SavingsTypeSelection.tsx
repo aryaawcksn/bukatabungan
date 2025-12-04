@@ -82,7 +82,7 @@ export default function SavingsTypeSelection({
           </h1>
           <div className="w-20 h-1 mx-auto bg-emerald-700 rounded-full mb-4" />
           <p className="text-slate-600 max-w-xl mx-auto">
-            Pilih produk tabungan yang paling cocok untuk kebutuhan finansial kamu.
+            Pilih produk tabungan yang cocok untuk kebutuhan.
           </p>
         </div>
 
@@ -97,7 +97,7 @@ export default function SavingsTypeSelection({
           </button>
 
           <div
-            className="overflow-hidden w-full px-12"
+            className="overflow-hidden w-full px-2 sm:px-8 lg:px-12"
             onMouseDown={(e) => handleStart(e.clientX)}
             onMouseUp={(e) => handleEnd(e.clientX)}
             onTouchStart={(e) => handleStart(e.touches[0].clientX)}

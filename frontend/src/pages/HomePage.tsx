@@ -106,23 +106,45 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
               {/* Trust Indicators */}
               <div className="mt-12 pt-8 border-t border-slate-700/50 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-8 text-sm text-slate-400">
                 <div className="flex items-center gap-3">
-                   <div className="p-1.5 bg-slate-800 rounded border border-slate-700">
-                      <CheckShieldIcon className="w-5 h-5 text-emerald-400" />
-                   </div>
-                   <div className="flex flex-col text-left">
-                      <span className="text-xs uppercase tracking-wider opacity-70">Diawasi Oleh</span>
-                      <strong className="text-white">Otoritas Jasa Keuangan</strong>
-                   </div>
-                </div>
-                <div className="hidden sm:block w-px h-8 bg-slate-700"></div>
-                <div className="flex items-center gap-3">
-                   <div className="p-1.5 bg-slate-800 rounded border border-slate-700">
-                      <UmbrellaIcon className="w-5 h-5 text-emerald-400" />
-                   </div>
-                   <div className="flex flex-col text-left">
-                      <span className="text-xs uppercase tracking-wider opacity-70">Dijamin Oleh</span>
-                      <strong className="text-white">Lembaga Penjamin Simpanan</strong>
-                   </div>
+  <div className="bg-white rounded px-2 py-1 flex items-center justify-center shadow-sm">
+    <img
+      src="/ojk.png"
+      alt="OJK"
+      className="h-5 object-contain"
+    />
+  </div>
+
+  <div className="flex flex-col text-left">
+    <span className="text-xs uppercase tracking-wider opacity-70 text-white">
+      Diawasi Oleh
+    </span>
+    <strong className="text-white text-sm">
+      Otoritas Jasa Keuangan
+    </strong>
+  </div>
+</div>
+
+<div className="hidden sm:block w-px h-8 bg-slate-700"></div>
+
+<div className="flex items-center gap-3">
+  <div className="bg-white rounded px-2 py-1 flex items-center justify-center shadow-sm">
+    <img
+      src="/lps.png"
+      alt="LPS"
+      className="h-5 object-contain"
+    />
+  </div>
+
+  <div className="flex flex-col text-left">
+    <span className="text-xs uppercase tracking-wider opacity-70 text-white">
+      Dijamin Oleh
+    </span>
+    <strong className="text-white text-sm">
+      Lembaga Penjamin Simpanan
+    </strong>
+  </div>
+
+
                 </div>
               </div>
             </div>
@@ -164,7 +186,9 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
                  <h3 className="text-white text-xl font-bold tracking-tight">Bank Sleman</h3>
               </div>
               <p className="text-sm leading-7 text-slate-400">
-                PT BPR Bank Sleman (Perseroda) hadir sebagai mitra keuangan terpercaya untuk membangun ekonomi daerah yang berkelanjutan.
+                
+
+PT BPR Bank Sleman (Perseroda) atau dikenal dengan Bank Sleman merupakan BUMD milik Pemerintah Kabupaten Sleman.
               </p>
               <div className="flex gap-3">
                 <SocialIconWrapper><FacebookIcon /></SocialIconWrapper>
@@ -177,16 +201,16 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
             <div>
               <h4 className="text-white font-bold text-sm uppercase tracking-wider mb-6">Perusahaan</h4>
               <ul className="space-y-3 text-sm">
-                {['Profil Korporasi', 'Tata Kelola', 'Laporan Tahunan', 'Karir', 'Berita Terkini'].map(item => (
+                {['Profil Perusahaan', 'Sejarah', 'Komisaris', 'Direksi', 'Struktur Organisasi'].map(item => (
                     <li key={item}><a href="#" className="hover:text-emerald-400 transition-colors">{item}</a></li>
                 ))}
               </ul>
             </div>
 
             <div>
-              <h4 className="text-white font-bold text-sm uppercase tracking-wider mb-6">Produk</h4>
+              <h4 className="text-white font-bold text-sm uppercase tracking-wider mb-6">Produk dan Layanan</h4>
               <ul className="space-y-3 text-sm">
-                {['Tabungan Mutiara', 'Deposito Berjangka', 'Kredit Usaha Rakyat', 'Kredit Pegawai', 'Simulasi Kredit'].map(item => (
+                {['Tabungan', 'Deposito', 'Kredit', 'ATM', 'Digital Solution'].map(item => (
                     <li key={item}><a href="#" className="hover:text-emerald-400 transition-colors">{item}</a></li>
                 ))}
               </ul>
@@ -202,11 +226,11 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
                 </li>
                 <li className="flex items-center gap-3">
                   <PhoneIcon className="w-5 h-5 text-emerald-500 shrink-0" />
-                  <span>(0274) 868xxx</span>
+                  <span>(0274) 868321</span>
                 </li>
                 <li className="flex items-center gap-3">
                   <MailIcon className="w-5 h-5 text-emerald-500 shrink-0" />
-                  <span>cs@banksleman.co.id</span>
+                  <span>info@banksleman.co.id</span>
                 </li>
               </ul>
             </div>

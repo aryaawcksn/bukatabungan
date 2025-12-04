@@ -356,7 +356,7 @@ export default function DashboardPage() {
     if (showLoading) {
       toast.error(
   <span>
-    Gagal memuat data atau {errorMessage}. Silahkan coba login{" "}
+    {errorMessage}. Silahkan coba login{" "}
     <a 
       href="/login" 
       className="underline text-blue-600 font-semibold"

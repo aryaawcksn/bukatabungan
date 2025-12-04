@@ -6,7 +6,6 @@ import { Label } from "./components/ui/label";
 import { Button } from "./components/ui/button";
 import { Eye, EyeOff } from "lucide-react";
 import axios from "axios";
-import { useEffect } from "react";
 
 import { useAuth } from "./context/AuthContext";
 
@@ -15,7 +14,6 @@ export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -39,13 +37,6 @@ export default function LoginPage() {
       // Update Auth Context
       login(admin);
 
-      if (rememberMe) {
-        localStorage.setItem("remember_username", username);
-        localStorage.setItem("remember_password", password);
-      } else {
-        localStorage.removeItem("remember_username");
-        localStorage.removeItem("remember_password");
-      }
       navigate("/dashboard");
     } else {
       setError(res.data.message);
@@ -58,19 +49,6 @@ export default function LoginPage() {
   }
 };
 
-  useEffect(() => {
-  const savedUsername = localStorage.getItem("remember_username");
-  const savedPassword = localStorage.getItem("remember_password");
-
-  if (savedUsername) {
-    setUsername(savedUsername);
-    setRememberMe(true);
-  }
-
-  if (savedPassword) {
-    setPassword(savedPassword);
-  }
-}, []);
 
 
   return (
@@ -111,17 +89,6 @@ export default function LoginPage() {
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <label className="flex items-center space-x-2 text-sm text-gray-600">
-              <input
-                type="checkbox"
-                checked={rememberMe}
-                onChange={() => setRememberMe(!rememberMe)}
-              />
-              <span>Ingat saya</span>
-            </label>
           </div>
 
           <Button

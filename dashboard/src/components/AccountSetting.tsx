@@ -30,6 +30,10 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
   const [logs, setLogs] = useState<any[]>([]);
   const [logLoading, setLogLoading] = useState(false);
   const [page, setPage] = useState(1);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const LOG_LIMIT = 5;
 
@@ -46,52 +50,36 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
   }, []);
 
   const fetchUsers = async () => {
-    setLoading(true);
-    try {
-      const token = localStorage.getItem("token");
-      const res = await fetch("https://bukatabungan-production.up.railway.app/api/auth/users", {
-        headers: { Authorization: `Bearer ${token}` },
-        credentials: 'include',
-      });
-      const data = await res.json();
-      if (data.success) {
-        setUsers(data.data);
-      } else {
-        toast.error(data.message || "Gagal mengambil data user");
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("Terjadi kesalahan saat mengambil data user");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchLogs = async (currentPage = 1) => {
-  setLogLoading(true);
+  setLoading(true);
   try {
-    const token = localStorage.getItem("token");
-
     const res = await fetch(
-      `https://bukatabungan-production.up.railway.app/api/user-logs?page=${currentPage}&limit=${LOG_LIMIT}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        credentials: 'include',
-      }
+      "https://bukatabungan-production.up.railway.app/api/auth/users",
+      { credentials: "include" }
     );
 
     const data = await res.json();
-
     if (data.success) {
-      setLogs(data.data);
+      setUsers(data.data);
     } else {
-      toast.error(data.message || "Gagal mengambil log");
+      toast.error(data.message || "Gagal mengambil data user");
     }
-  } catch (err) {
-    console.error(err);
-    toast.error("Gagal mengambil log user");
+  } catch (error) {
+    toast.error("Terjadi kesalahan saat mengambil data user");
+  } finally {
+    setLoading(false);
+  }
+};
+
+ const fetchLogs = async (currentPage = 1) => {
+  setLogLoading(true);
+  try {
+    const res = await fetch(
+      `https://bukatabungan-production.up.railway.app/api/user-logs?page=${currentPage}&limit=${LOG_LIMIT}`,
+      { credentials: "include" }
+    );
+
+    const data = await res.json();
+    if (data.success) setLogs(data.data);
   } finally {
     setLogLoading(false);
   }
@@ -124,74 +112,70 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
   };
 
   const handleSubmit = async () => {
-    if (!formData.username || !formData.role || !formData.cabang_id) {
-      toast.error("Semua field wajib diisi");
-      return;
+  if (saving) return;
+  setSaving(true);
+
+  try {
+    const url = isEditing
+      ? `https://bukatabungan-production.up.railway.app/api/auth/users/${selectedUser?.id}`
+      : "https://bukatabungan-production.up.railway.app/api/auth/register";
+
+    const method = isEditing ? "PUT" : "POST";
+
+    const res = await fetch(url, {
+      method,
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...formData,
+        cabang_id: parseInt(formData.cabang_id),
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      toast.success(isEditing ? "User diperbarui" : "User dibuat");
+      setDialogOpen(false);
+      fetchUsers();
+    } else {
+      toast.error(data.message || "Gagal menyimpan");
     }
+  } finally {
+    setSaving(false);
+  }
+};
 
-    if (!isEditing && !formData.password) {
-      toast.error("Password wajib diisi untuk user baru");
-      return;
-    }
+ const handleDelete = async () => {
+  if (!deleteTarget || deleting) return;
 
-    try {
-      const token = localStorage.getItem("token");
-      const url = isEditing
-        ? `https://bukatabungan-production.up.railway.app/api/auth/users/${selectedUser?.id}`
-        : "https://bukatabungan-production.up.railway.app/api/auth/register";
-      
-      const method = isEditing ? "PUT" : "POST";
+  setDeleting(true);
 
-      const res = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          ...formData,
-          cabang_id: parseInt(formData.cabang_id),
-        }),
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        toast.success(isEditing ? "User berhasil diupdate" : "User berhasil dibuat");
-        setDialogOpen(false);
-        fetchUsers();
-      } else {
-        toast.error(data.message || "Gagal menyimpan user");
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("Terjadi kesalahan saat menyimpan user");
-    }
-  };
-
-  const handleDelete = async (id: number) => {
-    if (!confirm("Apakah Anda yakin ingin menghapus user ini?")) return;
-
-    try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(`https://bukatabungan-production.up.railway.app/api/auth/users/${id}`, {
+  try {
+    const res = await fetch(
+      `https://bukatabungan-production.up.railway.app/api/auth/users/${deleteTarget.id}`,
+      {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        toast.success("User berhasil dihapus");
-        fetchUsers();
-      } else {
-        toast.error(data.message || "Gagal menghapus user");
+        credentials: "include",
       }
-    } catch (error) {
-      console.error(error);
-      toast.error("Terjadi kesalahan saat menghapus user");
+    );
+
+    const data = await res.json();
+
+    if (data.success) {
+      toast.success(`User ${deleteTarget.username} berhasil dihapus`);
+      fetchUsers();
+      setDeleteConfirmOpen(false);
+      setDeleteTarget(null);
+    } else {
+      toast.error(data.message || "Gagal menghapus user");
     }
-  };
+  } finally {
+    setDeleting(false);
+  }
+};
+
+
 
   return (
     <div className="space-y-4">
@@ -267,22 +251,24 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
                   <TableCell>{user.nama_cabang || "-"}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      <Button
+                     <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleOpenDialog(user)}
+                        onClick={() => handleOpenDialog(user)}   // ✅ EDIT BUKA FORM
                         className="h-8 w-8 text-slate-500 hover:text-indigo-600"
                       >
                         <Edit className="w-4 h-4" />
                       </Button>
                       <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDelete(user.id)}
-                        className="h-8 w-8 text-slate-500 hover:text-red-600"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      setDeleteTarget(user);
+                      setDeleteConfirmOpen(true);
+                    }}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -292,7 +278,14 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
         </Table>
       </div>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog
+  open={dialogOpen}
+  onOpenChange={(open) => {
+    if (saving) return; // ⛔ CEGAH TUTUP SAAT LOADING
+    setDialogOpen(open);
+  }}
+>
+
   <DialogContent className="w-full max-w-md">
     <DialogHeader>
       <DialogTitle>{isEditing ? "Edit User" : "Tambah User Baru"}</DialogTitle>
@@ -374,9 +367,22 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
       <Button variant="outline" onClick={() => setDialogOpen(false)}>
         Batal
       </Button>
-      <Button className="bg-indigo-600 hover:bg-indigo-700 text-white" onClick={handleSubmit}>
-        {isEditing ? "Simpan Perubahan" : "Buat User"}
-      </Button>
+      <Button
+  className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2"
+  onClick={handleSubmit}
+  disabled={saving}
+>
+  {saving && (
+    <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+  )}
+
+  {saving
+    ? "Menyimpan..."
+    : isEditing
+    ? "Simpan Perubahan"
+    : "Buat User"}
+</Button>
+
     </DialogFooter>
   </DialogContent>
 </Dialog>
@@ -480,6 +486,47 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
         Next
       </Button>
     </div>
+  </DialogContent>
+</Dialog>
+
+<Dialog
+  open={deleteConfirmOpen}
+  onOpenChange={(open) => {
+    if (deleting) return; // ⛔ CEGAH TUTUP SAAT LOADING
+    setDeleteConfirmOpen(open);
+  }}
+>
+
+  <DialogContent className="max-w-sm">
+    <DialogHeader>
+      <DialogTitle>Konfirmasi Hapus</DialogTitle>
+    </DialogHeader>
+
+    <p className="text-sm text-slate-600">
+      Yakin ingin menghapus user{" "}
+      <span className="font-semibold text-red-600">
+        {deleteTarget?.username}
+      </span>
+      ?
+    </p>
+
+    <DialogFooter className="flex justify-end gap-2">
+      <Button variant="outline" onClick={() => setDeleteConfirmOpen(false)}>
+        Batal
+      </Button>
+      <Button
+  className="bg-red-600 hover:bg-red-700 text-white flex items-center gap-2"
+  onClick={handleDelete}
+  disabled={deleting}
+>
+  {deleting && (
+    <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></div>
+  )}
+
+  {deleting ? "Menghapus..." : "Ya, Hapus"}
+</Button>
+
+    </DialogFooter>
   </DialogContent>
 </Dialog>
 
