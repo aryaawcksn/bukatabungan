@@ -300,15 +300,15 @@ export default function DashboardPage() {
     }
 
     // 🔑 Ambil token dari localStorage
-    const token = localStorage.getItem("token");
-    if (!token) {
-      throw new Error("Token tidak ditemukan. Silakan login ulang.");
-    }
+    // const token = localStorage.getItem("token");
+    // if (!token) {
+    //   throw new Error("Token tidak ditemukan. Silakan login ulang.");
+    // }
 
     const response = await fetch('https://bukatabungan-production.up.railway.app/api/pengajuan', {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${token}`,
+        // 'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
       credentials: 'include'
@@ -378,10 +378,10 @@ export default function DashboardPage() {
     
     setIsCabangLoading(true);
     try {
-      const token = localStorage.getItem("token");
+      // const token = localStorage.getItem("token");
       const res = await fetch('https://bukatabungan-production.up.railway.app/api/cabang', {
         headers: {
-          'Authorization': `Bearer ${token}`
+          // 'Authorization': `Bearer ${token}`
         },
         credentials: 'include'
       });
@@ -408,7 +408,7 @@ export default function DashboardPage() {
   );
 
   try {
-    const token = localStorage.getItem("token");
+    // const token = localStorage.getItem("token");
 
     const res = await fetch(
       `https://bukatabungan-production.up.railway.app/api/cabang/${id}/status`,
@@ -416,7 +416,7 @@ export default function DashboardPage() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          // 'Authorization': `Bearer ${token}`,
         },
         credentials: 'include',
         body: JSON.stringify({ is_active: !currentStatus }),
@@ -462,17 +462,17 @@ export default function DashboardPage() {
     
     try {
       // 🔑 Ambil token dari localStorage
-      const token = localStorage.getItem("token");
-      if (!token) {
-        toast.error("Token tidak ditemukan. Silakan login ulang.");
-        return;
-      }
+      // const token = localStorage.getItem("token");
+      // if (!token) {
+      //   toast.error("Token tidak ditemukan. Silakan login ulang.");
+      //   return;
+      // }
 
       const response = await fetch(`https://bukatabungan-production.up.railway.app/api/pengajuan/${approvalDialog.submission.id}`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          // 'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ 
           status: newStatus,

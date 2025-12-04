@@ -17,6 +17,9 @@ dotenv.config();
 
 const app = express();
 
+/* ✅ FIX ERROR RATE LIMIT + PROXY */
+app.set("trust proxy", 1);
+
 // ===== GLOBAL CORS =====
 const allowedOrigins = [
   "https://bukatabungan.vercel.app",
@@ -36,8 +39,6 @@ app.use(cors({
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 }));
-
-import cookieParser from "cookie-parser";
 
 // ===== BODY PARSER =====
 app.use(express.json());
