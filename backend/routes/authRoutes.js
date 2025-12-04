@@ -1,5 +1,5 @@
 import express from "express";
-import { login, logout, register, getUsers, updateUser, deleteUser } from "../controllers/authController.js";
+import { login, logout, getMe, register, getUsers, updateUser, deleteUser } from "../controllers/authController.js";
 import { verifyToken } from "../middleware/auth.js";
 import { authorizeRole } from "../middleware/role.js";
 
@@ -10,6 +10,7 @@ import { loginLimiter } from "../middleware/rateLimit.js";
 // ✅ SEMUA ROLE BOLEH LOGIN
 router.post("/login", loginLimiter, login);
 router.post("/logout", logout);
+router.get("/me", verifyToken, getMe);
 
 // ✅ HANYA ADMIN YANG BOLEH REGISTER USER
 router.post(

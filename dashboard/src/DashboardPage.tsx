@@ -197,7 +197,10 @@ const mapBackendDataToFormSubmission = (data: any): FormSubmission => {
   };
 };
 
+import { useAuth } from "./context/AuthContext";
+
 export default function DashboardPage() {
+  const { user, logout } = useAuth();
   const [submissions, setSubmissions] = useState<FormSubmission[]>([]);
   const [loading, setLoading] = useState(true);
   const [, setIsRefreshing] = useState(false);
@@ -552,9 +555,7 @@ export default function DashboardPage() {
   }), [submissions]);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");   // kalau pakai token
-    sessionStorage.clear();             // kalau simpan session
-    window.location.href = "/login";    // redirect ke login
+    logout();
   };
 
   const getGreeting = () => {
@@ -616,7 +617,7 @@ const scrollToTop = () => {
           <div className="flex items-center gap-6">
             <div className="hidden md:block text-right">
               <p className="text-xs font-medium text-slate-500 mb-0.5">
-                {localStorage.getItem("admin_nama_cabang") || "Pusat"}
+                {user?.nama_cabang || "Pusat"}
               </p>
               {lastFetchTime && (
                 <p className="text-[10px] text-slate-400 flex items-center justify-end gap-1">
@@ -631,15 +632,15 @@ const scrollToTop = () => {
             <div className="flex items-center gap-3 pl-2">
               <div className="text-right hidden sm:block">
                 <p className="text-sm font-semibold text-slate-800 leading-tight">
-                  {(localStorage.getItem("admin_username") || "Admin").charAt(0).toUpperCase() + (localStorage.getItem("admin_username") || "Admin").slice(1)}
+                  {(user?.username || "Admin").charAt(0).toUpperCase() + (user?.username || "Admin").slice(1)}
                 </p>
                 <p className="text-xs text-slate-500">
-                {(localStorage.getItem("role") || "Admin").charAt(0).toUpperCase() + (localStorage.getItem("role") || "Admin").slice(1)}
+                {(user?.role || "Admin").charAt(0).toUpperCase() + (user?.role || "Admin").slice(1)}
 
                 </p>
               </div>
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold ring-2 ring-white">
-                {(localStorage.getItem("admin_username") || "A").charAt(0).toUpperCase()}
+                {(user?.username || "A").charAt(0).toUpperCase()}
               </div>
             </div>
           </div>
@@ -651,7 +652,7 @@ const scrollToTop = () => {
             {[
               { id: 'dashboard', label: 'Overview', icon: LayoutDashboard },
               { id: 'submissions', label: 'Permohonan', icon: ClipboardCheck },
-              { id: 'manage', label: 'Pengaturan', icon: FileCog, hidden: localStorage.getItem("role") === "employement" },
+              { id: 'manage', label: 'Pengaturan', icon: FileCog, hidden: user?.role === "employement" },
               { id: 'logout', label: 'Keluar', icon: LogOut }
             ].filter(tab => !tab.hidden).map(tab => {
               const Icon = tab.icon;
@@ -684,7 +685,7 @@ const scrollToTop = () => {
         {activeTab === 'dashboard' && (
       <div className="mb-10">
         <h2 className="text-3xl font-bold text-slate-900 tracking-tight">
-          {getGreeting()}, {localStorage.getItem("admin_username") || "Admin"}! 👋
+          {getGreeting()}, {user?.username || "Admin"}! 👋
         </h2>
         <p className="text-slate-500 mt-2 text-lg">
           Berikut adalah ringkasan aktivitas permohonan rekening hari ini.

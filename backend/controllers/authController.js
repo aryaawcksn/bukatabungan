@@ -121,6 +121,41 @@ export const logout = async (req, res) => {
 };
 
 /* =========================
+   GET ME (SESSION USER)
+========================= */
+export const getMe = async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    const result = await pool.query(`
+      SELECT 
+        u.id,
+        u.username,
+        u.role,
+        u.cabang_id,
+        c.nama_cabang
+      FROM users u
+      LEFT JOIN cabang c ON u.cabang_id = c.id
+      WHERE u.id = $1
+    `, [req.user.id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.json({
+      success: true,
+      user: result.rows[0]
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+/* =========================
    REGISTER USER (ADMIN)
 ========================= */
 export const register = async (req, res) => {
