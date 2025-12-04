@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import path from "path";
+import cookieParser from "cookie-parser"; // ✅ WAJIB ADA
 
 // Import routes
 import uploadRouter from "./upload.js";
