@@ -83,61 +83,79 @@ export default function FormSimpel({
         </div>
       )}
 
-      {/* STEP 2: DATA DIRI & UPLOAD */}
+      {/* STEP 2: upload KTP*/}
       {currentStep === 2 && (
+  <div className="space-y-8">
+
+    {/* Illustration */}
+    <div className="flex justify-center">
+      <img
+        src="../kia.png" // ganti dengan path ilustrasi KTP benar & salah
+        alt="Ilustrasi KTP Benar dan Salah"
+        className="w-full max-w-md h-auto rounded-md shadow-sm"
+      />
+    </div>
+
+    {/* Upload Section */}
+    <div>
+      <h3 className="text-emerald-900 mb-6 text-2xl font-bold">Upload KIA</h3>
+      <div className="grid md:grid-cols-1 gap-6">
+        {/* ===== Upload Foto KTP ===== */}
+        <div>
+          {errors.ktp && <p className="text-red-600 text-sm mb-1">{errors.ktp}</p>}
+          {!ktpFile && !ktpPreview ? (
+            <Upload
+              label="Foto KIA"
+              description="Format: JPG, PNG (Max. 2MB)"
+              onChange={(file) => {
+                setKtpFile(file);
+                setKtpPreview(URL.createObjectURL(file));
+                setKtpUrl(null);
+                setErrors(prev => ({ ...prev, ktp: "" })); 
+              }}
+            />
+          ) : (
+            <div className="mt-2 relative group">
+              <img
+                src={ktpPreview || ktpUrl!}
+                alt="KIA Preview"
+                className="w-full h-48 object-cover rounded-md shadow-md"
+              />
+              <button
+                type="button"
+                className="absolute inset-0 bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-md font-medium"
+                onClick={() => {
+                  setKtpFile(null);
+                  setKtpPreview(null);
+                  setKtpUrl(null);
+                }}
+              >
+                Ganti Foto
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
+
+      {/* STEP 3: DATA PEKERJAAN & ALAMAT */}
+      {currentStep === 3 && (
         <div className="space-y-8">
           
-          {/* Upload Section */}
+          {/* Alamat */}
           <div>
-            <h3 className="text-emerald-900 mb-6 text-2xl font-bold">Dokumen Identitas</h3>
-            <div className="grid md:grid-cols-1 gap-6">
-              {/* ===== Upload Foto KTP ===== */}
-              <div>
-                {errors.ktp && <p className="text-red-600 text-sm mb-1">{errors.ktp}</p>}
-                {!ktpFile && !ktpPreview ? (
-                  <Upload
-                    label="Foto KTP / Kartu Pelajar"
-                    description="Format: JPG, PNG (Max. 2MB)"
-                    onChange={(file) => {
-                      setKtpFile(file);
-                      setKtpPreview(URL.createObjectURL(file));
-                      setKtpUrl(null);
-                      setErrors(prev => ({ ...prev, ktp: "" })); 
-                    }}
-                  />
-                ) : (
-                  <div className="mt-2 relative group">
-                    <img
-                      src={ktpPreview || ktpUrl!}
-                      alt="KTP Preview"
-                      className="w-full h-48 object-cover rounded-md shadow-md"
-                    />
-                    <button
-                      type="button"
-                      className="absolute inset-0 bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-md font-medium"
-                      onClick={() => {
-                        setKtpFile(null);
-                        setKtpPreview(null);
-                        setKtpUrl(null);
-                      }}
-                    >
-                      Ganti Foto
-                    </button>
-                  </div>
-                )}
-              </div>
+            <div className="space-y-5">
 
-
-            </div>
-          </div>
-
-          <div className="border-t border-slate-100 pt-8">
-            <h3 className="text-emerald-900 mb-6 text-2xl font-bold">Data Pribadi (Pelajar)</h3>
+              <div className="border-t border-slate-100 pt-8">
+            <h3 className="text-emerald-900 mb-6 text-2xl font-bold">Isi Data diri</h3>
             <div className="space-y-5">
 
               {/* Nama Lengkap */}
               <div>
-                <Label htmlFor="fullName" className="text-gray-700">Nama Lengkap (Sesuai KTP/KIA)</Label>
+                <Label htmlFor="fullName" className="text-gray-700">Nama Lengkap</Label>
                 <Input
                   id="fullName"
                   required
@@ -150,12 +168,12 @@ export default function FormSimpel({
 
               {/* NIK */}
               <div>
-                <Label htmlFor="nik" className="text-gray-700">NIK / NISN</Label>
+                <Label htmlFor="nik" className="text-gray-700">NIK / KIA</Label>
                 {errors.nik && <p className="text-sm text-red-600 mb-1">{errors.nik}</p>}
                 <Input
                   id="nik"
                   required
-                  placeholder="16 digit NIK"
+                  placeholder="16 digit"
                   maxLength={16}
                   value={formData.nik}
                   onChange={(e) => setFormData({ ...formData, nik: e.target.value })}
@@ -256,18 +274,88 @@ export default function FormSimpel({
                 />
               </div>
 
-              <div className="grid md:grid-cols-2 gap-5">
+              <div className="grid md:grid-cols-1 gap-5">
                 <div>
-                  <Label htmlFor="citizenship" className="text-gray-700">Kewarganegaraan</Label>
-                  <Input
-                    id="citizenship"
-                    required
-                    placeholder="Contoh: Indonesia"
-                    value={formData.citizenship}
-                    onChange={(e) => setFormData({ ...formData, citizenship: e.target.value })}
-                    className="mt-2 h-12 rounded-md"
-                  />
-                </div>
+  <Label className="text-gray-700">Kewarganegaraan</Label>
+
+  {/* Radio options */}
+  <div className="flex items-center gap-6 mt-2">
+  {/* INDONESIA */}
+  <label className="flex items-center gap-3 cursor-pointer">
+    <input
+      type="radio"
+      name="citizenship"
+      value="Indonesia"
+      checked={formData.citizenship === "Indonesia"}
+      onChange={(e) =>
+        setFormData({ ...formData, citizenship: e.target.value })
+      }
+      className="hidden"
+    />
+
+    <span
+      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition
+        ${
+          formData.citizenship === "Indonesia"
+            ? "border-blue-500"
+            : "border-gray-300"
+        }
+      `}
+    >
+      {formData.citizenship === "Indonesia" && (
+        <span className="w-2.5 h-2.5 bg-blue-500 rounded-full" />
+      )}
+    </span>
+
+    <span className="text-sm text-gray-700">Indonesia</span>
+  </label>
+
+  {/* LAINNYA */}
+  <label className="flex items-center gap-3 cursor-pointer">
+    <input
+      type="radio"
+      name="citizenship"
+      value="Other"
+      checked={formData.citizenship !== "Indonesia" && formData.citizenship !== ""}
+      onChange={() =>
+        setFormData({ ...formData, citizenship: "" })
+      }
+      className="hidden"
+    />
+
+    <span
+      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition
+        ${
+          formData.citizenship !== "Indonesia" && formData.citizenship !== ""
+            ? "border-blue-500"
+            : "border-gray-300"
+        }
+      `}
+    >
+      {formData.citizenship !== "Indonesia" && formData.citizenship !== "" && (
+        <span className="w-2.5 h-2.5 bg-blue-500 rounded-full" />
+      )}
+    </span>
+
+    <span className="text-sm text-gray-700">Lainnya</span>
+  </label>
+
+  {/* INPUT CUSTOM */}
+  {formData.citizenship !== "Indonesia" && (
+    <input
+      type="text"
+      placeholder="Ketik kewarganegaraan lain"
+      value={formData.citizenship}
+      onChange={(e) =>
+        setFormData({ ...formData, citizenship: e.target.value })
+      }
+      className="border border-gray-300 rounded-md px-3 py-2 text-sm h-10"
+    />
+  )}
+</div>
+
+</div>
+
 
                 <div>
                   <Label htmlFor="motherName" className="text-gray-700">Nama Ibu Kandung</Label>
@@ -310,29 +398,20 @@ export default function FormSimpel({
 
             </div>
           </div>
-        </div>
-      )}
 
-      {/* STEP 3: DATA PEKERJAAN & ALAMAT */}
-      {currentStep === 3 && (
-        <div className="space-y-8">
-          
-          {/* Alamat */}
-          <div>
-            <h3 className="text-emerald-900 mb-6 text-2xl font-bold">Alamat Domisili</h3>
-            <div className="space-y-5">
               <div>
-                <Label htmlFor="address" className="text-gray-700">Alamat Lengkap</Label>
-                <Textarea
-                  id="address"
-                  required
-                  placeholder="Jalan, RT/RW, Kelurahan, Kecamatan"
-                  rows={3}
-                  value={formData.address}
-                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  className="mt-2 rounded-md"
-                />
-              </div>
+                              <Label htmlFor="address" className="text-gray-700">Alamat Lengkap</Label>
+                              <Textarea
+                                id="address"
+                                required
+                                placeholder="Jalan, RT/RW, Kelurahan, Kecamatan"
+                                rows={3}
+                                value={formData.address}
+                                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                                className="mt-2"
+                              />
+                            </div>
+
 
               <div className="grid md:grid-cols-3 gap-5">
                 <div>

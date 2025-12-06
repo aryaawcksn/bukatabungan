@@ -8,6 +8,12 @@ import FormBusiness from './account-forms/FormReguler';
 import FormIndividu from './account-forms/FormMutiara';
 import type { AccountFormData } from './account-forms/types';
 import { useNavigate } from 'react-router-dom';
+import FormArofah from './account-forms/FormArofah';
+import FormTamasya from './account-forms/FormTamasyaPlus';
+import FormTabunganku from './account-forms/FormTabunganKu';
+import FormPensiun from './account-forms/FormPensiun';
+import FormReguler from './account-forms/FormReguler';
+import FormMutiara from './account-forms/FormMutiara';
 
 interface AccountFormProps {
   savingsType: string;
@@ -99,34 +105,36 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
   }, []);
 
   const [formData, setFormData] = useState<AccountFormData>({
-    fullName: '',
-    nik: '',
-    email: '',
-    phone: '',
-    birthDate: '',
-    address: '',
-    province: '',
-    city: '',
-    postalCode: '',
-    monthlyIncome: '',
-    cabang_pengambilan: '',
-    cardType: '',
-    agreeTerms: false,
-    jenis_rekening: '',
+  fullName: '',
+  nik: '',
+  email: '',
+  phone: '',
+  birthDate: '',
+  address: '',
+  province: '',
+  city: '',
+  postalCode: '',
+  monthlyIncome: '',
+  cabang_pengambilan: '',
+  cardType: '',
+  agreeTerms: false,
+  jenis_rekening: '',
 
-    gender: '',
-    maritalStatus: '',
-    citizenship: '',
-    motherName: '',
+  gender: '',
+  maritalStatus: '',
+  citizenship: '',
+  motherName: '',
 
-    tempatBekerja: '',
-    alamatKantor: '',
-    sumberDana: '',
-    tujuanRekening: '',
-    kontakDaruratNama: '',
-    kontakDaruratHp: '',
-    employmentStatus: '',
-  });
+  tempatBekerja: '',
+  alamatKantor: '',
+  sumberDana: '',
+  tujuanRekening: '',
+  kontakDaruratNama: '',
+  kontakDaruratHp: '',
+  employmentStatus: '',
+
+});
+
 
   const [branches, setBranches] = useState<any[]>([]);
 
@@ -185,12 +193,16 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
         return 'Tabungan Bank Sleman';
       case 'simpel':
         return 'Tabungan Simpel';
-      case 'individu':
-        return 'Tabungan Individu';
-      case 'promosi':
-        return 'Tabungan Promosi';
+      case 'arofah':
+        return 'Tabungan Arofah';
+      case 'tamasya':
+        return 'Tabungan Tamasya';
+      case 'tabunganku':
+        return 'Tabungan Ku';
+      case 'pensiun':
+        return 'Tabungan Pensiun(Taspen)';
       default:
-        return 'Tabungan';
+        return 'Undefinied';
     }
   };
 
@@ -209,31 +221,13 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
        }
     } else if (currentStep === 2) {
        // Validate Personal Data & Uploads
-       if (!formData.fullName) newErrors.fullName = "Nama lengkap wajib diisi";
-       if (!formData.nik) newErrors.nik = "NIK wajib diisi";
-       if (!formData.email) newErrors.email = "Email wajib diisi";
-       if (!formData.phone) newErrors.phone = "Nomor telepon wajib diisi";
-       if (!formData.birthDate) newErrors.birthDate = "Tanggal lahir wajib diisi";
-       if (!formData.gender) newErrors.gender = "Jenis kelamin wajib diisi";
-       if (!formData.citizenship) newErrors.citizenship = "Kewarganegaraan wajib diisi";
-       if (!formData.motherName) newErrors.motherName = "Nama ibu kandung wajib diisi";
+       
        
        if (!ktpFile && !ktpUrl) newErrors.ktp = "Silakan upload foto KTP!";
 
 
        // Async validations
-       if (!newErrors.nik) {
-          const nikErr = await validateNikAsync(formData.nik);
-          if (nikErr) newErrors.nik = nikErr;
-       }
-       if (!newErrors.email) {
-          const emailErr = await validateEmailAsync(formData.email);
-          if (emailErr) newErrors.email = emailErr;
-       }
-       if (!newErrors.phone) {
-          const phoneErr = await validatePhoneAsync(formData.phone);
-          if (phoneErr) newErrors.phone = phoneErr;
-       }
+       
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -266,6 +260,14 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     
     // Final Step Validation
     const newErrors: Record<string,string> = {};
+    if (!formData.fullName) newErrors.fullName = "Nama lengkap wajib diisi";
+    if (!formData.nik) newErrors.nik = "NIK wajib diisi";
+    if (!formData.email) newErrors.email = "Email wajib diisi";
+    if (!formData.phone) newErrors.phone = "Nomor telepon wajib diisi";
+    if (!formData.birthDate) newErrors.birthDate = "Tanggal lahir wajib diisi";
+    if (!formData.gender) newErrors.gender = "Jenis kelamin wajib diisi";
+    if (!formData.citizenship) newErrors.citizenship = "Kewarganegaraan wajib diisi";
+    if (!formData.motherName) newErrors.motherName = "Nama ibu kandung wajib diisi";
     if (!formData.address) newErrors.address = "Alamat wajib diisi";
     if (!formData.province) newErrors.province = "Provinsi wajib diisi";
     if (!formData.city) newErrors.city = "Kota/Kabupaten wajib diisi";
@@ -274,6 +276,19 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     if (!formData.sumberDana) newErrors.sumberDana = "Sumber dana wajib diisi";
     if (!formData.tujuanRekening) newErrors.tujuanRekening = "Tujuan rekening wajib diisi";
     if (!formData.agreeTerms) newErrors.agreeTerms = "Anda harus menyetujui syarat dan ketentuan";
+
+    if (!newErrors.nik) {
+          const nikErr = await validateNikAsync(formData.nik);
+          if (nikErr) newErrors.nik = nikErr;
+       }
+       if (!newErrors.email) {
+          const emailErr = await validateEmailAsync(formData.email);
+          if (emailErr) newErrors.email = emailErr;
+       }
+       if (!newErrors.phone) {
+          const phoneErr = await validatePhoneAsync(formData.phone);
+          if (phoneErr) newErrors.phone = phoneErr;
+       }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(prev => ({ ...prev, ...newErrors }));
@@ -395,9 +410,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
         return;
       }
     }
-  
 
-  
     // ============================
     // 3. Siapkan data submit
     // ============================
@@ -499,7 +512,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
           <ul className="space-y-4 text-gray-700">
             <li className="flex items-start gap-3">
               <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-              <span>Kami akan mengirimkan email konfirmasi ke alamat email Anda</span>
+              <span>Kami akan mengirimkan pesan konfirmasi melalui whatsapp</span>
             </li>
             <li className="flex items-start gap-3">
               <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
@@ -507,15 +520,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
             </li>
             <li className="flex items-start gap-3">
               <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-              <span>Anda akan menerima nomor virtual account untuk setoran awal</span>
-            </li>
-            <li className="flex items-start gap-3">
-              <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-              <span>Setelah setoran diterima, rekening Anda akan aktif</span>
-            </li>
-            <li className="flex items-start gap-3">
-              <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-              <span>Kartu debit akan dikirim ke alamat Anda dalam 7-10 hari kerja</span>
+              <span>Setelah disetujui mohon datang pada cabang yang telah anda</span>
             </li>
           </ul>
         </div>
@@ -527,7 +532,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
             {referenceCode ?? `BKU-2025-${Math.floor(Math.random() * 100000)}`}
           </p>
           <p className="text-sm text-gray-600">
-            Simpan nomor ini untuk keperluan tracking aplikasi Anda
+            Simpan nomor ini untuk keperluan tracking pengajuan anda
           </p>
         </div>
         
@@ -570,18 +575,31 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       return <FormSimpel {...commonProps} />;
     } else if (savingsType === 'regular') {
       return <FormBusiness {...commonProps} />;
-    } else {
+    }else if (savingsType === 'mutiara') {
+      return <FormMutiara {...commonProps} />;
+    }else if (savingsType === 'arofah') {
+      return <FormArofah {...commonProps} />;
+    }else if (savingsType === 'tamasya') {
+      return <FormTamasya {...commonProps} />;
+    }else if (savingsType === 'tabunganku') {
+      return <FormTabunganku {...commonProps} />;
+    }else if (savingsType === 'pensiun') {
+      return <FormPensiun {...commonProps} />;
+    }else if (savingsType === 'regular') {
+      return <FormReguler {...commonProps} />;
+    } 
+    else {
       // Default for individu, mutiara, promosi
-      return <FormIndividu {...commonProps} />;
+      return <FormMutiara {...commonProps} />;
     }
   };
 
   const steps = [
   { number: 1, title: "Pilih Cabang", icon: Building2 },
-  { number: 2, title: "Data Diri", icon: User },
+  { number: 2, title: "Upload Dokumen", icon: User },
   {
     number: 3,
-    title: savingsType === "simpel" ? "Data Sekolah" : "Data Pekerjaan",
+    title: "Isi Data Diri",
     icon: FileText,
   },
   { number: 4, title: "Selesai", icon: CircleCheckBig },

@@ -8,11 +8,11 @@ import { Upload } from "../Upload";
 import type { AccountFormProps } from './types';
 import TermsModal from '../TermsModal';
 
-interface FormIndividuProps extends AccountFormProps {
+interface FormMutiaraProps extends AccountFormProps {
   currentStep?: number;
 }
 
-export default function FormIndividu({
+export default function FormMutiara({
   formData,
   setFormData,
   errors,
@@ -30,7 +30,7 @@ export default function FormIndividu({
 
   branches = [],
   currentStep = 1,
-}: FormIndividuProps) {
+}: FormMutiaraProps) {
   const [showTermsModal, setShowTermsModal] = useState(false);
 
   return (

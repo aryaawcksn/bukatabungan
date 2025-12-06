@@ -8,11 +8,11 @@ import { Upload } from "../Upload";
 import type { AccountFormProps } from './types';
 import TermsModal from '../TermsModal';
 
-interface FormBusinessProps extends AccountFormProps {
+interface FormRegulerProps extends AccountFormProps {
   currentStep?: number;
 }
 
-export default function FormBusiness({
+export default function FormReguler({
   formData,
   setFormData,
   errors,
@@ -30,7 +30,7 @@ export default function FormBusiness({
 
   branches = [],
   currentStep = 1,
-}: FormBusinessProps) {
+}: FormRegulerProps) {
   const [showTermsModal, setShowTermsModal] = useState(false);
 
    return (
