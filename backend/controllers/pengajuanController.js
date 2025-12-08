@@ -291,11 +291,15 @@ export const getAllPengajuan = async (req, res) => {
         cs.no_hp,
         cs.email,
         acc.tabungan_tipe AS jenis_rekening,
-        c.nama_cabang
+        c.nama_cabang,
+        ua.name AS approved_by_name,
+        ur.name AS rejected_by_name
       FROM pengajuan_tabungan p
       LEFT JOIN cdd_self cs ON p.id = cs.pengajuan_id
       LEFT JOIN account acc ON p.id = acc.pengajuan_id
       LEFT JOIN cabang c ON p.cabang_id = c.id
+      LEFT JOIN users ua ON ua.id = p.approved_by
+      LEFT JOIN users ur ON ur.id = p.rejected_by
       WHERE p.cabang_id = $1
       ORDER BY p.created_at DESC
     `;
@@ -330,7 +334,8 @@ export const updatePengajuanStatus = async (req, res) => {
           WHERE id = $3 AND cabang_id = $4
           RETURNING *;
         `;
-      values = [status, req.user.id, id, req.user.cabang_id];
+      values = [status, req.user.id, req.user.name, id, req.user.cabang_id];
+
     }
     else if (status === 'rejected') {
       query = `
@@ -339,7 +344,7 @@ export const updatePengajuanStatus = async (req, res) => {
         WHERE id = $3 AND cabang_id = $4 
         RETURNING *;
       `;
-      values = [status, req.user.id, id, req.user.cabang_id];
+      values = [status, req.user.id, req.user.name, id, req.user.cabang_id];
     } else {
       query = `
         UPDATE pengajuan_tabungan 
