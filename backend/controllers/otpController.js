@@ -3,44 +3,26 @@ import { sendWhatsAppNotification } from "../utils/sendWhatsApp.js";
 
 export const sendOtpHandler = async (req, res) => {
   try {
-    const { pengajuan_id } = req.body;
+    const { phone } = req.body;
 
-    if (!pengajuan_id) {
+    if (!phone) {
       return res.status(400).json({
         success: false,
-        message: "pengajuan_id wajib dikirim"
+        message: "Nomor telepon wajib diisi"
       });
     }
 
-    // ✅ Ambil nomor HP dari cdd_self
-    const phoneRes = await pool.query(
-      `SELECT no_hp 
-       FROM cdd_self 
-       WHERE pengajuan_id = $1 
-       LIMIT 1`,
-      [pengajuan_id]
-    );
-
-    if (phoneRes.rowCount === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "Nomor HP tidak ditemukan untuk pengajuan ini"
-      });
-    }
-
-    const phone = phoneRes.rows[0].no_hp;
-
-    // ✅ Generate OTP 6 digit
+    // Generate 6 digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // ✅ Simpan OTP
+    // Simpan OTP
     await pool.query(
       `INSERT INTO otp_codes (phone, otp, expires_at)
        VALUES ($1, $2, NOW() + INTERVAL '3 minutes')`,
       [phone, otp]
     );
 
-    // ✅ Kirim WhatsApp
+    // Kirim WhatsApp
     await sendWhatsAppNotification(
       phone,
       "",
@@ -50,8 +32,7 @@ export const sendOtpHandler = async (req, res) => {
 
     return res.json({
       success: true,
-      message: "OTP berhasil dikirim",
-      phone // optional untuk debug
+      message: "OTP berhasil dikirim ke WhatsApp."
     });
 
   } catch (err) {
