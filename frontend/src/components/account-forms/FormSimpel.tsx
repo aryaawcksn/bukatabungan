@@ -20,12 +20,6 @@ export default function FormSimpel({
   validateEmailAsync,
   validatePhoneAsync,
   getFieldClass,
-  ktpFile,
-  setKtpFile,
-  ktpPreview,
-  setKtpPreview,
-  ktpUrl,
-  setKtpUrl,
 
   branches = [],
   currentStep = 1,

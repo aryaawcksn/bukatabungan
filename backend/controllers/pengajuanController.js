@@ -330,7 +330,7 @@ export const updatePengajuanStatus = async (req, res) => {
           WHERE id = $3 AND cabang_id = $4
           RETURNING *;
         `;
-      values = [status, adminUsername, id, req.user.cabang_id];
+      values = [status, req.user.id, id, req.user.cabang_id];
     }
     else if (status === 'rejected') {
       query = `
@@ -339,7 +339,7 @@ export const updatePengajuanStatus = async (req, res) => {
         WHERE id = $3 AND cabang_id = $4 
         RETURNING *;
       `;
-      values = [status, adminUsername, id, req.user.cabang_id];
+      values = [status, req.user.id, id, req.user.cabang_id];
     } else {
       query = `
         UPDATE pengajuan_tabungan 

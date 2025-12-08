@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
-import { ArrowLeft, CheckCircle, Sparkles, Phone, Mail, MapPin, ChevronRight, User, Building2, FileText, Check, CircleCheckBig } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Sparkles, ChevronRight, User, Building2, FileText, Check, CircleCheckBig } from 'lucide-react';
 import OtpModal from './OtpModal';
 import FormSimpel from './account-forms/FormSimpel';
 import FormBusiness from './account-forms/FormReguler';
-import FormIndividu from './account-forms/FormMutiara';
 import type { AccountFormData } from './account-forms/types';
 import { useNavigate } from 'react-router-dom';
 import FormArofah from './account-forms/FormArofah';
