@@ -110,10 +110,18 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
   email: '',
   phone: '',
   birthDate: '',
+  // New Fields
+  tempatLahir: '',
   address: '',
+  alamatDomisili: '',
   province: '',
   city: '',
   postalCode: '',
+  statusRumah: '',
+  agama: '',
+  pendidikan: '',
+  npwp: '',
+
   monthlyIncome: '',
   cabang_pengambilan: '',
   cardType: '',
@@ -127,12 +135,15 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
 
   tempatBekerja: '',
   alamatKantor: '',
+  jabatan: '',
+  bidangUsaha: '',
   sumberDana: '',
   tujuanRekening: '',
+
   kontakDaruratNama: '',
   kontakDaruratHp: '',
+  kontakDaruratHubungan: '',
   employmentStatus: '',
-
 });
 
 
@@ -223,7 +234,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
        // Validate Personal Data & Uploads
        
        
-       if (!ktpFile && !ktpUrl) newErrors.ktp = "Silakan upload foto KTP!";
+       
 
 
        // Async validations
@@ -384,67 +395,95 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     // ============================
     // 1. Upload KTP
     // ============================
-    let ktpUploadedUrl = ktpUrl;
-    if (ktpFile && !ktpUploadedUrl) {
-      try {
-        const formDataKtp = new FormData();
-        formDataKtp.append("gambar", ktpFile);
+    // let ktpUploadedUrl = ktpUrl;
+    // if (ktpFile && !ktpUploadedUrl) {
+    //   try {
+    //     const formDataKtp = new FormData();
+    //     formDataKtp.append("gambar", ktpFile);
   
-        const resKtp = await fetch(
-          "https://bukatabungan-production.up.railway.app/upload",
-          {
-            method: "POST",
-            body: formDataKtp,
-            credentials: "include",
-          }
-        );
+    //     const resKtp = await fetch(
+    //       "https://bukatabungan-production.up.railway.app/upload",
+    //       {
+    //         method: "POST",
+    //         body: formDataKtp,
+    //         credentials: "include",
+    //       }
+    //     );
   
-        if (!resKtp.ok) throw new Error("Gagal upload KTP");
+    //     if (!resKtp.ok) throw new Error("Gagal upload KTP");
   
-        const dataKtp = await resKtp.json();
-        ktpUploadedUrl = dataKtp.url;
-        setKtpUrl(ktpUploadedUrl);
-      } catch (err) {
-        alert("Upload KTP gagal, coba lagi!");
-        setLoadingSubmit(false);
-        return;
-      }
-    }
+    //     const dataKtp = await resKtp.json();
+    //     ktpUploadedUrl = dataKtp.url;
+    //     setKtpUrl(ktpUploadedUrl);
+    //   } catch (err) {
+    //     alert("Upload KTP gagal, coba lagi!");
+    //     setLoadingSubmit(false);
+    //     return;
+    //   }
+    // }
 
     // ============================
     // 3. Siapkan data submit
     // ============================
     const submitData = {
+      nama: data.fullName,
       nama_lengkap: data.fullName,
       nik: data.nik,
+      no_id: data.nik, // Fallback
       email: data.email,
       no_hp: data.phone,
       tanggal_lahir: data.birthDate,
+      tempat_lahir: data.tempatLahir,
+      
+      alamat_id: data.address,
       alamat: data.address,
+      alamat_now: data.alamatDomisili || data.address,
+      
       provinsi: data.province,
       kota: data.city,
       kode_pos: data.postalCode,
-      jenis_rekening: data.jenis_rekening,
-      penghasilan: data.monthlyIncome,
+      
       jenis_kelamin: data.gender,
+      status_kawin: data.maritalStatus,
       status_perkawinan: data.maritalStatus,
+      
       kewarganegaraan: data.citizenship,
       nama_ibu_kandung: data.motherName,
+      status_rumah: data.statusRumah,
+      agama: data.agama,
+      pendidikan: data.pendidikan,
+      npwp: data.npwp,
+
+      // Job
+      pekerjaan: data.employmentStatus,
+      penghasilan: data.monthlyIncome,
+      gaji_per_bulan: data.monthlyIncome,
+      nama_perusahaan: data.tempatBekerja,
       tempat_bekerja: data.tempatBekerja,
+      alamat_perusahaan: data.alamatKantor,
       alamat_kantor: data.alamatKantor,
+      jabatan: data.jabatan,
+      bidang_usaha: data.bidangUsaha,
       sumber_dana: data.sumberDana,
+
+      // Account
+      jenis_rekening: data.jenis_rekening,
+      tabungan_tipe: data.jenis_rekening,
       tujuan_rekening: data.tujuanRekening,
+      tujuan_pembukaan: data.tujuanRekening,
+      
+      // Emergency
       kontak_darurat_nama: data.kontakDaruratNama,
       kontak_darurat_hp: data.kontakDaruratHp,
-      pekerjaan: data.employmentStatus,
+      kontak_darurat_hubungan: data.kontakDaruratHubungan,
+
       setuju_data: data.agreeTerms ? "Ya" : "Tidak",
       jenis_kartu: data.cardType || getDefaultCardType(),
       card_type: data.cardType || getDefaultCardType(),
       savings_type: savingsType,
       savings_type_name: getSavingsTypeName(),
-      cabang_pengambilan: data.cabang_pengambilan, // This will now be the ID
-      cabang_id: data.cabang_pengambilan, // Send ID explicitly
-      foto_ktp: ktpUploadedUrl,
+      cabang_pengambilan: data.cabang_pengambilan, 
+      cabang_id: data.cabang_pengambilan,
 
     };
   

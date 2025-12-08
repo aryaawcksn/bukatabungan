@@ -6,25 +6,42 @@ export interface AccountFormData {
     email: string;
     phone: string;
     birthDate: string;
-    address: string;
+    // Data Diri Tambahan
+    tempatLahir: string;
+    address: string; // Alamat KTP
+    alamatDomisili: string; // Alamat Domisili
     province: string;
     city: string;
     postalCode: string;
+    statusRumah: string;
+    agama: string;
+    pendidikan: string;
+    npwp: string;
+
+    // Account
     monthlyIncome: string;
     cabang_pengambilan: string;
     cardType: string;
     agreeTerms: boolean;
     jenis_rekening: string;
+
     gender: string;
     maritalStatus: string;
     citizenship: string;
     motherName: string;
-    tempatBekerja: string;
+
+    // Pekerjaan
+    tempatBekerja: string; // Nama Perusahaan
     alamatKantor: string;
+    jabatan: string;
+    bidangUsaha: string;
     sumberDana: string;
     tujuanRekening: string;
+
+    // Darurat
     kontakDaruratNama: string;
     kontakDaruratHp: string;
+    kontakDaruratHubungan: string;
     employmentStatus: string;
 }
 
@@ -45,12 +62,10 @@ export interface AccountFormProps {
     ktpUrl: string | null;
     setKtpUrl: Dispatch<SetStateAction<string | null>>;
 
-
-
     loadingSubmit: boolean;
     handleSubmit: (e: FormEvent) => void;
     savingsType: string;
     getSavingsTypeName: () => string;
     branches?: any[];
+    currentStep?: number; // Added optional currentStep
 }
-

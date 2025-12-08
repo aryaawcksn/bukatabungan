@@ -3,346 +3,259 @@ import { sendEmailNotification } from "../services/emailService.js";
 import { sendWhatsAppNotification } from "../services/whatsappService.js";
 
 /**
- * Cek apakah kolom status ada di tabel pengajuan_tabungan
- */
-const checkStatusColumn = async () => {
-  try {
-    const checkColumn = await pool.query(`
-      SELECT column_name 
-      FROM information_schema.columns 
-      WHERE table_name = 'pengajuan_tabungan' AND column_name = 'status'
-    `);
-    return checkColumn.rows.length > 0;
-  } catch (err) {
-    return false;
-  }
-};
-
-/**
- * Membuat pengajuan baru
+ * Membuat pengajuan baru dengan schema database baru (Multi-table)
  */
 export const createPengajuan = async (req, res) => {
+  const client = await pool.connect();
+
   try {
     console.log("📥 Received request body:", JSON.stringify(req.body, null, 2));
 
     const {
-      nama_lengkap,
-      nik,
+      // Data Diri (cdd_self)
+      nama,
+      nama_lengkap, // fallback
+      alias,
+      jenis_id = 'KTP',
+      no_id,
+      nik, // fallback for no_id
+      berlaku_id,
+      tempat_lahir,
+      tanggal_lahir,
+      alamat_id,
+      alamat, // fallback for alamat_id
+      kode_pos_id,
+      kode_pos, // fallback
+      alamat_now,
+      alamat_domisili, // fallback for alamat_now
+      jenis_kelamin,
+      status_kawin,
+      status_pernikahan, // fallback
+      agama,
+      pendidikan,
+      nama_ibu_kandung,
+      npwp,
       email,
       no_hp,
-      tanggal_lahir,
-      alamat,
-      provinsi,
-      kota,
-      kode_pos,
-      pekerjaan,
-      penghasilan,
-      cabang_id,
-      foto_ktp,
-      // Field baru
-      jenis_kelamin,
-      status_pernikahan,
-      status_perkawinan, // Support both naming from frontend
-      nama_ibu_kandung,
       kewarganegaraan,
-      tempat_bekerja,
-      alamat_kantor,
+      status_rumah,
+
+      // Pekerjaan (cdd_job)
+      pekerjaan,
+      penghasilan, // gaji_per_bulan
       sumber_dana,
-      tujuan_rekening,
+      nama_perusahaan,
+      tempat_bekerja, // fallback
+      alamat_kantor, // alamat_perusahaan
+      jabatan,
+      bidang_usaha,
+
+      // Account
+      jenis_rekening, // tabungan_tipe
+      jenis_kartu, // atm_tipe
+      tujuan_rekening, // tujuan_pembukaan
+
+      // Kontak Darurat (cdd_reference)
       kontak_darurat_nama,
       kontak_darurat_hp,
-      setuju_data,
-      jenis_rekening,
+      kontak_darurat_hubungan,
+
+      // System
+      cabang_id
     } = req.body;
 
+    // Normalisasi value utama
+    const finalNama = nama || nama_lengkap;
+    const finalNoId = no_id || nik;
+    const finalAlamatId = alamat_id || alamat;
+    const finalKodePosId = kode_pos_id || kode_pos;
+    const finalAlamatNow = alamat_now || alamat_domisili || finalAlamatId;
+    const finalStatusKawin = status_kawin || status_pernikahan;
+    const finalNamaPerusahaan = nama_perusahaan || tempat_bekerja;
+    const finalAlamatPerusahaan = alamat_kantor; // asumsi nama field di frontend
+    const finalGaji = penghasilan;
+
     // Validasi field required
-    if (!nama_lengkap || !nik || !email || !no_hp || !tanggal_lahir ||
-      !alamat || !provinsi || !kota || !kode_pos || !cabang_id) {
+    if (!finalNama || !finalNoId || !email || !no_hp || !tanggal_lahir || !cabang_id) {
       console.error("❌ Missing required fields");
       return res.status(400).json({
         success: false,
-        message: "Field wajib tidak lengkap. Pastikan nama, NIK, email, no HP, tanggal lahir, alamat, provinsi, kota, dan kode pos sudah diisi."
+        message: "Field wajib tidak lengkap (Nama, NIK, Email, HP, Tgl Lahir, Cabang)."
       });
     }
 
-    // ✅ VALIDASI JENIS REKENING (WHITELIST)
-    const VALID_SAVING_TYPES = [
-      'mutiara',
-      'regular',
-      'simpel',
-      'arofah',
-      'tamasya',
-      'tabunganku',
-      'pensiun'
-    ];
+    // Generate Request ID / Kode Referensi
+    const kode_referensi = `REG-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
-    if (jenis_rekening && !VALID_SAVING_TYPES.includes(jenis_rekening)) {
-      console.error(`❌ Invalid saving type: ${jenis_rekening}`);
-      return res.status(400).json({
-        success: false,
-        message: "Jenis tabungan tidak valid."
-      });
-    }
+    await client.query('BEGIN');
 
-    // dukung beberapa nama field dari frontend
-    const jenis_kartu =
-      req.body.jenis_kartu ||
-      req.body.card_type ||
-      req.body.cardType ||
-      "debit";
-
-
-    // Normalize status_pernikahan (support both naming)
-    const statusPernikahan = status_pernikahan || status_perkawinan;
-
-    // Normalize setuju_data (convert 'Ya'/'Tidak' to boolean if needed)
-    let setujuDataValue = setuju_data;
-    if (typeof setuju_data === 'string') {
-      setujuDataValue = setuju_data === 'Ya' || setuju_data === 'true' || setuju_data === true;
-    } else if (setuju_data === undefined || setuju_data === null) {
-      setujuDataValue = false;
-    }
-
-    // Generate kode referensi unik
-    const kode_referensi = `REF-${Math.floor(Math.random() * 1000000)}`;
-
-    // Cek apakah kolom status ada di tabel
-    const hasStatusColumn = await checkStatusColumn();
-    console.log("📊 Has status column:", hasStatusColumn);
-
-    const cabangCheck = await pool.query(
-      "SELECT is_active FROM cabang WHERE id = $1",
-      [cabang_id]
-    );
-
-    if (cabangCheck.rows.length === 0) {
-      return res.status(400).json({ success: false, message: "Cabang tidak valid" });
-    }
-
-    if (!cabangCheck.rows[0].is_active) {
-      return res.status(403).json({ success: false, message: "Cabang sedang maintenance" });
-    }
-
-    // Query SQL dengan semua field sesuai schema database
-    let query = `
-      INSERT INTO pengajuan_tabungan 
-      (
-        kode_referensi,
-        nama_lengkap,
-        nik,
-        email,
-        no_hp,
-        tanggal_lahir,
-        alamat,
-        provinsi,
-        kota,
-        kode_pos,
-        pekerjaan,
-        penghasilan,
-        jenis_kartu,
-        cabang_id,
-        status,
-        foto_ktp,
-        jenis_rekening,
-        jenis_kelamin,
-        setuju_data,
-        kontak_darurat_hp,
-        kontak_darurat_nama,
-        tujuan_rekening,
-        sumber_dana,
-        alamat_kantor,
-        tempat_bekerja,
-        kewarganegaraan,
-        nama_ibu_kandung,
-        status_pernikahan
-      )
-      VALUES
-      (
-        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,
-        $11,$12,$13,$14,$15,
-        $16,$17,$18,$19,$20,
-        $21,$22,$23,$24,$25,
-        $26,$27,$28
-      )
-      RETURNING *;
+    // 1. Insert Parent: pengajuan_tabungan
+    // Note: status default null/pending. phone disimpan di root juga untuk easy access.
+    const insertPengajuanQuery = `
+      INSERT INTO pengajuan_tabungan (cabang_id, phone, status, created_at)
+      VALUES ($1, $2, 'pending', NOW())
+      RETURNING id
     `;
-    let values = [
-      kode_referensi,          // $1
-      nama_lengkap,            // $2
-      nik,                     // $3
-      email,                   // $4
-      no_hp,                   // $5
-      tanggal_lahir,           // $6
-      alamat,                  // $7
-      provinsi,                // $8
-      kota,                    // $9
-      kode_pos,                // $10
-      pekerjaan,               // $11
-      penghasilan,             // $12
-      jenis_kartu,             // $13
-      cabang_id,               // $14
-      req.body.status || "pending", // $15
-      foto_ktp,                // $16
-      jenis_rekening,          // $17
-      jenis_kelamin,           // $18
-      setujuDataValue,         // $19
-      kontak_darurat_hp,       // $20
-      kontak_darurat_nama,     // $21
-      tujuan_rekening,         // $22
-      sumber_dana,             // $23
-      alamat_kantor,           // $24
-      tempat_bekerja,          // $25
-      kewarganegaraan,         // $26
-      nama_ibu_kandung,        // $27
-      statusPernikahan         // $28 ✅ STOP DI SINI
+    const pengajuanRes = await client.query(insertPengajuanQuery, [cabang_id, no_hp]);
+    const pengajuanId = pengajuanRes.rows[0].id;
+    console.log(`✅ Created pengajuan_tabungan ID: ${pengajuanId}`);
+
+    // 2. Insert cdd_self
+    const insertCddSelfQuery = `
+      INSERT INTO cdd_self (
+        pengajuan_id, kode_referensi, nama, alias, jenis_id, no_id, berlaku_id,
+        tempat_lahir, tanggal_lahir, alamat_id, kode_pos_id, alamat_now,
+        jenis_kelamin, status_kawin, agama, pendidikan, nama_ibu_kandung,
+        npwp, email, no_hp, kewarganegaraan, status_rumah, created_at
+      ) VALUES (
+        $1, $2, $3, $4, $5, $6, $7,
+        $8, $9, $10, $11, $12,
+        $13, $14, $15, $16, $17,
+        $18, $19, $20, $21, $22, NOW()
+      )
+    `;
+    const cddSelfValues = [
+      pengajuanId, kode_referensi, finalNama, alias, jenis_id, finalNoId, berlaku_id,
+      tempat_lahir, tanggal_lahir, finalAlamatId, finalKodePosId, finalAlamatNow,
+      jenis_kelamin, finalStatusKawin, agama, pendidikan, nama_ibu_kandung,
+      npwp, email, no_hp, kewarganegaraan, status_rumah
     ];
+    await client.query(insertCddSelfQuery, cddSelfValues);
 
-    console.log("🔍 Executing query with", values.length, "parameters");
-    console.log("📝 Query:", query.substring(0, 200) + "...");
+    // 3. Insert cdd_job
+    const insertCddJobQuery = `
+      INSERT INTO cdd_job (
+        pengajuan_id, pekerjaan, gaji_per_bulan, sumber_dana,
+        nama_perusahaan, alamat_perusahaan, jabatan, bidang_usaha, created_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+    `;
+    const cddJobValues = [
+      pengajuanId, pekerjaan, finalGaji, sumber_dana,
+      finalNamaPerusahaan, finalAlamatPerusahaan, jabatan, bidang_usaha
+    ];
+    await client.query(insertCddJobQuery, cddJobValues);
 
-    const result = await pool.query(query, values);
+    // 4. Insert account
+    const insertAccountQuery = `
+      INSERT INTO account (
+        pengajuan_id, tabungan_tipe, atm, atm_tipe,
+        tujuan_pembukaan, created_at
+      ) VALUES ($1, $2, $3, $4, $5, NOW())
+    `;
+    // ATM logic: jika jenis_kartu ada, asumsikan ATM yes.
+    const hasAtm = !!jenis_kartu;
+    await client.query(insertAccountQuery, [
+      pengajuanId, jenis_rekening, hasAtm, jenis_kartu, tujuan_rekening
+    ]);
 
-    console.log("✅ Data berhasil disimpan dengan ID:", result.rows[0]?.id);
-    console.log("📋 Kode referensi:", kode_referensi);
-
-    res.json({
-      success: true,
-      message: "Data berhasil disimpan",
-      kode_referensi,
-      data: result.rows[0],
-    });
-  } catch (err) {
-    console.error("❌ Error creating pengajuan:", err);
-    console.error("❌ Error details:", {
-      message: err.message,
-      code: err.code,
-      detail: err.detail,
-      constraint: err.constraint,
-      table: err.table,
-      column: err.column
-    });
-
-    // Berikan error message yang lebih informatif
-    let errorMessage = err.message;
-    if (err.code === '23505') { // Unique violation
-      errorMessage = "Data dengan NIK atau email ini sudah terdaftar";
-    } else if (err.code === '23502') { // Not null violation
-      errorMessage = `Field wajib tidak boleh kosong: ${err.column || 'unknown'}`;
-    } else if (err.code === '23503') { // Foreign key violation
-      errorMessage = "Data referensi tidak valid";
-    } else if (err.code === '42P01') { // Undefined table
-      errorMessage = "Tabel tidak ditemukan. Pastikan database sudah di-setup dengan benar.";
-    } else if (err.code === '42703') { // Undefined column
-      errorMessage = `Kolom tidak ditemukan: ${err.column || 'unknown'}. Pastikan migrasi database sudah dijalankan.`;
+    // 5. Insert cdd_reference (Emergency Contact)
+    if (kontak_darurat_nama) {
+      const insertRefQuery = `
+        INSERT INTO cdd_reference (
+          pengajuan_id, nama, no_hp, hubungan, created_at
+        ) VALUES ($1, $2, $3, $4, NOW())
+      `;
+      await client.query(insertRefQuery, [
+        pengajuanId, kontak_darurat_nama, kontak_darurat_hp, kontak_darurat_hubungan
+      ]);
     }
+
+    await client.query('COMMIT');
+
+    res.status(201).json({
+      success: true,
+      message: "Pengajuan berhasil disimpan",
+      kode_referensi,
+      data: {
+        id: pengajuanId,
+        kode_referensi
+      }
+    });
+
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error("❌ Error creating pengajuan:", err);
+
+    let errorMessage = err.message;
+    // Simple error mapping
+    if (err.code === '23505') errorMessage = "Data duplikat terdeteksi (NIK/Email/HP mungkin sudah ada).";
 
     res.status(500).json({
       success: false,
       message: errorMessage,
-      error: process.env.NODE_ENV === 'development' ? {
-        code: err.code,
-        detail: err.detail,
-        constraint: err.constraint
-      } : undefined
+      error: process.env.NODE_ENV === 'development' ? err : undefined
     });
+  } finally {
+    client.release();
   }
 };
 
 /**
  * Mengambil satu pengajuan berdasarkan ID
+ * Melakukan JOIN ke tabel-tabel terkait
  */
 export const getPengajuanById = async (req, res) => {
   try {
     const { id } = req.params;
-    const adminCabang = req.user.cabang_id; // cabang dari token login
+    const adminCabang = req.user.cabang_id; // cabang dari token login (jika admin)
 
-    // Cek apakah kolom status ada
-    const hasStatusColumn = await checkStatusColumn();
-
-    // Query dengan kolom foto_ktp dan foto_selfie, termasuk approved/rejected info, plus field baru
-    const query = hasStatusColumn
-      ? `
-        SELECT 
-          p.id,
-          p.kode_referensi,
-          p.nama_lengkap,
-          p.nik,
-          p.email,
-          p.no_hp,
-          p.tanggal_lahir,
-          p.alamat,
-          p.provinsi,
-          p.kota,
-          p.kode_pos,
-          p.pekerjaan,
-          p.penghasilan,
-          p.cabang_id AS cabang_pengambilan,
-          c.nama_cabang,
-          p.jenis_kartu,
-          p.jenis_rekening,
-          COALESCE(p.status, 'pending') AS status,
-          p.foto_ktp,
-          p.jenis_kelamin,
-          p.status_pernikahan,
-          p.nama_ibu_kandung,
-          p.kewarganegaraan,
-          p.tempat_bekerja,
-          p.alamat_kantor,
-          p.sumber_dana,
-          p.tujuan_rekening,
-          p.kontak_darurat_nama,
-          p.kontak_darurat_hp,
-          p.setuju_data,
-          p.created_at,
-          p.approved_by,
-          p.approved_at,
-          p.rejected_by,
-          p.rejected_at
-        FROM pengajuan_tabungan p
-        LEFT JOIN cabang c ON p.cabang_id = c.id
-        WHERE p.id = $1 AND p.cabang_id = $2;
-      `
-      : `
-        SELECT 
-          p.id,
-          p.kode_referensi,
-          p.nama_lengkap,
-          p.nik,
-          p.email,
-          p.no_hp,
-          p.tanggal_lahir,
-          p.alamat,
-          p.provinsi,
-          p.kota,
-          p.kode_pos,
-          p.pekerjaan,
-          p.penghasilan,
-          p.cabang_id AS cabang_pengambilan,
-          c.nama_cabang,
-          p.jenis_kartu,
-          p.jenis_rekening,
-          'pending' AS status,
-          p.foto_ktp,
-          p.jenis_kelamin,
-          p.status_pernikahan,
-          p.nama_ibu_kandung,
-          p.kewarganegaraan,
-          p.tempat_bekerja,
-          p.alamat_kantor,
-          p.sumber_dana,
-          p.tujuan_rekening,
-          p.kontak_darurat_nama,
-          p.kontak_darurat_hp,
-          p.setuju_data,
-          p.created_at,
-          p.approved_by,
-          p.approved_at,
-          p.rejected_by,
-          p.rejected_at
-        FROM pengajuan_tabungan p
-        LEFT JOIN cabang c ON p.cabang_id = c.id
-        WHERE p.id = $1 AND p.cabang_id = $2;
-      `;
+    // Note: Kita gunakan LEFT JOIN agar jika component data hilang, data utama tetap muncul
+    // Alias disesuaikan agar frontend tidak perlu banyak perubahan
+    const query = `
+      SELECT 
+        p.id,
+        p.status,
+        p.created_at,
+        p.approved_at,
+        p.rejected_at,
+        p.approved_by,
+        p.rejected_by,
+        -- Self Data
+        cs.kode_referensi,
+        cs.nama AS nama_lengkap,
+        cs.no_id AS nik,
+        cs.email,
+        cs.no_hp,
+        cs.tempat_lahir,
+        cs.tanggal_lahir,
+        cs.alamat_id AS alamat, -- KTP address
+        cs.alamat_now AS alamat_domisili,
+        cs.kode_pos_id AS kode_pos,
+        cs.jenis_kelamin,
+        cs.status_kawin AS status_pernikahan,
+        cs.agama,
+        cs.pendidikan,
+        cs.nama_ibu_kandung,
+        cs.npwp,
+        cs.kewarganegaraan,
+        cs.status_rumah,
+        -- Job Data
+        cj.pekerjaan,
+        cj.gaji_per_bulan AS penghasilan,
+        cj.sumber_dana,
+        cj.nama_perusahaan AS tempat_bekerja,
+        cj.alamat_perusahaan AS alamat_kantor,
+        cj.jabatan,
+        cj.bidang_usaha,
+        -- Account Data
+        acc.tabungan_tipe AS jenis_rekening,
+        acc.atm_tipe AS jenis_kartu,
+        acc.tujuan_pembukaan AS tujuan_rekening,
+        -- Ref Data
+        cref.nama AS kontak_darurat_nama,
+        cref.no_hp AS kontak_darurat_hp,
+        cref.hubungan AS kontak_darurat_hubungan,
+        -- Cabang info
+        p.cabang_id,
+        c.nama_cabang
+      FROM pengajuan_tabungan p
+      LEFT JOIN cdd_self cs ON p.id = cs.pengajuan_id
+      LEFT JOIN cdd_job cj ON p.id = cj.pengajuan_id
+      LEFT JOIN account acc ON p.id = acc.pengajuan_id
+      LEFT JOIN cdd_reference cref ON p.id = cref.pengajuan_id
+      LEFT JOIN cabang c ON p.cabang_id = c.id
+      WHERE p.id = $1 AND p.cabang_id = $2
+    `;
 
     const result = await pool.query(query, [id, adminCabang]);
 
@@ -365,114 +278,29 @@ export const getPengajuanById = async (req, res) => {
  */
 export const getAllPengajuan = async (req, res) => {
   try {
-    const adminCabang = req.user.cabang_id; // cabang dari token login
+    const adminCabang = req.user.cabang_id;
 
-    // Cek apakah kolom status ada
-    const hasStatusColumn = await checkStatusColumn();
-    console.log("📊 getAllPengajuan - Has status column:", hasStatusColumn);
-    console.log("📊 getAllPengajuan - Admin cabang:", adminCabang);
-
-    // Query dengan kolom foto_ktp dan foto_selfie, termasuk approved/rejected info, plus field baru
-    const query = hasStatusColumn
-      ? `
-        SELECT 
-          p.id,
-          p.kode_referensi,
-          p.nama_lengkap,
-          p.nik,
-          p.email,
-          p.no_hp,
-          p.tanggal_lahir,
-          p.alamat,
-          p.provinsi,
-          p.kota,
-          p.kode_pos,
-          p.pekerjaan,
-          p.penghasilan,
-          p.cabang_id AS cabang_pengambilan,
-          c.nama_cabang,
-          p.jenis_kartu,
-          p.jenis_rekening,
-          COALESCE(p.status, 'pending') AS status,
-          p.foto_ktp,
-          p.jenis_kelamin,
-          p.status_pernikahan,
-          p.nama_ibu_kandung,
-          p.kewarganegaraan,
-          p.tempat_bekerja,
-          p.alamat_kantor,
-          p.sumber_dana,
-          p.tujuan_rekening,
-          p.kontak_darurat_nama,
-          p.kontak_darurat_hp,
-          p.setuju_data,
-          p.created_at,
-          p.approved_by,
-          p.approved_at,
-          p.rejected_by,
-          p.rejected_at
-        FROM pengajuan_tabungan p
-        LEFT JOIN cabang c ON p.cabang_id = c.id
-        WHERE p.cabang_id = $1
-        ORDER BY p.created_at DESC;
-      `
-      : `
-        SELECT 
-          p.id,
-          p.kode_referensi,
-          p.nama_lengkap,
-          p.nik,
-          p.email,
-          p.no_hp,
-          p.tanggal_lahir,
-          p.alamat,
-          p.provinsi,
-          p.kota,
-          p.kode_pos,
-          p.pekerjaan,
-          p.penghasilan,
-          p.cabang_id AS cabang_pengambilan,
-          c.nama_cabang,
-          p.jenis_kartu,
-          p.jenis_rekening,
-          'pending' AS status,
-          p.foto_ktp,
-          p.jenis_kelamin,
-          p.status_pernikahan,
-          p.nama_ibu_kandung,
-          p.kewarganegaraan,
-          p.tempat_bekerja,
-          p.alamat_kantor,
-          p.sumber_dana,
-          p.tujuan_rekening,
-          p.kontak_darurat_nama,
-          p.kontak_darurat_hp,
-          p.setuju_data,
-          p.created_at,
-          p.approved_by,
-          p.approved_at,
-          p.rejected_by,
-          p.rejected_at
-        FROM pengajuan_tabungan p
-        LEFT JOIN cabang c ON p.cabang_id = c.id
-        WHERE p.cabang_id = $1
-        ORDER BY p.created_at DESC;
-      `;
+    // Query list usually needs fewer fields
+    const query = `
+      SELECT 
+        p.id,
+        p.status,
+        p.created_at,
+        cs.kode_referensi,
+        cs.nama AS nama_lengkap,
+        cs.no_hp,
+        cs.email,
+        acc.tabungan_tipe AS jenis_rekening,
+        c.nama_cabang
+      FROM pengajuan_tabungan p
+      LEFT JOIN cdd_self cs ON p.id = cs.pengajuan_id
+      LEFT JOIN account acc ON p.id = acc.pengajuan_id
+      LEFT JOIN cabang c ON p.cabang_id = c.id
+      WHERE p.cabang_id = $1
+      ORDER BY p.created_at DESC
+    `;
 
     const result = await pool.query(query, [adminCabang]);
-
-    console.log("📊 getAllPengajuan - Total rows:", result.rows.length);
-    if (result.rows.length > 0) {
-      console.log("📊 Sample row fields:", Object.keys(result.rows[0]));
-      console.log("📊 Sample row (first 3):", {
-        id: result.rows[0].id,
-        nama_lengkap: result.rows[0].nama_lengkap,
-        jenis_kelamin: result.rows[0].jenis_kelamin,
-        status_pernikahan: result.rows[0].status_pernikahan,
-        tempat_bekerja: result.rows[0].tempat_bekerja,
-        sumber_dana: result.rows[0].sumber_dana
-      });
-    }
 
     res.json({
       success: true,
@@ -486,18 +314,14 @@ export const getAllPengajuan = async (req, res) => {
 
 /**
  * Update status pengajuan dan kirim notifikasi
+ * (Logic update status masih sama, hanya target tabel yg perlu dipastikan 'pengajuan_tabungan')
  */
 export const updatePengajuanStatus = async (req, res) => {
   const { id } = req.params;
   const { status, sendEmail, sendWhatsApp, message } = req.body;
-  const adminUsername = req.user?.username || 'Unknown'; // Ambil username dari token
-
-  console.log("REQUEST BODY:", req.body);
-  console.log("sendEmail:", sendEmail, "sendWhatsApp:", sendWhatsApp, "message:", message);
-  console.log("Admin yang melakukan aksi:", adminUsername);
+  const adminUsername = req.user?.username || 'Unknown';
 
   try {
-    // Update status di database dengan informasi siapa yang approve/reject
     let query, values;
     if (status === 'approved') {
       query = `
@@ -517,7 +341,6 @@ export const updatePengajuanStatus = async (req, res) => {
       `;
       values = [status, adminUsername, id, req.user.cabang_id];
     } else {
-      // Jika status pending, reset semua approval/rejection info
       query = `
         UPDATE pengajuan_tabungan 
         SET status = $1, approved_by = NULL, approved_at = NULL, rejected_by = NULL, rejected_at = NULL
@@ -530,36 +353,22 @@ export const updatePengajuanStatus = async (req, res) => {
     const result = await pool.query(query, values);
 
     if (result.rowCount === 0)
-      return res.status(404).json({ success: false, message: "Data tidak ditemukan" });
+      return res.status(404).json({ success: false, message: "Data tidak ditemukan atau akses ditolak" });
 
-    const user = result.rows[0];
-    const fullName = user.nama_lengkap;
-    const email = user.email;
-    const phone = user.no_hp;
+    // Fetch user details for notification (Email/HP) needed from cdd_self
+    const userDetails = await pool.query('SELECT nama, email, no_hp FROM cdd_self WHERE pengajuan_id = $1', [id]);
 
-    // Kirim Email (kalau dipilih)
-    if (sendEmail) {
-      try {
-        await sendEmailNotification(email, fullName, status, message);
-        console.log("✅ Email berhasil dikirim ke:", email);
-      } catch (emailError) {
-        console.error("❌ Error saat mengirim email:", emailError.message);
-        // Jangan gagalkan seluruh request jika email gagal
+    if (userDetails.rows.length > 0) {
+      const { nama, email, no_hp } = userDetails.rows[0];
+
+      // Kirim Email
+      if (sendEmail && email) {
+        sendEmailNotification(email, nama, status, message).catch(e => console.error("Email fail:", e.message));
       }
-    }
 
-    // Kirim WhatsApp (kalau dipilih)
-    if (sendWhatsApp) {
-      try {
-        const response = await sendWhatsAppNotification(phone, fullName, status, message);
-        if (response?.status) {
-          console.log("✅ WhatsApp berhasil dikirim ke:", phone, "ID:", response.id);
-        } else {
-          console.error("❌ Gagal mengirim WhatsApp:", response);
-        }
-      } catch (whatsappError) {
-        console.error("❌ Error saat mengirim WhatsApp:", whatsappError.message);
-        // Jangan gagalkan seluruh request jika WhatsApp gagal
+      // Kirim WhatsApp
+      if (sendWhatsApp && no_hp) {
+        sendWhatsAppNotification(no_hp, nama, status, message).catch(e => console.error("WA fail:", e.message));
       }
     }
 
@@ -569,4 +378,3 @@ export const updatePengajuanStatus = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
-
