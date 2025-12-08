@@ -9,24 +9,28 @@ router.get("/check-nik", async (req, res) => {
 
     if (nik) {
       const cek = await pool.query(
-        "SELECT status FROM pengajuan_tabungan WHERE nik = $1 LIMIT 1",
+        `SELECT p.status 
+         FROM cdd_self c
+         JOIN pengajuan_tabungan p ON c.pengajuan_id = p.id
+         WHERE c.nik = $1 
+         LIMIT 1`,
         [nik]
       );
       if (cek.rows.length > 0) {
-  const status = cek.rows[0].status;
+        const status = cek.rows[0].status;
 
-  // blok hanya jika pending atau accepted
-  const blocked = ['pending', 'approved'].includes(status);
+        // blok hanya jika pending atau accepted
+        const blocked = ['pending', 'approved'].includes(status);
 
-  return res.json({ exists: blocked, status });
-}
+        return res.json({ exists: blocked, status });
+      }
 
-return res.json({ exists: false, status: null });
+      return res.json({ exists: false, status: null });
     }
 
     if (email) {
       const cek = await pool.query(
-        "SELECT id FROM pengajuan_tabungan WHERE email = $1 LIMIT 1",
+        "SELECT pengajuan_id FROM cdd_self WHERE email = $1 LIMIT 1",
         [email]
       );
       return res.json({ exists: cek.rows.length > 0 });
@@ -34,7 +38,7 @@ return res.json({ exists: false, status: null });
 
     if (phone) {
       const cek = await pool.query(
-        "SELECT id FROM pengajuan_tabungan WHERE no_hp = $1 LIMIT 1",
+        "SELECT pengajuan_id FROM cdd_self WHERE no_hp = $1 LIMIT 1",
         [phone]
       );
       return res.json({ exists: cek.rows.length > 0 });

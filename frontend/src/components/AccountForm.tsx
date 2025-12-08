@@ -233,12 +233,6 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     } else if (currentStep === 2) {
        // Validate Personal Data & Uploads
        
-       
-       
-
-
-       // Async validations
-       
     }
 
     if (Object.keys(newErrors).length > 0) {
