@@ -5,16 +5,16 @@ const router = express.Router();
 
 router.get("/check-nik", async (req, res) => {
   try {
-    const { nik, email, phone } = req.query;
+    const { no_id, email, phone } = req.query;
 
-    if (nik) {
+    if (no_id) {
       const cek = await pool.query(
         `SELECT p.status 
          FROM cdd_self c
          JOIN pengajuan_tabungan p ON c.pengajuan_id = p.id
-         WHERE c.nik = $1 
+         WHERE c.no_id = $1 
          LIMIT 1`,
-        [nik]
+        [no_id]
       );
       if (cek.rows.length > 0) {
         const status = cek.rows[0].status;
