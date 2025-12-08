@@ -5,23 +5,23 @@ const router = express.Router();
 
 router.get("/check-nik", async (req, res) => {
   try {
-    const { no_id, email, phone } = req.query;
+    const { no_id, nik, email, phone } = req.query;
 
-    if (no_id) {
+    const finalNoId = no_id || nik; // ✅ support dua-duanya
+
+    if (finalNoId) {
       const cek = await pool.query(
         `SELECT p.status 
          FROM cdd_self c
          JOIN pengajuan_tabungan p ON c.pengajuan_id = p.id
          WHERE c.no_id = $1 
          LIMIT 1`,
-        [no_id]
+        [finalNoId]
       );
+
       if (cek.rows.length > 0) {
         const status = cek.rows[0].status;
-
-        // blok hanya jika pending atau accepted
         const blocked = ['pending', 'approved'].includes(status);
-
         return res.json({ exists: blocked, status });
       }
 
@@ -44,12 +44,16 @@ router.get("/check-nik", async (req, res) => {
       return res.json({ exists: cek.rows.length > 0 });
     }
 
-    // If no recognized query provided
-    return res.status(400).json({ success: false, message: 'Query parameter required: nik, email, or phone' });
+    return res.status(400).json({
+      success: false,
+      message: "Query parameter required: nik/no_id, email, or phone"
+    });
+
   } catch (err) {
-    console.error('check-nik error', err);
-    res.status(500).json({ success: false, message: 'Internal server error' });
+    console.error("check-nik error", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
+
 
 export default router;
