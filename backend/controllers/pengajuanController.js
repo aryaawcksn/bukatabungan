@@ -92,11 +92,11 @@ export const createPengajuan = async (req, res) => {
     // 1. Insert Parent: pengajuan_tabungan
     // Note: status default null/pending. phone disimpan di root juga untuk easy access.
     const insertPengajuanQuery = `
-      INSERT INTO pengajuan_tabungan (cabang_id, phone, status, created_at)
-      VALUES ($1, $2, 'pending', NOW())
+      INSERT INTO pengajuan_tabungan (cabang_id, status, created_at)
+      VALUES ($1, 'pending', NOW())
       RETURNING id
     `;
-    const pengajuanRes = await client.query(insertPengajuanQuery, [cabang_id, no_hp]);
+    const pengajuanRes = await client.query(insertPengajuanQuery, [cabang_id]);
     const pengajuanId = pengajuanRes.rows[0].id;
     console.log(`✅ Created pengajuan_tabungan ID: ${pengajuanId}`);
 
