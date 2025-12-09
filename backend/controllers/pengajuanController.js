@@ -146,10 +146,29 @@ export const createPengajuan = async (req, res) => {
       )
     `;
     const cddSelfValues = [
-      pengajuanId, kode_referensi, finalNama, emptyToNull(alias), jenis_id, finalNoId, emptyToNull(berlaku_id),
-      tempat_lahir, tanggal_lahir, finalAlamatId, finalKodePosId, finalAlamatNow,
-      jenis_kelamin, finalStatusKawin, agama, pendidikan, nama_ibu_kandung,
-      emptyToNull(npwp), email, no_hp, kewarganegaraan, status_rumah, rekening_untuk_sendiri
+      parseInt(pengajuanId), // Ensure pengajuan_id is integer
+      kode_referensi, 
+      finalNama, 
+      emptyToNull(alias), 
+      jenis_id, 
+      finalNoId, 
+      emptyToNull(berlaku_id),
+      tempat_lahir, 
+      tanggal_lahir, 
+      finalAlamatId, 
+      finalKodePosId, 
+      finalAlamatNow,
+      jenis_kelamin, 
+      finalStatusKawin, 
+      agama, 
+      pendidikan, 
+      nama_ibu_kandung,
+      emptyToNull(npwp), 
+      email, 
+      no_hp, 
+      kewarganegaraan, 
+      status_rumah, 
+      rekening_untuk_sendiri
     ];
     await client.query(insertCddSelfQuery, cddSelfValues);
 
@@ -165,9 +184,16 @@ export const createPengajuan = async (req, res) => {
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
     `;
     const cddJobValues = [
-      pengajuanId, pekerjaan, finalGaji, sumber_dana, emptyToNull(rata_rata_transaksi),
-      emptyToNull(finalNamaPerusahaan), emptyToNull(finalAlamatPerusahaan), emptyToNull(telepon_perusahaan), 
-      emptyToNull(jabatan), emptyToNull(bidang_usaha)
+      parseInt(pengajuanId), // Ensure pengajuan_id is integer
+      pekerjaan, 
+      finalGaji, 
+      sumber_dana, 
+      emptyToNull(rata_rata_transaksi),
+      emptyToNull(finalNamaPerusahaan), 
+      emptyToNull(finalAlamatPerusahaan), 
+      emptyToNull(telepon_perusahaan), 
+      emptyToNull(jabatan), 
+      emptyToNull(bidang_usaha)
     ];
     await client.query(insertCddJobQuery, cddJobValues);
     
@@ -185,7 +211,12 @@ export const createPengajuan = async (req, res) => {
     // ATM logic: jika jenis_kartu ada, asumsikan ATM yes.
     const hasAtm = !!jenis_kartu;
     await client.query(insertAccountQuery, [
-      pengajuanId, jenis_rekening, hasAtm, jenis_kartu, nominal_setoran, tujuan_rekening
+      parseInt(pengajuanId), // Ensure pengajuan_id is integer
+      jenis_rekening, 
+      hasAtm, 
+      jenis_kartu, 
+      nominal_setoran, 
+      tujuan_rekening
     ]);
 
     // 5. Insert cdd_reference (Emergency Contact)
@@ -196,7 +227,10 @@ export const createPengajuan = async (req, res) => {
         ) VALUES ($1, $2, $3, $4, NOW())
       `;
       await client.query(insertRefQuery, [
-        pengajuanId, kontak_darurat_nama, kontak_darurat_hp, kontak_darurat_hubungan
+        parseInt(pengajuanId), // Ensure pengajuan_id is integer
+        kontak_darurat_nama, 
+        kontak_darurat_hp, 
+        kontak_darurat_hubungan
       ]);
     }
 
@@ -209,9 +243,16 @@ export const createPengajuan = async (req, res) => {
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
       `;
       await client.query(insertBoQuery, [
-        pengajuanId, bo_nama, bo_alamat, emptyToNull(bo_tempat_lahir), emptyToNull(bo_tanggal_lahir),
-        emptyToNull(bo_jenis_id), emptyToNull(bo_nomor_id), emptyToNull(bo_pekerjaan), 
-        emptyToNull(bo_pendapatan_tahun), bo_persetujuan
+        parseInt(pengajuanId), // Ensure pengajuan_id is integer
+        bo_nama, 
+        bo_alamat, 
+        emptyToNull(bo_tempat_lahir), 
+        emptyToNull(bo_tanggal_lahir),
+        emptyToNull(bo_jenis_id), 
+        emptyToNull(bo_nomor_id), 
+        emptyToNull(bo_pekerjaan), 
+        emptyToNull(bo_pendapatan_tahun), 
+        bo_persetujuan
       ]);
     }
 
