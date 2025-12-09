@@ -284,27 +284,29 @@ export const getAllPengajuan = async (req, res) => {
 
     // Query list usually needs fewer fields
     const query = `
-    SELECT
-    p.id,
-      p.status,
-      p.created_at,
-      cs.kode_referensi,
-      cs.nama AS nama_lengkap,
+      SELECT 
+        p.id,
+        p.status,
+        p.created_at,
+        p.approved_at,
+        p.rejected_at,
+        cs.kode_referensi,
+        cs.nama AS nama_lengkap,
         cs.no_hp,
         cs.email,
         acc.tabungan_tipe AS jenis_rekening,
-          c.nama_cabang,
-          ua.username AS approvedBy, --ambil username admin
-    ur.username AS rejectedBy-- ambil username admin
+        c.nama_cabang,
+        ua.username AS "approvedBy",
+        ur.username AS "rejectedBy"
       FROM pengajuan_tabungan p
       LEFT JOIN cdd_self cs ON p.id = cs.pengajuan_id
       LEFT JOIN account acc ON p.id = acc.pengajuan_id
       LEFT JOIN cabang c ON p.cabang_id = c.id
-      LEFT JOIN users ua ON ua.id = p.approved_by
-      LEFT JOIN users ur ON ur.id = p.rejected_by
+      LEFT JOIN users ua ON p.approved_by = ua.id
+      LEFT JOIN users ur ON p.rejected_by = ur.id
       WHERE p.cabang_id = $1
       ORDER BY p.created_at DESC
-      `;
+    `;
 
     const result = await pool.query(query, [adminCabang]);
 
