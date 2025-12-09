@@ -24,16 +24,9 @@ ALTER TABLE account
 DROP COLUMN IF EXISTS nominal_setoran;
 
 -- ============================================
--- 3. Remove columns from cdd_job table
+-- 3. cdd_job table - NO ROLLBACK NEEDED
 -- ============================================
-
-ALTER TABLE cdd_job 
-DROP COLUMN IF EXISTS rata_rata_transaksi,
-DROP COLUMN IF EXISTS telepon_perusahaan,
-DROP COLUMN IF EXISTS referensi_nama,
-DROP COLUMN IF EXISTS referensi_alamat,
-DROP COLUMN IF EXISTS referensi_telepon,
-DROP COLUMN IF EXISTS referensi_hubungan;
+-- No columns were added to cdd_job table
 
 -- ============================================
 -- 4. Remove column from cdd_self table

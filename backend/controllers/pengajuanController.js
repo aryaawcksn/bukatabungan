@@ -154,20 +154,26 @@ export const createPengajuan = async (req, res) => {
     await client.query(insertCddSelfQuery, cddSelfValues);
 
     // 3. Insert cdd_job
+    // Note: Using actual column names from database schema
+    // rata_transaksi_per_bulan (not rata_rata_transaksi)
+    // no_telepon (not telepon_perusahaan)
+    // Reference contact fields are NOT in cdd_job table, they should be stored elsewhere or ignored
     const insertCddJobQuery = `
       INSERT INTO cdd_job (
-        pengajuan_id, pekerjaan, gaji_per_bulan, sumber_dana, rata_rata_transaksi,
-        nama_perusahaan, alamat_perusahaan, telepon_perusahaan, jabatan, bidang_usaha,
-        referensi_nama, referensi_alamat, referensi_telepon, referensi_hubungan, created_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW())
+        pengajuan_id, pekerjaan, gaji_per_bulan, sumber_dana, rata_transaksi_per_bulan,
+        nama_perusahaan, alamat_perusahaan, no_telepon, jabatan, bidang_usaha, created_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
     `;
     const cddJobValues = [
       pengajuanId, pekerjaan, finalGaji, sumber_dana, emptyToNull(rata_rata_transaksi),
       emptyToNull(finalNamaPerusahaan), emptyToNull(finalAlamatPerusahaan), emptyToNull(telepon_perusahaan), 
-      emptyToNull(jabatan), emptyToNull(bidang_usaha),
-      emptyToNull(referensi_nama), emptyToNull(referensi_alamat), emptyToNull(referensi_telepon), emptyToNull(referensi_hubungan)
+      emptyToNull(jabatan), emptyToNull(bidang_usaha)
     ];
     await client.query(insertCddJobQuery, cddJobValues);
+    
+    // Note: Reference contact data (referensi_nama, referensi_alamat, etc.) 
+    // is currently not stored in database as there's no table for it.
+    // If needed, create a new table or add to cdd_job schema.
 
     // 4. Insert account
     const insertAccountQuery = `

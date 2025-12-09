@@ -10,17 +10,13 @@ ALTER TABLE cdd_self
 ADD COLUMN IF NOT EXISTS rekening_untuk_sendiri BOOLEAN DEFAULT TRUE;
 
 -- ============================================
--- 2. Add missing columns to cdd_job table
+-- 2. cdd_job table - NO CHANGES NEEDED
 -- ============================================
--- Note: alias, jenis_id, berlaku_id already exist in cdd_self based on controller code
-
-ALTER TABLE cdd_job 
-ADD COLUMN IF NOT EXISTS rata_rata_transaksi VARCHAR(50),
-ADD COLUMN IF NOT EXISTS telepon_perusahaan VARCHAR(20),
-ADD COLUMN IF NOT EXISTS referensi_nama VARCHAR(255),
-ADD COLUMN IF NOT EXISTS referensi_alamat TEXT,
-ADD COLUMN IF NOT EXISTS referensi_telepon VARCHAR(20),
-ADD COLUMN IF NOT EXISTS referensi_hubungan VARCHAR(100);
+-- Note: cdd_job table already has all required columns:
+-- - rata_transaksi_per_bulan (not rata_rata_transaksi)
+-- - no_telepon (not telepon_perusahaan)
+-- Reference contact fields (referensi_*) are NOT stored in cdd_job table
+-- They are collected in frontend but not persisted to database yet
 
 -- ============================================
 -- 3. Add missing column to account table
@@ -51,12 +47,9 @@ ADD COLUMN IF NOT EXISTS persetujuan BOOLEAN DEFAULT FALSE;
 
 COMMENT ON COLUMN cdd_self.rekening_untuk_sendiri IS 'Indicates if the account is for the applicant themselves (TRUE) or for someone else (FALSE). Beneficial owner info is only required when FALSE (for others).';
 
-COMMENT ON COLUMN cdd_job.rata_rata_transaksi IS 'Average monthly transaction amount range';
-COMMENT ON COLUMN cdd_job.telepon_perusahaan IS 'Company/institution phone number';
-COMMENT ON COLUMN cdd_job.referensi_nama IS 'Reference contact name';
-COMMENT ON COLUMN cdd_job.referensi_alamat IS 'Reference contact address';
-COMMENT ON COLUMN cdd_job.referensi_telepon IS 'Reference contact phone number';
-COMMENT ON COLUMN cdd_job.referensi_hubungan IS 'Relationship to reference contact';
+-- Note: cdd_job comments removed as columns already exist with correct names:
+-- rata_transaksi_per_bulan, no_telepon
+-- Reference contact fields are not stored in database
 
 COMMENT ON COLUMN account.nominal_setoran IS 'Initial deposit amount';
 
