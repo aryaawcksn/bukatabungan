@@ -209,14 +209,15 @@ export const createPengajuan = async (req, res) => {
       ) VALUES ($1, $2, $3, $4, $5, $6, NOW())
     `;
     // ATM logic: jika jenis_kartu ada, asumsikan ATM yes.
-    const hasAtm = !!jenis_kartu;
+    // Convert boolean to integer for PostgreSQL (true=1, false=0)
+    const hasAtm = jenis_kartu ? 1 : 0;
     await client.query(insertAccountQuery, [
       parseInt(pengajuanId), // Ensure pengajuan_id is integer
-      jenis_rekening, 
-      hasAtm, 
-      jenis_kartu, 
-      nominal_setoran, 
-      tujuan_rekening
+      jenis_rekening || null, // Use null if empty
+      hasAtm, // Integer: 1 or 0
+      jenis_kartu || null, // Use null if empty
+      nominal_setoran || null, // Keep as string (VARCHAR in DB)
+      tujuan_rekening || null // Use null if empty
     ]);
 
     // 5. Insert cdd_reference (Emergency Contact)
