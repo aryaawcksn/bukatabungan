@@ -28,11 +28,13 @@ export default function FormSimpel({
 }: FormSimpelProps) {
   const [showTermsModal, setShowTermsModal] = useState(false);
 
-  // Auto-set employment status for Simpel
+  // Auto-set employment status and jenis_rekening for Simpel
   React.useEffect(() => {
-    if (formData.employmentStatus !== 'pelajar-mahasiswa') {
-      setFormData(prev => ({ ...prev, employmentStatus: 'pelajar-mahasiswa' }));
-    }
+    setFormData(prev => ({ 
+      ...prev, 
+      employmentStatus: prev.employmentStatus !== 'pelajar-mahasiswa' ? 'pelajar-mahasiswa' : prev.employmentStatus,
+      jenis_rekening: 'SimPel'
+    }));
   }, []);
 
   // Validation function for identity number format

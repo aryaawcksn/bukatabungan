@@ -616,14 +616,15 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       referensi_hubungan: data.referensiHubungan,
 
       // Account configuration fields
-      jenis_rekening: data.jenis_rekening,
-      tabungan_tipe: data.jenis_rekening,
+      // Account configuration fields
+      jenis_rekening: data.jenis_rekening || (savingsType?.toLowerCase().trim() === 'simpel' ? 'SimPel' : getSavingsTypeName()),
+      tabungan_tipe: data.jenis_rekening || (savingsType?.toLowerCase().trim() === 'simpel' ? 'SimPel' : getSavingsTypeName()),
       tujuan_rekening: data.tujuanRekening,
       tujuan_pembukaan: data.tujuanRekening,
       tujuan_rekening_lainnya: data.tujuanRekeningLainnya,
       nominal_setoran: data.nominalSetoran,
-      jenis_kartu: data.atmPreference || data.cardType || getDefaultCardType(),
-      card_type: data.atmPreference || data.cardType || getDefaultCardType(),
+      jenis_kartu: savingsType?.toLowerCase().trim() === 'simpel' ? undefined : (data.atmPreference || data.cardType || getDefaultCardType()),
+      card_type: savingsType?.toLowerCase().trim() === 'simpel' ? undefined : (data.atmPreference || data.cardType || getDefaultCardType()),
       
       // cdd_reference - Emergency contact
       kontak_darurat_nama: data.kontakDaruratNama,
