@@ -202,60 +202,62 @@ export const getPengajuanById = async (req, res) => {
     // Note: Kita gunakan LEFT JOIN agar jika component data hilang, data utama tetap muncul
     // Alias disesuaikan agar frontend tidak perlu banyak perubahan
     const query = `
-      SELECT 
-        p.id,
-        p.status,
-        p.created_at,
-        p.approved_at,
-        p.rejected_at,
-        p.approved_by,
-        p.rejected_by,
-        -- Self Data
-        cs.kode_referensi,
-        cs.nama AS nama_lengkap,
+      SELECT
+    p.id,
+      p.status,
+      p.created_at,
+      p.approved_at,
+      p.rejected_at,
+      ua.username AS "approvedBy",
+        ur.username AS "rejectedBy",
+          --Self Data
+    cs.kode_referensi,
+      cs.nama AS nama_lengkap,
         cs.no_id AS nik,
-        cs.email,
-        cs.no_hp,
-        cs.tempat_lahir,
-        cs.tanggal_lahir,
-        cs.alamat_id AS alamat, -- KTP address
-        cs.alamat_now AS alamat_domisili,
-        cs.kode_pos_id AS kode_pos,
+          cs.email,
+          cs.no_hp,
+          cs.tempat_lahir,
+          cs.tanggal_lahir,
+          cs.alamat_id AS alamat, --KTP address
+    cs.alamat_now AS alamat_domisili,
+      cs.kode_pos_id AS kode_pos,
         cs.jenis_kelamin,
         cs.status_kawin AS status_pernikahan,
-        cs.agama,
-        cs.pendidikan,
-        cs.nama_ibu_kandung,
-        cs.npwp,
-        cs.kewarganegaraan,
-        cs.status_rumah,
-        -- Job Data
-        cj.pekerjaan,
-        cj.gaji_per_bulan AS penghasilan,
+          cs.agama,
+          cs.pendidikan,
+          cs.nama_ibu_kandung,
+          cs.npwp,
+          cs.kewarganegaraan,
+          cs.status_rumah,
+          --Job Data
+    cj.pekerjaan,
+      cj.gaji_per_bulan AS penghasilan,
         cj.sumber_dana,
         cj.nama_perusahaan AS tempat_bekerja,
-        cj.alamat_perusahaan AS alamat_kantor,
-        cj.jabatan,
-        cj.bidang_usaha,
-        -- Account Data
-        acc.tabungan_tipe AS jenis_rekening,
-        acc.atm_tipe AS jenis_kartu,
+          cj.alamat_perusahaan AS alamat_kantor,
+            cj.jabatan,
+            cj.bidang_usaha,
+            --Account Data
+    acc.tabungan_tipe AS jenis_rekening,
+      acc.atm_tipe AS jenis_kartu,
         acc.tujuan_pembukaan AS tujuan_rekening,
-        -- Ref Data
-        cref.nama AS kontak_darurat_nama,
-        cref.no_hp AS kontak_darurat_hp,
+          --Ref Data
+    cref.nama AS kontak_darurat_nama,
+      cref.no_hp AS kontak_darurat_hp,
         cref.hubungan AS kontak_darurat_hubungan,
-        -- Cabang info
-        p.cabang_id,
-        c.nama_cabang
+          --Cabang info
+    p.cabang_id,
+      c.nama_cabang
       FROM pengajuan_tabungan p
       LEFT JOIN cdd_self cs ON p.id = cs.pengajuan_id
       LEFT JOIN cdd_job cj ON p.id = cj.pengajuan_id
       LEFT JOIN account acc ON p.id = acc.pengajuan_id
       LEFT JOIN cdd_reference cref ON p.id = cref.pengajuan_id
       LEFT JOIN cabang c ON p.cabang_id = c.id
+      LEFT JOIN users ua ON p.approved_by = ua.id
+      LEFT JOIN users ur ON p.rejected_by = ur.id
       WHERE p.id = $1 AND p.cabang_id = $2
-    `;
+      `;
 
     const result = await pool.query(query, [id, adminCabang]);
 
@@ -282,18 +284,18 @@ export const getAllPengajuan = async (req, res) => {
 
     // Query list usually needs fewer fields
     const query = `
-      SELECT 
-        p.id,
-        p.status,
-        p.created_at,
-        cs.kode_referensi,
-        cs.nama AS nama_lengkap,
+    SELECT
+    p.id,
+      p.status,
+      p.created_at,
+      cs.kode_referensi,
+      cs.nama AS nama_lengkap,
         cs.no_hp,
         cs.email,
         acc.tabungan_tipe AS jenis_rekening,
-        c.nama_cabang,
-        ua.username AS approved_by_name,  -- ambil username admin
-        ur.username AS rejected_by_name   -- ambil username admin
+          c.nama_cabang,
+          ua.username AS approvedBy, --ambil username admin
+    ur.username AS rejectedBy-- ambil username admin
       FROM pengajuan_tabungan p
       LEFT JOIN cdd_self cs ON p.id = cs.pengajuan_id
       LEFT JOIN account acc ON p.id = acc.pengajuan_id
@@ -302,9 +304,9 @@ export const getAllPengajuan = async (req, res) => {
       LEFT JOIN users ur ON ur.id = p.rejected_by
       WHERE p.cabang_id = $1
       ORDER BY p.created_at DESC
-    `;
+      `;
 
-const result = await pool.query(query, [adminCabang]);
+    const result = await pool.query(query, [adminCabang]);
 
     res.json({
       success: true,
@@ -332,8 +334,8 @@ export const updatePengajuanStatus = async (req, res) => {
         UPDATE pengajuan_tabungan 
         SET status = $1, approved_by = $2, approved_at = NOW(), rejected_by = NULL, rejected_at = NULL
         WHERE id = $3 AND cabang_id = $4
-        RETURNING *;
-      `;
+    RETURNING *;
+    `;
       values = [status, req.user.id, id, req.user.cabang_id];
     }
     else if (status === 'rejected') {
@@ -341,16 +343,16 @@ export const updatePengajuanStatus = async (req, res) => {
         UPDATE pengajuan_tabungan 
         SET status = $1, rejected_by = $2, rejected_at = NOW(), approved_by = NULL, approved_at = NULL
         WHERE id = $3 AND cabang_id = $4
-        RETURNING *;
-      `;
+    RETURNING *;
+    `;
       values = [status, req.user.id, id, req.user.cabang_id];
     } else {
       query = `
         UPDATE pengajuan_tabungan 
         SET status = $1, approved_by = NULL, approved_at = NULL, rejected_by = NULL, rejected_at = NULL
         WHERE id = $2 AND cabang_id = $3
-        RETURNING *;
-      `;
+    RETURNING *;
+    `;
       values = [status, id, req.user.cabang_id];
     }
 

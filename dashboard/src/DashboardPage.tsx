@@ -189,10 +189,12 @@ const mapBackendDataToFormSubmission = (data: any): FormSubmission => {
     },
     submittedAt: formatDateTime(data.created_at),
     status: (data.status || 'pending') as 'pending' | 'approved' | 'rejected',
-    approvedBy: data.approved_by || undefined,
+    approvedBy: data.approvedBy || undefined,
     approvedAt: data.approved_at ? formatDateTime(data.approved_at) : undefined,
-    rejectedBy: data.rejected_by || undefined,
+
+    rejectedBy: data.rejectedBy || undefined,
     rejectedAt: data.rejected_at ? formatDateTime(data.rejected_at) : undefined,
+
     dataAgreement: data.setuju_data || false
   };
 };

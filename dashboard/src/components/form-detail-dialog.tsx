@@ -346,31 +346,33 @@ useEffect(() => {
 
             {/* APPROVAL / REJECTION INFO */}
             {submission.status === 'approved' && submission.approvedBy && (
-              <Card className="bg-green-50 border-green-200 p-3">
-                <div className="flex items-center gap-2 text-green-700">
-                  <UserCheck className="w-4 h-4" />
-                  <span>
-                    Diterima oleh: <strong className="ml-1">{submission.approvedBy}</strong>
-                    {submission.approvedAt && (
-                      <strong className="text-green-600 ml-2">({submission.approvedAt})</strong>
-                    )}
-                  </span>
-                </div>
-              </Card>
-            )}
-            {submission.status === 'rejected' && submission.rejectedBy && (
-              <Card className="bg-red-50 border-red-200 p-3">
-                <div className="flex items-center gap-2 text-red-700">
-                  <UserX className="w-4 h-4" />
-                  <span>
-                    Ditolak oleh: <strong className="ml-1">{submission.rejectedBy}</strong>
-                    {submission.rejectedAt && (
-                      <span className="text-red-600 text-sm ml-2">{submission.rejectedAt}</span>
-                    )}
-                  </span>
-                </div>
-              </Card>
-            )}
+  <Card className="bg-green-50 border-green-200 p-3">
+    <div className="flex items-center gap-2 text-green-700">
+      <UserCheck className="w-4 h-4" />
+      <span>
+        Diterima oleh: <strong className="ml-1">{submission.approvedBy}</strong>
+        {submission.approvedAt && (
+          <strong className="text-green-600 ml-2">({submission.approvedAt})</strong>
+        )}
+      </span>
+    </div>
+  </Card>
+)}
+
+{submission.status === 'rejected' && submission.rejectedBy&& (
+  <Card className="bg-red-50 border-red-200 p-3">
+    <div className="flex items-center gap-2 text-red-700">
+      <UserX className="w-4 h-4" />
+      <span>
+        Ditolak oleh: <strong className="ml-1">{submission.rejectedBy}</strong>
+        {submission.rejectedAt && (
+          <span className="text-red-600 text-sm ml-2">{submission.rejectedAt}</span>
+        )}
+      </span>
+    </div>
+  </Card>
+)}
+
           </div>
 
           {/* FOOTER */}
