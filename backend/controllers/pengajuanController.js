@@ -44,14 +44,21 @@ export const createPengajuan = async (req, res) => {
       pekerjaan,
       penghasilan, // gaji_per_bulan
       sumber_dana,
+      rata_rata_transaksi,
       nama_perusahaan,
       tempat_bekerja, // fallback
       alamat_kantor, // alamat_perusahaan
+      telepon_perusahaan,
       jabatan,
       bidang_usaha,
+      referensi_nama,
+      referensi_alamat,
+      referensi_telepon,
+      referensi_hubungan,
 
       // Account
       jenis_rekening, // tabungan_tipe
+      nominal_setoran,
       jenis_kartu, // atm_tipe
       tujuan_rekening, // tujuan_pembukaan
 
@@ -59,6 +66,20 @@ export const createPengajuan = async (req, res) => {
       kontak_darurat_nama,
       kontak_darurat_hp,
       kontak_darurat_hubungan,
+
+      // Account ownership
+      rekening_untuk_sendiri = true,
+
+      // Beneficial Owner
+      bo_nama,
+      bo_alamat,
+      bo_tempat_lahir,
+      bo_tanggal_lahir,
+      bo_jenis_id,
+      bo_nomor_id,
+      bo_pekerjaan,
+      bo_pendapatan_tahun,
+      bo_persetujuan,
 
       // System
       cabang_id
@@ -106,32 +127,34 @@ export const createPengajuan = async (req, res) => {
         pengajuan_id, kode_referensi, nama, alias, jenis_id, no_id, berlaku_id,
         tempat_lahir, tanggal_lahir, alamat_id, kode_pos_id, alamat_now,
         jenis_kelamin, status_kawin, agama, pendidikan, nama_ibu_kandung,
-        npwp, email, no_hp, kewarganegaraan, status_rumah, created_at
+        npwp, email, no_hp, kewarganegaraan, status_rumah, rekening_untuk_sendiri, created_at
       ) VALUES (
         $1, $2, $3, $4, $5, $6, $7,
         $8, $9, $10, $11, $12,
         $13, $14, $15, $16, $17,
-        $18, $19, $20, $21, $22, NOW()
+        $18, $19, $20, $21, $22, $23, NOW()
       )
     `;
     const cddSelfValues = [
       pengajuanId, kode_referensi, finalNama, alias, jenis_id, finalNoId, berlaku_id,
       tempat_lahir, tanggal_lahir, finalAlamatId, finalKodePosId, finalAlamatNow,
       jenis_kelamin, finalStatusKawin, agama, pendidikan, nama_ibu_kandung,
-      npwp, email, no_hp, kewarganegaraan, status_rumah
+      npwp, email, no_hp, kewarganegaraan, status_rumah, rekening_untuk_sendiri
     ];
     await client.query(insertCddSelfQuery, cddSelfValues);
 
     // 3. Insert cdd_job
     const insertCddJobQuery = `
       INSERT INTO cdd_job (
-        pengajuan_id, pekerjaan, gaji_per_bulan, sumber_dana,
-        nama_perusahaan, alamat_perusahaan, jabatan, bidang_usaha, created_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+        pengajuan_id, pekerjaan, gaji_per_bulan, sumber_dana, rata_rata_transaksi,
+        nama_perusahaan, alamat_perusahaan, telepon_perusahaan, jabatan, bidang_usaha,
+        referensi_nama, referensi_alamat, referensi_telepon, referensi_hubungan, created_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW())
     `;
     const cddJobValues = [
-      pengajuanId, pekerjaan, finalGaji, sumber_dana,
-      finalNamaPerusahaan, finalAlamatPerusahaan, jabatan, bidang_usaha
+      pengajuanId, pekerjaan, finalGaji, sumber_dana, rata_rata_transaksi,
+      finalNamaPerusahaan, finalAlamatPerusahaan, telepon_perusahaan, jabatan, bidang_usaha,
+      referensi_nama, referensi_alamat, referensi_telepon, referensi_hubungan
     ];
     await client.query(insertCddJobQuery, cddJobValues);
 
@@ -139,13 +162,13 @@ export const createPengajuan = async (req, res) => {
     const insertAccountQuery = `
       INSERT INTO account (
         pengajuan_id, tabungan_tipe, atm, atm_tipe,
-        tujuan_pembukaan, created_at
-      ) VALUES ($1, $2, $3, $4, $5, NOW())
+        nominal_setoran, tujuan_pembukaan, created_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, NOW())
     `;
     // ATM logic: jika jenis_kartu ada, asumsikan ATM yes.
     const hasAtm = !!jenis_kartu;
     await client.query(insertAccountQuery, [
-      pengajuanId, jenis_rekening, hasAtm, jenis_kartu, tujuan_rekening
+      pengajuanId, jenis_rekening, hasAtm, jenis_kartu, nominal_setoran, tujuan_rekening
     ]);
 
     // 5. Insert cdd_reference (Emergency Contact)
@@ -157,6 +180,20 @@ export const createPengajuan = async (req, res) => {
       `;
       await client.query(insertRefQuery, [
         pengajuanId, kontak_darurat_nama, kontak_darurat_hp, kontak_darurat_hubungan
+      ]);
+    }
+
+    // 6. Insert beneficial owner (only if account is for others, NOT for self, and BO data is provided)
+    if (rekening_untuk_sendiri === false && bo_nama) {
+      const insertBoQuery = `
+        INSERT INTO bo (
+          pengajuan_id, nama, alamat, tempat_lahir, tanggal_lahir,
+          jenis_id, nomor_id, pekerjaan, pendapatan_tahunan, persetujuan, created_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
+      `;
+      await client.query(insertBoQuery, [
+        pengajuanId, bo_nama, bo_alamat, bo_tempat_lahir, bo_tanggal_lahir,
+        bo_jenis_id, bo_nomor_id, bo_pekerjaan, bo_pendapatan_tahun, bo_persetujuan
       ]);
     }
 
@@ -233,18 +270,35 @@ export const getPengajuanById = async (req, res) => {
     cj.pekerjaan,
       cj.gaji_per_bulan AS penghasilan,
         cj.sumber_dana,
+        cj.rata_rata_transaksi,
         cj.nama_perusahaan AS tempat_bekerja,
           cj.alamat_perusahaan AS alamat_kantor,
+            cj.telepon_perusahaan,
             cj.jabatan,
             cj.bidang_usaha,
+            cj.referensi_nama,
+            cj.referensi_alamat,
+            cj.referensi_telepon,
+            cj.referensi_hubungan,
             --Account Data
     acc.tabungan_tipe AS jenis_rekening,
+      acc.nominal_setoran,
       acc.atm_tipe AS jenis_kartu,
         acc.tujuan_pembukaan AS tujuan_rekening,
           --Ref Data
     cref.nama AS kontak_darurat_nama,
       cref.no_hp AS kontak_darurat_hp,
         cref.hubungan AS kontak_darurat_hubungan,
+          --Beneficial Owner Data
+    cbo.nama AS bo_nama,
+      cbo.alamat AS bo_alamat,
+        cbo.tempat_lahir AS bo_tempat_lahir,
+        cbo.tanggal_lahir AS bo_tanggal_lahir,
+          cbo.jenis_id AS bo_jenis_id,
+          cbo.nomor_id AS bo_nomor_id,
+          cbo.pekerjaan AS bo_pekerjaan,
+          cbo.pendapatan_tahunan AS bo_pendapatan_tahun,
+          cbo.persetujuan AS bo_persetujuan,
           --Cabang info
     p.cabang_id,
       c.nama_cabang
@@ -253,6 +307,7 @@ export const getPengajuanById = async (req, res) => {
       LEFT JOIN cdd_job cj ON p.id = cj.pengajuan_id
       LEFT JOIN account acc ON p.id = acc.pengajuan_id
       LEFT JOIN cdd_reference cref ON p.id = cref.pengajuan_id
+      LEFT JOIN bo cbo ON p.id = cbo.pengajuan_id
       LEFT JOIN cabang c ON p.cabang_id = c.id
       LEFT JOIN users ua ON p.approved_by = ua.id
       LEFT JOIN users ur ON p.rejected_by = ur.id

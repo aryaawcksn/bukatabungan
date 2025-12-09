@@ -33,7 +33,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
 
   // Stepper State
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 4;
+  const totalSteps = 6; // 1 (Cabang) + 5 (Form Steps)
 
   // Validation errors (simple server-backed uniqueness + basic client hints)
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -132,12 +132,45 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
   citizenship: '',
   motherName: '',
 
+  // Identity fields (Requirements 2.1)
+  alias: '',
+  jenisId: '',
+  nomorId: '',
+  berlakuId: '',
+
   tempatBekerja: '',
   alamatKantor: '',
   jabatan: '',
   bidangUsaha: '',
   sumberDana: '',
   tujuanRekening: '',
+  tujuanRekeningLainnya: '',
+
+  // Employment and financial fields (Requirements 3.1)
+  rataRataTransaksi: '',
+  teleponKantor: '',
+  referensiNama: '',
+  referensiAlamat: '',
+  referensiTelepon: '',
+  referensiHubungan: '',
+
+  // Account configuration fields (Requirements 4.1)
+  nominalSetoran: '',
+  atmPreference: '',
+
+  // Account ownership
+  rekeningUntukSendiri: true,
+
+  // Beneficial Owner fields (Requirements 5.1)
+  boNama: '',
+  boAlamat: '',
+  boTempatLahir: '',
+  boTanggalLahir: '',
+  boJenisId: '',
+  boNomorId: '',
+  boPekerjaan: '',
+  boPendapatanTahun: '',
+  boPersetujuan: false,
 
   kontakDaruratNama: '',
   kontakDaruratHp: '',
@@ -220,7 +253,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     const newErrors: Record<string, string> = {};
     
     if (currentStep === 1) {
-       // Validate Branch
+       // Step 1: Validate Branch Selection
        if (!formData.cabang_pengambilan) {
           newErrors.cabang_pengambilan = "Silakan pilih cabang pengambilan";
        } else {
@@ -230,20 +263,86 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
           }
        }
     } else if (currentStep === 2) {
-       // Validate Personal Data & Uploads
+       // Step 2: Validate Data Diri Nasabah
+       if (!formData.fullName) newErrors.fullName = "Nama lengkap wajib diisi";
+       if (!formData.nik) newErrors.nik = "NIK wajib diisi";
+       if (!formData.email) newErrors.email = "Email wajib diisi";
+       if (!formData.phone) newErrors.phone = "Nomor telepon wajib diisi";
+       if (!formData.birthDate) newErrors.birthDate = "Tanggal lahir wajib diisi";
+       if (!formData.tempatLahir) newErrors.tempatLahir = "Tempat lahir wajib diisi";
+       if (!formData.gender) newErrors.gender = "Jenis kelamin wajib diisi";
+       if (!formData.maritalStatus) newErrors.maritalStatus = "Status pernikahan wajib diisi";
+       if (!formData.agama) newErrors.agama = "Agama wajib diisi";
+       if (!formData.pendidikan) newErrors.pendidikan = "Pendidikan wajib diisi";
+       if (!formData.motherName) newErrors.motherName = "Nama ibu kandung wajib diisi";
+       if (!formData.citizenship) newErrors.citizenship = "Kewarganegaraan wajib diisi";
+       if (!formData.address) newErrors.address = "Alamat wajib diisi";
+       if (!formData.province) newErrors.province = "Provinsi wajib diisi";
+       if (!formData.city) newErrors.city = "Kota/Kabupaten wajib diisi";
+       if (!formData.postalCode) newErrors.postalCode = "Kode pos wajib diisi";
+       if (!formData.statusRumah) newErrors.statusRumah = "Status tempat tinggal wajib diisi";
        
+       // Async validations
+       if (!newErrors.nik) {
+         const nikErr = await validateNikAsync(formData.nik);
+         if (nikErr) newErrors.nik = nikErr;
+       }
+       if (!newErrors.email) {
+         const emailErr = await validateEmailAsync(formData.email);
+         if (emailErr) newErrors.email = emailErr;
+       }
+       if (!newErrors.phone) {
+         const phoneErr = await validatePhoneAsync(formData.phone);
+         if (phoneErr) newErrors.phone = phoneErr;
+       }
+    } else if (currentStep === 3) {
+       // Step 3: Validate Data Pekerjaan & Keuangan
+       if (!formData.employmentStatus) newErrors.employmentStatus = "Status pekerjaan wajib diisi";
+       if (!formData.monthlyIncome) newErrors.monthlyIncome = "Penghasilan per bulan wajib diisi";
+       if (!formData.sumberDana) newErrors.sumberDana = "Sumber dana wajib diisi";
+    } else if (currentStep === 4) {
+       // Step 4: Validate Data Rekening
+       if (!formData.tujuanRekening) newErrors.tujuanRekening = "Tujuan rekening wajib diisi";
+       if (formData.tujuanRekening === 'Lainnya' && !formData.tujuanRekeningLainnya) {
+         newErrors.tujuanRekeningLainnya = "Sebutkan tujuan pembukaan rekening";
+       }
+       
+       // Validate BO if account is for others
+       if (formData.rekeningUntukSendiri === false) {
+         if (!formData.boNama) newErrors.boNama = "Nama beneficial owner wajib diisi";
+         if (!formData.boAlamat) newErrors.boAlamat = "Alamat beneficial owner wajib diisi";
+         if (!formData.boTempatLahir) newErrors.boTempatLahir = "Tempat lahir beneficial owner wajib diisi";
+         if (!formData.boTanggalLahir) newErrors.boTanggalLahir = "Tanggal lahir beneficial owner wajib diisi";
+         if (!formData.boJenisId) newErrors.boJenisId = "Jenis identitas beneficial owner wajib diisi";
+         if (!formData.boNomorId) newErrors.boNomorId = "Nomor identitas beneficial owner wajib diisi";
+         if (!formData.boPekerjaan) newErrors.boPekerjaan = "Pekerjaan beneficial owner wajib diisi";
+         if (!formData.boPendapatanTahun) newErrors.boPendapatanTahun = "Pendapatan tahunan beneficial owner wajib diisi";
+         if (!formData.boPersetujuan) newErrors.boPersetujuan = "Persetujuan beneficial owner harus dicentang";
+       }
     }
+    // Step 5 (Review) doesn't need validation here, will be validated on submit
 
+    // If there are validation errors, prevent navigation
     if (Object.keys(newErrors).length > 0) {
       setErrors(prev => ({ ...prev, ...newErrors }));
-      // focus first error
-      const first = Object.keys(newErrors)[0];
-      const el = document.getElementById(first);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      
+      // Scroll to first error field
+      const firstErrorKey = Object.keys(newErrors)[0];
+      const element = document.getElementById(firstErrorKey);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Focus the element after scrolling
+        setTimeout(() => {
+          element.focus();
+        }, 500);
+      }
+      
+      // Show alert with error count
+      alert(`Terdapat ${Object.keys(newErrors).length} kesalahan. Silakan lengkapi semua field yang wajib diisi.`);
       return;
     }
 
-    // Clear errors for current step fields
+    // Clear errors for current step and proceed
     setErrors({});
     setCurrentStep(prev => prev + 1);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -262,44 +361,84 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     e.preventDefault();
     setLoadingSubmit(true);
     
-    // Final Step Validation
+    // Comprehensive Final Step Validation
     const newErrors: Record<string,string> = {};
+    
+    // Personal Identity - Required Fields
     if (!formData.fullName) newErrors.fullName = "Nama lengkap wajib diisi";
     if (!formData.nik) newErrors.nik = "NIK wajib diisi";
     if (!formData.email) newErrors.email = "Email wajib diisi";
     if (!formData.phone) newErrors.phone = "Nomor telepon wajib diisi";
     if (!formData.birthDate) newErrors.birthDate = "Tanggal lahir wajib diisi";
+    if (!formData.tempatLahir) newErrors.tempatLahir = "Tempat lahir wajib diisi";
     if (!formData.gender) newErrors.gender = "Jenis kelamin wajib diisi";
-    if (!formData.citizenship) newErrors.citizenship = "Kewarganegaraan wajib diisi";
+    if (!formData.maritalStatus) newErrors.maritalStatus = "Status pernikahan wajib diisi";
+    if (!formData.agama) newErrors.agama = "Agama wajib diisi";
+    if (!formData.pendidikan) newErrors.pendidikan = "Pendidikan wajib diisi";
     if (!formData.motherName) newErrors.motherName = "Nama ibu kandung wajib diisi";
+    if (!formData.citizenship) newErrors.citizenship = "Kewarganegaraan wajib diisi";
+    
+    // Address - Required Fields
     if (!formData.address) newErrors.address = "Alamat wajib diisi";
     if (!formData.province) newErrors.province = "Provinsi wajib diisi";
     if (!formData.city) newErrors.city = "Kota/Kabupaten wajib diisi";
     if (!formData.postalCode) newErrors.postalCode = "Kode pos wajib diisi";
+    if (!formData.statusRumah) newErrors.statusRumah = "Status tempat tinggal wajib diisi";
+    
+    // Employment - Required Fields
     if (!formData.employmentStatus) newErrors.employmentStatus = "Status pekerjaan wajib diisi";
+    if (!formData.monthlyIncome) newErrors.monthlyIncome = "Penghasilan per bulan wajib diisi";
     if (!formData.sumberDana) newErrors.sumberDana = "Sumber dana wajib diisi";
+    
+    // Account Configuration - Required Fields
     if (!formData.tujuanRekening) newErrors.tujuanRekening = "Tujuan rekening wajib diisi";
+    if (formData.tujuanRekening === 'Lainnya' && !formData.tujuanRekeningLainnya) {
+      newErrors.tujuanRekeningLainnya = "Sebutkan tujuan pembukaan rekening";
+    }
+    
+    // Emergency Contact - Optional but all-or-nothing
+    const hasEmergencyContact = formData.kontakDaruratNama || formData.kontakDaruratHp || formData.kontakDaruratHubungan;
+    if (hasEmergencyContact) {
+      if (!formData.kontakDaruratNama) newErrors.kontakDaruratNama = "Nama kontak darurat harus diisi jika mengisi kontak darurat";
+      if (!formData.kontakDaruratHp) newErrors.kontakDaruratHp = "Nomor HP kontak darurat harus diisi jika mengisi kontak darurat";
+      if (!formData.kontakDaruratHubungan) newErrors.kontakDaruratHubungan = "Hubungan kontak darurat harus diisi jika mengisi kontak darurat";
+    }
+    
+    // Terms and Conditions
     if (!formData.agreeTerms) newErrors.agreeTerms = "Anda harus menyetujui syarat dan ketentuan";
 
+    // Async validations for unique fields (only if basic validation passed)
     if (!newErrors.nik) {
-          const nikErr = await validateNikAsync(formData.nik);
-          if (nikErr) newErrors.nik = nikErr;
-       }
-       if (!newErrors.email) {
-          const emailErr = await validateEmailAsync(formData.email);
-          if (emailErr) newErrors.email = emailErr;
-       }
-       if (!newErrors.phone) {
-          const phoneErr = await validatePhoneAsync(formData.phone);
-          if (phoneErr) newErrors.phone = phoneErr;
-       }
+      const nikErr = await validateNikAsync(formData.nik);
+      if (nikErr) newErrors.nik = nikErr;
+    }
+    if (!newErrors.email) {
+      const emailErr = await validateEmailAsync(formData.email);
+      if (emailErr) newErrors.email = emailErr;
+    }
+    if (!newErrors.phone) {
+      const phoneErr = await validatePhoneAsync(formData.phone);
+      if (phoneErr) newErrors.phone = phoneErr;
+    }
 
+    // If validation errors exist, prevent submission and display all errors
     if (Object.keys(newErrors).length > 0) {
       setErrors(prev => ({ ...prev, ...newErrors }));
       setLoadingSubmit(false);
-      const first = Object.keys(newErrors)[0];
-      const el = document.getElementById(first);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      
+      // Scroll to first error field
+      const firstErrorKey = Object.keys(newErrors)[0];
+      const element = document.getElementById(firstErrorKey);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Focus the element after scrolling
+        setTimeout(() => {
+          element.focus();
+        }, 500);
+      }
+      
+      // Show alert with error count
+      alert(`Terdapat ${Object.keys(newErrors).length} kesalahan pada formulir. Silakan periksa dan lengkapi semua field yang wajib diisi.`);
       return;
     }
 
@@ -419,10 +558,14 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     // 3. Siapkan data submit
     // ============================
     const submitData = {
+      // cdd_self fields - Personal Identity
       nama: data.fullName,
       nama_lengkap: data.fullName,
       nik: data.nik,
-      no_id: data.nik, // Fallback
+      no_id: data.nomorId || data.nik, // Use nomorId if provided, fallback to nik
+      alias: data.alias,
+      jenis_id: data.jenisId,
+      berlaku_id: data.berlakuId,
       email: data.email,
       no_hp: data.phone,
       tanggal_lahir: data.birthDate,
@@ -431,6 +574,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       alamat_id: data.address,
       alamat: data.address,
       alamat_now: data.alamatDomisili || data.address,
+      kode_pos_id: data.postalCode,
       
       provinsi: data.province,
       kota: data.city,
@@ -447,7 +591,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       pendidikan: data.pendidikan,
       npwp: data.npwp,
 
-      // Job
+      // cdd_job fields - Employment and Financial
       pekerjaan: data.employmentStatus,
       penghasilan: data.monthlyIncome,
       gaji_per_bulan: data.monthlyIncome,
@@ -455,24 +599,49 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       tempat_bekerja: data.tempatBekerja,
       alamat_perusahaan: data.alamatKantor,
       alamat_kantor: data.alamatKantor,
+      telepon_perusahaan: data.teleponKantor,
       jabatan: data.jabatan,
       bidang_usaha: data.bidangUsaha,
       sumber_dana: data.sumberDana,
+      rata_rata_transaksi: data.rataRataTransaksi,
+      
+      // Reference contact fields
+      referensi_nama: data.referensiNama,
+      referensi_alamat: data.referensiAlamat,
+      referensi_telepon: data.referensiTelepon,
+      referensi_hubungan: data.referensiHubungan,
 
-      // Account
+      // Account configuration fields
       jenis_rekening: data.jenis_rekening,
       tabungan_tipe: data.jenis_rekening,
       tujuan_rekening: data.tujuanRekening,
       tujuan_pembukaan: data.tujuanRekening,
+      tujuan_rekening_lainnya: data.tujuanRekeningLainnya,
+      nominal_setoran: data.nominalSetoran,
+      jenis_kartu: data.atmPreference || data.cardType || getDefaultCardType(),
+      card_type: data.atmPreference || data.cardType || getDefaultCardType(),
       
-      // Emergency
+      // cdd_reference - Emergency contact
       kontak_darurat_nama: data.kontakDaruratNama,
       kontak_darurat_hp: data.kontakDaruratHp,
       kontak_darurat_hubungan: data.kontakDaruratHubungan,
 
+      // Account ownership
+      rekening_untuk_sendiri: data.rekeningUntukSendiri,
+
+      // Beneficial Owner fields (only sent if account is for others, NOT for self)
+      bo_nama: data.rekeningUntukSendiri === false ? data.boNama : undefined,
+      bo_alamat: data.rekeningUntukSendiri === false ? data.boAlamat : undefined,
+      bo_tempat_lahir: data.rekeningUntukSendiri === false ? data.boTempatLahir : undefined,
+      bo_tanggal_lahir: data.rekeningUntukSendiri === false ? data.boTanggalLahir : undefined,
+      bo_jenis_id: data.rekeningUntukSendiri === false ? data.boJenisId : undefined,
+      bo_nomor_id: data.rekeningUntukSendiri === false ? data.boNomorId : undefined,
+      bo_pekerjaan: data.rekeningUntukSendiri === false ? data.boPekerjaan : undefined,
+      bo_pendapatan_tahun: data.rekeningUntukSendiri === false ? data.boPendapatanTahun : undefined,
+      bo_persetujuan: data.rekeningUntukSendiri === false ? data.boPersetujuan : undefined,
+
+      // System fields
       setuju_data: data.agreeTerms ? "Ya" : "Tidak",
-      jenis_kartu: data.cardType || getDefaultCardType(),
-      card_type: data.cardType || getDefaultCardType(),
       savings_type: savingsType,
       savings_type_name: getSavingsTypeName(),
       cabang_pengambilan: data.cabang_pengambilan, 
@@ -508,7 +677,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       if (response.ok && result.success) {
         setReferenceCode(result.kode_referensi ?? null);
         setSubmitted(true);
-        setCurrentStep(4); // Move to success step
+        setCurrentStep(6); // Move to success step (step 6)
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         const errorMessage =
@@ -628,13 +797,11 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
 
   const steps = [
   { number: 1, title: "Pilih Cabang", icon: Building2 },
-  { number: 2, title: "Upload Dokumen", icon: User },
-  {
-    number: 3,
-    title: "Isi Data Diri",
-    icon: FileText,
-  },
-  { number: 4, title: "Selesai", icon: CircleCheckBig },
+  { number: 2, title: "Data Diri", icon: User },
+  { number: 3, title: "Pekerjaan", icon: FileText },
+  { number: 4, title: "Rekening", icon: FileText },
+  { number: 5, title: "Review", icon: Check },
+  { number: 6, title: "Selesai", icon: CircleCheckBig },
 ];
 
 
@@ -720,10 +887,10 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
           </div>
 
           <Card className="bg-white p-8 md:p-10 border-0 shadow-sm rounded-md w-full">
-            {currentStep === 4 ? renderSuccess() : renderForm()}
+            {currentStep === 6 ? renderSuccess() : renderForm()}
             
             {/* Navigation Buttons */}
-            {currentStep < 4 && (
+            {currentStep < 6 && (
               <div className="mt-8 pt-6 border-t border-slate-100 flex justify-between items-center">
 
                 {/* ✅ BACK BUTTON (KIRI) */}
@@ -737,7 +904,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
                 </Button>
 
                 {/* ✅ NEXT / SUBMIT BUTTON (KANAN) */}
-                {currentStep < 3 ? (
+                {currentStep < 5 ? (
                   <Button 
                     type="button" 
                     onClick={handleNextStep}
@@ -745,7 +912,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
                   >
                     Lanjut <ChevronRight className="ml-2 h-5 w-5" />
                   </Button>
-                ) : (
+                ) : currentStep === 5 ? (
                   <Button 
                     type="button" 
                     onClick={handleSubmit}
@@ -754,7 +921,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
                   >
                     {loadingSubmit ? 'Mengirim...' : 'Kirim Permohonan'}
                   </Button>
-                )}
+                ) : null}
               </div>
             )}
 

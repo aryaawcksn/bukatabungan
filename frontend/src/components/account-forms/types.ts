@@ -30,6 +30,12 @@ export interface AccountFormData {
     citizenship: string;
     motherName: string;
 
+    // Identity fields (Requirements 2.1)
+    alias: string;
+    jenisId: string; // 'KTP' | 'Paspor' | 'Lainnya'
+    nomorId: string;
+    berlakuId: string; // validity date
+
     // Pekerjaan
     tempatBekerja: string; // Nama Perusahaan
     alamatKantor: string;
@@ -37,6 +43,33 @@ export interface AccountFormData {
     bidangUsaha: string;
     sumberDana: string;
     tujuanRekening: string;
+    tujuanRekeningLainnya?: string; // For "other" purpose specification
+
+    // Employment and financial fields (Requirements 3.1)
+    rataRataTransaksi: string;
+    teleponKantor: string;
+    referensiNama: string;
+    referensiAlamat: string;
+    referensiTelepon: string;
+    referensiHubungan: string;
+
+    // Account configuration fields (Requirements 4.1)
+    nominalSetoran: string;
+    atmPreference: string; // 'tidak' | 'ya' | 'silver' | 'gold'
+
+    // Account ownership (determines if BO is required)
+    rekeningUntukSendiri: boolean;
+
+    // Beneficial Owner fields (Requirements 5.1)
+    boNama: string;
+    boAlamat: string;
+    boTempatLahir: string;
+    boTanggalLahir: string;
+    boJenisId: string; // 'KTP' | 'Paspor' | 'Lainnya'
+    boNomorId: string;
+    boPekerjaan: string;
+    boPendapatanTahun: string; // 'sd-5jt' | '5-10jt' | '10-25jt' | '25-100jt'
+    boPersetujuan: boolean;
 
     // Darurat
     kontakDaruratNama: string;
