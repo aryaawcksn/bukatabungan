@@ -281,6 +281,10 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
        if (!formData.city) newErrors.city = "Kota/Kabupaten wajib diisi";
        if (!formData.postalCode) newErrors.postalCode = "Kode pos wajib diisi";
        if (!formData.statusRumah) newErrors.statusRumah = "Status tempat tinggal wajib diisi";
+       if (!formData.jenisId) newErrors.jenisId = "Jenis identitas wajib diisi";
+       if (formData.jenisId === 'Lainnya' && !formData.jenisIdCustom) {
+          newErrors.jenisIdCustom = "Sebutkan jenis identitas Anda";
+       }
        
        // Async validations
        if (!newErrors.nik) {
@@ -564,7 +568,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       nik: data.nik,
       no_id: data.nomorId || data.nik, // Use nomorId if provided, fallback to nik
       alias: data.alias,
-      jenis_id: data.jenisId,
+      jenis_id: data.jenisId === 'Lainnya' ? data.jenisIdCustom : data.jenisId,
       berlaku_id: data.berlakuId,
       email: data.email,
       no_hp: data.phone,

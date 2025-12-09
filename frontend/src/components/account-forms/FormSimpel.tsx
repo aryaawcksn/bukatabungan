@@ -460,6 +460,14 @@ export default function FormSimpel({
                       </SelectItem>
                     </SelectContent>
                   </Select>
+                  {formData.jenisId === 'Lainnya' && (
+                    <Input
+                      placeholder="Sebutkan jenis identitas"
+                      value={formData.jenisIdCustom || ''}
+                      onChange={(e) => setFormData({ ...formData, jenisIdCustom: e.target.value })}
+                      className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
+                    />
+                  )}
                 </div>
                 <div>
                   <Label htmlFor="nik" className="text-gray-700 font-semibold">
@@ -1134,17 +1142,7 @@ export default function FormSimpel({
                       className="mt-2 h-12 rounded-md"
                     />
                  </div>
-                 <div>
-                    <Label className="text-gray-700">
-                      {formData.employmentStatus === 'pelajar-mahasiswa' ? 'Telepon Sekolah / Universitas' : 'Telepon Kantor'}
-                    </Label>
-                    <Input
-                      placeholder="Contoh: 0274123456"
-                      value={formData.teleponKantor}
-                      onChange={(e) => setFormData({ ...formData, teleponKantor: e.target.value })}
-                      className="mt-2 h-12 rounded-md"
-                    />
-                 </div>
+
               </div>
 
               <div className="grid md:grid-cols-2 gap-5">
@@ -1159,21 +1157,13 @@ export default function FormSimpel({
                  </div>
                  <div>
                     <Label className="text-gray-700">Rata-rata Transaksi per Bulan</Label>
-                    <Select
+                    <Input
+                      type="number"
+                      placeholder="Contoh: 1000000"
                       value={formData.rataRataTransaksi}
-                      onValueChange={(value) => setFormData({ ...formData, rataRataTransaksi: value })}
-                    >
-                      <SelectTrigger className="mt-2 h-12 rounded-md">
-                        <SelectValue placeholder="Pilih range transaksi" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="< 5 Juta">&lt; 5 Juta</SelectItem>
-                        <SelectItem value="5 - 10 Juta">5 - 10 Juta</SelectItem>
-                        <SelectItem value="10 - 25 Juta">10 - 25 Juta</SelectItem>
-                        <SelectItem value="25 - 100 Juta">25 - 100 Juta</SelectItem>
-                        <SelectItem value="> 100 Juta">&gt; 100 Juta</SelectItem>
-                      </SelectContent>
-                    </Select>
+                      onChange={(e) => setFormData({ ...formData, rataRataTransaksi: e.target.value })}
+                      className="mt-2 h-12 rounded-md"
+                    />
                  </div>
               </div>
 

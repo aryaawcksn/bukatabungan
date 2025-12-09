@@ -35,6 +35,7 @@ export interface AccountFormData {
     jenisId: string; // 'KTP' | 'Paspor' | 'Lainnya'
     nomorId: string;
     berlakuId: string; // validity date
+    jenisIdCustom?: string; // Custom ID name when jenisId is 'Lainnya'
 
     // Pekerjaan
     tempatBekerja: string; // Nama Perusahaan
