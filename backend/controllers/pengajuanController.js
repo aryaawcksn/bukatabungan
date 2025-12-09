@@ -292,8 +292,8 @@ export const getAllPengajuan = async (req, res) => {
         cs.email,
         acc.tabungan_tipe AS jenis_rekening,
         c.nama_cabang,
-        ua.username AS approved_by_name,
-        ur.username AS rejected_by_name
+        ua.username AS approved_by_name,  -- ambil username admin
+        ur.username AS rejected_by_name   -- ambil username admin
       FROM pengajuan_tabungan p
       LEFT JOIN cdd_self cs ON p.id = cs.pengajuan_id
       LEFT JOIN account acc ON p.id = acc.pengajuan_id
@@ -304,7 +304,7 @@ export const getAllPengajuan = async (req, res) => {
       ORDER BY p.created_at DESC
     `;
 
-    const result = await pool.query(query, [adminCabang]);
+const result = await pool.query(query, [adminCabang]);
 
     res.json({
       success: true,
@@ -323,28 +323,27 @@ export const getAllPengajuan = async (req, res) => {
 export const updatePengajuanStatus = async (req, res) => {
   const { id } = req.params;
   const { status, sendEmail, sendWhatsApp, message } = req.body;
-  const adminUsername = req.user?.username || 'Unknown';
 
   try {
     let query, values;
+
     if (status === 'approved') {
       query = `
-          UPDATE pengajuan_tabungan 
-          SET status = $1, approved_by = $2, approved_at = NOW(), rejected_by = NULL, rejected_at = NULL
-          WHERE id = $3 AND cabang_id = $4
-          RETURNING *;
-        `;
-      values = [status, req.user.id, adminUsername, req.user.cabang_id];
-
+        UPDATE pengajuan_tabungan 
+        SET status = $1, approved_by = $2, approved_at = NOW(), rejected_by = NULL, rejected_at = NULL
+        WHERE id = $3 AND cabang_id = $4
+        RETURNING *;
+      `;
+      values = [status, req.user.id, id, req.user.cabang_id];
     }
     else if (status === 'rejected') {
       query = `
         UPDATE pengajuan_tabungan 
         SET status = $1, rejected_by = $2, rejected_at = NOW(), approved_by = NULL, approved_at = NULL
-        WHERE id = $3 AND cabang_id = $4 
+        WHERE id = $3 AND cabang_id = $4
         RETURNING *;
       `;
-      values = [status, req.user.id, adminUsername, id, req.user.cabang_id];
+      values = [status, req.user.id, id, req.user.cabang_id];
     } else {
       query = `
         UPDATE pengajuan_tabungan 
@@ -360,21 +359,20 @@ export const updatePengajuanStatus = async (req, res) => {
     if (result.rowCount === 0)
       return res.status(404).json({ success: false, message: "Data tidak ditemukan atau akses ditolak" });
 
-    // Fetch user details for notification (Email/HP) needed from cdd_self
-    const userDetails = await pool.query('SELECT nama, email, no_hp FROM cdd_self WHERE pengajuan_id = $1', [id]);
+    // Ambil data user untuk notifikasi
+    const userDetails = await pool.query(
+      'SELECT nama, email, no_hp FROM cdd_self WHERE pengajuan_id = $1',
+      [id]
+    );
 
     if (userDetails.rows.length > 0) {
       const { nama, email, no_hp } = userDetails.rows[0];
 
-      // Kirim Email
-      if (sendEmail && email) {
+      if (sendEmail && email)
         sendEmailNotification(email, nama, status, message).catch(e => console.error("Email fail:", e.message));
-      }
 
-      // Kirim WhatsApp
-      if (sendWhatsApp && no_hp) {
+      if (sendWhatsApp && no_hp)
         sendWhatsAppNotification(no_hp, nama, status, message).catch(e => console.error("WA fail:", e.message));
-      }
     }
 
     res.json({ success: true, message: "Status diperbarui dan notifikasi dikirim" });
@@ -383,3 +381,4 @@ export const updatePengajuanStatus = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
