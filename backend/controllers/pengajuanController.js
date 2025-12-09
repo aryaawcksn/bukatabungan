@@ -3,6 +3,16 @@ import { sendEmailNotification } from "../services/emailService.js";
 import { sendWhatsAppNotification } from "../services/whatsappService.js";
 
 /**
+ * Helper function to convert empty strings to null
+ * This is needed because PostgreSQL doesn't accept empty strings for date/numeric fields
+ */
+const emptyToNull = (value) => {
+  if (value === undefined || value === null) return null;
+  if (typeof value === 'string' && value.trim() === '') return null;
+  return value;
+};
+
+/**
  * Membuat pengajuan baru dengan schema database baru (Multi-table)
  */
 export const createPengajuan = async (req, res) => {
@@ -136,10 +146,10 @@ export const createPengajuan = async (req, res) => {
       )
     `;
     const cddSelfValues = [
-      pengajuanId, kode_referensi, finalNama, alias, jenis_id, finalNoId, berlaku_id,
+      pengajuanId, kode_referensi, finalNama, emptyToNull(alias), jenis_id, finalNoId, emptyToNull(berlaku_id),
       tempat_lahir, tanggal_lahir, finalAlamatId, finalKodePosId, finalAlamatNow,
       jenis_kelamin, finalStatusKawin, agama, pendidikan, nama_ibu_kandung,
-      npwp, email, no_hp, kewarganegaraan, status_rumah, rekening_untuk_sendiri
+      emptyToNull(npwp), email, no_hp, kewarganegaraan, status_rumah, rekening_untuk_sendiri
     ];
     await client.query(insertCddSelfQuery, cddSelfValues);
 
@@ -152,9 +162,10 @@ export const createPengajuan = async (req, res) => {
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW())
     `;
     const cddJobValues = [
-      pengajuanId, pekerjaan, finalGaji, sumber_dana, rata_rata_transaksi,
-      finalNamaPerusahaan, finalAlamatPerusahaan, telepon_perusahaan, jabatan, bidang_usaha,
-      referensi_nama, referensi_alamat, referensi_telepon, referensi_hubungan
+      pengajuanId, pekerjaan, finalGaji, sumber_dana, emptyToNull(rata_rata_transaksi),
+      emptyToNull(finalNamaPerusahaan), emptyToNull(finalAlamatPerusahaan), emptyToNull(telepon_perusahaan), 
+      emptyToNull(jabatan), emptyToNull(bidang_usaha),
+      emptyToNull(referensi_nama), emptyToNull(referensi_alamat), emptyToNull(referensi_telepon), emptyToNull(referensi_hubungan)
     ];
     await client.query(insertCddJobQuery, cddJobValues);
 
@@ -192,8 +203,9 @@ export const createPengajuan = async (req, res) => {
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
       `;
       await client.query(insertBoQuery, [
-        pengajuanId, bo_nama, bo_alamat, bo_tempat_lahir, bo_tanggal_lahir,
-        bo_jenis_id, bo_nomor_id, bo_pekerjaan, bo_pendapatan_tahun, bo_persetujuan
+        pengajuanId, bo_nama, bo_alamat, emptyToNull(bo_tempat_lahir), emptyToNull(bo_tanggal_lahir),
+        emptyToNull(bo_jenis_id), emptyToNull(bo_nomor_id), emptyToNull(bo_pekerjaan), 
+        emptyToNull(bo_pendapatan_tahun), bo_persetujuan
       ]);
     }
 
