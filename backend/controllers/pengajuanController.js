@@ -115,14 +115,8 @@ export const createPengajuan = async (req, res) => {
       });
     }
 
-    // Validate jenis_rekening (tabungan_tipe) - required field with NOT NULL constraint
-    if (!jenis_rekening) {
-      console.error("❌ Missing jenis_rekening (tabungan_tipe)");
-      return res.status(400).json({
-        success: false,
-        message: "Jenis rekening wajib diisi."
-      });
-    }
+    // Set default for jenis_rekening if empty (tabungan_tipe has NOT NULL constraint)
+    const finalJenisRekening = jenis_rekening || 'simpel';
 
     // Generate Request ID / Kode Referensi
     const kode_referensi = `REG-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
@@ -222,7 +216,7 @@ export const createPengajuan = async (req, res) => {
     const hasAtm = jenis_kartu ? 1 : 0;
     await client.query(insertAccountQuery, [
       parseInt(pengajuanId), // Ensure pengajuan_id is integer
-      jenis_rekening, // Required field - validated above, NOT NULL constraint
+      finalJenisRekening, // Default to 'simpel' if empty, NOT NULL constraint
       hasAtm, // Integer: 1 or 0
       jenis_kartu || null, // Use null if empty
       nominal_setoran || null, // Keep as string (VARCHAR in DB)

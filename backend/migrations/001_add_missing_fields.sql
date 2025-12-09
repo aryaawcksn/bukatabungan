@@ -19,11 +19,15 @@ ADD COLUMN IF NOT EXISTS rekening_untuk_sendiri BOOLEAN DEFAULT TRUE;
 -- They are collected in frontend but not persisted to database yet
 
 -- ============================================
--- 3. Add missing column to account table
+-- 3. Add missing column to account table and set default for tabungan_tipe
 -- ============================================
 
 ALTER TABLE account 
 ADD COLUMN IF NOT EXISTS nominal_setoran DECIMAL(15, 2);
+
+-- Set default value for tabungan_tipe to 'simpel' if it has NOT NULL constraint
+ALTER TABLE account 
+ALTER COLUMN tabungan_tipe SET DEFAULT 'simpel';
 
 -- ============================================
 -- 4. Add missing columns to bo (beneficial owner) table
