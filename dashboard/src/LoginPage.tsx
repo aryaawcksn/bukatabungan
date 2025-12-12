@@ -8,6 +8,7 @@ import { Eye, EyeOff } from "lucide-react";
 import axios from "axios";
 
 import { useAuth } from "./context/AuthContext";
+import { API_BASE_URL } from "./config/api";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -30,7 +31,7 @@ export default function LoginPage() {
   }
 
   try {
-    const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}/api/auth/login`, { username, password, credentials: 'include'});
+    const res = await axios.post(`${API_BASE_URL}/api/auth/login`, { username, password, credentials: 'include'});
     if (res.data.success) {
       const { user: admin } = res.data;
 

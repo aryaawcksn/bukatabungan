@@ -27,6 +27,7 @@ import {
   Building2
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { API_BASE_URL } from '../config/api';
 
 interface FormDetailDialogProps {
   submission: FormSubmission;
@@ -103,7 +104,7 @@ export function FormDetailDialog({ submission, open, onClose, onApprove, onRejec
        const fetchDetails = async () => {
          setFetchingDetails(true);
          try {
-           const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}/api/pengajuan/${submission.id}`, {
+           const res = await fetch(`${API_BASE_URL}/api/pengajuan/${submission.id}`, {
              credentials: 'include'
            });
            

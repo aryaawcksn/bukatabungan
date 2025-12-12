@@ -292,6 +292,7 @@ export const mapBackendDataToFormSubmission = (data: any): FormSubmission => {
 };
 
 import { useAuth } from "./context/AuthContext";
+import { API_BASE_URL } from "./config/api";
 
 export default function DashboardPage() {
   const { user, logout } = useAuth();
@@ -374,7 +375,7 @@ export default function DashboardPage() {
 
   const checkBackendConnection = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}/api/cek-koneksi`, {
+      const response = await fetch(`${API_BASE_URL}/api/cek-koneksi`, {
         credentials: 'include'
       });
       if (response.ok) {
@@ -402,7 +403,7 @@ export default function DashboardPage() {
     //   throw new Error("Token tidak ditemukan. Silakan login ulang.");
     // }
 
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}/api/pengajuan`, {
+    const response = await fetch(`${API_BASE_URL}/api/pengajuan`, {
       method: 'GET',
       headers: {
         // 'Authorization': `Bearer ${token}`,
@@ -480,7 +481,7 @@ export default function DashboardPage() {
     setIsCabangLoading(true);
     try {
       // const token = localStorage.getItem("token");
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}/api/cabang`, {
+      const res = await fetch(`${API_BASE_URL}/api/cabang`, {
         headers: {
           // 'Authorization': `Bearer ${token}`
         },
@@ -512,7 +513,7 @@ export default function DashboardPage() {
     // const token = localStorage.getItem("token");
 
     const res = await fetch(
-      `${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}/api/cabang/${id}/status`,
+      `${API_BASE_URL}/api/cabang/${id}/status`,
       {
         method: 'PUT',
         headers: {
@@ -570,7 +571,7 @@ export default function DashboardPage() {
       //   return;
       // }
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}/api/pengajuan/${approvalDialog.submission.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/pengajuan/${approvalDialog.submission.id}`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',

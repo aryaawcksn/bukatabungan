@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import { API_BASE_URL } from "../config/api";
 
 interface OtpModalProps {
   open: boolean;
@@ -21,7 +22,7 @@ export default function OtpModal({ open, onClose, phone, onVerified }: OtpModalP
     setError("");
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}/otp/verify`, {
+      const res = await fetch(`${API_BASE_URL}/otp/verify`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone, otp }),

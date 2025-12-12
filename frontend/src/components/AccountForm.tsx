@@ -13,6 +13,7 @@ import FormTabunganku from './account-forms/FormTabunganKu';
 import FormPensiun from './account-forms/FormPensiun';
 import FormReguler from './account-forms/FormReguler';
 import FormMutiara from './account-forms/FormMutiara';
+import { API_BASE_URL } from '../config/api';
 
 interface AccountFormProps {
   savingsType: string;
@@ -38,7 +39,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
   // Validation errors (simple server-backed uniqueness + basic client hints)
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const apiBase = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+  const apiBase = API_BASE_URL;
 
   const validateNikAsync = async (nik: string) => {
     if (!nik) return 'NIK wajib diisi';

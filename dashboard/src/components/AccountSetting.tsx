@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { Trash2, Edit, Plus, UserCog, ScrollText } from "lucide-react";
 import { toast } from "sonner";
 import type { Cabang } from "./CabangSetting";
+import { API_BASE_URL } from "../config/api";
 
 interface User {
   id: number;
@@ -53,7 +54,7 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
   setLoading(true);
   try {
     const res = await fetch(
-      `${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}/api/auth/users`,
+      `${API_BASE_URL}/api/auth/users`,
       { credentials: "include" }
     );
 
@@ -74,7 +75,7 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
   setLogLoading(true);
   try {
     const res = await fetch(
-      `${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}/api/user-logs?page=${currentPage}&limit=${LOG_LIMIT}`,
+      `${API_BASE_URL}/api/user-logs?page=${currentPage}&limit=${LOG_LIMIT}`,
       { credentials: "include" }
     );
 
@@ -117,8 +118,8 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
 
   try {
     const url = isEditing
-      ? `${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}/api/auth/users/${selectedUser?.id}`
-      : `${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}/api/auth/register`;
+      ? `${API_BASE_URL}/api/auth/users/${selectedUser?.id}`
+      : `${API_BASE_URL}/api/auth/register`;
 
     const method = isEditing ? "PUT" : "POST";
 
@@ -153,7 +154,7 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
 
   try {
     const res = await fetch(
-      `${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}/api/auth/users/${deleteTarget.id}`,
+      `${API_BASE_URL}/api/auth/users/${deleteTarget.id}`,
       {
         method: "DELETE",
         credentials: "include",
