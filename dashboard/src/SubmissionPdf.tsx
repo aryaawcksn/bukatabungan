@@ -1,6 +1,6 @@
-import { Document, Page, Text, View, StyleSheet, Image, Font } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet, Image} from '@react-pdf/renderer';
 import type { FormSubmission } from './DashboardPage';
-import React, { type JSX } from 'react';
+import { type JSX } from 'react';
 
 // ===== STYLES (COMPACT & FORMAL) =====
 const PRIMARY_COLOR = '#003b80'; 
@@ -337,7 +337,7 @@ const RowTwoCol = ({ children }: { children: (JSX.Element | null)[] }) => {
 // ===== MAIN COMPONENT (LOGIC REMAINS, IMPLEMENTATION IS COMPACT) =====
 export const SubmissionPdf = ({ submission }: { submission: FormSubmission }) => {
   const isSimpel = submission.cardType === 'Tabungan Simpel' || submission.savingsType === 'SimPel';
-  const birthPlace = submission.personalData.birthPlace || 'Sleman';
+  
 
   const formatRupiah = (amount: string | number | null | undefined) => {
     if (!amount || isNaN(Number(amount))) return '0';
