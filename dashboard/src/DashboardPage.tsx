@@ -22,18 +22,27 @@ export interface FormSubmission {
   cabangName?: string;
   personalData: {
     fullName: string;
+    alias?: string;
+    identityType?: string;
     nik: string;
+    identityValidUntil?: string;
     email: string;
     phone: string;
+    birthPlace?: string;
     birthDate: string;
     gender?: string;
     maritalStatus?: string;
+    religion?: string;
+    education?: string;
     citizenship?: string;
     motherName?: string;
+    npwp?: string;
+    homeStatus?: string;
+    tipeNasabah?: 'baru' | 'lama';
+    nomorRekeningLama?: string;
     address: {
       street: string;
-      province: string;
-      city: string;
+      domicile?: string;
       postalCode: string;
     };
   };
@@ -42,27 +51,66 @@ export interface FormSubmission {
     salaryRange: string;
     workplace?: string;
     officeAddress?: string;
+    officePhone?: string;
+    position?: string;
+    businessField?: string;
     incomeSource?: string;
+    averageTransaction?: string;
     accountPurpose?: string;
+  };
+  accountInfo: {
+    accountType: string;
+    initialDeposit?: string;
+    cardType?: string;
+    isForSelf: boolean;
   };
   emergencyContact?: {
     name: string;
     phone: string;
+    address?: string;
+    relationship: string;
   };
-  documents: {
-    ktpPhoto: string;
+  beneficialOwner?: {
+    name: string;
+    address: string;
+    birthPlace?: string;
+    birthDate?: string;
+    gender?: string;
+    citizenship?: string;
+    maritalStatus?: string;
+    identityType?: string;
+    identityNumber?: string;
+    incomeSource?: string;
+    relationship?: string;
+    phone?: string;
+    occupation?: string;
+    annualIncome?: string;
+    approval?: boolean;
   };
+  eddBankLain?: Array<{
+    id: number;
+    edd_id: number;
+    bank_name: string;
+    jenis_rekening: string;
+    nomor_rekening: string;
+    created_at: string;
+  }>;
+  eddPekerjaanLain?: Array<{
+    id: number;
+    edd_id: number;
+    jenis_usaha: string;
+    created_at: string;
+  }>;
   submittedAt: string;
   status: 'pending' | 'approved' | 'rejected';
   approvedBy?: string;
   approvedAt?: string;
   rejectedBy?: string;
   rejectedAt?: string;
-  dataAgreement?: boolean;
 }
 
 // Helper function untuk mapping data dari backend ke format FormSubmission
-const mapBackendDataToFormSubmission = (data: any): FormSubmission => {
+export const mapBackendDataToFormSubmission = (data: any): FormSubmission => {
   // Format tanggal lahir
   const formatDate = (dateString: string) => {
     if (!dateString) return '';
@@ -151,51 +199,95 @@ const mapBackendDataToFormSubmission = (data: any): FormSubmission => {
     referenceCode: data.kode_referensi || '',
     cardType: mapJenisKartu(data.jenis_kartu),
     savingsType: data.jenis_rekening || data.savings_type || '',
-    cabangPengambilan: Number(data.cabang_pengambilan) || undefined,
+    cabangPengambilan: Number(data.cabang_id) || undefined,
     cabangId: data.cabang_id || '',
     cabangName: data.nama_cabang || '',
     personalData: {
       fullName: data.nama_lengkap || '',
+      alias: data.alias || undefined,
+      identityType: data.identityType || data.jenis_id || 'KTP',
       nik: data.nik || '',
+      identityValidUntil: (data.berlaku_id && data.berlaku_id.trim() !== '') ? formatDate(data.berlaku_id) : 'Seumur Hidup',
       email: data.email || '',
       phone: data.no_hp || '',
+      birthPlace: (data.tempat_lahir && data.tempat_lahir.trim() !== '') ? data.tempat_lahir : undefined,
       birthDate: formatDate(data.tanggal_lahir),
       gender: (data.jenis_kelamin && data.jenis_kelamin.trim() !== '') ? data.jenis_kelamin : undefined,
       maritalStatus: (data.status_pernikahan && data.status_pernikahan.trim() !== '') ? data.status_pernikahan : undefined,
+      religion: (data.agama && data.agama.trim() !== '') ? data.agama : undefined,
+      education: (data.pendidikan && data.pendidikan.trim() !== '') ? data.pendidikan : undefined,
       citizenship: (data.kewarganegaraan && data.kewarganegaraan.trim() !== '') ? data.kewarganegaraan : undefined,
       motherName: (data.nama_ibu_kandung && data.nama_ibu_kandung.trim() !== '') ? data.nama_ibu_kandung : undefined,
+      npwp: (data.npwp && data.npwp.trim() !== '') ? data.npwp : undefined,
+      homeStatus: (data.status_rumah && data.status_rumah.trim() !== '') ? data.status_rumah : undefined,
+      tipeNasabah: (() => {
+        const tipe = (data.tipe_nasabah && data.tipe_nasabah.trim() !== '') ? data.tipe_nasabah as 'baru' | 'lama' : 'baru';
+        if (data.kode_referensi === 'REG-1765523075976-875') {
+          console.log(`🔍 MAPPING DEBUG for ${data.kode_referensi}:`, {
+            raw_tipe_nasabah: data.tipe_nasabah,
+            mapped_tipe: tipe,
+            source: 'mapBackendDataToFormSubmission'
+          });
+        }
+        return tipe;
+      })(),
+      nomorRekeningLama: (data.nomor_rekening_lama && data.nomor_rekening_lama.trim() !== '') ? data.nomor_rekening_lama : undefined,
       address: {
         street: data.alamat || '',
-        province: data.provinsi || '',
-        city: data.kota || '',
+        domicile: (data.alamat_domisili && data.alamat_domisili.trim() !== '' && data.alamat_domisili !== data.alamat) ? data.alamat_domisili : undefined,
         postalCode: data.kode_pos || ''
       }
     },
     jobInfo: {
       occupation: data.pekerjaan || '',
       salaryRange: mapPenghasilan(data.penghasilan),
-      workplace: (data.tempat_bekerja && data.tempat_bekerja.trim() !== '') ? data.tempat_bekerja : undefined,
-      officeAddress: (data.alamat_kantor && data.alamat_kantor.trim() !== '') ? data.alamat_kantor : undefined,
+      workplace: (data.tempat_bekerja && data.tempat_bekerja.trim() !== '') ? data.tempat_bekerja : (data.nama_perusahaan && data.nama_perusahaan.trim() !== '') ? data.nama_perusahaan : undefined,
+      officeAddress: (data.alamat_kantor && data.alamat_kantor.trim() !== '') ? data.alamat_kantor : (data.alamat_perusahaan && data.alamat_perusahaan.trim() !== '') ? data.alamat_perusahaan : undefined,
+      officePhone: (data.telepon_perusahaan && data.telepon_perusahaan.trim() !== '') ? data.telepon_perusahaan : (data.no_telepon && data.no_telepon.trim() !== '') ? data.no_telepon : undefined,
+      position: (data.jabatan && data.jabatan.trim() !== '') ? data.jabatan : undefined,
+      businessField: (data.bidang_usaha && data.bidang_usaha.trim() !== '') ? data.bidang_usaha : undefined,
       incomeSource: (data.sumber_dana && data.sumber_dana.trim() !== '') ? mapSumberDana(data.sumber_dana) : undefined,
+      averageTransaction: (data.rata_rata_transaksi) ? `Rp ${parseFloat(data.rata_rata_transaksi).toLocaleString('id-ID')}` : (data.rata_transaksi_per_bulan) ? `Rp ${parseFloat(data.rata_transaksi_per_bulan).toLocaleString('id-ID')}` : undefined,
       accountPurpose: (data.tujuan_rekening && data.tujuan_rekening.trim() !== '') ? mapTujuanRekening(data.tujuan_rekening) : undefined
+    },
+    accountInfo: {
+      accountType: data.jenis_rekening || '',
+      initialDeposit: (data.nominal_setoran && data.nominal_setoran.trim() !== '') ? data.nominal_setoran : undefined,
+      cardType: mapJenisKartu(data.jenis_kartu),
+      isForSelf: data.rekening_untuk_sendiri
     },
     emergencyContact: ((data.kontak_darurat_nama && data.kontak_darurat_nama.trim() !== '') || 
                        (data.kontak_darurat_hp && data.kontak_darurat_hp.trim() !== '')) ? {
       name: data.kontak_darurat_nama || '',
-      phone: data.kontak_darurat_hp || ''
+      phone: data.kontak_darurat_hp || '',
+      address: (data.kontak_darurat_alamat && data.kontak_darurat_alamat.trim() !== '') ? data.kontak_darurat_alamat : undefined,
+      relationship: data.kontak_darurat_hubungan || ''
     } : undefined,
-    documents: {
-      ktpPhoto: (data.foto_ktp && data.foto_ktp.trim() !== '') ? data.foto_ktp : '',
-    },
+    beneficialOwner: (data.bo_nama && data.bo_nama.trim() !== '') ? {
+      name: data.bo_nama,
+      address: data.bo_alamat || '',
+      birthPlace: (data.bo_tempat_lahir && data.bo_tempat_lahir.trim() !== '') ? data.bo_tempat_lahir : undefined,
+      birthDate: (data.bo_tanggal_lahir && data.bo_tanggal_lahir.trim() !== '') ? formatDate(data.bo_tanggal_lahir) : undefined,
+      gender: (data.bo_jenis_kelamin && data.bo_jenis_kelamin.trim() !== '') ? data.bo_jenis_kelamin : undefined,
+      citizenship: (data.bo_kewarganegaraan && data.bo_kewarganegaraan.trim() !== '') ? data.bo_kewarganegaraan : undefined,
+      maritalStatus: (data.bo_status_pernikahan && data.bo_status_pernikahan.trim() !== '') ? data.bo_status_pernikahan : undefined,
+      identityType: (data.bo_jenis_id && data.bo_jenis_id.trim() !== '') ? data.bo_jenis_id : undefined,
+      identityNumber: (data.bo_nomor_id && data.bo_nomor_id.trim() !== '') ? data.bo_nomor_id : undefined,
+      incomeSource: (data.bo_sumber_dana && data.bo_sumber_dana.trim() !== '') ? data.bo_sumber_dana : undefined,
+      relationship: (data.bo_hubungan && data.bo_hubungan.trim() !== '') ? data.bo_hubungan : undefined,
+      phone: (data.bo_nomor_hp && data.bo_nomor_hp.trim() !== '') ? data.bo_nomor_hp : undefined,
+      occupation: (data.bo_pekerjaan && data.bo_pekerjaan.trim() !== '') ? data.bo_pekerjaan : undefined,
+      annualIncome: (data.bo_pendapatan_tahun && data.bo_pendapatan_tahun.trim() !== '') ? data.bo_pendapatan_tahun : undefined,
+      approval: data.bo_persetujuan || false
+    } : undefined,
+    eddBankLain: data.edd_bank_lain && Array.isArray(data.edd_bank_lain) && data.edd_bank_lain.length > 0 ? data.edd_bank_lain : undefined,
+    eddPekerjaanLain: data.edd_pekerjaan_lain && Array.isArray(data.edd_pekerjaan_lain) && data.edd_pekerjaan_lain.length > 0 ? data.edd_pekerjaan_lain : undefined,
     submittedAt: formatDateTime(data.created_at),
     status: (data.status || 'pending') as 'pending' | 'approved' | 'rejected',
     approvedBy: data.approvedBy || undefined,
     approvedAt: data.approved_at ? formatDateTime(data.approved_at) : undefined,
-
     rejectedBy: data.rejectedBy || undefined,
-    rejectedAt: data.rejected_at ? formatDateTime(data.rejected_at) : undefined,
-
-    dataAgreement: data.setuju_data || false
+    rejectedAt: data.rejected_at ? formatDateTime(data.rejected_at) : undefined
   };
 };
 
@@ -282,7 +374,7 @@ export default function DashboardPage() {
 
   const checkBackendConnection = async () => {
     try {
-      const response = await fetch('https://bukatabungan-production.up.railway.app/api/cek-koneksi', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}/api/cek-koneksi`, {
         credentials: 'include'
       });
       if (response.ok) {
@@ -310,7 +402,7 @@ export default function DashboardPage() {
     //   throw new Error("Token tidak ditemukan. Silakan login ulang.");
     // }
 
-    const response = await fetch('https://bukatabungan-production.up.railway.app/api/pengajuan', {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}/api/pengajuan`, {
       method: 'GET',
       headers: {
         // 'Authorization': `Bearer ${token}`,
@@ -331,8 +423,12 @@ export default function DashboardPage() {
     const result = await response.json();
 
     if (result.success && result.data) {
+      // Debug specific submission
+      
+      
       const mappedData = result.data.map(mapBackendDataToFormSubmission);
       
+    
       // Optimization: Only update state if data has actually changed
       setSubmissions(prev => {
         if (JSON.stringify(prev) === JSON.stringify(mappedData)) {
@@ -384,7 +480,7 @@ export default function DashboardPage() {
     setIsCabangLoading(true);
     try {
       // const token = localStorage.getItem("token");
-      const res = await fetch('https://bukatabungan-production.up.railway.app/api/cabang', {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}/api/cabang`, {
         headers: {
           // 'Authorization': `Bearer ${token}`
         },
@@ -416,7 +512,7 @@ export default function DashboardPage() {
     // const token = localStorage.getItem("token");
 
     const res = await fetch(
-      `https://bukatabungan-production.up.railway.app/api/cabang/${id}/status`,
+      `${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}/api/cabang/${id}/status`,
       {
         method: 'PUT',
         headers: {
@@ -450,6 +546,7 @@ export default function DashboardPage() {
   }
 };
 
+
   const handleApprove = useCallback((id: string) => {
     const submission = submissions.find(sub => sub.id === id);
     if (submission) setApprovalDialog({ open: true, type: 'approve', submission });
@@ -473,7 +570,7 @@ export default function DashboardPage() {
       //   return;
       // }
 
-      const response = await fetch(`https://bukatabungan-production.up.railway.app/api/pengajuan/${approvalDialog.submission.id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}/api/pengajuan/${approvalDialog.submission.id}`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
@@ -583,8 +680,6 @@ const scrollToTop = () => {
     behavior: "smooth"
   });
 };
-
-
 
 
   return (

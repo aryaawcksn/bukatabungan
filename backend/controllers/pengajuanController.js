@@ -1,6 +1,7 @@
 import pool from "../config/db.js";
 import { sendEmailNotification } from "../services/emailService.js";
 import { sendWhatsAppNotification } from "../services/whatsappService.js";
+import fs from 'fs';
 
 /**
  * Helper function to convert empty strings to null
@@ -20,6 +21,37 @@ export const createPengajuan = async (req, res) => {
 
   try {
     console.log("📥 Received request body:", JSON.stringify(req.body, null, 2));
+    console.log("🔍 Request received at:", new Date().toISOString());
+
+    // Log BO fields immediately
+    console.log("🎯 BO Fields from request:", {
+      bo_jenis_kelamin: req.body.bo_jenis_kelamin,
+      bo_kewarganegaraan: req.body.bo_kewarganegaraan,
+      bo_status_pernikahan: req.body.bo_status_pernikahan,
+      bo_sumber_dana: req.body.bo_sumber_dana,
+      bo_hubungan: req.body.bo_hubungan,
+      bo_nomor_hp: req.body.bo_nomor_hp
+    });
+
+    // Write to file for debugging
+    fs.writeFileSync('debug-bo.json', JSON.stringify({
+      timestamp: new Date().toISOString(),
+      bo_fields: {
+        bo_jenis_kelamin: req.body.bo_jenis_kelamin,
+        bo_kewarganegaraan: req.body.bo_kewarganegaraan,
+        bo_status_pernikahan: req.body.bo_status_pernikahan,
+        bo_sumber_dana: req.body.bo_sumber_dana,
+        bo_hubungan: req.body.bo_hubungan,
+        bo_nomor_hp: req.body.bo_nomor_hp
+      }
+    }, null, 2));
+
+    // Debug identity early
+    console.log("🆔 Identity debug (early):", {
+      jenis_id: req.body.jenis_id,
+      jenisIdCustom: req.body.jenisIdCustom,
+      alias: req.body.alias
+    });
 
     const {
       // Data Diri (cdd_self)
@@ -27,6 +59,7 @@ export const createPengajuan = async (req, res) => {
       nama_lengkap, // fallback
       alias,
       jenis_id = 'KTP',
+      jenisIdCustom, // custom identity type from form
       no_id,
       nik, // fallback for no_id
       berlaku_id,
@@ -41,6 +74,7 @@ export const createPengajuan = async (req, res) => {
       jenis_kelamin,
       status_kawin,
       status_pernikahan, // fallback
+      status_perkawinan, // additional fallback from form
       agama,
       pendidikan,
       nama_ibu_kandung,
@@ -50,31 +84,38 @@ export const createPengajuan = async (req, res) => {
       kewarganegaraan,
       status_rumah,
 
+      // Customer Type
+      tipe_nasabah,
+      nomor_rekening_lama,
+
       // Pekerjaan (cdd_job)
       pekerjaan,
       penghasilan, // gaji_per_bulan
+      gaji_per_bulan, // additional field from form
       sumber_dana,
       rata_rata_transaksi,
       nama_perusahaan,
       tempat_bekerja, // fallback
       alamat_kantor, // alamat_perusahaan
+      alamat_perusahaan, // additional field from form
       telepon_perusahaan,
       jabatan,
       bidang_usaha,
-      referensi_nama,
-      referensi_alamat,
-      referensi_telepon,
-      referensi_hubungan,
+
 
       // Account
       jenis_rekening, // tabungan_tipe
+      tabungan_tipe, // additional field from form
       nominal_setoran,
       jenis_kartu, // atm_tipe
+      card_type, // additional field from form
       tujuan_rekening, // tujuan_pembukaan
+      tujuan_pembukaan, // additional field from form
 
       // Kontak Darurat (cdd_reference)
       kontak_darurat_nama,
       kontak_darurat_hp,
+      kontak_darurat_alamat,
       kontak_darurat_hubungan,
 
       // Account ownership
@@ -85,14 +126,27 @@ export const createPengajuan = async (req, res) => {
       bo_alamat,
       bo_tempat_lahir,
       bo_tanggal_lahir,
+      bo_jenis_kelamin,
+      bo_kewarganegaraan,
+      bo_status_pernikahan,
       bo_jenis_id,
       bo_nomor_id,
+      bo_sumber_dana,
+      bo_hubungan,
+      bo_nomor_hp,
       bo_pekerjaan,
       bo_pendapatan_tahun,
       bo_persetujuan,
 
+      // EDD Bank Lain (array of objects)
+      edd_bank_lain,
+
+      // EDD Pekerjaan Lain (array of objects)
+      edd_pekerjaan_lain,
+
       // System
-      cabang_id
+      cabang_id,
+      cabang_pengambilan // additional field from form
     } = req.body;
 
     // Normalisasi value utama
@@ -101,13 +155,48 @@ export const createPengajuan = async (req, res) => {
     const finalAlamatId = alamat_id || alamat;
     const finalKodePosId = kode_pos_id || kode_pos;
     const finalAlamatNow = alamat_now || alamat_domisili || finalAlamatId;
-    const finalStatusKawin = status_kawin || status_pernikahan;
+    const finalStatusKawin = status_kawin || status_pernikahan || status_perkawinan;
     const finalNamaPerusahaan = nama_perusahaan || tempat_bekerja;
-    const finalAlamatPerusahaan = alamat_kantor; // asumsi nama field di frontend
-    const finalGaji = penghasilan;
+    const finalAlamatPerusahaan = alamat_kantor || alamat_perusahaan;
+    const finalGaji = penghasilan || gaji_per_bulan;
+    const finalTipeNasabah = tipe_nasabah || 'baru';
+    const finalCabangId = cabang_id || cabang_pengambilan;
+    const finalJenisId = jenis_id === 'Lainnya' ? jenisIdCustom : jenis_id;
+
+    // Debug alamat
+    console.log("🏠 Address debug:", {
+      alamat_id: alamat_id,
+      alamat: alamat,
+      alamat_now: alamat_now,
+      alamat_domisili: alamat_domisili,
+      finalAlamatId: finalAlamatId,
+      finalAlamatNow: finalAlamatNow,
+      isDifferent: finalAlamatNow !== finalAlamatId
+    });
+
+    // Debug identity
+    console.log("🆔 Identity debug:", {
+      jenis_id: jenis_id,
+      jenisIdCustom: jenisIdCustom,
+      finalJenisId: finalJenisId,
+      alias: alias
+    });
+
+    // Debug BO data
+    console.log("👤 BO Debug:", {
+      rekening_untuk_sendiri: rekening_untuk_sendiri,
+      bo_nama: bo_nama,
+      bo_jenis_kelamin: bo_jenis_kelamin,
+      bo_kewarganegaraan: bo_kewarganegaraan,
+      bo_status_pernikahan: bo_status_pernikahan,
+      bo_sumber_dana: bo_sumber_dana,
+      bo_hubungan: bo_hubungan,
+      bo_nomor_hp: bo_nomor_hp
+    });
+
 
     // Validasi field required
-    if (!finalNama || !finalNoId || !email || !no_hp || !tanggal_lahir || !cabang_id) {
+    if (!finalNama || !finalNoId || !email || !no_hp || !tanggal_lahir || !finalCabangId) {
       console.error("❌ Missing required fields");
       return res.status(400).json({
         success: false,
@@ -116,7 +205,9 @@ export const createPengajuan = async (req, res) => {
     }
 
     // Set default for jenis_rekening if empty (tabungan_tipe has NOT NULL constraint)
-    const finalJenisRekening = jenis_rekening || 'simpel';
+    const finalJenisRekening = jenis_rekening || tabungan_tipe || 'simpel';
+    const finalJenisKartu = jenis_kartu || card_type;
+    const finalTujuanRekening = tujuan_rekening || tujuan_pembukaan;
 
     // Generate Request ID / Kode Referensi
     const kode_referensi = `REG-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
@@ -130,7 +221,7 @@ export const createPengajuan = async (req, res) => {
       VALUES ($1, 'pending', NOW())
       RETURNING id
     `;
-    const pengajuanRes = await client.query(insertPengajuanQuery, [cabang_id]);
+    const pengajuanRes = await client.query(insertPengajuanQuery, [parseInt(finalCabangId)]);
     const pengajuanId = pengajuanRes.rows[0].id;
     console.log(`✅ Created pengajuan_tabungan ID: ${pengajuanId}`);
 
@@ -140,39 +231,52 @@ export const createPengajuan = async (req, res) => {
         pengajuan_id, kode_referensi, nama, alias, jenis_id, no_id, berlaku_id,
         tempat_lahir, tanggal_lahir, alamat_id, kode_pos_id, alamat_now,
         jenis_kelamin, status_kawin, agama, pendidikan, nama_ibu_kandung,
-        npwp, email, no_hp, kewarganegaraan, status_rumah, rekening_untuk_sendiri, created_at
+        npwp, email, no_hp, kewarganegaraan, status_rumah, rekening_untuk_sendiri,
+        tipe_nasabah, nomor_rekening_lama, created_at
       ) VALUES (
         $1, $2, $3, $4, $5, $6, $7,
         $8, $9, $10, $11, $12,
         $13, $14, $15, $16, $17,
-        $18, $19, $20, $21, $22, $23, NOW()
+        $18, $19, $20, $21, $22, $23,
+        $24, $25, NOW()
       )
     `;
     const cddSelfValues = [
       parseInt(pengajuanId), // Ensure pengajuan_id is integer
-      kode_referensi, 
-      finalNama, 
-      emptyToNull(alias), 
-      jenis_id, 
-      finalNoId, 
-      emptyToNull(berlaku_id),
-      tempat_lahir, 
-      tanggal_lahir, 
-      finalAlamatId, 
-      finalKodePosId, 
+      kode_referensi,
+      finalNama,
+      emptyToNull(alias),
+      finalJenisId,
+      finalNoId,
+      emptyToNull(berlaku_id), // NULL means "seumur hidup"
+      tempat_lahir,
+      tanggal_lahir,
+      finalAlamatId,
+      finalKodePosId,
       finalAlamatNow,
-      jenis_kelamin, 
-      finalStatusKawin, 
-      agama, 
-      pendidikan, 
+      jenis_kelamin,
+      finalStatusKawin,
+      agama,
+      pendidikan,
       nama_ibu_kandung,
-      emptyToNull(npwp), 
-      email, 
-      no_hp, 
-      kewarganegaraan, 
-      status_rumah, 
-      rekening_untuk_sendiri
+      emptyToNull(npwp),
+      email,
+      no_hp,
+      kewarganegaraan,
+      status_rumah,
+      rekening_untuk_sendiri,
+      finalTipeNasabah,
+      emptyToNull(nomor_rekening_lama)
     ];
+
+
+    console.log("📝 CDD Self values being inserted:", {
+      finalNama,
+      alias,
+      finalJenisId,
+      finalNoId
+    });
+
     await client.query(insertCddSelfQuery, cddSelfValues);
 
     // 3. Insert cdd_job
@@ -188,21 +292,19 @@ export const createPengajuan = async (req, res) => {
     `;
     const cddJobValues = [
       parseInt(pengajuanId), // Ensure pengajuan_id is integer
-      pekerjaan, 
-      finalGaji, 
-      sumber_dana, 
+      pekerjaan,
+      finalGaji,
+      sumber_dana,
       emptyToNull(rata_rata_transaksi),
-      emptyToNull(finalNamaPerusahaan), 
-      emptyToNull(finalAlamatPerusahaan), 
-      emptyToNull(telepon_perusahaan), 
-      emptyToNull(jabatan), 
-      emptyToNull(bidang_usaha)
+      emptyToNull(finalNamaPerusahaan),
+      emptyToNull(finalAlamatPerusahaan),
+      emptyToNull(telepon_perusahaan),
+      emptyToNull(jabatan),
+      bidang_usaha || 'tidak bekerja'
     ];
     await client.query(insertCddJobQuery, cddJobValues);
-    
-    // Note: Reference contact data (referensi_nama, referensi_alamat, etc.) 
-    // is currently not stored in database as there's no table for it.
-    // If needed, create a new table or add to cdd_job schema.
+
+
 
     // 4. Insert account
     const insertAccountQuery = `
@@ -213,51 +315,132 @@ export const createPengajuan = async (req, res) => {
     `;
     // ATM logic: jika jenis_kartu ada, asumsikan ATM yes.
     // Convert boolean to integer for PostgreSQL (true=1, false=0)
-    const hasAtm = jenis_kartu ? 1 : 0;
+    const hasAtm = finalJenisKartu ? 1 : 0;
     await client.query(insertAccountQuery, [
       parseInt(pengajuanId), // Ensure pengajuan_id is integer
       finalJenisRekening, // Default to 'simpel' if empty, NOT NULL constraint
       hasAtm, // Integer: 1 or 0
-      jenis_kartu || null, // Use null if empty
+      finalJenisKartu || null, // Use null if empty
       nominal_setoran || null, // Keep as string (VARCHAR in DB)
-      tujuan_rekening || null // Use null if empty
+      finalTujuanRekening || null // Use null if empty
     ]);
 
     // 5. Insert cdd_reference (Emergency Contact)
+    console.log("📞 Emergency Contact Debug:", {
+      kontak_darurat_nama,
+      kontak_darurat_alamat,
+      kontak_darurat_hp,
+      kontak_darurat_hubungan
+    });
+
     if (kontak_darurat_nama) {
       const insertRefQuery = `
         INSERT INTO cdd_reference (
-          pengajuan_id, nama, no_hp, hubungan, created_at
-        ) VALUES ($1, $2, $3, $4, NOW())
+          pengajuan_id, nama, alamat, no_hp, hubungan, created_at
+        ) VALUES ($1, $2, $3, $4, $5, NOW())
       `;
       await client.query(insertRefQuery, [
         parseInt(pengajuanId), // Ensure pengajuan_id is integer
-        kontak_darurat_nama, 
-        kontak_darurat_hp, 
+        kontak_darurat_nama,
+        emptyToNull(kontak_darurat_alamat),
+        kontak_darurat_hp,
         kontak_darurat_hubungan
       ]);
     }
 
     // 6. Insert beneficial owner (only if account is for others, NOT for self, and BO data is provided)
     if (rekening_untuk_sendiri === false && bo_nama) {
+      console.log("🔥 About to insert BO with values:", {
+        bo_jenis_kelamin,
+        bo_kewarganegaraan,
+        bo_status_pernikahan,
+        bo_sumber_dana,
+        bo_hubungan,
+        bo_nomor_hp
+      });
+
       const insertBoQuery = `
         INSERT INTO bo (
           pengajuan_id, nama, alamat, tempat_lahir, tanggal_lahir,
-          jenis_id, nomor_id, pekerjaan, pendapatan_tahunan, persetujuan, created_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
+          jenis_kelamin, kewarganegaraan, status_pernikahan,
+          jenis_id, nomor_id, sumber_dana, hubungan, nomor_hp,
+          pekerjaan, pendapatan_tahunan, persetujuan, created_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, NOW())
       `;
       await client.query(insertBoQuery, [
         parseInt(pengajuanId), // Ensure pengajuan_id is integer
-        bo_nama, 
-        bo_alamat, 
-        emptyToNull(bo_tempat_lahir), 
+        bo_nama,
+        bo_alamat,
+        emptyToNull(bo_tempat_lahir),
         emptyToNull(bo_tanggal_lahir),
-        emptyToNull(bo_jenis_id), 
-        emptyToNull(bo_nomor_id), 
-        emptyToNull(bo_pekerjaan), 
-        emptyToNull(bo_pendapatan_tahun), 
+        emptyToNull(bo_jenis_kelamin),
+        emptyToNull(bo_kewarganegaraan),
+        emptyToNull(bo_status_pernikahan),
+        emptyToNull(bo_jenis_id),
+        emptyToNull(bo_nomor_id),
+        emptyToNull(bo_sumber_dana),
+        emptyToNull(bo_hubungan),
+        emptyToNull(bo_nomor_hp),
+        emptyToNull(bo_pekerjaan),
+        emptyToNull(bo_pendapatan_tahun),
         bo_persetujuan
       ]);
+    }
+
+    // 7. Insert EDD Bank Lain (if provided)
+    console.log("🏦 EDD Bank Lain data:", JSON.stringify(edd_bank_lain, null, 2));
+    if (edd_bank_lain && Array.isArray(edd_bank_lain) && edd_bank_lain.length > 0) {
+      console.log(`📝 Inserting ${edd_bank_lain.length} EDD Bank Lain records`);
+      for (let i = 0; i < edd_bank_lain.length; i++) {
+        const bank = edd_bank_lain[i];
+        console.log(`🏦 Processing bank ${i + 1}:`, bank);
+        if (bank.bank_name && bank.jenis_rekening && bank.nomor_rekening) {
+          const insertEddBankQuery = `
+            INSERT INTO edd_bank_lain (
+              edd_id, pengajuan_id, bank_name, jenis_rekening, nomor_rekening, created_at
+            ) VALUES ($1, $2, $3, $4, $5, NOW())
+          `;
+          await client.query(insertEddBankQuery, [
+            i + 1, // edd_id as sequence number
+            parseInt(pengajuanId),
+            bank.bank_name,
+            bank.jenis_rekening,
+            bank.nomor_rekening
+          ]);
+          console.log(`✅ EDD Bank ${i + 1} inserted successfully`);
+        } else {
+          console.log(`❌ EDD Bank ${i + 1} skipped - missing required fields`);
+        }
+      }
+    } else {
+      console.log("ℹ️ No EDD Bank Lain data to insert");
+    }
+
+    // 8. Insert EDD Pekerjaan Lain (if provided)
+    console.log("💼 EDD Pekerjaan Lain data:", JSON.stringify(edd_pekerjaan_lain, null, 2));
+    if (edd_pekerjaan_lain && Array.isArray(edd_pekerjaan_lain) && edd_pekerjaan_lain.length > 0) {
+      console.log(`📝 Inserting ${edd_pekerjaan_lain.length} EDD Pekerjaan Lain records`);
+      for (let i = 0; i < edd_pekerjaan_lain.length; i++) {
+        const pekerjaan = edd_pekerjaan_lain[i];
+        console.log(`💼 Processing job ${i + 1}:`, pekerjaan);
+        if (pekerjaan.jenis_usaha) {
+          const insertEddPekerjaanQuery = `
+            INSERT INTO edd_pekerjaan_lain (
+              edd_id, pengajuan_id, jenis_usaha, created_at
+            ) VALUES ($1, $2, $3, NOW())
+          `;
+          await client.query(insertEddPekerjaanQuery, [
+            i + 1, // edd_id as sequence number
+            parseInt(pengajuanId),
+            pekerjaan.jenis_usaha
+          ]);
+          console.log(`✅ EDD Pekerjaan ${i + 1} inserted successfully`);
+        } else {
+          console.log(`❌ EDD Pekerjaan ${i + 1} skipped - missing jenis_usaha`);
+        }
+      }
+    } else {
+      console.log("ℹ️ No EDD Pekerjaan Lain data to insert");
     }
 
     await client.query('COMMIT');
@@ -313,7 +496,10 @@ export const getPengajuanById = async (req, res) => {
           --Self Data
     cs.kode_referensi,
       cs.nama AS nama_lengkap,
+        cs.alias,
+        cs.jenis_id AS "identityType",
         cs.no_id AS nik,
+        cs.berlaku_id,
           cs.email,
           cs.no_hp,
           cs.tempat_lahir,
@@ -329,51 +515,85 @@ export const getPengajuanById = async (req, res) => {
           cs.npwp,
           cs.kewarganegaraan,
           cs.status_rumah,
+          cs.tipe_nasabah,
+          cs.nomor_rekening_lama,
+          cs.rekening_untuk_sendiri,
           --Job Data
     cj.pekerjaan,
       cj.gaji_per_bulan AS penghasilan,
         cj.sumber_dana,
-        cj.rata_rata_transaksi,
+        cj.rata_transaksi_per_bulan AS rata_rata_transaksi,
         cj.nama_perusahaan AS tempat_bekerja,
           cj.alamat_perusahaan AS alamat_kantor,
-            cj.telepon_perusahaan,
+            cj.no_telepon AS telepon_perusahaan,
             cj.jabatan,
             cj.bidang_usaha,
-            cj.referensi_nama,
-            cj.referensi_alamat,
-            cj.referensi_telepon,
-            cj.referensi_hubungan,
+
             --Account Data
     acc.tabungan_tipe AS jenis_rekening,
       acc.nominal_setoran,
       acc.atm_tipe AS jenis_kartu,
         acc.tujuan_pembukaan AS tujuan_rekening,
+        
           --Ref Data
     cref.nama AS kontak_darurat_nama,
       cref.no_hp AS kontak_darurat_hp,
+      cref.alamat AS kontak_darurat_alamat,
         cref.hubungan AS kontak_darurat_hubungan,
           --Beneficial Owner Data
     cbo.nama AS bo_nama,
       cbo.alamat AS bo_alamat,
         cbo.tempat_lahir AS bo_tempat_lahir,
         cbo.tanggal_lahir AS bo_tanggal_lahir,
+          cbo.jenis_kelamin AS bo_jenis_kelamin,
+          cbo.kewarganegaraan AS bo_kewarganegaraan,
+          cbo.status_pernikahan AS bo_status_pernikahan,
           cbo.jenis_id AS bo_jenis_id,
           cbo.nomor_id AS bo_nomor_id,
+          cbo.sumber_dana AS bo_sumber_dana,
+          cbo.hubungan AS bo_hubungan,
+          cbo.nomor_hp AS bo_nomor_hp,
           cbo.pekerjaan AS bo_pekerjaan,
           cbo.pendapatan_tahunan AS bo_pendapatan_tahun,
           cbo.persetujuan AS bo_persetujuan,
           --Cabang info
     p.cabang_id,
-      c.nama_cabang
+      c.nama_cabang,
+      --EDD Bank Lain (aggregated as JSON)
+      COALESCE(
+        (SELECT JSON_AGG(
+          JSON_BUILD_OBJECT(
+            'id', ebl.id,
+            'edd_id', ebl.edd_id,
+            'bank_name', ebl.bank_name,
+            'jenis_rekening', ebl.jenis_rekening,
+            'nomor_rekening', ebl.nomor_rekening,
+            'created_at', ebl.created_at
+          )
+        ) FROM edd_bank_lain ebl WHERE ebl.pengajuan_id = p.id),
+        '[]'::json
+      ) AS edd_bank_lain,
+      --EDD Pekerjaan Lain (aggregated as JSON)
+      COALESCE(
+        (SELECT JSON_AGG(
+          JSON_BUILD_OBJECT(
+            'id', epl.id,
+            'edd_id', epl.edd_id,
+            'jenis_usaha', epl.jenis_usaha,
+            'created_at', epl.created_at
+          )
+        ) FROM edd_pekerjaan_lain epl WHERE epl.pengajuan_id = p.id),
+        '[]'::json
+      ) AS edd_pekerjaan_lain
       FROM pengajuan_tabungan p
-      LEFT JOIN cdd_self cs ON p.id = cs.pengajuan_id
-      LEFT JOIN cdd_job cj ON p.id = cj.pengajuan_id
-      LEFT JOIN account acc ON p.id = acc.pengajuan_id
-      LEFT JOIN cdd_reference cref ON p.id = cref.pengajuan_id
-      LEFT JOIN bo cbo ON p.id = cbo.pengajuan_id
-      LEFT JOIN cabang c ON p.cabang_id = c.id
-      LEFT JOIN users ua ON p.approved_by = ua.id
-      LEFT JOIN users ur ON p.rejected_by = ur.id
+    LEFT JOIN cdd_self cs ON p.id = cs.pengajuan_id
+    LEFT JOIN cdd_job cj ON p.id = cj.pengajuan_id
+    LEFT JOIN account acc ON p.id = acc.pengajuan_id
+    LEFT JOIN cdd_reference cref ON p.id = cref.pengajuan_id
+    LEFT JOIN bo cbo ON p.id = cbo.pengajuan_id
+    LEFT JOIN cabang c ON p.cabang_id = c.id
+    LEFT JOIN users ua ON p.approved_by = ua.id
+    LEFT JOIN users ur ON p.rejected_by = ur.id
       WHERE p.id = $1 AND p.cabang_id = $2
       `;
 
@@ -410,8 +630,16 @@ export const getAllPengajuan = async (req, res) => {
         p.rejected_at,
         cs.kode_referensi,
         cs.nama AS nama_lengkap,
+        cs.alias,
+        cs.jenis_id AS "identityType",
+        cs.no_id AS nik,
         cs.no_hp,
         cs.email,
+        cs.tempat_lahir,
+        cs.kewarganegaraan,
+        cs.tipe_nasabah,
+        cs.nomor_rekening_lama,
+        cs.rekening_untuk_sendiri,
         acc.tabungan_tipe AS jenis_rekening,
         c.nama_cabang,
         ua.username AS "approvedBy",

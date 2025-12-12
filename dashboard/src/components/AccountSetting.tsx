@@ -53,7 +53,7 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
   setLoading(true);
   try {
     const res = await fetch(
-      "https://bukatabungan-production.up.railway.app/api/auth/users",
+      `${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}/api/auth/users`,
       { credentials: "include" }
     );
 
@@ -74,7 +74,7 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
   setLogLoading(true);
   try {
     const res = await fetch(
-      `https://bukatabungan-production.up.railway.app/api/user-logs?page=${currentPage}&limit=${LOG_LIMIT}`,
+      `${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}/api/user-logs?page=${currentPage}&limit=${LOG_LIMIT}`,
       { credentials: "include" }
     );
 
@@ -117,8 +117,8 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
 
   try {
     const url = isEditing
-      ? `https://bukatabungan-production.up.railway.app/api/auth/users/${selectedUser?.id}`
-      : "https://bukatabungan-production.up.railway.app/api/auth/register";
+      ? `${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}/api/auth/users/${selectedUser?.id}`
+      : `${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}/api/auth/register`;
 
     const method = isEditing ? "PUT" : "POST";
 
@@ -153,7 +153,7 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
 
   try {
     const res = await fetch(
-      `https://bukatabungan-production.up.railway.app/api/auth/users/${deleteTarget.id}`,
+      `${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}/api/auth/users/${deleteTarget.id}`,
       {
         method: "DELETE",
         credentials: "include",

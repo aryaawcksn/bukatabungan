@@ -1,8 +1,7 @@
 // FormDetailDialog component – displays submission details and allows PDF export
-import { useEffect, useState } from 'react';
-import { createPortal } from 'react-dom';
-import type { FormSubmission } from '../DashboardPage';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from './ui/dialog';
+import React, { useEffect, useState } from 'react';
+import { type FormSubmission, mapBackendDataToFormSubmission } from '../DashboardPage';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
@@ -18,18 +17,16 @@ import {
   Briefcase,
   DollarSign,
   FileText,
-  Image as ImageIcon,
   CheckCircle,
   XCircle,
   CreditCard,
   UserCheck,
-  UserX,
-  Building2,
-  Target,
   Wallet,
   AlertCircle,
-  ShieldCheck,
+  Target,
+  Building2
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface FormDetailDialogProps {
   submission: FormSubmission;
@@ -46,376 +43,404 @@ interface SectionProps {
   children: React.ReactNode;
 }
 const Section = ({ title, icon, children }: SectionProps) => (
-  <div>
-    <div className="flex items-center gap-2 mb-4">
+  <div className="mb-6">
+    <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-100">
       {icon}
-      <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+      <h3 className="text-base font-bold text-gray-800 uppercase tracking-wide">{title}</h3>
     </div>
     {children}
   </div>
 );
 
-const TwoCol = ({ children }: { children: React.ReactNode }) => (
-  <div className="grid grid-cols-3 md:grid-cols-2 gap-6">{children}</div>
-);
+const TwoCol = ({ children }: { children: React.ReactNode }) => {
+  // Filter out null/undefined children
+  const validChildren = React.Children.toArray(children).filter(child => child !== null && child !== undefined);
+  
+  if (validChildren.length === 0) {
+    return null;
+  }
+  
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-5 gap-x-8">{validChildren}</div>
+  );
+};
 
 interface FieldProps {
   label: string;
-  value: string;
+  value: string | undefined | null;
   icon?: React.ReactNode;
 }
-const Field = ({ label, value, icon }: FieldProps) => (
-  <div>
-    <div className="text-sm text-gray-500 mb-1.5 flex items-center gap-1.5">
-      {icon}
-      {label}
-    </div>
-    <div className="text-gray-900 font-medium whitespace-pre-wrap break-words">
-      {value || '-'}
-    </div>
-  </div>
-);
-
-interface ImageCardProps {
-  label: string;
-  src: string;
-  onClick: () => void;
-}
-const ImageCard = ({ label, src, onClick }: ImageCardProps) => {
-  const hasImage = src && src.trim() !== '';
-  if (!hasImage) {
-    return (
-      <div>
-        <div className="text-gray-500 mb-2 flex items-center gap-2">
-          <ImageIcon className="w-4 h-4" />
-          {label}
-        </div>
-        <div className="relative border border-gray-200 rounded-xl overflow-hidden bg-gray-50 aspect-video flex items-center justify-center">
-          <span className="text-gray-400 text-sm">Foto belum diupload</span>
-        </div>
-      </div>
-    );
-  }
+const Field = ({ label, value, icon }: FieldProps) => {
+  // Show field with "-" if value is empty, null, or undefined
+  const displayValue = (!value || value.trim() === '') ? '-' : value;
+  
   return (
-    <div>
-      <div className="text-gray-500 mb-2 flex items-center gap-2">
-        <ImageIcon className="w-4 h-4" />
+    <div className="group">
+      <div className="text-xs font-medium text-gray-500 mb-1 flex items-center gap-1.5 uppercase tracking-wide">
+        {icon}
         {label}
       </div>
-      <div className="relative border border-gray-200 rounded-xl overflow-hidden bg-gray-50 aspect-video group cursor-pointer" onClick={onClick}>
-        <img src={src} alt={label} className="w-full h-full object-cover transition-all" />
-        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-          <span className="text-white text-sm font-medium bg-black/40 px-3 py-1 rounded-lg">Lihat</span>
-        </div>
+      <div className="text-sm text-gray-900 font-semibold whitespace-pre-wrap break-words border-l-2 border-transparent group-hover:border-gray-200 pl-0 group-hover:pl-2 transition-all">
+        {displayValue}
       </div>
     </div>
   );
-};
-
-interface ImagePreviewModalProps {
-  image: string | null;
-  onClose: () => void;
-}
-const ImagePreviewModal = ({ image, onClose }: ImagePreviewModalProps) => {
-  if (!image) return null;
-  const modalContent = (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[9999]" onClick={onClose} onKeyDown={e => e.key === 'Escape' && onClose()}>
-      <div className="relative max-w-4xl max-h-[90vh] p-4" onClick={e => e.stopPropagation()}>
-        <img src={image} alt="Preview" className="max-w-full max-h-[90vh] rounded-lg shadow-xl object-contain" />
-        <button
-          onClick={e => {
-            e.stopPropagation();
-            e.preventDefault();
-            onClose();
-          }}
-          className="absolute top-6 right-6 text-white bg-black/50 hover:bg-black/70 rounded-full p-2 transition z-10 pointer-events-auto"
-          aria-label="Close"
-          type="button"
-        >
-          <XCircle className="w-6 h-6" />
-        </button>
-      </div>
-    </div>
-  );
-  return createPortal(modalContent, document.body);
 };
 
 export function FormDetailDialog({ submission, open, onClose, onApprove, onReject }: FormDetailDialogProps) {
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
+  const [detailSubmission, setDetailSubmission] = useState<FormSubmission>(submission);
+  const [fetchingDetails, setFetchingDetails] = useState(false);
+
+  // Fetch full details when dialog opens
+  useEffect(() => {
+    if (open && submission.id) {
+       // Reset to initial submission first
+       setDetailSubmission(submission);
+       setPdfBlob(null);
+       
+       const fetchDetails = async () => {
+         setFetchingDetails(true);
+         try {
+           const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}/api/pengajuan/${submission.id}`, {
+             credentials: 'include'
+           });
+           
+           if (!res.ok) throw new Error("Failed to fetch details");
+           
+           const data = await res.json();
+           if (data.success) {
+             const fullDetails = mapBackendDataToFormSubmission(data.data);
+             setDetailSubmission(fullDetails);
+           }
+         } catch (err) {
+           console.error("Error fetching detail:", err);
+           toast.error("Gagal memuat detail lengkap");
+         } finally {
+           setFetchingDetails(false);
+         }
+       };
+
+       fetchDetails();
+    }
+  }, [open, submission.id]); 
 
   const statusConfig = {
-    pending: { label: 'Menunggu Review', variant: 'outline' as const, className: 'border-orange-500 text-orange-700 bg-orange-100' },
-    approved: { label: 'Disetujui', variant: 'outline' as const, className: 'border-green-500 text-green-700 bg-green-100' },
-    rejected: { label: 'Ditolak', variant: 'outline' as const, className: 'border-red-500 text-red-700 bg-red-100' },
+    pending: { label: 'Menunggu Review', variant: 'outline' as const, className: 'border-orange-500 text-orange-700 bg-orange-50' },
+    approved: { label: 'Disetujui', variant: 'outline' as const, className: 'border-green-600 text-green-700 bg-green-50' },
+    rejected: { label: 'Ditolak', variant: 'outline' as const, className: 'border-red-500 text-red-700 bg-red-50' },
   };
-  const status = statusConfig[submission.status];
+  const status = statusConfig[detailSubmission.status];
 
   const handleGeneratePdf = async () => {
     setLoading(true);
-    const blob = await pdf(<SubmissionPdf submission={submission} />).toBlob();
+    const blob = await pdf(<SubmissionPdf submission={detailSubmission} />).toBlob();
     setPdfBlob(blob);
     setLoading(false);
   };
 
   const handleDialogOpenChange = (isOpen: boolean) => {
-    if (!isOpen && previewImage) return; // keep open while preview shown
     if (!isOpen) onClose();
   };
   
-useEffect(() => {
-  setPdfBlob(null); // reset PDF setiap ganti data
-}, [submission]);
-
   return (
     <Dialog open={open} onOpenChange={handleDialogOpenChange}>
-      <DialogContent className="w-2xl max-h-[92vh] overflow-y-auto p-0 rounded-2xl">
-        <div className="p-6">
-          {/* HEADER */}
+      {/* UPDATE: Menggunakan rounded-lg (bukan 2xl) dan max-w-4xl agar lebih lebar & formal */}
+      <DialogContent className="sm:max-w-4xl max-h-[95vh] overflow-y-auto p-0 rounded-lg gap-0">
+        
+        {/* HEADER SECTION */}
+        <div className="p-6 border-b border-gray-200 bg-white sticky top-0 z-10">
           <DialogHeader>
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <DialogTitle className="text-2xl font-semibold max-w-[380px] leading-tight">
-                  Detail Permohonan Pembukaan Rekening
+            <div className="flex items-start justify-between">
+              <div className="space-y-1">
+                <DialogTitle className="text-xl font-bold text-gray-900 leading-tight">
+                  Detail Permohonan Rekening
                 </DialogTitle>
-                <DialogDescription asChild>
-                  <div className="space-y-1 mt-2">
-                    <div className="text-gray-700">
-                      Nomor Referensi:
-                      <span className="font-mono text-emerald-700 ml-2">{submission.referenceCode}</span>
-                    </div>
-                    {submission.cardType && (
-                      <div className="flex flex-col gap-1 text-blue-600 mt-1">
-                    <div className="flex items-center gap-2">
-                      <CreditCard className="w-4 h-4" />
-                      <span className="font-medium">
-                        Jenis Kartu: {submission.cardType}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <Wallet className="w-4 h-4" />
-                      <span className="font-medium">
-                        Jenis Rekening: {submission.savingsType || "None"}
-                      </span>
-                    </div>
-                  </div>
-                    )}
-                  </div>
-                </DialogDescription>
+                <div className="flex flex-col text-sm text-gray-500">
+                   <div className="flex items-center gap-2">
+                     <span>Ref:</span>
+                     <span className="font-mono font-medium text-gray-900 bg-gray-100 px-2 py-0.5 rounded text-xs">
+                        {detailSubmission.referenceCode}
+                     </span>
+                   </div>
+                </div>
               </div>
-              <Badge variant={status.variant} className={`${status.className} text-sm px-4 py-1.5`}>
+
+              {/* Status Badge: rounded-md agar lebih kotak/formal */}
+              <Badge variant={status.variant} className={`${status.className} rounded-md text-xs px-3 py-1 shadow-sm`}>
                 {status.label}
               </Badge>
             </div>
+
+            {/* Sub-header info (Card Type & Savings Type) */}
+            {(detailSubmission.cardType || detailSubmission.savingsType) && (
+               <div className="flex items-center gap-4 mt-4 text-sm bg-blue-50/50 p-2 rounded-md border border-blue-100">
+                  {detailSubmission.cardType && (
+                    <div className="flex items-center gap-2 text-blue-800">
+                      <CreditCard className="w-4 h-4" />
+                      <span className="font-semibold">{detailSubmission.cardType}</span>
+                    </div>
+                  )}
+                  {detailSubmission.savingsType && (
+                    <>
+                      <div className="h-4 w-px bg-blue-200"></div>
+                      <div className="flex items-center gap-2 text-blue-800">
+                        <Wallet className="w-4 h-4" />
+                        <span className="font-semibold">{detailSubmission.savingsType}</span>
+                      </div>
+                    </>
+                  )}
+               </div>
+            )}
           </DialogHeader>
+        </div>
 
-          {/* MAIN CONTENT */}
-          <div className="space-y-8">
-            <Separator />
-            {/* PERSONAL DATA */}
-            <Section title="Data Pribadi" icon={<User className="w-5 h-5 text-blue-600" />}>
-              <TwoCol>
-                <Field label="Nama Lengkap" value={submission.personalData.fullName} />
-                <Field label="NIK (16 Digit)" value={submission.personalData.nik} />
-                <Field label="Email" icon={<Mail className="w-4 h-4 text-gray-400" />} value={submission.personalData.email} />
-                <Field label="Nomor Telepon" icon={<Phone className="w-4 h-4 text-gray-400" />} value={submission.personalData.phone} />
-                <Field label="Tanggal Lahir" icon={<Calendar className="w-4 h-4 text-gray-400" />} value={submission.personalData.birthDate} />
-                {submission.personalData.gender && (
-                  <Field label="Jenis Kelamin" value={submission.personalData.gender} />
-                )}
-                {submission.cardType !== 'Tabungan Simpel' && submission.personalData.maritalStatus && (
-                  <Field label="Status Pernikahan" value={submission.personalData.maritalStatus} />
-                )}
-                {submission.personalData.citizenship && (
-                  <Field label="Kewarganegaraan" value={submission.personalData.citizenship} />
-                )}
-                {submission.personalData.motherName && (
-                  <Field label="Nama Ibu Kandung" value={submission.personalData.motherName} />
-                )}
-              </TwoCol>
+        {/* MAIN CONTENT */}
+        <div className="p-6 space-y-8 bg-white">
+          {fetchingDetails && (
+             <div className="p-3 bg-blue-50 text-blue-700 rounded-md text-center text-sm border border-blue-100">
+               Sedang memuat data lengkap...
+             </div>
+          )}
+
+          {/* PERSONAL DATA */}
+          <Section title="Data Pribadi" icon={<User className="w-5 h-5 text-gray-700" />}>
+            <TwoCol>
+              <Field label="Nama Lengkap" value={detailSubmission.personalData.fullName} />
+              <Field label="Alias" value={detailSubmission.personalData.alias} />
+              <Field label="Jenis Identitas" value={detailSubmission.personalData.identityType || "KTP"} />
+              <Field label="NIK" value={detailSubmission.personalData.nik} />
+              <Field label="Berlaku Sampai" value={detailSubmission.personalData.identityValidUntil} />
+              <Field label="Email" icon={<Mail className="w-3 h-3" />} value={detailSubmission.personalData.email} />
+              <Field label="No. Telepon" icon={<Phone className="w-3 h-3" />} value={detailSubmission.personalData.phone} />
+              <Field label="Tempat, Tgl Lahir" icon={<Calendar className="w-3 h-3" />} value={`${detailSubmission.personalData.birthPlace || ''}, ${detailSubmission.personalData.birthDate}`} />
+              <Field label="Jenis Kelamin" value={detailSubmission.personalData.gender} />
+              <Field label="Status Pernikahan" value={detailSubmission.personalData.maritalStatus} />
+              <Field label="Agama" value={detailSubmission.personalData.religion} />
+              <Field label="Pendidikan" value={detailSubmission.personalData.education} />
+              <Field label="Kewarganegaraan" value={detailSubmission.personalData.citizenship} />
+              <Field label="Nama Ibu Kandung" value={detailSubmission.personalData.motherName} />
+              <Field label="NPWP" value={detailSubmission.personalData.npwp} />
+              <Field label="Status Rumah" value={detailSubmission.personalData.homeStatus} />
+              <Field label="Tipe Nasabah" value={(() => {
+                console.log("DETAIL:", detailSubmission.personalData.tipeNasabah);
+                return detailSubmission.personalData.tipeNasabah === 'lama' ? 'Nasabah Lama' : 'Nasabah Baru';
+              })()} />
+              {detailSubmission.personalData.tipeNasabah === 'lama' && (
+                <Field label="Nomor Rekening Lama" value={detailSubmission.personalData.nomorRekeningLama} />
+              )}
+            </TwoCol>
+          </Section>
+
+          {/* ADDRESS */}
+          <Section title="Alamat" icon={<MapPin className="w-5 h-5 text-gray-700" />}>
+            <TwoCol>
+              <Field label="Alamat KTP" value={detailSubmission.personalData.address.street} />
+              <Field label="Kode Pos" value={detailSubmission.personalData.address.postalCode} />
+              {detailSubmission.personalData.address.domicile && (
+                <Field label="Alamat Domisili" value={detailSubmission.personalData.address.domicile} />
+              )}
+            </TwoCol>
+          </Section>
+
+          {/* JOB INFO */}
+          <Section
+            title={detailSubmission.savingsType === 'SimPel' ? 'Sekolah & Pekerjaan' : 'Pekerjaan & Keuangan'}
+            icon={<Briefcase className="w-5 h-5 text-gray-700" />}
+          >
+            <TwoCol>
+              <Field label="Pekerjaan" value={detailSubmission.jobInfo.occupation} />
+              <Field 
+                label={detailSubmission.savingsType === 'SimPel' ? 'Nama Sekolah' : 'Nama Instansi'} 
+                icon={<Building2 className="w-3 h-3" />}
+                value={detailSubmission.jobInfo.workplace} 
+              />
+              <Field label="Bidang Usaha" value={detailSubmission.jobInfo.businessField} />
+              <Field label="Jabatan" value={detailSubmission.jobInfo.position} />
+              <Field label="Penghasilan" icon={<DollarSign className="w-3 h-3" />} value={detailSubmission.jobInfo.salaryRange} />
+              <Field label="Sumber Dana" value={detailSubmission.jobInfo.incomeSource} />
+              <Field label="Rata-rata Transaksi" icon={<DollarSign className="w-3 h-3" />} value={detailSubmission.jobInfo.averageTransaction} />
+              <Field label="Tujuan Rekening" icon={<Target className="w-3 h-3" />} value={detailSubmission.jobInfo.accountPurpose} />
+              <Field label="Alamat Kantor" value={detailSubmission.jobInfo.officeAddress} />
+              <Field label="Telp Kantor" icon={<Phone className="w-3 h-3" />} value={detailSubmission.jobInfo.officePhone} />
+            </TwoCol>
+          </Section>
+
+          {/* ACCOUNT INFO */}
+          <Section title="Informasi Rekening" icon={<CreditCard className="w-5 h-5 text-gray-700" />}>
+            <TwoCol>
+              <Field label="Jenis Rekening" value={detailSubmission.accountInfo.accountType} />
+              <Field label="Setoran Awal" icon={<DollarSign className="w-3 h-3" />} value={detailSubmission.accountInfo.initialDeposit} />
+              <Field label="Jenis Kartu" value={detailSubmission.accountInfo.cardType} />
+              <Field label="Rekening Untuk" value={detailSubmission.accountInfo.isForSelf ? 'Diri Sendiri' : 'Orang Lain'} />
+            </TwoCol>
+          </Section>
+
+          {/* EMERGENCY CONTACT */}
+          {detailSubmission.emergencyContact && (
+             <Section title="Kontak Darurat" icon={<AlertCircle className="w-5 h-5 text-gray-700" />}>
+               <div className="bg-gray-50 border border-gray-200 rounded-md p-4">
+                 <TwoCol>
+                   <Field label="Nama" value={detailSubmission.emergencyContact.name} />
+                   <Field label="Nomor Telepon" icon={<Phone className="w-3 h-3" />} value={detailSubmission.emergencyContact.phone} />
+                   <Field label="Alamat" icon={<MapPin className="w-3 h-3" />} value={detailSubmission.emergencyContact.address} />
+                   <Field label="Hubungan" value={detailSubmission.emergencyContact.relationship} />
+                 </TwoCol>
+               </div>
+             </Section>
+          )}
+
+          {/* BENEFICIAL OWNER - Formal Style Card */}
+          {detailSubmission.beneficialOwner && (
+            <Section title="Beneficial Owner" icon={<UserCheck className="w-5 h-5 text-gray-700" />}>
+              <Card className="p-5 bg-white border border-gray-200 rounded-md shadow-sm">
+                <TwoCol>
+                  <Field label="Nama Lengkap" value={detailSubmission.beneficialOwner.name} />
+                  <Field label="Alamat" value={detailSubmission.beneficialOwner.address} />
+                  <Field label="Tempat Lahir" value={detailSubmission.beneficialOwner.birthPlace} />
+                  <Field label="Tanggal Lahir" value={detailSubmission.beneficialOwner.birthDate} />
+                  <Field label="Jenis Kelamin" value={detailSubmission.beneficialOwner.gender} />
+                  <Field label="Kewarganegaraan" value={detailSubmission.beneficialOwner.citizenship} />
+                  <Field label="Status Pernikahan" value={detailSubmission.beneficialOwner.maritalStatus} />
+                  <Field label="Jenis Identitas" value={detailSubmission.beneficialOwner.identityType} />
+                  <Field label="Nomor Identitas" value={detailSubmission.beneficialOwner.identityNumber} />
+                  <Field label="Sumber Dana" value={detailSubmission.beneficialOwner.incomeSource} />
+                  <Field label="Hubungan" value={detailSubmission.beneficialOwner.relationship} />
+                  <Field label="Nomor HP" value={detailSubmission.beneficialOwner.phone} />
+                  <Field label="Pekerjaan" value={detailSubmission.beneficialOwner.occupation} />
+                  <Field label="Pendapatan Tahunan" value={detailSubmission.beneficialOwner.annualIncome} />
+                </TwoCol>
+              </Card>
             </Section>
+          )}
 
-            {/* ADDRESS */}
-            <Section title="Alamat" icon={<MapPin className="w-5 h-5 text-blue-600" />}>
-              <TwoCol>
-                <Field label="Alamat Lengkap" value={submission.personalData.address.street} />
-                <Field label="Provinsi" value={submission.personalData.address.province} />
-                <Field label="Kota" value={submission.personalData.address.city} />
-                <Field label="Kode Pos" value={submission.personalData.address.postalCode} />
-              </TwoCol>
+          {/* OTHER BANKS */}
+          {detailSubmission.eddBankLain && detailSubmission.eddBankLain.length > 0 && (
+            <Section title="Rekening Bank Lain" icon={<CreditCard className="w-5 h-5 text-gray-700" />}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {detailSubmission.eddBankLain.map((bank, idx) => (
+                  <Card key={bank.id || idx} className="p-4 bg-white border border-gray-200 rounded-md shadow-sm hover:border-blue-300 transition-colors">
+                    <div className="flex flex-col gap-2">
+                       <h4 className="font-bold text-gray-800 text-sm border-b pb-1 mb-1">{bank.bank_name}</h4>
+                       <div className="grid grid-cols-2 gap-2 text-sm">
+                          <div>
+                            <span className="text-xs text-gray-500 block">Jenis</span>
+                            {bank.jenis_rekening}
+                          </div>
+                          <div>
+                            <span className="text-xs text-gray-500 block">No. Rek</span>
+                            {bank.nomor_rekening}
+                          </div>
+                       </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
             </Section>
+          )}
 
-            <Separator />
-
-            {/* JOB INFO */}
-            <Section
-              title={submission.cardType === 'Tabungan Simpel' ? 'Informasi Sekolah' : 'Informasi Pekerjaan'}
-              icon={<Briefcase className="w-5 h-5 text-blue-600" />}
-            >
-              <TwoCol>
-                <Field
-                  label={submission.cardType === 'Tabungan Simpel' ? 'Status' : 'Status Pekerjaan'}
-                  value={submission.jobInfo.occupation}
-                />
-                {submission.jobInfo.occupation !== 'tidak-bekerja' && (
-                  <>
-                    <Field
-                      label={submission.cardType === 'Tabungan Simpel' ? 'Range Penghasilan Orang Tua' : 'Range Penghasilan'}
-                      icon={<DollarSign className="w-4 h-4 text-gray-400" />}
-                      value={submission.jobInfo.salaryRange}
-                    />
-                    {submission.jobInfo.workplace && (
-                      <Field
-                        label={submission.cardType === 'Tabungan Simpel' ? 'Nama Sekolah' : 'Nama Instansi/Perusahaan'}
-                        icon={<Building2 className="w-4 h-4 text-gray-400" />}
-                        value={submission.jobInfo.workplace}
-                      />
-                    )}
-                  </>
-                )}
-                {submission.jobInfo.incomeSource && (
-                  <Field label="Sumber Dana" icon={<Wallet className="w-4 h-4 text-gray-400" />} value={submission.jobInfo.incomeSource} />
-                )}
-                {submission.jobInfo.accountPurpose && (
-                  <Field label="Tujuan Pembukaan Rekening" icon={<Target className="w-4 h-4 text-gray-400" />} value={submission.jobInfo.accountPurpose} />
-                )}
-              </TwoCol>
+          {/* OTHER JOBS */}
+          {detailSubmission.eddPekerjaanLain && detailSubmission.eddPekerjaanLain.length > 0 && (
+            <Section title="Pekerjaan Tambahan" icon={<Briefcase className="w-5 h-5 text-gray-700" />}>
+               <div className="flex flex-wrap gap-3">
+                 {detailSubmission.eddPekerjaanLain.map((job, idx) => (
+                   <div key={job.id || idx} className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm font-medium text-gray-700">
+                      {job.jenis_usaha}
+                   </div>
+                 ))}
+               </div>
             </Section>
+          )}
 
-            <Separator />
+          <Separator className="my-6" />
 
-            {/* EMERGENCY CONTACT */}
-            {submission.emergencyContact && (
+          {/* LOG & APPROVAL STATUS */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card className="bg-gray-50 border-gray-200 rounded-md p-4 flex items-center gap-3">
+                <div className="p-2 bg-white rounded-md border border-gray-200">
+                  <Calendar className="w-4 h-4 text-gray-500" />
+                </div>
+                <div className="text-sm">
+                   <span className="block text-gray-500 text-xs uppercase">Tanggal Pengajuan</span>
+                   <span className="font-semibold text-gray-800">{detailSubmission.submittedAt}</span>
+                </div>
+              </Card>
+
+              {detailSubmission.status === 'approved' && detailSubmission.approvedBy && (
+                <Card className="bg-green-50 border-green-200 rounded-md p-4 flex items-center gap-3">
+                   <div className="p-2 bg-white rounded-md border border-green-100">
+                     <CheckCircle className="w-4 h-4 text-green-600" />
+                   </div>
+                   <div className="text-sm">
+                      <span className="block text-green-700 text-xs uppercase">Disetujui Oleh</span>
+                      <div className="font-semibold text-green-900">
+                        {detailSubmission.approvedBy} 
+                        {detailSubmission.approvedAt && <span className="font-normal text-xs ml-1">({detailSubmission.approvedAt})</span>}
+                      </div>
+                   </div>
+                </Card>
+              )}
+
+              {detailSubmission.status === 'rejected' && detailSubmission.rejectedBy && (
+                <Card className="bg-red-50 border-red-200 rounded-md p-4 flex items-center gap-3">
+                   <div className="p-2 bg-white rounded-md border border-red-100">
+                     <XCircle className="w-4 h-4 text-red-600" />
+                   </div>
+                   <div className="text-sm">
+                      <span className="block text-red-700 text-xs uppercase">Ditolak Oleh</span>
+                      <div className="font-semibold text-red-900">
+                        {detailSubmission.rejectedBy}
+                        {detailSubmission.rejectedAt && <span className="font-normal text-xs ml-1">({detailSubmission.rejectedAt})</span>}
+                      </div>
+                   </div>
+                </Card>
+              )}
+          </div>
+        </div>
+
+        {/* FOOTER */}
+        <div className="p-6 border-t border-gray-200 bg-gray-50 sticky bottom-0 rounded-b-lg">
+           <DialogFooter className="gap-3 sm:gap-2">
+            <Button variant="outline" onClick={onClose} className="rounded-md border-gray-300 text-gray-700 hover:bg-white hover:text-gray-900">
+              Tutup
+            </Button>
+
+            {/* Approved: PDF Button */}
+            {detailSubmission.status === 'approved' && (
               <>
-                <Section title="Kontak Darurat" icon={<AlertCircle className="w-5 h-5 text-blue-600" />}>
-                  <TwoCol>
-                    <Field label="Nama Kontak Darurat" value={submission.emergencyContact.name} />
-                    <Field
-                      label="Nomor Telepon Kontak Darurat"
-                      icon={<Phone className="w-4 h-4 text-gray-400" />}
-                      value={submission.emergencyContact.phone}
-                    />
-                  </TwoCol>
-                </Section>
-                <Separator />
+                {!pdfBlob ? (
+                  <Button variant="outline" onClick={handleGeneratePdf} disabled={loading} className="rounded-md border-blue-600 text-blue-700 hover:bg-blue-50">
+                    <FileText className="w-4 h-4 mr-2" />
+                    {loading ? 'Memproses PDF...' : 'Generate PDF'}
+                  </Button>
+                ) : (
+                  <a href={URL.createObjectURL(pdfBlob)} download={`Bukti-Pendaftaran-${detailSubmission.referenceCode}.pdf`} className="inline-flex">
+                    <Button variant="default" className="rounded-md bg-blue-700 hover:bg-blue-800 text-white">
+                      <FileText className="w-4 h-4 mr-2" />
+                      Download Bukti PDF
+                    </Button>
+                  </a>
+                )}
               </>
             )}
 
-            {/* DOCUMENTS */}
-            <Section title="Dokumen" icon={<FileText className="w-5 h-5 text-blue-600" />}>
-              <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
-                <ImageCard
-                  label="Foto KTP"
-                  src={submission.documents.ktpPhoto}
-                  onClick={() => setPreviewImage(submission.documents.ktpPhoto)}
-                />
-              </div>
-            </Section>
-
-            <Separator />
-
-            {/* DATA AGREEMENT */}
-            {submission.dataAgreement !== undefined && (
-              <Section title="Persetujuan Data" icon={<ShieldCheck className="w-5 h-5 text-blue-600" />}>
-                <Card className={`p-3 ${submission.dataAgreement ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'}`}>
-                  <div className="flex items-center gap-2">
-                    <ShieldCheck className={`w-4 h-4 ${submission.dataAgreement ? 'text-green-600' : 'text-yellow-600'}`} />
-                    <span className={submission.dataAgreement ? 'text-green-700' : 'text-yellow-700'}>
-                      {submission.dataAgreement
-                        ? '✓ Menyetujui Syarat dan Ketentuan serta Kebijakan Privasi'
-                        : '✗ Belum menyetujui Syarat dan Ketentuan'}
-                    </span>
-                  </div>
-                </Card>
-              </Section>
-            )}
-
-            {/* SUBMISSION INFO */}
-            <Section title="Log Aktivitas" icon={<FileText className="w-5 h-5 text-blue-600" />}>
-              <Card className="bg-blue-50 border-blue-100 p-3">
-                <div className="flex items-center gap-2 text-gray-700">
-                  <Calendar className="w-4 h-4" />
-                  <span>
-                    Tanggal Pengajuan: <strong className="ml-1">{submission.submittedAt}</strong>
-                  </span>
-                </div>
-              </Card>
-            </Section>
-
-            {/* APPROVAL / REJECTION INFO */}
-            {submission.status === 'approved' && submission.approvedBy && (
-  <Card className="bg-green-50 border-green-200 p-3">
-    <div className="flex items-center gap-2 text-green-700">
-      <UserCheck className="w-4 h-4" />
-      <span>
-        Diterima oleh: <strong className="ml-1">{submission.approvedBy}</strong>
-        {submission.approvedAt && (
-          <strong className="text-green-600 ml-2">({submission.approvedAt})</strong>
-        )}
-      </span>
-    </div>
-  </Card>
-)}
-
-{submission.status === 'rejected' && submission.rejectedBy&& (
-  <Card className="bg-red-50 border-red-200 p-3">
-    <div className="flex items-center gap-2 text-red-700">
-      <UserX className="w-4 h-4" />
-      <span>
-        Ditolak oleh: <strong className="ml-1">{submission.rejectedBy}</strong>
-        {submission.rejectedAt && (
-          <span className="text-red-600 text-sm ml-2">{submission.rejectedAt}</span>
-        )}
-      </span>
-    </div>
-  </Card>
-)}
-
-          </div>
-
-          {/* FOOTER */}
-          <DialogFooter className="mt-8 gap-2">
-          <Button variant="outline" onClick={onClose}>Tutup</Button>
-
-          {/* PDF hanya muncul kalau sudah approved */}
-          {submission.status === 'approved' && (
-            <>
-              {!pdfBlob && (
-                <Button variant="outline" onClick={handleGeneratePdf} disabled={loading} className="border-blue-200 text-blue-700 hover:bg-blue-50">
-                  <FileText className="w-4 h-4 mr-2" />
-                  {loading ? 'Generating PDF...' : 'Generate PDF'}
+            {/* Pending: Actions */}
+            {detailSubmission.status === 'pending' && (
+              <>
+                <Button variant="outline" onClick={onReject} className="rounded-md border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300">
+                  <XCircle className="w-4 h-4 mr-2" />
+                  Tolak
                 </Button>
-              )}
-              {pdfBlob && (
-                <a href={URL.createObjectURL(pdfBlob)} download={`Bukti-Pendaftaran-${submission.referenceCode}.pdf`}>
-                  <Button variant="outline" className="border-blue-200 text-blue-700 hover:bg-blue-50">
-                    <FileText className="w-4 h-4 mr-2" />
-                    Download PDF
-                  </Button>
-                </a>
-              )}
-            </>
-          )}
-
-          {submission.status === 'pending' && (
-            <>
-              <Button variant="outline" onClick={onReject} className="text-red-600 border-red-300 hover:bg-red-50">
-                <XCircle className="w-4 h-4 mr-2" />
-                Tolak Permohonan
-              </Button>
-              <Button onClick={onApprove} className="bg-green-600 hover:bg-green-700 text-white">
-                <CheckCircle className="w-4 h-4 mr-2" />
-                Setujui Permohonan
-              </Button>
-            </>
-          )}
-        </DialogFooter>
-
+                <Button onClick={onApprove} className="rounded-md bg-green-700 hover:bg-green-800 text-white shadow-sm">
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Setujui
+                </Button>
+              </>
+            )}
+          </DialogFooter>
         </div>
-        {/* Image preview modal */}
-        <ImagePreviewModal image={previewImage} onClose={() => setPreviewImage(null)} />
+
       </DialogContent>
     </Dialog>
   );

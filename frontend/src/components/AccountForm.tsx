@@ -38,7 +38,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
   // Validation errors (simple server-backed uniqueness + basic client hints)
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const apiBase = "https://bukatabungan-production.up.railway.app";
+  const apiBase = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
   const validateNikAsync = async (nik: string) => {
     if (!nik) return 'NIK wajib diisi';
@@ -149,10 +149,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
   // Employment and financial fields (Requirements 3.1)
   rataRataTransaksi: '',
   teleponKantor: '',
-  referensiNama: '',
-  referensiAlamat: '',
-  referensiTelepon: '',
-  referensiHubungan: '',
+
 
   // Account configuration fields (Requirements 4.1)
   nominalSetoran: '',
@@ -166,23 +163,41 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
   boAlamat: '',
   boTempatLahir: '',
   boTanggalLahir: '',
+  boJenisKelamin: '',
+  boKewarganegaraan: '',
+  boStatusPernikahan: '',
   boJenisId: '',
   boNomorId: '',
+  boSumberDana: '',
+  boHubungan: '',
+  boNomorHp: '',
   boPekerjaan: '',
   boPendapatanTahun: '',
   boPersetujuan: false,
 
   kontakDaruratNama: '',
   kontakDaruratHp: '',
+  kontakDaruratAlamat: '',
   kontakDaruratHubungan: '',
+  kontakDaruratHubunganLainnya: '',
   employmentStatus: '',
+
+  // EDD Bank Lain
+  eddBankLain: [],
+
+  // EDD Pekerjaan Lain
+  eddPekerjaanLain: [],
+
+  // Customer Type
+  tipeNasabah: 'baru',
+  nomorRekeningLama: '',
 });
 
 
   const [branches, setBranches] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch("https://bukatabungan-production.up.railway.app/api/cabang")
+    fetch(`${apiBase}/api/cabang`)
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -287,7 +302,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
        }
        
        // Async validations
-       if (!newErrors.nik) {
+       if (!newErrors.nik && (!formData.jenisId || formData.jenisId === 'KTP')) {
          const nikErr = await validateNikAsync(formData.nik);
          if (nikErr) newErrors.nik = nikErr;
        }
@@ -317,8 +332,14 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
          if (!formData.boAlamat) newErrors.boAlamat = "Alamat beneficial owner wajib diisi";
          if (!formData.boTempatLahir) newErrors.boTempatLahir = "Tempat lahir beneficial owner wajib diisi";
          if (!formData.boTanggalLahir) newErrors.boTanggalLahir = "Tanggal lahir beneficial owner wajib diisi";
+         if (!formData.boJenisKelamin) newErrors.boJenisKelamin = "Jenis kelamin beneficial owner wajib diisi";
+         if (!formData.boKewarganegaraan) newErrors.boKewarganegaraan = "Kewarganegaraan beneficial owner wajib diisi";
+         if (!formData.boStatusPernikahan) newErrors.boStatusPernikahan = "Status pernikahan beneficial owner wajib diisi";
          if (!formData.boJenisId) newErrors.boJenisId = "Jenis identitas beneficial owner wajib diisi";
          if (!formData.boNomorId) newErrors.boNomorId = "Nomor identitas beneficial owner wajib diisi";
+         if (!formData.boSumberDana) newErrors.boSumberDana = "Sumber dana beneficial owner wajib diisi";
+         if (!formData.boHubungan) newErrors.boHubungan = "Hubungan dengan beneficial owner wajib diisi";
+         if (!formData.boNomorHp) newErrors.boNomorHp = "Nomor HP beneficial owner wajib diisi";
          if (!formData.boPekerjaan) newErrors.boPekerjaan = "Pekerjaan beneficial owner wajib diisi";
          if (!formData.boPendapatanTahun) newErrors.boPendapatanTahun = "Pendapatan tahunan beneficial owner wajib diisi";
          if (!formData.boPersetujuan) newErrors.boPersetujuan = "Persetujuan beneficial owner harus dicentang";
@@ -408,11 +429,16 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       if (!formData.kontakDaruratHubungan) newErrors.kontakDaruratHubungan = "Hubungan kontak darurat harus diisi jika mengisi kontak darurat";
     }
     
+    // Customer Type Validation
+    if (formData.tipeNasabah === 'lama' && !formData.nomorRekeningLama) {
+      newErrors.nomorRekeningLama = "Nomor rekening lama harus diisi untuk nasabah lama";
+    }
+
     // Terms and Conditions
     if (!formData.agreeTerms) newErrors.agreeTerms = "Anda harus menyetujui syarat dan ketentuan";
 
     // Async validations for unique fields (only if basic validation passed)
-    if (!newErrors.nik) {
+    if (!newErrors.nik && (!formData.jenisId || formData.jenisId === 'KTP')) {
       const nikErr = await validateNikAsync(formData.nik);
       if (nikErr) newErrors.nik = nikErr;
     }
@@ -456,7 +482,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
         if (ktpFile && !currentKtpUrl) {
             const formDataKtp = new FormData();
             formDataKtp.append("gambar", ktpFile);
-            const resKtp = await fetch("https://bukatabungan-production.up.railway.app/upload", {
+            const resKtp = await fetch(`${apiBase}/upload`, {
                 method: "POST",
                 body: formDataKtp,
                 credentials: "include",
@@ -475,7 +501,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     }
 
    try {
-      const res = await fetch("https://bukatabungan-production.up.railway.app/otp/send", {
+      const res = await fetch(`${apiBase}/otp/send`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone: formData.phone }),
@@ -538,7 +564,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     //     formDataKtp.append("gambar", ktpFile);
   
     //     const resKtp = await fetch(
-    //       "https://bukatabungan-production.up.railway.app/upload",
+    //       `${apiBase}/upload`,
     //       {
     //         method: "POST",
     //         body: formDataKtp,
@@ -569,7 +595,8 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       no_id: data.nomorId || data.nik, // Use nomorId if provided, fallback to nik
       alias: data.alias,
       jenis_id: data.jenisId === 'Lainnya' ? data.jenisIdCustom : data.jenisId,
-      berlaku_id: data.berlakuId,
+      jenisIdCustom: data.jenisIdCustom, // Send custom identity type separately
+      berlaku_id: data.berlakuId, // Empty will become NULL in backend, displayed as "seumur hidup" in dashboard
       email: data.email,
       no_hp: data.phone,
       tanggal_lahir: data.birthDate,
@@ -595,6 +622,10 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       pendidikan: data.pendidikan,
       npwp: data.npwp,
 
+      // Customer Type
+      tipe_nasabah: data.tipeNasabah,
+      nomor_rekening_lama: data.nomorRekeningLama,
+
       // cdd_job fields - Employment and Financial
       pekerjaan: data.employmentStatus,
       penghasilan: data.monthlyIncome,
@@ -605,15 +636,11 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       alamat_kantor: data.alamatKantor,
       telepon_perusahaan: data.teleponKantor,
       jabatan: data.jabatan,
-      bidang_usaha: data.bidangUsaha,
+      bidang_usaha: data.bidangUsaha || 'tidak bekerja',
       sumber_dana: data.sumberDana,
       rata_rata_transaksi: data.rataRataTransaksi,
       
-      // Reference contact fields
-      referensi_nama: data.referensiNama,
-      referensi_alamat: data.referensiAlamat,
-      referensi_telepon: data.referensiTelepon,
-      referensi_hubungan: data.referensiHubungan,
+
 
       // Account configuration fields
       // Account configuration fields
@@ -629,7 +656,8 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       // cdd_reference - Emergency contact
       kontak_darurat_nama: data.kontakDaruratNama,
       kontak_darurat_hp: data.kontakDaruratHp,
-      kontak_darurat_hubungan: data.kontakDaruratHubungan,
+      kontak_darurat_alamat: data.kontakDaruratAlamat,
+      kontak_darurat_hubungan: data.kontakDaruratHubungan === 'Lainnya' ? data.kontakDaruratHubunganLainnya : data.kontakDaruratHubungan,
 
       // Account ownership
       rekening_untuk_sendiri: data.rekeningUntukSendiri,
@@ -639,11 +667,23 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       bo_alamat: data.rekeningUntukSendiri === false ? data.boAlamat : undefined,
       bo_tempat_lahir: data.rekeningUntukSendiri === false ? data.boTempatLahir : undefined,
       bo_tanggal_lahir: data.rekeningUntukSendiri === false ? data.boTanggalLahir : undefined,
+      bo_jenis_kelamin: data.rekeningUntukSendiri === false ? data.boJenisKelamin : undefined,
+      bo_kewarganegaraan: data.rekeningUntukSendiri === false ? data.boKewarganegaraan : undefined,
+      bo_status_pernikahan: data.rekeningUntukSendiri === false ? data.boStatusPernikahan : undefined,
       bo_jenis_id: data.rekeningUntukSendiri === false ? data.boJenisId : undefined,
       bo_nomor_id: data.rekeningUntukSendiri === false ? data.boNomorId : undefined,
+      bo_sumber_dana: data.rekeningUntukSendiri === false ? data.boSumberDana : undefined,
+      bo_hubungan: data.rekeningUntukSendiri === false ? data.boHubungan : undefined,
+      bo_nomor_hp: data.rekeningUntukSendiri === false ? data.boNomorHp : undefined,
       bo_pekerjaan: data.rekeningUntukSendiri === false ? data.boPekerjaan : undefined,
       bo_pendapatan_tahun: data.rekeningUntukSendiri === false ? data.boPendapatanTahun : undefined,
       bo_persetujuan: data.rekeningUntukSendiri === false ? data.boPersetujuan : undefined,
+
+      // EDD Bank Lain (array of objects)
+      edd_bank_lain: data.eddBankLain && data.eddBankLain.length > 0 ? data.eddBankLain : undefined,
+
+      // EDD Pekerjaan Lain (array of objects)
+      edd_pekerjaan_lain: data.eddPekerjaanLain && data.eddPekerjaanLain.length > 0 ? data.eddPekerjaanLain : undefined,
 
       // System fields
       setuju_data: data.agreeTerms ? "Ya" : "Tidak",
@@ -659,7 +699,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     // ============================
     try {
       const response = await fetch(
-        "https://bukatabungan-production.up.railway.app/api/pengajuan",
+        `${apiBase}/api/pengajuan`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

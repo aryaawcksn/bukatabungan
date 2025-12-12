@@ -49,10 +49,6 @@ export interface AccountFormData {
     // Employment and financial fields (Requirements 3.1)
     rataRataTransaksi: string;
     teleponKantor: string;
-    referensiNama: string;
-    referensiAlamat: string;
-    referensiTelepon: string;
-    referensiHubungan: string;
 
     // Account configuration fields (Requirements 4.1)
     nominalSetoran: string;
@@ -66,8 +62,14 @@ export interface AccountFormData {
     boAlamat: string;
     boTempatLahir: string;
     boTanggalLahir: string;
+    boJenisKelamin: string;        // NEW FIELD 1
+    boKewarganegaraan: string;     // NEW FIELD 2
+    boStatusPernikahan: string;    // NEW FIELD 3
     boJenisId: string; // 'KTP' | 'Paspor' | 'Lainnya'
     boNomorId: string;
+    boSumberDana: string;          // NEW FIELD 4
+    boHubungan: string;            // NEW FIELD 5
+    boNomorHp: string;             // NEW FIELD 6
     boPekerjaan: string;
     boPendapatanTahun: string; // 'sd-5jt' | '5-10jt' | '10-25jt' | '25-100jt'
     boPersetujuan: boolean;
@@ -75,8 +77,26 @@ export interface AccountFormData {
     // Darurat
     kontakDaruratNama: string;
     kontakDaruratHp: string;
+    kontakDaruratAlamat: string;
     kontakDaruratHubungan: string;
+    kontakDaruratHubunganLainnya: string;
     employmentStatus: string;
+
+    // EDD Bank Lain
+    eddBankLain: Array<{
+        bank_name: string;
+        jenis_rekening: string;
+        nomor_rekening: string;
+    }>;
+
+    // EDD Pekerjaan Lain
+    eddPekerjaanLain: Array<{
+        jenis_usaha: string;
+    }>;
+
+    // Customer Type
+    tipeNasabah: 'baru' | 'lama';
+    nomorRekeningLama: string;
 }
 
 export interface AccountFormProps {

@@ -91,37 +91,101 @@ export function FormSubmissionCard({
         <div
   className={`gap-4 mb-4 p-4 bg-gray-50 rounded-lg ${
     viewMode === "horizontal"
-      ? "grid grid-cols-1"
-      : "grid grid-cols-1 md:grid-cols-3"
+      ? "grid grid-cols-1 gap-3"
+      : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"
   }`}
 >
 
           <div className="flex items-start gap-2">
-            <Mail className="w-4 h-4 text-gray-400 mt-0.5" />
-            <div>
-              <div className="text-gray-500">Email</div>
-              <div className="text-gray-900">{submission.personalData.email}</div>
+            <CreditCard className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+            <div className="min-w-0">
+              <div className="text-gray-500 text-xs">Jenis Tabungan</div>
+              <div className="text-gray-900 text-sm font-medium">{submission.accountInfo.accountType || submission.savingsType}</div>
             </div>
           </div>
           <div className="flex items-start gap-2">
-            <Phone className="w-4 h-4 text-gray-400 mt-0.5" />
-            <div>
-              <div className="text-gray-500">Telepon</div>
-              <div className="text-gray-900">{submission.personalData.phone}</div>
+            <User className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+            <div className="min-w-0">
+              <div className="text-gray-500 text-xs">Kewarganegaraan</div>
+              <div className="text-gray-900 text-sm font-mono">{submission.personalData.citizenship}</div>
             </div>
           </div>
           <div className="flex items-start gap-2">
-            <Briefcase className="w-4 h-4 text-gray-400 mt-0.5" />
-            <div>
-              <div className="text-gray-500">Pekerjaan</div>
-              <div className="text-gray-900">{submission.jobInfo.occupation}</div>
+            <Phone className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+            <div className="min-w-0">
+              <div className="text-gray-500 text-xs">Telepon</div>
+              <div className="text-gray-900 text-sm">{submission.personalData.phone}</div>
             </div>
           </div>
+          <div className="flex items-start gap-2">
+            <Mail className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+            <div className="min-w-0">
+              <div className="text-gray-500 text-xs">Email</div>
+              <div className="text-gray-900 text-sm truncate">{submission.personalData.email}</div>
+            </div>
+          </div>
+          <div className="flex items-start gap-2">
+            <Briefcase className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+            <div className="min-w-0">
+              <div className="text-gray-500 text-xs">Tipe Nasabah</div>
+              <div className="text-gray-900 text-sm">
+                {(() => {
+                  console.log("SUBMISSION:", submission.personalData.tipeNasabah);
+                  return submission.personalData.tipeNasabah === 'lama' ? 'Nasabah Lama' : 'Nasabah Baru';
+                })()}
+              </div>
+            </div>
+          </div>
+          <div className="flex items-start gap-2">
+            <User className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+            <div className="min-w-0">
+              <div className="text-gray-500 text-xs">Rekening Untuk</div>
+              <div
+                  className={`text-sm font-medium ${
+                    submission.accountInfo.isForSelf ? 'text-gray-900' : 'text-gray-900'
+                  }`}
+                >
+                  {submission.accountInfo.isForSelf ? 'Diri Sendiri' : 'Orang Lain'}
+                </div>
+
+            </div>
+          </div>
+          
+          {submission.accountInfo.initialDeposit && (
+            <div className="flex items-start gap-2">
+              <CreditCard className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+              <div className="min-w-0">
+                <div className="text-gray-500 text-xs">Setoran Awal</div>
+                <div className="text-gray-900 text-sm font-medium">Rp {parseFloat(submission.accountInfo.initialDeposit).toLocaleString('id-ID')}</div>
+              </div>
+            </div>
+          )}
         </div>
 
-        <div className="flex items-center gap-2 mb-4 text-gray-600">
-          <MapPin className="w-4 h-4 text-gray-400" />
-          <span>{submission.personalData.address.city}, {submission.personalData.address.province}</span>
+        {/* Additional Info */}
+        <div className="mb-4 space-y-2">
+          <div className="flex items-center gap-2 text-gray-600">
+            <MapPin className="w-4 h-4 text-gray-400" />
+            <span className="text-sm truncate">{submission.personalData.birthPlace}</span>
+          </div>
+          <div className="flex items-center gap-4 text-xs flex-wrap">
+            {submission.jobInfo.occupation && (
+              <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full">
+                {submission.jobInfo.occupation}
+              </span>
+            )}
+            
+            {submission.eddBankLain && submission.eddBankLain.length > 0 && (
+              <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                {submission.eddBankLain.length} Bank Lain
+              </span>
+            )}
+            {submission.eddPekerjaanLain && submission.eddPekerjaanLain.length > 0 && (
+              <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
+                {submission.eddPekerjaanLain.length} Pekerjaan Lain
+              </span>
+            )}
+          </div>
         </div>
 
        <div

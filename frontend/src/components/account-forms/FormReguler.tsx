@@ -33,6 +33,28 @@ export default function FormReguler({
 }: FormRegulerProps) {
   const [showTermsModal, setShowTermsModal] = useState(false);
 
+  // Set default values
+  React.useEffect(() => {
+    setFormData(prev => ({ 
+      ...prev, 
+      tipeNasabah: prev.tipeNasabah || 'baru'
+    }));
+  }, []);
+
+  // Validate nomor rekening lama when tipe nasabah is 'lama'
+  React.useEffect(() => {
+    setErrors(prev => {
+      const next = { ...prev };
+      delete next.nomorRekeningLama;
+      
+      if (formData.tipeNasabah === 'lama' && !formData.nomorRekeningLama) {
+        next.nomorRekeningLama = 'Nomor rekening lama harus diisi untuk nasabah lama';
+      }
+      
+      return next;
+    });
+  }, [formData.tipeNasabah, formData.nomorRekeningLama]);
+
    return (
       <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
         
@@ -130,10 +152,60 @@ export default function FormReguler({
             <div className="border-t border-slate-100 pt-8">
               <h3 className="text-emerald-900 mb-6 text-2xl font-bold">Data Pribadi</h3>
               <div className="space-y-5">
-  
+                
+                {/* Jenis Identitas */}
+                <div className="grid md:grid-cols-2 gap-5">
+                   <div>
+                      <Label className="text-gray-700">Jenis Identitas</Label>
+                      <Select
+                        value={formData.jenisId || 'KTP'}
+                        onValueChange={(value) => {
+                          setFormData({ 
+                            ...formData, 
+                            jenisId: value,
+                            // Reset ID number when type changes to avoid validation confusion
+                            nik: '',
+                            nomorId: '' 
+                          });
+                          setErrors(prev => {
+                            const next = { ...prev };
+                            delete next.jenisId;
+                            delete next.nik;
+                            delete next.nomorId;
+                            return next;
+                          });
+                        }}
+                      >
+                        <SelectTrigger className="mt-2 h-12">
+                          <SelectValue placeholder="Pilih jenis identitas" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="KTP">KTP</SelectItem>
+                          <SelectItem value="Paspor">Paspor</SelectItem>
+                          <SelectItem value="SIM">SIM</SelectItem>
+                          <SelectItem value="Lainnya">Lainnya</SelectItem>
+                        </SelectContent>
+                      </Select>
+                   </div>
+                   
+                   {formData.jenisId === 'Lainnya' && (
+                     <div>
+                        <Label htmlFor="jenisIdCustom" className="text-gray-700">Sebutkan Jenis Identitas</Label>
+                        <Input
+                          id="jenisIdCustom"
+                          required
+                          placeholder="Contoh: KITAS"
+                          value={formData.jenisIdCustom || ''}
+                          onChange={(e) => setFormData({ ...formData, jenisIdCustom: e.target.value })}
+                          className="mt-2 h-12"
+                        />
+                     </div>
+                   )}
+                </div>
+
                 {/* Nama Lengkap */}
                 <div>
-                  <Label htmlFor="fullName" className="text-gray-700">Nama Lengkap (Sesuai KTP)</Label>
+                  <Label htmlFor="fullName" className="text-gray-700">Nama Lengkap (Sesuai Identitas)</Label>
                   <Input
                     id="fullName"
                     required
@@ -144,30 +216,93 @@ export default function FormReguler({
                   />
                 </div>
   
-                {/* NIK */}
+                {/* NIK / Nomor Identitas */}
                 <div>
-                  <Label htmlFor="nik" className="text-gray-700">NIK</Label>
+                  <Label htmlFor="nik" className="text-gray-700">
+                    {formData.jenisId === 'Paspor' ? 'Nomor Paspor' : 
+                     formData.jenisId === 'SIM' ? 'Nomor SIM' : 
+                     formData.jenisId === 'Lainnya' ? 'Nomor Identitas' : 'NIK'}
+                  </Label>
                   {errors.nik && <p className="text-sm text-red-600 mb-1">{errors.nik}</p>}
                   <Input
                     id="nik"
                     required
-                    placeholder="16 digit NIK"
-                    maxLength={16}
-                    value={formData.nik}
-                    onChange={(e) => setFormData({ ...formData, nik: e.target.value })}
+                    placeholder={formData.jenisId === 'KTP' || !formData.jenisId ? "16 digit NIK" : "Masukkan nomor identitas"}
+                    maxLength={(!formData.jenisId || formData.jenisId === 'KTP') ? 16 : 30}
+                    value={(!formData.jenisId || formData.jenisId === 'KTP') ? formData.nik : formData.nomorId}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (!formData.jenisId || formData.jenisId === 'KTP') {
+                         setFormData({ ...formData, nik: val, nomorId: val });
+                      } else {
+                         setFormData({ ...formData, nomorId: val, nik: val }); // Keep nik synced for legacy validation if needed, or separate them
+                      }
+                    }}
                     onBlur={async (e) => {
-                      const val = (e.currentTarget as HTMLInputElement).value;
-                      const err = await validateNikAsync(val);
-                      setErrors(prev => {
-                        const next = { ...prev };
-                        if (err) next.nik = err;
-                        else delete next.nik;
-                        return next;
-                      });
+                      if (!formData.jenisId || formData.jenisId === 'KTP') {
+                        const val = (e.currentTarget as HTMLInputElement).value;
+                        const err = await validateNikAsync(val);
+                        setErrors(prev => {
+                          const next = { ...prev };
+                          if (err) next.nik = err;
+                          else delete next.nik;
+                          return next;
+                        });
+                      }
                     }}
                     className={`${getFieldClass('nik')} h-12`}
                   />
                 </div>
+
+                {/* Tipe Nasabah */}
+                <div>
+                  <Label className="text-gray-700">Tipe Nasabah</Label>
+                  <Select
+                    value={formData.tipeNasabah}
+                    onValueChange={(value: 'baru' | 'lama') => {
+                      setFormData({ ...formData, tipeNasabah: value, nomorRekeningLama: '' });
+                      setErrors(prev => {
+                        const next = { ...prev };
+                        delete next.nomorRekeningLama;
+                        return next;
+                      });
+                    }}
+                  >
+                    <SelectTrigger className="mt-2 h-12">
+                      <SelectValue placeholder="Pilih tipe nasabah" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="baru">Nasabah Baru</SelectItem>
+                      <SelectItem value="lama">Nasabah Lama</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Nomor Rekening Lama - Only show if nasabah lama */}
+                {formData.tipeNasabah === 'lama' && (
+                  <div>
+                    <Label htmlFor="nomorRekeningLama" className="text-gray-700">Nomor Rekening yang Sudah Ada</Label>
+                    {errors.nomorRekeningLama && <p className="text-sm text-red-600 mb-1">{errors.nomorRekeningLama}</p>}
+                    <Input
+                      id="nomorRekeningLama"
+                      required
+                      placeholder="Masukkan nomor rekening yang sudah ada"
+                      value={formData.nomorRekeningLama}
+                      onChange={(e) => {
+                        setFormData({ ...formData, nomorRekeningLama: e.target.value });
+                        setErrors(prev => {
+                          const next = { ...prev };
+                          delete next.nomorRekeningLama;
+                          return next;
+                        });
+                      }}
+                      className={`${getFieldClass('nomorRekeningLama')} h-12`}
+                    />
+                    <p className="text-sm text-slate-500 mt-1">
+                      Masukkan nomor rekening Bank Sleman yang sudah Anda miliki sebelumnya.
+                    </p>
+                  </div>
+                )}
   
                 {/* Gender + Marital Status */}
                 <div className="grid md:grid-cols-2 gap-5">

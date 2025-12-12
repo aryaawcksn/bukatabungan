@@ -25,7 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshUser = async () => {
     try {
-      const res = await axios.get("https://bukatabungan-production.up.railway.app/api/auth/me", {
+      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}/api/auth/me`, {
         withCredentials: true // Ensure cookies are sent
       });
       if (res.data.success) {
@@ -50,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      await axios.post("https://bukatabungan-production.up.railway.app/api/auth/logout", {}, {
+      await axios.post(`${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}/api/auth/logout`, {}, {
         withCredentials: true
       });
       setUser(null);
