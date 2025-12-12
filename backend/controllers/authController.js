@@ -60,13 +60,10 @@ export const login = async (req, res) => {
     const sessionToken = crypto.randomBytes(64).toString("hex");
     const expiredAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
-    const insertSession = await pool.query(`
+    await pool.query(`
       INSERT INTO auth_sessions (user_id, session_token, user_agent, ip_address, expired_at)
       VALUES ($1, $2, $3, $4, $5)
-      RETURNING *
     `, [user.id, sessionToken, req.headers["user-agent"], req.ip, expiredAt]);
-
-    console.log("Session Inserted into DB:", insertSession.rows[0]?.session_token ? "YES" : "NO", "Token:", sessionToken);
 
     const cookieOptions = {
       httpOnly: true,
@@ -74,8 +71,6 @@ export const login = async (req, res) => {
       sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
       maxAge: 24 * 60 * 60 * 1000 // 24 hours
     };
-
-    console.log("Login Success. Setting Cookie:", cookieOptions);
 
     // ✅ SET COOKIE
     res.cookie("session_token", sessionToken, cookieOptions);
