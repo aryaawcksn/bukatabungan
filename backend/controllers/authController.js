@@ -65,10 +65,12 @@ export const login = async (req, res) => {
       VALUES ($1, $2, $3, $4, $5)
     `, [user.id, sessionToken, req.headers["user-agent"], req.ip, expiredAt]);
 
+    const isProduction = process.env.NODE_ENV === "production" || req.headers.host.includes("railway.app");
+
     const cookieOptions = {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+      secure: isProduction ? true : false, // Must be true for SameSite=None
+      sameSite: isProduction ? "None" : "Lax", // None required for cross-site (Vercel->Railway)
       maxAge: 24 * 60 * 60 * 1000 // 24 hours
     };
 
@@ -109,10 +111,12 @@ export const logout = async (req, res) => {
   try {
     await pool.query("DELETE FROM auth_sessions WHERE session_token = $1", [sessionToken]);
 
+    const isProduction = process.env.NODE_ENV === "production" || req.headers.host.includes("railway.app");
+
     res.clearCookie("session_token", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax"
+      secure: isProduction ? true : false,
+      sameSite: isProduction ? "None" : "Lax"
     });
 
     res.json({ success: true, message: "Logout berhasil" });
