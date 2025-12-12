@@ -65,13 +65,17 @@ export const login = async (req, res) => {
       VALUES ($1, $2, $3, $4, $5)
     `, [user.id, sessionToken, req.headers["user-agent"], req.ip, expiredAt]);
 
-    // ✅ SET COOKIE
-    res.cookie("session_token", sessionToken, {
+    const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
       maxAge: 24 * 60 * 60 * 1000 // 24 hours
-    });
+    };
+
+    console.log("Login Success. Setting Cookie:", cookieOptions);
+
+    // ✅ SET COOKIE
+    res.cookie("session_token", sessionToken, cookieOptions);
 
     res.json({
       success: true,

@@ -7,6 +7,7 @@ export const verifyToken = async (req, res, next) => {
   const sessionToken = req.cookies.session_token;
 
   if (!sessionToken) {
+    console.log("VerifyToken: No session token found in cookies:", req.cookies);
     return res.status(401).json({ success: false, message: "Unauthorized: No session token" });
   }
 
@@ -21,12 +22,14 @@ export const verifyToken = async (req, res, next) => {
     `, [sessionToken]);
 
     if (result.rows.length === 0) {
+      console.log("VerifyToken: Session token not found in DB:", sessionToken);
       return res.status(401).json({ success: false, message: "Unauthorized: Invalid session" });
     }
 
     const session = result.rows[0];
 
     if (new Date() > new Date(session.expired_at)) {
+      console.log("VerifyToken: Session expired. Now:", new Date(), "ExpiredAt:", session.expired_at);
       await pool.query("DELETE FROM auth_sessions WHERE session_token = $1", [sessionToken]);
       return res.status(401).json({ success: false, message: "Session expired" });
     }
