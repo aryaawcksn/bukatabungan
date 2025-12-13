@@ -1,10 +1,4 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { SubmissionTable } from './components/SubmissionTable';
-import CabangSetting, { type Cabang } from './components/CabangSetting';
-import AccountSetting from './components/AccountSetting';
-
-import { FormDetailDialog } from './components/form-detail-dialog';
-import { ApprovalDialog } from './components/approval-dialog';
+import { useState, useEffect, useRef, useMemo, useCallback, lazy, Suspense, memo } from 'react';
 import { Search, FileBarChart, LogOut, X, Clock3, Check, TrendingDown, TrendingUp, ArrowUp } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './components/ui/select';
 import { toast } from 'sonner';
@@ -13,6 +7,23 @@ import { Button } from './components/ui/button';
 import { StatCard } from "./components/ui/StatCard";
 import { Sidebar } from './components/Sidebar';
 import { DashboardHeader } from './components/DashboardHeader';
+
+// Import types
+import type { Cabang } from './components/CabangSetting';
+
+// Lazy load komponen berat
+const SubmissionTable = lazy(() => import('./components/SubmissionTable').then(module => ({ default: module.SubmissionTable })));
+const CabangSetting = lazy(() => import('./components/CabangSetting'));
+const AccountSetting = lazy(() => import('./components/AccountSetting'));
+const FormDetailDialog = lazy(() => import('./components/form-detail-dialog').then(module => ({ default: module.FormDetailDialog })));
+const ApprovalDialog = lazy(() => import('./components/approval-dialog').then(module => ({ default: module.ApprovalDialog })));
+
+// Loading component
+const LoadingSpinner = memo(() => (
+  <div className="flex items-center justify-center py-8">
+    <div className="w-8 h-8 border-4 border-blue-600/30 border-t-blue-600 rounded-full animate-spin"></div>
+  </div>
+));
 
 export interface FormSubmission {
   id: string;
@@ -304,7 +315,10 @@ export default function DashboardPage() {
     submission: null
   });
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20; // Limit items per page untuk performa
   const [activeTab, setActiveTab] = useState('dashboard');
   const [showScrollTop, setShowScrollTop] = useState(false);
 
@@ -319,8 +333,8 @@ export default function DashboardPage() {
   });
 
   
-  // Interval untuk auto-refresh (5 detik)
-  const POLLING_INTERVAL = 300; // 5 detik
+  // Interval untuk auto-refresh (30 detik untuk mengurangi beban)
+  const POLLING_INTERVAL = 30000; // 30 detik
   
   // Refs untuk tracking state tanpa menyebabkan re-render
   const loadingRef = useRef(loading);
@@ -339,6 +353,14 @@ export default function DashboardPage() {
   useEffect(() => {
     selectedSubmissionRef.current = selectedSubmission;
   }, [selectedSubmission]);
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   // Fetch data dari backend dengan auto-refresh
   useEffect(() => {
@@ -428,10 +450,17 @@ export default function DashboardPage() {
     
       // Optimization: Only update state if data has actually changed
       setSubmissions(prev => {
-        if (JSON.stringify(prev) === JSON.stringify(mappedData)) {
-          return prev;
+        // Quick length check first
+        if (prev.length !== mappedData.length) {
+          return mappedData;
         }
-        return mappedData;
+        // Deep comparison only if lengths match
+        const hasChanged = prev.some((item, index) => 
+          item.id !== mappedData[index]?.id || 
+          item.status !== mappedData[index]?.status ||
+          item.submittedAt !== mappedData[index]?.submittedAt
+        );
+        return hasChanged ? mappedData : prev;
       });
       
       setLastFetchTime(new Date());
@@ -635,13 +664,33 @@ export default function DashboardPage() {
     }
   }, [approvalDialog, fetchSubmissions]);
 
-  const filteredSubmissions = useMemo(() => submissions.filter(sub => {
-    const matchesSearch =
-      sub.personalData.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      sub.referenceCode.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || sub.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  }), [submissions, searchQuery, statusFilter]);
+  const filteredSubmissions = useMemo(() => {
+    let filtered = submissions;
+    
+    if (debouncedSearchQuery || statusFilter !== 'all') {
+      filtered = submissions.filter(sub => {
+        const matchesSearch = !debouncedSearchQuery || 
+          sub.personalData.fullName.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+          sub.referenceCode.toLowerCase().includes(debouncedSearchQuery.toLowerCase());
+        const matchesStatus = statusFilter === 'all' || sub.status === statusFilter;
+        return matchesSearch && matchesStatus;
+      });
+    }
+    
+    // Reset to first page when filter changes
+    if (currentPage > Math.ceil(filtered.length / itemsPerPage)) {
+      setCurrentPage(1);
+    }
+    
+    return filtered;
+  }, [submissions, debouncedSearchQuery, statusFilter, currentPage, itemsPerPage]);
+
+  const paginatedSubmissions = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredSubmissions.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredSubmissions, currentPage, itemsPerPage]);
+
+  const totalPages = Math.ceil(filteredSubmissions.length / itemsPerPage);
 
   const stats = useMemo(() => ({
     total: submissions.length,
@@ -791,13 +840,45 @@ const scrollToTop = () => {
             </div>
 
             {/* List */}
-            <SubmissionTable 
-              submissions={filteredSubmissions}
-              loading={loading}
-              onViewDetails={(sub) => setSelectedSubmission(sub)}
-              onApprove={(id) => handleApprove(id)}
-              onReject={(id) => handleReject(id)}
-            />
+            <Suspense fallback={<LoadingSpinner />}>
+              <SubmissionTable 
+                submissions={paginatedSubmissions}
+                loading={loading}
+                onViewDetails={(sub) => setSelectedSubmission(sub)}
+                onApprove={(id) => handleApprove(id)}
+                onReject={(id) => handleReject(id)}
+              />
+            </Suspense>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between mt-6">
+                <p className="text-sm text-slate-600">
+                  Menampilkan {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, filteredSubmissions.length)} dari {filteredSubmissions.length} data
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    Sebelumnya
+                  </Button>
+                  <span className="text-sm text-slate-600">
+                    Halaman {currentPage} dari {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                  >
+                    Selanjutnya
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -858,10 +939,12 @@ const scrollToTop = () => {
               </div>
             </div>
           ) : (
-            <CabangSetting
-              cabangList={cabangList}
-              onToggleStatus={handleToggleCabangStatus}
-            />
+            <Suspense fallback={<LoadingSpinner />}>
+              <CabangSetting
+                cabangList={cabangList}
+                onToggleStatus={handleToggleCabangStatus}
+              />
+            </Suspense>
           )}
         </div>
       </div>
@@ -903,7 +986,9 @@ const scrollToTop = () => {
         }`}
       >
         <div className="p-6 border-t border-slate-200">
-           <AccountSetting cabangList={cabangList} />
+          <Suspense fallback={<LoadingSpinner />}>
+            <AccountSetting cabangList={cabangList} />
+          </Suspense>
         </div>
       </div>
     </div>
@@ -959,24 +1044,28 @@ const scrollToTop = () => {
 
       {/* Dialogs */}
       {selectedSubmission && (
-        <FormDetailDialog
-          submission={selectedSubmission}
-          open={!!selectedSubmission}
-          onClose={() => setSelectedSubmission(null)}
-          onApprove={() => handleApprove(selectedSubmission.id)}
-          onReject={() => handleReject(selectedSubmission.id)}
-        />
+        <Suspense fallback={null}>
+          <FormDetailDialog
+            submission={selectedSubmission}
+            open={!!selectedSubmission}
+            onClose={() => setSelectedSubmission(null)}
+            onApprove={() => handleApprove(selectedSubmission.id)}
+            onReject={() => handleReject(selectedSubmission.id)}
+          />
+        </Suspense>
       )}
 
       {approvalDialog.submission && (
-        <ApprovalDialog
-          open={approvalDialog.open}
-          onClose={() => setApprovalDialog({ open: false, type: 'approve', submission: null })}
-          onConfirm={handleApprovalConfirm}
-          type={approvalDialog.type}
-          applicantName={approvalDialog.submission.personalData.fullName}
-          phone={approvalDialog.submission.personalData.phone}
-        />
+        <Suspense fallback={null}>
+          <ApprovalDialog
+            open={approvalDialog.open}
+            onClose={() => setApprovalDialog({ open: false, type: 'approve', submission: null })}
+            onConfirm={handleApprovalConfirm}
+            type={approvalDialog.type}
+            applicantName={approvalDialog.submission.personalData.fullName}
+            phone={approvalDialog.submission.personalData.phone}
+          />
+        </Suspense>
       )}
 
       <Toaster />

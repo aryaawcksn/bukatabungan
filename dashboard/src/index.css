@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
+/* Font loading optimized - removed unused fonts and weights */
 @import "tailwindcss/preflight";
 @import "tailwindcss/utilities";
 @import "tailwindcss";
@@ -138,36 +138,35 @@
   }
 }
 
-/* ✅ BACKGROUND MASUK */
+/* Optimized animations - reduced blur and scale for better performance */
 @keyframes pageEnter {
   from {
     opacity: 0;
-    filter: blur(6px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
-    filter: blur(0);
+    transform: translateY(0);
   }
 }
 
 .animate-pageEnter {
-  animation: pageEnter 0.8s ease-out;
+  animation: pageEnter 0.3s ease-out;
 }
 
-/* ✅ ISI KONTEN NAIK HALUS */
 @keyframes contentEnter {
   from {
     opacity: 0;
-    transform: translateY(24px) scale(0.96);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
 
 .animate-contentEnter {
-  animation: contentEnter 0.6s ease-out 0.3s both;
+  animation: contentEnter 0.2s ease-out 0.1s both;
 }
 
 

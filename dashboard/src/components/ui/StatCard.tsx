@@ -1,5 +1,6 @@
 import { TrendingUp} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { memo } from "react";
 import AnimatedNumber from "./AnimateNumber";
 
 interface StatCardProps {
@@ -13,7 +14,7 @@ interface StatCardProps {
   loading?: boolean;
 }
 
-const StatCard = ({
+const StatCard = memo(({
   title,
   value,
   icon: Icon,
@@ -69,6 +70,8 @@ const StatCard = ({
       </div>
     </div>
   );
-};
+});
+
+StatCard.displayName = 'StatCard';
 
 export { StatCard };
