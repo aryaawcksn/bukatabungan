@@ -380,39 +380,51 @@ export default function DashboardPage() {
     }
   }, [activeTab]);
 
+  // Ref untuk tracking activeTab tanpa re-render (penting untuk interval)
+  const activeTabRef = useRef(activeTab);
+
+  useEffect(() => {
+    activeTabRef.current = activeTab;
+  }, [activeTab]);
+
   // Fetch data dari backend dengan auto-refresh
   useEffect(() => {
-  let isMounted = true;
+    let isMounted = true;
 
-  checkBackendConnection().then(() => {
-    if (isMounted) {
-      // Jika di tab analytics, gunakan analytics data
-      if (activeTab === 'analytics') {
-        fetchAnalyticsData();
-        fetchCabangForAnalytics();
-      } else {
-        fetchSubmissions();
-        fetchCabang();
+    checkBackendConnection().then(() => {
+      if (isMounted) {
+        // Jika di tab analytics, gunakan analytics data
+        if (activeTab === 'analytics') {
+          fetchAnalyticsData();
+          fetchCabangForAnalytics();
+        } else {
+          fetchSubmissions();
+          fetchCabang();
+        }
       }
-    }
-  });
+    });
 
-  const intervalId = setInterval(() => {
-    if (
-      isMounted &&
-      !loadingRef.current &&
-      !approvalDialogRef.current.open &&
-      !selectedSubmissionRef.current
-    ) {
-      fetchSubmissions(false);
-    }
-  }, POLLING_INTERVAL);
+    const intervalId = setInterval(() => {
+      if (
+        isMounted &&
+        !loadingRef.current &&
+        !approvalDialogRef.current.open &&
+        !selectedSubmissionRef.current
+      ) {
+        // Check active tab from ref to decide which data to fetch
+        if (activeTabRef.current === 'analytics') {
+           fetchAnalyticsData(false);
+        } else if (activeTabRef.current === 'submissions' || activeTabRef.current === 'dashboard') {
+           fetchSubmissions(false);
+        }
+      }
+    }, POLLING_INTERVAL);
 
-  return () => {
-    isMounted = false;
-    clearInterval(intervalId);
-  };
-}, []);
+    return () => {
+      isMounted = false;
+      clearInterval(intervalId);
+    };
+  }, []);
 
 
   const checkBackendConnection = async () => {
