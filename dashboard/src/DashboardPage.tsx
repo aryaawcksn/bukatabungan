@@ -561,7 +561,7 @@ export default function DashboardPage() {
         setIsRefreshing(true);
       }
 
-      const response = await fetch(`${API_BASE_URL}/api/pengajuan/analytics/data`, {
+      const response = await fetch(`${API_BASE_URL}/api/pengajuan/analytics/data?all_branches=true`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json'
@@ -629,7 +629,7 @@ export default function DashboardPage() {
   const fetchCabangForAnalytics = async () => {
     setIsCabangLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/pengajuan/analytics/cabang`, {
+      const res = await fetch(`${API_BASE_URL}/api/pengajuan/analytics/cabang?all_branches=true`, {
         headers: {
           'Content-Type': 'application/json'
         },

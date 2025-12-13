@@ -746,13 +746,15 @@ export const getAnalyticsData = async (req, res) => {
     let whereClause = '';
     let queryParams = [];
 
-    // Jika bukan super admin atau role khusus, tetap filter berdasarkan cabang
-    if (userRole === 'employement' || userRole === 'admin_cabang') {
+    // TEMPORARY: Untuk analytics, berikan akses semua cabang
+    // Nanti bisa dikontrol dengan role atau feature flag
+    const allowAllBranches = req.query.all_branches === 'true';
+    
+    if (!allowAllBranches && (userRole === 'employement' || userRole === 'admin_cabang')) {
       whereClause = 'WHERE p.cabang_id = $1';
       queryParams = [adminCabang];
     }
-    // Jika super admin atau role analytics, bisa akses semua data
-    // (tambahkan role sesuai kebutuhan: 'super_admin', 'analytics', dll)
+    // Jika allowAllBranches=true atau super admin, bisa akses semua data
 
     const query = `
       SELECT 
@@ -888,12 +890,14 @@ export const getAllCabangForAnalytics = async (req, res) => {
     let query = "SELECT id, nama_cabang, is_active, created_at, updated_at FROM cabang";
     let queryParams = [];
 
-    // Jika bukan super admin, tetap filter berdasarkan cabang
-    if (userRole === 'employement' || userRole === 'admin_cabang') {
+    // TEMPORARY: Untuk analytics, berikan akses semua cabang
+    const allowAllBranches = req.query.all_branches === 'true';
+    
+    if (!allowAllBranches && (userRole === 'employement' || userRole === 'admin_cabang')) {
       query += " WHERE id = $1";
       queryParams = [adminCabang];
     }
-    // Jika super admin atau role analytics, bisa akses semua cabang
+    // Jika allowAllBranches=true atau super admin, bisa akses semua cabang
 
     query += " ORDER BY id ASC";
 
