@@ -13,7 +13,7 @@ import { useAuth } from "../context/AuthContext";
 interface User {
   id: number;
   username: string;
-  role: "admin_cabang" | "employement" | "super_admin";
+  role: "admin" | "employement" | "super";
   cabang_id: number;
   nama_cabang?: string;
 }
@@ -244,15 +244,15 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
                   <TableCell className="font-medium">{user.username}</TableCell>
                   <TableCell>
                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                      user.role === 'super_admin' 
+                      user.role === 'super' 
                         ? 'bg-red-100 text-red-700' 
-                        : user.role === 'admin_cabang'
+                        : user.role === 'admin'
                         ? 'bg-purple-100 text-purple-700' 
                         : 'bg-blue-100 text-blue-700'
                     }`}>
-                      {user.role === 'super_admin' 
+                      {user.role === 'super' 
                         ? 'Super Admin' 
-                        : user.role === 'admin_cabang' 
+                        : user.role === 'admin' 
                         ? 'Admin Cabang' 
                         : 'Staff Cabang'}
                     </span>
@@ -344,10 +344,10 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="employement">Staff Cabang</SelectItem>
-            <SelectItem value="admin_cabang">Admin Cabang</SelectItem>
+            <SelectItem value="admin">Admin Cabang</SelectItem>
             {/* Super Admin option only visible to super admin */}
-            {currentUser?.role === 'super_admin' && (
-              <SelectItem value="super_admin">Super Admin</SelectItem>
+            {currentUser?.role === 'super' && (
+              <SelectItem value="super">Super Admin</SelectItem>
             )}
           </SelectContent>
         </Select>
@@ -360,7 +360,7 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
           onValueChange={(val) =>
             setFormData({ ...formData, cabang_id: val })
           }
-          disabled={currentUser?.role !== "super_admin"}
+          disabled={currentUser?.role !== "super"}
         >
           <SelectTrigger>
             <SelectValue placeholder="Pilih Cabang" />
@@ -373,7 +373,7 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
             ))}
           </SelectContent>
         </Select>
-        {currentUser?.role !== "super_admin" && (
+        {currentUser?.role !== "super" && (
           <p className="text-xs text-slate-500">
             Hanya Super Admin yang dapat memilih cabang berbeda
           </p>

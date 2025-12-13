@@ -31,7 +31,7 @@ export const getUserLogs = async (req, res) => {
 
     let queryParams = [];
     
-    if (adminRole === "super_admin") {
+    if (adminRole === "super") {
       // Super admin can see all logs
       query += " ORDER BY ul.created_at DESC LIMIT $1 OFFSET $2";
       queryParams = [limit, offset];

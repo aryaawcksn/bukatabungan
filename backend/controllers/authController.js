@@ -169,7 +169,7 @@ export const register = async (req, res) => {
     const { username, password, role, cabang_id } = req.body;
 
     // Check if user has permission to create users
-    if (!["admin_cabang", "super_admin"].includes(req.user.role)) {
+    if (!["admin", "super"].includes(req.user.role)) {
       return res.status(403).json({
         success: false,
         message: "Anda tidak memiliki akses untuk menambahkan user"
@@ -184,9 +184,9 @@ export const register = async (req, res) => {
     }
 
     // Role validation based on current user's role
-    let allowedRoles = ["employement", "admin_cabang"];
-    if (req.user.role === "super_admin") {
-      allowedRoles.push("super_admin");
+    let allowedRoles = ["employement", "admin"];
+    if (req.user.role === "super") {
+      allowedRoles.push("super");
     }
 
     if (!allowedRoles.includes(role)) {
@@ -212,7 +212,7 @@ export const register = async (req, res) => {
 
     // Determine cabang_id based on user role and input
     let cabangIdFinal;
-    if (req.user.role === "super_admin" && cabang_id) {
+    if (req.user.role === "super" && cabang_id) {
       // Super admin can assign users to any branch
       cabangIdFinal = parseInt(cabang_id);
     } else {
@@ -273,7 +273,7 @@ export const getUsers = async (req, res) => {
 
     let queryParams = [];
     
-    if (role === "super_admin") {
+    if (role === "super") {
       // Super admin can see all users
       query += " ORDER BY u.id ASC";
     } else {
@@ -308,9 +308,9 @@ export const updateUser = async (req, res) => {
 
   try {
     // Role validation based on current user's role
-    let allowedRoles = ["employement", "admin_cabang"];
-    if (adminRole === "super_admin") {
-      allowedRoles.push("super_admin");
+    let allowedRoles = ["employement", "admin"];
+    if (adminRole === "super") {
+      allowedRoles.push("super");
     }
 
     if (!allowedRoles.includes(role)) {
@@ -322,7 +322,7 @@ export const updateUser = async (req, res) => {
 
     // Check user access based on admin role
     let userCheckQuery, userCheckParams;
-    if (adminRole === "super_admin") {
+    if (adminRole === "super") {
       // Super admin can update any user
       userCheckQuery = "SELECT * FROM users WHERE id = $1";
       userCheckParams = [id];
@@ -403,7 +403,7 @@ export const deleteUser = async (req, res) => {
 
     // Check user access based on admin role
     let userQuery, userParams, deleteQuery, deleteParams;
-    if (adminRole === "super_admin") {
+    if (adminRole === "super") {
       // Super admin can delete any user
       userQuery = "SELECT id, username FROM users WHERE id = $1";
       userParams = [id];

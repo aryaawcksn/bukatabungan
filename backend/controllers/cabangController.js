@@ -18,9 +18,9 @@ export const getAllCabang = async (req, res) => {
       whereClauses.push("is_active = true");
     }
 
-    // Only filter by cabang_id if user is not super_admin
+    // Only filter by cabang_id if user is not super admin
     const userRole = req.user?.role;
-    if (userCabangId && userRole !== 'super_admin') {
+    if (userCabangId && userRole !== 'super') {
       whereClauses.push(`id = $${values.length + 1}`);
       values.push(userCabangId);
     }

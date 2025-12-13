@@ -750,10 +750,10 @@ export const getAnalyticsData = async (req, res) => {
     let queryParams = [];
 
     // Role-based access control
-    if (userRole === 'super_admin') {
+    if (userRole === 'super') {
       // Super admin bisa lihat semua cabang
       console.log('📊 Super admin access - showing all branches');
-    } else if (userRole === 'employement' || userRole === 'admin_cabang') {
+    } else if (userRole === 'employement' || userRole === 'admin') {
       // Admin cabang hanya lihat cabangnya sendiri
       whereClause = 'WHERE p.cabang_id = $1';
       queryParams = [adminCabang];
@@ -904,10 +904,10 @@ export const getAllCabangForAnalytics = async (req, res) => {
     let queryParams = [];
 
     // Role-based access control
-    if (userRole === 'super_admin') {
+    if (userRole === 'super') {
       // Super admin bisa lihat semua cabang
       console.log('🏦 Super admin access - showing all branches');
-    } else if (userRole === 'employement' || userRole === 'admin_cabang') {
+    } else if (userRole === 'employement' || userRole === 'admin') {
       // Admin cabang hanya lihat cabangnya sendiri
       query += " WHERE id = $1";
       queryParams = [adminCabang];

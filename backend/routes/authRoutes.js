@@ -12,33 +12,33 @@ router.post("/login", loginLimiter, login);
 router.post("/logout", logout);
 router.get("/me", verifyToken, getMe);
 
-// ✅ ADMIN CABANG DAN SUPER ADMIN BOLEH REGISTER USER
+// ✅ ADMIN DAN SUPER ADMIN BOLEH REGISTER USER
 router.post(
   "/register",
   verifyToken,
-  authorizeRole("admin_cabang", "super_admin"),
+  authorizeRole("admin", "super"),
   register
 );
 
-// ✅ CRUD USERS (ADMIN CABANG DAN SUPER ADMIN)
+// ✅ CRUD USERS (ADMIN DAN SUPER ADMIN)
 router.get(
   "/users",
   verifyToken,
-  authorizeRole("admin_cabang", "super_admin"),
+  authorizeRole("admin", "super"),
   getUsers
 );
 
 router.put(
   "/users/:id",
   verifyToken,
-  authorizeRole("admin_cabang", "super_admin"),
+  authorizeRole("admin", "super"),
   updateUser
 );
 
 router.delete(
   "/users/:id",
   verifyToken,
-  authorizeRole("admin_cabang", "super_admin"),
+  authorizeRole("admin", "super"),
   deleteUser
 );
 
