@@ -341,6 +341,15 @@ export const updateUser = async (req, res) => {
       });
     }
 
+    // Role hierarchy protection: admin cabang cannot edit super admin
+    const targetUser = userCheck.rows[0];
+    if (adminRole === "admin" && targetUser.role === "super") {
+      return res.status(403).json({
+        success: false,
+        message: "Admin cabang tidak dapat mengedit Super Admin"
+      });
+    }
+
     let query = "UPDATE users SET username = $1, role = $2";
     let params = [username, role];
     let paramIndex = 3;
@@ -405,13 +414,13 @@ export const deleteUser = async (req, res) => {
     let userQuery, userParams, deleteQuery, deleteParams;
     if (adminRole === "super") {
       // Super admin can delete any user
-      userQuery = "SELECT id, username FROM users WHERE id = $1";
+      userQuery = "SELECT id, username, role FROM users WHERE id = $1";
       userParams = [id];
       deleteQuery = "DELETE FROM users WHERE id = $1";
       deleteParams = [id];
     } else {
       // Admin cabang can only delete users from their branch
-      userQuery = "SELECT id, username FROM users WHERE id = $1 AND cabang_id = $2";
+      userQuery = "SELECT id, username, role FROM users WHERE id = $1 AND cabang_id = $2";
       userParams = [id, adminCabangId];
       deleteQuery = "DELETE FROM users WHERE id = $1 AND cabang_id = $2";
       deleteParams = [id, adminCabangId];
@@ -424,6 +433,15 @@ export const deleteUser = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: "User tidak ditemukan atau Anda tidak memiliki akses"
+      });
+    }
+
+    // Role hierarchy protection: admin cabang cannot delete super admin
+    const targetUser = userData.rows[0];
+    if (adminRole === "admin" && targetUser.role === "super") {
+      return res.status(403).json({
+        success: false,
+        message: "Admin cabang tidak dapat menghapus Super Admin"
       });
     }
 

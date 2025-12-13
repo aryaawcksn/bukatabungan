@@ -480,7 +480,7 @@ export const createPengajuan = async (req, res) => {
 export const getPengajuanById = async (req, res) => {
   try {
     const { id } = req.params;
-    const adminCabang = req.user.cabang_id; // cabang dari token login (jika admin)
+    const { cabang_id: adminCabang, role: userRole } = req.user;
 
     // Note: Kita gunakan LEFT JOIN agar jika component data hilang, data utama tetap muncul
     // Alias disesuaikan agar frontend tidak perlu banyak perubahan
@@ -594,10 +594,11 @@ export const getPengajuanById = async (req, res) => {
     LEFT JOIN cabang c ON p.cabang_id = c.id
     LEFT JOIN users ua ON p.approved_by = ua.id
     LEFT JOIN users ur ON p.rejected_by = ur.id
-      WHERE p.id = $1 AND p.cabang_id = $2
+      WHERE p.id = $1${userRole === 'super' ? '' : ' AND p.cabang_id = $2'}
       `;
 
-    const result = await pool.query(query, [id, adminCabang]);
+    const queryParams = userRole === 'super' ? [id] : [id, adminCabang];
+    const result = await pool.query(query, queryParams);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ success: false, message: "Pengajuan tidak ditemukan" });
