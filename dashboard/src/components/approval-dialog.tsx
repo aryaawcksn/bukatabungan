@@ -58,7 +58,7 @@ export function ApprovalDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => !loading && onClose()}>
+    <Dialog open={open} onOpenChange={() => !loading && onClose()}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <div className="flex items-center gap-3">
