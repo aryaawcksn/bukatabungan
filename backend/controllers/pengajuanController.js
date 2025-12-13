@@ -897,7 +897,7 @@ export const getAllCabangForAnalytics = async (req, res) => {
     const userRole = req.user.role;
     const adminCabang = req.user.cabang_id;
 
-    let query = "SELECT id, nama_cabang, is_active, created_at, updated_at FROM cabang";
+    let query = "SELECT id, nama_cabang, is_active, created_at FROM cabang";
     let queryParams = [];
 
     // TEMPORARY: Untuk analytics, berikan akses semua cabang
