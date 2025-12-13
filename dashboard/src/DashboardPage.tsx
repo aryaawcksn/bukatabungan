@@ -561,13 +561,26 @@ export default function DashboardPage() {
         setIsRefreshing(true);
       }
 
-      const response = await fetch(`${API_BASE_URL}/api/pengajuan/analytics/data?all_branches=true`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include'
-      });
+      // Try analytics endpoint first, fallback to regular endpoint
+      let response;
+      try {
+        response = await fetch(`${API_BASE_URL}/api/pengajuan/analytics/data?all_branches=true`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include'
+        });
+      } catch (analyticsError) {
+        console.log("📊 Analytics endpoint not available, using regular endpoint");
+        response = await fetch(`${API_BASE_URL}/api/pengajuan`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include'
+        });
+      }
 
       if (!response.ok) {
         let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
@@ -614,6 +627,7 @@ export default function DashboardPage() {
       // Fallback ke data regular jika analytics gagal
       if (showLoading) {
         console.log("📊 Analytics failed, falling back to regular data");
+        toast.info("Analytics endpoint tidak tersedia, menggunakan data regular");
         await fetchSubmissions(showLoading);
       }
     } finally {
@@ -629,12 +643,24 @@ export default function DashboardPage() {
   const fetchCabangForAnalytics = async () => {
     setIsCabangLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/pengajuan/analytics/cabang?all_branches=true`, {
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include'
-      });
+      // Try analytics cabang endpoint first, fallback to regular cabang endpoint
+      let res;
+      try {
+        res = await fetch(`${API_BASE_URL}/api/pengajuan/analytics/cabang?all_branches=true`, {
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include'
+        });
+      } catch (analyticsError) {
+        console.log("🏦 Analytics cabang endpoint not available, using regular cabang endpoint");
+        res = await fetch(`${API_BASE_URL}/api/cabang`, {
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include'
+        });
+      }
       
       if (!res.ok) {
         // Fallback ke endpoint cabang regular

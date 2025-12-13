@@ -36,5 +36,14 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'lucide-react', 'react-router-dom']
+  },
+  server: {
+    fs: {
+      strict: false
+    }
+  },
+  preview: {
+    port: 4173,
+    strictPort: true
   }
 })

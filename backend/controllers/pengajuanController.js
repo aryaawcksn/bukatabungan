@@ -739,6 +739,10 @@ export const updatePengajuanStatus = async (req, res) => {
  */
 export const getAnalyticsData = async (req, res) => {
   try {
+    console.log('📊 Analytics data request received');
+    console.log('📊 User:', req.user?.username, 'Role:', req.user?.role, 'Cabang:', req.user?.cabang_id);
+    console.log('📊 Query params:', req.query);
+
     const userRole = req.user.role;
     const adminCabang = req.user.cabang_id;
 
@@ -749,6 +753,8 @@ export const getAnalyticsData = async (req, res) => {
     // TEMPORARY: Untuk analytics, berikan akses semua cabang
     // Nanti bisa dikontrol dengan role atau feature flag
     const allowAllBranches = req.query.all_branches === 'true';
+    
+    console.log('📊 Allow all branches:', allowAllBranches);
     
     if (!allowAllBranches && (userRole === 'employement' || userRole === 'admin_cabang')) {
       whereClause = 'WHERE p.cabang_id = $1';
@@ -884,6 +890,10 @@ export const getAnalyticsData = async (req, res) => {
  */
 export const getAllCabangForAnalytics = async (req, res) => {
   try {
+    console.log('🏦 Analytics cabang request received');
+    console.log('🏦 User:', req.user?.username, 'Role:', req.user?.role, 'Cabang:', req.user?.cabang_id);
+    console.log('🏦 Query params:', req.query);
+
     const userRole = req.user.role;
     const adminCabang = req.user.cabang_id;
 

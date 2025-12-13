@@ -20,6 +20,11 @@ self.addEventListener('fetch', (event) => {
   // Skip API calls for fresh data
   if (event.request.url.includes('/api/')) return;
   
+  // Skip JavaScript modules and assets to prevent MIME type issues
+  if (event.request.url.includes('.js') || 
+      event.request.url.includes('.css') ||
+      event.request.url.includes('assets/')) return;
+  
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
