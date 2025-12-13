@@ -584,7 +584,7 @@ export default function DashboardPage() {
           credentials: 'include'
         });
       } catch (analyticsError) {
-        console.log("📊 Analytics endpoint not available, using regular endpoint");
+        // Analytics endpoint not available, using regular endpoint
         response = await fetch(`${API_BASE_URL}/api/pengajuan`, {
           method: 'GET',
           headers: {
@@ -626,7 +626,7 @@ export default function DashboardPage() {
         setLastFetchTime(new Date());
 
         if (showLoading) {
-          console.log(`📊 Analytics data loaded: ${mappedData.length} records (Access: ${result.meta?.accessLevel})`);
+          // Analytics data loaded successfully
         }
       } else {
         if (showLoading) {
@@ -638,7 +638,7 @@ export default function DashboardPage() {
       console.error("Error fetching analytics data:", error);
       // Fallback ke data regular jika analytics gagal
       if (showLoading) {
-        console.log("📊 Analytics failed, falling back to regular data");
+        // Analytics failed, falling back to regular data
         toast.info("Analytics endpoint tidak tersedia, menggunakan data regular");
         await fetchSubmissions(showLoading);
       }
@@ -665,7 +665,7 @@ export default function DashboardPage() {
           credentials: 'include'
         });
       } catch (analyticsError) {
-        console.log("🏦 Analytics cabang endpoint not available, using regular cabang endpoint");
+        // Analytics cabang endpoint not available, using regular cabang endpoint
         res = await fetch(`${API_BASE_URL}/api/cabang`, {
           headers: {
             'Content-Type': 'application/json'
@@ -676,7 +676,7 @@ export default function DashboardPage() {
       
       if (!res.ok) {
         // Fallback ke endpoint cabang regular
-        console.log("🏦 Analytics cabang failed, falling back to regular cabang endpoint");
+        // Analytics cabang failed, falling back to regular cabang endpoint
         await fetchCabang();
         return;
       }
@@ -684,7 +684,7 @@ export default function DashboardPage() {
       const data = await res.json();
       if (data.success) {
         setCabangList(data.data);
-        console.log(`🏦 Analytics cabang loaded: ${data.data.length} branches (Access: ${data.meta?.accessLevel})`);
+        // Analytics cabang loaded successfully
       }
     } catch (error) {
       console.error("Error fetching analytics cabang:", error);

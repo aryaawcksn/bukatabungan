@@ -124,9 +124,9 @@ const AnalyticsDashboard = memo(({ submissions, cabangList = [] }: AnalyticsDash
       .slice(0, 6); // Top 6
   }, [submissions]);
 
-  // 4. Branch Distribution - Menampilkan SEMUA cabang
+  // 4. Branch Distribution - Role-based access
   const branchData = useMemo(() => {
-    // Jika cabangList tersedia, gunakan semua cabang
+    // Jika cabangList tersedia, gunakan data cabang yang sesuai role
     if (cabangList && cabangList.length > 0) {
       return cabangList.map(cabang => {
         // Hitung permohonan untuk cabang ini
@@ -140,7 +140,7 @@ const AnalyticsDashboard = memo(({ submissions, cabangList = [] }: AnalyticsDash
           value: count,
           isActive: cabang.is_active
         };
-      }).sort((a, b) => b.value - a.value); // Sort by count, tapi tetap tampilkan semua
+      }).sort((a, b) => b.value - a.value);
     }
     
     // Fallback ke logic lama jika cabangList tidak tersedia
@@ -413,8 +413,8 @@ const AnalyticsDashboard = memo(({ submissions, cabangList = [] }: AnalyticsDash
               <MapPin className="w-5 h-5 text-cyan-600" />
             </div>
             <div>
-              <h3 className="font-semibold text-slate-900">Semua Cabang</h3>
-              <p className="text-sm text-slate-500">Permohonan per cabang (semua cabang)</p>
+              <h3 className="font-semibold text-slate-900">Distribusi Cabang</h3>
+              <p className="text-sm text-slate-500">Permohonan per cabang</p>
             </div>
           </div>
           

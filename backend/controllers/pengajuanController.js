@@ -733,15 +733,14 @@ export const updatePengajuanStatus = async (req, res) => {
 };
 
 /**
- * Mengambil data analytics untuk semua cabang
- * Khusus untuk dashboard analytics - menampilkan data semua cabang
- * Dengan kontrol akses berdasarkan role
+ * Mengambil data analytics berdasarkan role
+ * - Super admin: bisa lihat semua cabang
+ * - Admin cabang: hanya lihat cabangnya sendiri
  */
 export const getAnalyticsData = async (req, res) => {
   try {
     console.log('📊 Analytics data request received');
     console.log('📊 User:', req.user?.username, 'Role:', req.user?.role, 'Cabang:', req.user?.cabang_id);
-    console.log('📊 Query params:', req.query);
 
     const userRole = req.user.role;
     const adminCabang = req.user.cabang_id;
@@ -750,17 +749,21 @@ export const getAnalyticsData = async (req, res) => {
     let whereClause = '';
     let queryParams = [];
 
-    // TEMPORARY: Untuk analytics, berikan akses semua cabang
-    // Nanti bisa dikontrol dengan role atau feature flag
-    const allowAllBranches = req.query.all_branches === 'true';
-
-    console.log('📊 Allow all branches:', allowAllBranches);
-
-    if (!allowAllBranches && (userRole === 'employement' || userRole === 'admin_cabang')) {
+    // Role-based access control
+    if (userRole === 'super_admin') {
+      // Super admin bisa lihat semua cabang
+      console.log('📊 Super admin access - showing all branches');
+    } else if (userRole === 'employement' || userRole === 'admin_cabang') {
+      // Admin cabang hanya lihat cabangnya sendiri
       whereClause = 'WHERE p.cabang_id = $1';
       queryParams = [adminCabang];
+      console.log('📊 Branch admin access - filtering by cabang:', adminCabang);
+    } else {
+      // Role tidak dikenal, default ke cabang sendiri
+      whereClause = 'WHERE p.cabang_id = $1';
+      queryParams = [adminCabang];
+      console.log('📊 Unknown role, defaulting to branch filter:', adminCabang);
     }
-    // Jika allowAllBranches=true atau super admin, bisa akses semua data
 
     const query = `
       SELECT 
@@ -885,14 +888,14 @@ export const getAnalyticsData = async (req, res) => {
 };
 
 /**
- * Mengambil semua cabang untuk analytics
- * Menampilkan semua cabang tanpa filter untuk keperluan analytics
+ * Mengambil cabang untuk analytics berdasarkan role
+ * - Super admin: semua cabang
+ * - Admin cabang: hanya cabangnya sendiri
  */
 export const getAllCabangForAnalytics = async (req, res) => {
   try {
     console.log('🏦 Analytics cabang request received');
     console.log('🏦 User:', req.user?.username, 'Role:', req.user?.role, 'Cabang:', req.user?.cabang_id);
-    console.log('🏦 Query params:', req.query);
 
     const userRole = req.user.role;
     const adminCabang = req.user.cabang_id;
@@ -900,14 +903,21 @@ export const getAllCabangForAnalytics = async (req, res) => {
     let query = "SELECT id, nama_cabang, is_active, created_at FROM cabang";
     let queryParams = [];
 
-    // TEMPORARY: Untuk analytics, berikan akses semua cabang
-    const allowAllBranches = req.query.all_branches === 'true';
-
-    if (!allowAllBranches && (userRole === 'employement' || userRole === 'admin_cabang')) {
+    // Role-based access control
+    if (userRole === 'super_admin') {
+      // Super admin bisa lihat semua cabang
+      console.log('🏦 Super admin access - showing all branches');
+    } else if (userRole === 'employement' || userRole === 'admin_cabang') {
+      // Admin cabang hanya lihat cabangnya sendiri
       query += " WHERE id = $1";
       queryParams = [adminCabang];
+      console.log('🏦 Branch admin access - filtering by cabang:', adminCabang);
+    } else {
+      // Role tidak dikenal, default ke cabang sendiri
+      query += " WHERE id = $1";
+      queryParams = [adminCabang];
+      console.log('🏦 Unknown role, defaulting to branch filter:', adminCabang);
     }
-    // Jika allowAllBranches=true atau super admin, bisa akses semua cabang
 
     query += " ORDER BY id ASC";
 

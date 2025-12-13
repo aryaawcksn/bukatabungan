@@ -1,15 +1,15 @@
 import pool from "../config/db.js";
 
-// ✅ Ambil log berdasarkan cabang admin
+// ✅ Ambil log berdasarkan role - super admin lihat semua, admin cabang lihat cabangnya
 export const getUserLogs = async (req, res) => {
   try {
-    const adminCabangId = req.user.cabang_id;
+    const { cabang_id: adminCabangId, role: adminRole } = req.user;
 
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
 
-    const result = await pool.query(`
+    let query = `
       SELECT 
         ul.id,
         ul.action,
@@ -27,11 +27,21 @@ export const getUserLogs = async (req, res) => {
       LEFT JOIN users u ON ul.user_id = u.id
       LEFT JOIN users a ON ul.performed_by = a.id
       LEFT JOIN cabang c ON ul.cabang_id = c.id
+    `;
 
-      WHERE ul.cabang_id = $1
-      ORDER BY ul.created_at DESC
-      LIMIT $2 OFFSET $3
-    `, [adminCabangId, limit, offset]);
+    let queryParams = [];
+    
+    if (adminRole === "super_admin") {
+      // Super admin can see all logs
+      query += " ORDER BY ul.created_at DESC LIMIT $1 OFFSET $2";
+      queryParams = [limit, offset];
+    } else {
+      // Admin cabang can only see logs from their branch
+      query += " WHERE ul.cabang_id = $1 ORDER BY ul.created_at DESC LIMIT $2 OFFSET $3";
+      queryParams = [adminCabangId, limit, offset];
+    }
+
+    const result = await pool.query(query, queryParams);
 
     res.json({
       success: true,

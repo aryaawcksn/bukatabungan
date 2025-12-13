@@ -8,11 +8,12 @@ import { Trash2, Edit, Plus, UserCog, ScrollText } from "lucide-react";
 import { toast } from "sonner";
 import type { Cabang } from "./CabangSetting";
 import { API_BASE_URL } from "../config/api";
+import { useAuth } from "../context/AuthContext";
 
 interface User {
   id: number;
   username: string;
-  role: "admin" | "employement";
+  role: "admin_cabang" | "employement" | "super_admin";
   cabang_id: number;
   nama_cabang?: string;
 }
@@ -22,6 +23,7 @@ interface AccountSettingProps {
 }
 
 export default function AccountSetting({ cabangList }: AccountSettingProps) {
+  const { user: currentUser } = useAuth(); // Get current logged in user
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -105,7 +107,7 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
       setFormData({
         username: "",
         password: "",
-        role: "employement",
+        role: "employement" as const,
         cabang_id: adminCabangId || "",
       });
     }
@@ -242,11 +244,17 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
                   <TableCell className="font-medium">{user.username}</TableCell>
                   <TableCell>
                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                      user.role === 'admin' 
+                      user.role === 'super_admin' 
+                        ? 'bg-red-100 text-red-700' 
+                        : user.role === 'admin_cabang'
                         ? 'bg-purple-100 text-purple-700' 
                         : 'bg-blue-100 text-blue-700'
                     }`}>
-                      {user.role === 'admin' ? 'Administrator' : 'Staff Cabang'}
+                      {user.role === 'super_admin' 
+                        ? 'Super Admin' 
+                        : user.role === 'admin_cabang' 
+                        ? 'Admin Cabang' 
+                        : 'Staff Cabang'}
                     </span>
                   </TableCell>
                   <TableCell>{user.nama_cabang || "-"}</TableCell>
@@ -336,7 +344,11 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="employement">Staff Cabang</SelectItem>
-            <SelectItem value="admin">Administrator</SelectItem>
+            <SelectItem value="admin_cabang">Admin Cabang</SelectItem>
+            {/* Super Admin option only visible to super admin */}
+            {currentUser?.role === 'super_admin' && (
+              <SelectItem value="super_admin">Super Admin</SelectItem>
+            )}
           </SelectContent>
         </Select>
       </div>
@@ -348,7 +360,7 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
           onValueChange={(val) =>
             setFormData({ ...formData, cabang_id: val })
           }
-          disabled={!!localStorage.getItem("admin_cabang_id")}
+          disabled={currentUser?.role !== "super_admin"}
         >
           <SelectTrigger>
             <SelectValue placeholder="Pilih Cabang" />
@@ -361,6 +373,11 @@ export default function AccountSetting({ cabangList }: AccountSettingProps) {
             ))}
           </SelectContent>
         </Select>
+        {currentUser?.role !== "super_admin" && (
+          <p className="text-xs text-slate-500">
+            Hanya Super Admin yang dapat memilih cabang berbeda
+          </p>
+        )}
       </div>
     </div>
 

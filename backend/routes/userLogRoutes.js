@@ -5,11 +5,11 @@ import { authorizeRole } from "../middleware/role.js";
 
 const router = express.Router();
 
-// ✅ HANYA ADMIN BISA MELIHAT LOG CABANGNYA SENDIRI
+// ✅ ADMIN CABANG DAN SUPER ADMIN BISA MELIHAT LOG
 router.get(
   "/user-logs",
   verifyToken,
-  authorizeRole("admin"),
+  authorizeRole("admin_cabang", "super_admin"),
   getUserLogs
 );
 

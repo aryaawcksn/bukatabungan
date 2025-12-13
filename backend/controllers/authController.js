@@ -166,9 +166,10 @@ export const getMe = async (req, res) => {
 ========================= */
 export const register = async (req, res) => {
   try {
-    const { username, password, role } = req.body;
+    const { username, password, role, cabang_id } = req.body;
 
-    if (req.user.role !== "admin") {
+    // Check if user has permission to create users
+    if (!["admin_cabang", "super_admin"].includes(req.user.role)) {
       return res.status(403).json({
         success: false,
         message: "Anda tidak memiliki akses untuk menambahkan user"
@@ -182,10 +183,16 @@ export const register = async (req, res) => {
       });
     }
 
-    if (!["admin", "employement"].includes(role)) {
+    // Role validation based on current user's role
+    let allowedRoles = ["employement", "admin_cabang"];
+    if (req.user.role === "super_admin") {
+      allowedRoles.push("super_admin");
+    }
+
+    if (!allowedRoles.includes(role)) {
       return res.status(400).json({
         success: false,
-        message: "Role tidak valid"
+        message: "Role tidak valid atau Anda tidak memiliki izin untuk role tersebut"
       });
     }
 
@@ -203,8 +210,15 @@ export const register = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // ✅ FIX: cabang pasti ikut admin yang membuat
-    const cabangIdFinal = req.user.cabang_id;
+    // Determine cabang_id based on user role and input
+    let cabangIdFinal;
+    if (req.user.role === "super_admin" && cabang_id) {
+      // Super admin can assign users to any branch
+      cabangIdFinal = parseInt(cabang_id);
+    } else {
+      // Admin cabang can only create users for their own branch
+      cabangIdFinal = req.user.cabang_id;
+    }
 
     const result = await pool.query(`
       INSERT INTO users (username, password, role, cabang_id)
@@ -244,7 +258,7 @@ export const register = async (req, res) => {
 ========================= */
 export const getUsers = async (req, res) => {
   try {
-    const { cabang_id } = req.user;
+    const { cabang_id, role } = req.user;
 
     let query = `
       SELECT 
@@ -255,11 +269,20 @@ export const getUsers = async (req, res) => {
         c.nama_cabang
       FROM users u
       LEFT JOIN cabang c ON u.cabang_id = c.id
-      WHERE u.cabang_id = $1
-      ORDER BY u.id ASC
     `;
 
-    const result = await pool.query(query, [cabang_id]);
+    let queryParams = [];
+    
+    if (role === "super_admin") {
+      // Super admin can see all users
+      query += " ORDER BY u.id ASC";
+    } else {
+      // Admin cabang can only see users from their branch
+      query += " WHERE u.cabang_id = $1 ORDER BY u.id ASC";
+      queryParams = [cabang_id];
+    }
+
+    const result = await pool.query(query, queryParams);
 
     res.json({
       success: true,
@@ -281,13 +304,35 @@ export const getUsers = async (req, res) => {
 export const updateUser = async (req, res) => {
   const { id } = req.params;
   const { username, password, role } = req.body;
-  const adminCabangId = req.user.cabang_id;
+  const { cabang_id: adminCabangId, role: adminRole } = req.user;
 
   try {
-    const userCheck = await pool.query(
-      "SELECT * FROM users WHERE id = $1 AND cabang_id = $2",
-      [id, adminCabangId]
-    );
+    // Role validation based on current user's role
+    let allowedRoles = ["employement", "admin_cabang"];
+    if (adminRole === "super_admin") {
+      allowedRoles.push("super_admin");
+    }
+
+    if (!allowedRoles.includes(role)) {
+      return res.status(400).json({
+        success: false,
+        message: "Role tidak valid atau Anda tidak memiliki izin untuk role tersebut"
+      });
+    }
+
+    // Check user access based on admin role
+    let userCheckQuery, userCheckParams;
+    if (adminRole === "super_admin") {
+      // Super admin can update any user
+      userCheckQuery = "SELECT * FROM users WHERE id = $1";
+      userCheckParams = [id];
+    } else {
+      // Admin cabang can only update users from their branch
+      userCheckQuery = "SELECT * FROM users WHERE id = $1 AND cabang_id = $2";
+      userCheckParams = [id, adminCabangId];
+    }
+
+    const userCheck = await pool.query(userCheckQuery, userCheckParams);
 
     if (userCheck.rows.length === 0) {
       return res.status(404).json({
@@ -346,7 +391,7 @@ export const updateUser = async (req, res) => {
 ========================= */
 export const deleteUser = async (req, res) => {
   const { id } = req.params;
-  const adminCabangId = req.user.cabang_id;
+  const { cabang_id: adminCabangId, role: adminRole } = req.user;
 
   try {
     if (req.user.id === parseInt(id)) {
@@ -356,11 +401,24 @@ export const deleteUser = async (req, res) => {
       });
     }
 
+    // Check user access based on admin role
+    let userQuery, userParams, deleteQuery, deleteParams;
+    if (adminRole === "super_admin") {
+      // Super admin can delete any user
+      userQuery = "SELECT id, username FROM users WHERE id = $1";
+      userParams = [id];
+      deleteQuery = "DELETE FROM users WHERE id = $1";
+      deleteParams = [id];
+    } else {
+      // Admin cabang can only delete users from their branch
+      userQuery = "SELECT id, username FROM users WHERE id = $1 AND cabang_id = $2";
+      userParams = [id, adminCabangId];
+      deleteQuery = "DELETE FROM users WHERE id = $1 AND cabang_id = $2";
+      deleteParams = [id, adminCabangId];
+    }
+
     // ✅ 1. AMBIL DATA USER DULU (SEBELUM DIHAPUS)
-    const userData = await pool.query(
-      "SELECT id, username FROM users WHERE id = $1 AND cabang_id = $2",
-      [id, adminCabangId]
-    );
+    const userData = await pool.query(userQuery, userParams);
 
     if (userData.rows.length === 0) {
       return res.status(404).json({
@@ -370,10 +428,7 @@ export const deleteUser = async (req, res) => {
     }
 
     // ✅ 2. HAPUS USER
-    await pool.query(
-      "DELETE FROM users WHERE id = $1 AND cabang_id = $2",
-      [id, adminCabangId]
-    );
+    await pool.query(deleteQuery, deleteParams);
 
     // ✅ 3. LOG SETELAH DELETE (userId = null BIAR AMAN FK)
     await logUserActivity({
