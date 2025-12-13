@@ -753,9 +753,9 @@ export const getAnalyticsData = async (req, res) => {
     // TEMPORARY: Untuk analytics, berikan akses semua cabang
     // Nanti bisa dikontrol dengan role atau feature flag
     const allowAllBranches = req.query.all_branches === 'true';
-    
+
     console.log('📊 Allow all branches:', allowAllBranches);
-    
+
     if (!allowAllBranches && (userRole === 'employement' || userRole === 'admin_cabang')) {
       whereClause = 'WHERE p.cabang_id = $1';
       queryParams = [adminCabang];
@@ -781,7 +781,7 @@ export const getAnalyticsData = async (req, res) => {
         cs.tempat_lahir,
         cs.tanggal_lahir,
         cs.jenis_kelamin,
-        cs.status_pernikahan,
+        cs.status_kawin AS status_pernikahan,
         cs.agama,
         cs.pendidikan,
         cs.kewarganegaraan,
@@ -790,30 +790,30 @@ export const getAnalyticsData = async (req, res) => {
         cs.status_rumah,
         cs.tipe_nasabah,
         cs.nomor_rekening_lama,
-        cs.alamat,
-        cs.alamat_domisili,
-        cs.kode_pos,
+        cs.alamat_id AS alamat,
+        cs.alamat_now AS alamat_domisili,
+        cs.kode_pos_id AS kode_pos,
         cs.rekening_untuk_sendiri,
         
         -- Job Info
         job.pekerjaan,
-        job.penghasilan,
-        job.tempat_bekerja,
+        job.gaji_per_bulan AS penghasilan,
+        job.nama_perusahaan AS tempat_bekerja,
         job.nama_perusahaan,
-        job.alamat_kantor,
+        job.alamat_perusahaan AS alamat_kantor,
         job.alamat_perusahaan,
-        job.telepon_perusahaan,
+        job.no_telepon AS telepon_perusahaan,
         job.no_telepon,
         job.jabatan,
         job.bidang_usaha,
         job.sumber_dana,
-        job.rata_rata_transaksi,
+        job.rata_transaksi_per_bulan AS rata_rata_transaksi,
         job.rata_transaksi_per_bulan,
-        job.tujuan_rekening,
+        acc.tujuan_pembukaan AS tujuan_rekening,
         
         -- Account Info
         acc.tabungan_tipe AS jenis_rekening,
-        acc.jenis_kartu,
+        acc.atm_tipe AS jenis_kartu,
         acc.nominal_setoran,
         
         -- Emergency Contact
@@ -836,7 +836,7 @@ export const getAnalyticsData = async (req, res) => {
         bo.hubungan AS bo_hubungan,
         bo.nomor_hp AS bo_nomor_hp,
         bo.pekerjaan AS bo_pekerjaan,
-        bo.pendapatan_tahun AS bo_pendapatan_tahun,
+        bo.pendapatan_tahunan AS bo_pendapatan_tahun,
         bo.persetujuan AS bo_persetujuan,
         
         -- Branch Info
@@ -848,10 +848,10 @@ export const getAnalyticsData = async (req, res) => {
         
       FROM pengajuan_tabungan p
       LEFT JOIN cdd_self cs ON p.id = cs.pengajuan_id
-      LEFT JOIN job_info job ON p.id = job.pengajuan_id
+      LEFT JOIN cdd_job job ON p.id = job.pengajuan_id
       LEFT JOIN account acc ON p.id = acc.pengajuan_id
-      LEFT JOIN emergency_contact ec ON p.id = ec.pengajuan_id
-      LEFT JOIN beneficial_owner bo ON p.id = bo.pengajuan_id
+      LEFT JOIN cdd_reference ec ON p.id = ec.pengajuan_id
+      LEFT JOIN bo bo ON p.id = bo.pengajuan_id
       LEFT JOIN cabang c ON p.cabang_id = c.id
       LEFT JOIN users ua ON p.approved_by = ua.id
       LEFT JOIN users ur ON p.rejected_by = ur.id
@@ -876,10 +876,10 @@ export const getAnalyticsData = async (req, res) => {
     });
   } catch (err) {
     console.error('❌ Analytics query error:', err);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Gagal mengambil data analytics',
-      error: err.message 
+      error: err.message
     });
   }
 };
@@ -902,7 +902,7 @@ export const getAllCabangForAnalytics = async (req, res) => {
 
     // TEMPORARY: Untuk analytics, berikan akses semua cabang
     const allowAllBranches = req.query.all_branches === 'true';
-    
+
     if (!allowAllBranches && (userRole === 'employement' || userRole === 'admin_cabang')) {
       query += " WHERE id = $1";
       queryParams = [adminCabang];
@@ -926,10 +926,10 @@ export const getAllCabangForAnalytics = async (req, res) => {
     });
   } catch (err) {
     console.error('❌ Cabang analytics query error:', err);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Gagal mengambil data cabang untuk analytics',
-      error: err.message 
+      error: err.message
     });
   }
 };
