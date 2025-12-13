@@ -614,11 +614,27 @@ export const getPengajuanById = async (req, res) => {
 };
 
 /**
- * Mengambil semua pengajuan berdasarkan cabang admin
+ * Mengambil semua pengajuan berdasarkan role
+ * - Super admin: semua cabang
+ * - Admin cabang: hanya cabangnya
  */
 export const getAllPengajuan = async (req, res) => {
   try {
-    const adminCabang = req.user.cabang_id;
+    const { cabang_id: adminCabang, role: userRole } = req.user;
+
+    // Role-based access control
+    let whereClause = '';
+    let queryParams = [];
+
+    if (userRole === 'super') {
+      // Super admin can see all pengajuan
+      console.log('📋 Super admin access - showing all pengajuan');
+    } else {
+      // Admin cabang can only see pengajuan from their branch
+      whereClause = 'WHERE p.cabang_id = $1';
+      queryParams = [adminCabang];
+      console.log('📋 Branch admin access - filtering by cabang:', adminCabang);
+    }
 
     // Query list usually needs fewer fields
     const query = `
@@ -650,11 +666,11 @@ export const getAllPengajuan = async (req, res) => {
       LEFT JOIN cabang c ON p.cabang_id = c.id
       LEFT JOIN users ua ON p.approved_by = ua.id
       LEFT JOIN users ur ON p.rejected_by = ur.id
-      WHERE p.cabang_id = $1
+      ${whereClause}
       ORDER BY p.created_at DESC
     `;
 
-    const result = await pool.query(query, [adminCabang]);
+    const result = await pool.query(query, queryParams);
 
     res.json({
       success: true,
