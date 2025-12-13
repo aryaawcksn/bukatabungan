@@ -18,6 +18,11 @@ const AccountSetting = lazy(() => import('./components/AccountSetting'));
 const FormDetailDialog = lazy(() => import('./components/form-detail-dialog').then(module => ({ default: module.FormDetailDialog })));
 const ApprovalDialog = lazy(() => import('./components/approval-dialog').then(module => ({ default: module.ApprovalDialog })));
 
+// Lazy load analytics components
+const AnalyticsDashboard = lazy(() => import('./components/AnalyticsDashboard'));
+const InsightCards = lazy(() => import('./components/InsightCards'));
+const QuickStats = lazy(() => import('./components/QuickStats'));
+
 // Loading component
 const LoadingSpinner = memo(() => (
   <div className="flex items-center justify-center py-8">
@@ -362,14 +367,33 @@ export default function DashboardPage() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
+  // Refresh data ketika tab berubah
+  useEffect(() => {
+    if (activeTab === 'analytics') {
+      // Gunakan analytics data untuk tab analytics
+      fetchAnalyticsData(false);
+      fetchCabangForAnalytics();
+    } else if (activeTab === 'submissions' || activeTab === 'dashboard') {
+      // Gunakan data regular untuk tab lain
+      fetchSubmissions(false);
+      fetchCabang();
+    }
+  }, [activeTab]);
+
   // Fetch data dari backend dengan auto-refresh
   useEffect(() => {
   let isMounted = true;
 
   checkBackendConnection().then(() => {
     if (isMounted) {
-      fetchSubmissions();
-      fetchCabang(); // ✅ TAMBAHKAN INI
+      // Jika di tab analytics, gunakan analytics data
+      if (activeTab === 'analytics') {
+        fetchAnalyticsData();
+        fetchCabangForAnalytics();
+      } else {
+        fetchSubmissions();
+        fetchCabang();
+      }
     }
   });
 
@@ -523,6 +547,111 @@ export default function DashboardPage() {
     } catch (error) {
       toast.error('Gagal memuat daftar cabang');
       console.error(error);
+    } finally {
+      setIsCabangLoading(false);
+    }
+  };
+
+  // Fetch analytics data (untuk semua cabang jika memungkinkan)
+  const fetchAnalyticsData = async (showLoading: boolean = true) => {
+    try {
+      if (showLoading) {
+        setLoading(true);
+      } else {
+        setIsRefreshing(true);
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/pengajuan/analytics/data`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (e) {}
+        throw new Error(errorMessage);
+      }
+
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        const mappedData = result.data.map(mapBackendDataToFormSubmission);
+        
+        // Update submissions dengan data analytics
+        setSubmissions(prev => {
+          // Quick length check first
+          if (prev.length !== mappedData.length) {
+            return mappedData;
+          }
+          // Deep comparison only if lengths match
+          const hasChanged = prev.some((item, index) => 
+            item.id !== mappedData[index]?.id || 
+            item.status !== mappedData[index]?.status ||
+            item.submittedAt !== mappedData[index]?.submittedAt
+          );
+          return hasChanged ? mappedData : prev;
+        });
+        
+        setLastFetchTime(new Date());
+
+        if (showLoading) {
+          console.log(`📊 Analytics data loaded: ${mappedData.length} records (Access: ${result.meta?.accessLevel})`);
+        }
+      } else {
+        if (showLoading) {
+          toast.error(result.message || "Gagal mengambil data analytics");
+        }
+        setSubmissions([]);
+      }
+    } catch (error: any) {
+      console.error("Error fetching analytics data:", error);
+      // Fallback ke data regular jika analytics gagal
+      if (showLoading) {
+        console.log("📊 Analytics failed, falling back to regular data");
+        await fetchSubmissions(showLoading);
+      }
+    } finally {
+      if (showLoading) {
+        setLoading(false);
+      } else {
+        setIsRefreshing(false);
+      }
+    }
+  };
+
+  // Fetch cabang untuk analytics (semua cabang jika memungkinkan)
+  const fetchCabangForAnalytics = async () => {
+    setIsCabangLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/pengajuan/analytics/cabang`, {
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+      });
+      
+      if (!res.ok) {
+        // Fallback ke endpoint cabang regular
+        console.log("🏦 Analytics cabang failed, falling back to regular cabang endpoint");
+        await fetchCabang();
+        return;
+      }
+      
+      const data = await res.json();
+      if (data.success) {
+        setCabangList(data.data);
+        console.log(`🏦 Analytics cabang loaded: ${data.data.length} branches (Access: ${data.meta?.accessLevel})`);
+      }
+    } catch (error) {
+      console.error("Error fetching analytics cabang:", error);
+      // Fallback ke endpoint cabang regular
+      await fetchCabang();
     } finally {
       setIsCabangLoading(false);
     }
@@ -740,7 +869,7 @@ const scrollToTop = () => {
       <div className="flex-1 pl-64 transition-all duration-300">
         <DashboardHeader 
           user={user} 
-          title={activeTab === 'dashboard' ? 'Overview' : activeTab === 'submissions' ? 'Daftar Permohonan' : activeTab === 'manage' ? 'Pengaturan' : 'Dashboard'}
+          title={activeTab === 'dashboard' ? 'Overview' : activeTab === 'analytics' ? 'Data Analytics' : activeTab === 'submissions' ? 'Daftar Permohonan' : activeTab === 'manage' ? 'Pengaturan' : 'Dashboard'}
           lastFetchTime={lastFetchTime}
         />
 
@@ -803,6 +932,34 @@ const scrollToTop = () => {
     </div>
 
             {/* Recent Activity Section could go here */}
+          </div>
+        )}
+
+        {activeTab === 'analytics' && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="mb-8">
+              <h2 className="text-3xl font-bold text-slate-900 tracking-tight mb-2">
+                📊 Data Analytics & Insights
+              </h2>
+              <p className="text-slate-500 text-lg">
+                Analisis mendalam tentang permohonan rekening dan tren bisnis.
+              </p>
+            </div>
+
+            {/* Quick Stats */}
+            <Suspense fallback={<LoadingSpinner />}>
+              <QuickStats submissions={submissions} />
+            </Suspense>
+
+            {/* Insight Cards */}
+            <Suspense fallback={<LoadingSpinner />}>
+              <InsightCards submissions={submissions} />
+            </Suspense>
+
+            {/* Analytics Dashboard */}
+            <Suspense fallback={<LoadingSpinner />}>
+              <AnalyticsDashboard submissions={submissions} cabangList={cabangList} />
+            </Suspense>
           </div>
         )}
         {activeTab === 'submissions' && (

@@ -1,4 +1,4 @@
-import { LayoutDashboard, ClipboardCheck, FileCog, LogOut } from 'lucide-react';
+import { LayoutDashboard, ClipboardCheck, FileCog, LogOut, BarChart3 } from 'lucide-react';
 import { cn } from "./ui/utils";
 
 interface SidebarProps {
@@ -11,6 +11,7 @@ interface SidebarProps {
 export function Sidebar({ activeTab, setActiveTab, user, onLogout }: SidebarProps) {
   const menuItems = [
     { id: 'dashboard', label: 'Overview', icon: LayoutDashboard },
+    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
     { id: 'submissions', label: 'Permohonan', icon: ClipboardCheck },
     { id: 'manage', label: 'Pengaturan', icon: FileCog, hidden: user?.role === "employement" },
   ];

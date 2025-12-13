@@ -732,3 +732,190 @@ export const updatePengajuanStatus = async (req, res) => {
   }
 };
 
+/**
+ * Mengambil data analytics untuk semua cabang
+ * Khusus untuk dashboard analytics - menampilkan data semua cabang
+ * Dengan kontrol akses berdasarkan role
+ */
+export const getAnalyticsData = async (req, res) => {
+  try {
+    const userRole = req.user.role;
+    const adminCabang = req.user.cabang_id;
+
+    // Tentukan akses berdasarkan role
+    let whereClause = '';
+    let queryParams = [];
+
+    // Jika bukan super admin atau role khusus, tetap filter berdasarkan cabang
+    if (userRole === 'employement' || userRole === 'admin_cabang') {
+      whereClause = 'WHERE p.cabang_id = $1';
+      queryParams = [adminCabang];
+    }
+    // Jika super admin atau role analytics, bisa akses semua data
+    // (tambahkan role sesuai kebutuhan: 'super_admin', 'analytics', dll)
+
+    const query = `
+      SELECT 
+        p.id,
+        p.status,
+        p.created_at,
+        p.approved_at,
+        p.rejected_at,
+        p.cabang_id,
+        cs.kode_referensi,
+        cs.nama AS nama_lengkap,
+        cs.alias,
+        cs.jenis_id AS "identityType",
+        cs.no_id AS nik,
+        cs.berlaku_id,
+        cs.no_hp,
+        cs.email,
+        cs.tempat_lahir,
+        cs.tanggal_lahir,
+        cs.jenis_kelamin,
+        cs.status_pernikahan,
+        cs.agama,
+        cs.pendidikan,
+        cs.kewarganegaraan,
+        cs.nama_ibu_kandung,
+        cs.npwp,
+        cs.status_rumah,
+        cs.tipe_nasabah,
+        cs.nomor_rekening_lama,
+        cs.alamat,
+        cs.alamat_domisili,
+        cs.kode_pos,
+        cs.rekening_untuk_sendiri,
+        
+        -- Job Info
+        job.pekerjaan,
+        job.penghasilan,
+        job.tempat_bekerja,
+        job.nama_perusahaan,
+        job.alamat_kantor,
+        job.alamat_perusahaan,
+        job.telepon_perusahaan,
+        job.no_telepon,
+        job.jabatan,
+        job.bidang_usaha,
+        job.sumber_dana,
+        job.rata_rata_transaksi,
+        job.rata_transaksi_per_bulan,
+        job.tujuan_rekening,
+        
+        -- Account Info
+        acc.tabungan_tipe AS jenis_rekening,
+        acc.jenis_kartu,
+        acc.nominal_setoran,
+        
+        -- Emergency Contact
+        ec.nama AS kontak_darurat_nama,
+        ec.no_hp AS kontak_darurat_hp,
+        ec.alamat AS kontak_darurat_alamat,
+        ec.hubungan AS kontak_darurat_hubungan,
+        
+        -- Beneficial Owner
+        bo.nama AS bo_nama,
+        bo.alamat AS bo_alamat,
+        bo.tempat_lahir AS bo_tempat_lahir,
+        bo.tanggal_lahir AS bo_tanggal_lahir,
+        bo.jenis_kelamin AS bo_jenis_kelamin,
+        bo.kewarganegaraan AS bo_kewarganegaraan,
+        bo.status_pernikahan AS bo_status_pernikahan,
+        bo.jenis_id AS bo_jenis_id,
+        bo.nomor_id AS bo_nomor_id,
+        bo.sumber_dana AS bo_sumber_dana,
+        bo.hubungan AS bo_hubungan,
+        bo.nomor_hp AS bo_nomor_hp,
+        bo.pekerjaan AS bo_pekerjaan,
+        bo.pendapatan_tahun AS bo_pendapatan_tahun,
+        bo.persetujuan AS bo_persetujuan,
+        
+        -- Branch Info
+        c.nama_cabang,
+        
+        -- Approval Info
+        ua.username AS "approvedBy",
+        ur.username AS "rejectedBy"
+        
+      FROM pengajuan_tabungan p
+      LEFT JOIN cdd_self cs ON p.id = cs.pengajuan_id
+      LEFT JOIN job_info job ON p.id = job.pengajuan_id
+      LEFT JOIN account acc ON p.id = acc.pengajuan_id
+      LEFT JOIN emergency_contact ec ON p.id = ec.pengajuan_id
+      LEFT JOIN beneficial_owner bo ON p.id = bo.pengajuan_id
+      LEFT JOIN cabang c ON p.cabang_id = c.id
+      LEFT JOIN users ua ON p.approved_by = ua.id
+      LEFT JOIN users ur ON p.rejected_by = ur.id
+      ${whereClause}
+      ORDER BY p.created_at DESC
+    `;
+
+    const result = await pool.query(query, queryParams);
+
+    // Log untuk debugging
+    console.log(`📊 Analytics query executed for user role: ${userRole}, cabang: ${adminCabang}`);
+    console.log(`📊 Returned ${result.rows.length} records`);
+
+    res.json({
+      success: true,
+      data: result.rows,
+      meta: {
+        total: result.rows.length,
+        userRole: userRole,
+        accessLevel: whereClause ? 'cabang' : 'all'
+      }
+    });
+  } catch (err) {
+    console.error('❌ Analytics query error:', err);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Gagal mengambil data analytics',
+      error: err.message 
+    });
+  }
+};
+
+/**
+ * Mengambil semua cabang untuk analytics
+ * Menampilkan semua cabang tanpa filter untuk keperluan analytics
+ */
+export const getAllCabangForAnalytics = async (req, res) => {
+  try {
+    const userRole = req.user.role;
+    const adminCabang = req.user.cabang_id;
+
+    let query = "SELECT id, nama_cabang, is_active, created_at, updated_at FROM cabang";
+    let queryParams = [];
+
+    // Jika bukan super admin, tetap filter berdasarkan cabang
+    if (userRole === 'employement' || userRole === 'admin_cabang') {
+      query += " WHERE id = $1";
+      queryParams = [adminCabang];
+    }
+    // Jika super admin atau role analytics, bisa akses semua cabang
+
+    query += " ORDER BY id ASC";
+
+    const result = await pool.query(query, queryParams);
+
+    console.log(`🏦 Cabang analytics query for role: ${userRole}, returned ${result.rows.length} branches`);
+
+    res.json({
+      success: true,
+      data: result.rows,
+      meta: {
+        total: result.rows.length,
+        userRole: userRole,
+        accessLevel: queryParams.length > 0 ? 'cabang' : 'all'
+      }
+    });
+  } catch (err) {
+    console.error('❌ Cabang analytics query error:', err);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Gagal mengambil data cabang untuk analytics',
+      error: err.message 
+    });
+  }
+};
