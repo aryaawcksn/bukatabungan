@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
-import { ArrowLeft, CheckCircle, Sparkles, ChevronRight, User, Building2, FileText, Check, CircleCheckBig } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Sparkles, ChevronRight, User, Building2, FileText, Check, CircleCheckBig, Loader2 } from 'lucide-react';
 import OtpModal from './OtpModal';
 import FormSimpel from './account-forms/FormSimpel';
 import FormBusiness from './account-forms/FormReguler';
@@ -28,6 +28,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
   const [ktpPreview, setKtpPreview] = useState<string | null>(null);
   const [ktpUrl, setKtpUrl] = useState<string | null>(null);
   const [loadingSubmit, setLoadingSubmit] = useState(false);
+  const [loadingNext, setLoadingNext] = useState(false);
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [currentPhone, setCurrentPhone] = useState("");
   const [pendingSubmitData, setPendingSubmitData] = useState<any>(null); // simpan data sebelum OTP
@@ -266,112 +267,117 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
   };
 
   const handleNextStep = async () => {
-    const newErrors: Record<string, string> = {};
+    setLoadingNext(true);
+    try {
+        const newErrors: Record<string, string> = {};
+        
+        if (currentStep === 1) {
+           // Step 1: Validate Branch Selection
+           if (!formData.cabang_pengambilan) {
+              newErrors.cabang_pengambilan = "Silakan pilih cabang pengambilan";
+           } else {
+              const selectedBranch = branches.find(b => b.id.toString() === formData.cabang_pengambilan.toString());
+              if (selectedBranch && !selectedBranch.is_active) {
+                newErrors.cabang_pengambilan = "Cabang sedang dalam perbaikan, silahkan pilih cabang lain";
+              }
+           }
+        } else if (currentStep === 2) {
+           // Step 2: Validate Data Diri Nasabah
+           if (!formData.fullName) newErrors.fullName = "Nama lengkap wajib diisi";
+           if (!formData.nik) newErrors.nik = "NIK wajib diisi";
+           if (!formData.email) newErrors.email = "Email wajib diisi";
+           if (!formData.phone) newErrors.phone = "Nomor telepon wajib diisi";
+           if (!formData.birthDate) newErrors.birthDate = "Tanggal lahir wajib diisi";
+           if (!formData.tempatLahir) newErrors.tempatLahir = "Tempat lahir wajib diisi";
+           if (!formData.gender) newErrors.gender = "Jenis kelamin wajib diisi";
+           if (!formData.maritalStatus) newErrors.maritalStatus = "Status pernikahan wajib diisi";
+           if (!formData.agama) newErrors.agama = "Agama wajib diisi";
+           if (!formData.pendidikan) newErrors.pendidikan = "Pendidikan wajib diisi";
+           if (!formData.motherName) newErrors.motherName = "Nama ibu kandung wajib diisi";
+           if (!formData.citizenship) newErrors.citizenship = "Kewarganegaraan wajib diisi";
+           if (!formData.address) newErrors.address = "Alamat wajib diisi";
+           if (!formData.province) newErrors.province = "Provinsi wajib diisi";
+           if (!formData.city) newErrors.city = "Kota/Kabupaten wajib diisi";
+           if (!formData.postalCode) newErrors.postalCode = "Kode pos wajib diisi";
+           if (!formData.statusRumah) newErrors.statusRumah = "Status tempat tinggal wajib diisi";
+           if (!formData.jenisId) newErrors.jenisId = "Jenis identitas wajib diisi";
+           if (formData.jenisId === 'Lainnya' && !formData.jenisIdCustom) {
+              newErrors.jenisIdCustom = "Sebutkan jenis identitas Anda";
+           }
+           
+           // Async validations
+           if (!newErrors.nik && (!formData.jenisId || formData.jenisId === 'KTP')) {
+             const nikErr = await validateNikAsync(formData.nik);
+             if (nikErr) newErrors.nik = nikErr;
+           }
+           if (!newErrors.email) {
+             const emailErr = await validateEmailAsync(formData.email);
+             if (emailErr) newErrors.email = emailErr;
+           }
+           if (!newErrors.phone) {
+             const phoneErr = await validatePhoneAsync(formData.phone);
+             if (phoneErr) newErrors.phone = phoneErr;
+           }
+        } else if (currentStep === 3) {
+           // Step 3: Validate Data Pekerjaan & Keuangan
+           if (!formData.employmentStatus) newErrors.employmentStatus = "Status pekerjaan wajib diisi";
+           if (!formData.monthlyIncome) newErrors.monthlyIncome = "Penghasilan per bulan wajib diisi";
+           if (!formData.sumberDana) newErrors.sumberDana = "Sumber dana wajib diisi";
+        } else if (currentStep === 4) {
+           // Step 4: Validate Data Rekening
+           if (!formData.tujuanRekening) newErrors.tujuanRekening = "Tujuan rekening wajib diisi";
+           if (formData.tujuanRekening === 'Lainnya' && !formData.tujuanRekeningLainnya) {
+             newErrors.tujuanRekeningLainnya = "Sebutkan tujuan pembukaan rekening";
+           }
+           
+           // Validate BO if account is for others
+           if (formData.rekeningUntukSendiri === false) {
+             if (!formData.boNama) newErrors.boNama = "Nama beneficial owner wajib diisi";
+             if (!formData.boAlamat) newErrors.boAlamat = "Alamat beneficial owner wajib diisi";
+             if (!formData.boTempatLahir) newErrors.boTempatLahir = "Tempat lahir beneficial owner wajib diisi";
+             if (!formData.boTanggalLahir) newErrors.boTanggalLahir = "Tanggal lahir beneficial owner wajib diisi";
+             if (!formData.boJenisKelamin) newErrors.boJenisKelamin = "Jenis kelamin beneficial owner wajib diisi";
+             if (!formData.boKewarganegaraan) newErrors.boKewarganegaraan = "Kewarganegaraan beneficial owner wajib diisi";
+             if (!formData.boStatusPernikahan) newErrors.boStatusPernikahan = "Status pernikahan beneficial owner wajib diisi";
+             if (!formData.boJenisId) newErrors.boJenisId = "Jenis identitas beneficial owner wajib diisi";
+             if (!formData.boNomorId) newErrors.boNomorId = "Nomor identitas beneficial owner wajib diisi";
+             if (!formData.boSumberDana) newErrors.boSumberDana = "Sumber dana beneficial owner wajib diisi";
+             if (!formData.boHubungan) newErrors.boHubungan = "Hubungan dengan beneficial owner wajib diisi";
+             if (!formData.boNomorHp) newErrors.boNomorHp = "Nomor HP beneficial owner wajib diisi";
+             if (!formData.boPekerjaan) newErrors.boPekerjaan = "Pekerjaan beneficial owner wajib diisi";
+             if (!formData.boPendapatanTahun) newErrors.boPendapatanTahun = "Pendapatan tahunan beneficial owner wajib diisi";
+             if (!formData.boPersetujuan) newErrors.boPersetujuan = "Persetujuan beneficial owner harus dicentang";
+           }
+        }
+        // Step 5 (Review) doesn't need validation here, will be validated on submit
     
-    if (currentStep === 1) {
-       // Step 1: Validate Branch Selection
-       if (!formData.cabang_pengambilan) {
-          newErrors.cabang_pengambilan = "Silakan pilih cabang pengambilan";
-       } else {
-          const selectedBranch = branches.find(b => b.id.toString() === formData.cabang_pengambilan.toString());
-          if (selectedBranch && !selectedBranch.is_active) {
-            newErrors.cabang_pengambilan = "Cabang sedang dalam perbaikan, silahkan pilih cabang lain";
+        // If there are validation errors, prevent navigation
+        if (Object.keys(newErrors).length > 0) {
+          setErrors(prev => ({ ...prev, ...newErrors }));
+          
+          // Scroll to first error field
+          const firstErrorKey = Object.keys(newErrors)[0];
+          const element = document.getElementById(firstErrorKey);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Focus the element after scrolling
+            setTimeout(() => {
+              element.focus();
+            }, 500);
           }
-       }
-    } else if (currentStep === 2) {
-       // Step 2: Validate Data Diri Nasabah
-       if (!formData.fullName) newErrors.fullName = "Nama lengkap wajib diisi";
-       if (!formData.nik) newErrors.nik = "NIK wajib diisi";
-       if (!formData.email) newErrors.email = "Email wajib diisi";
-       if (!formData.phone) newErrors.phone = "Nomor telepon wajib diisi";
-       if (!formData.birthDate) newErrors.birthDate = "Tanggal lahir wajib diisi";
-       if (!formData.tempatLahir) newErrors.tempatLahir = "Tempat lahir wajib diisi";
-       if (!formData.gender) newErrors.gender = "Jenis kelamin wajib diisi";
-       if (!formData.maritalStatus) newErrors.maritalStatus = "Status pernikahan wajib diisi";
-       if (!formData.agama) newErrors.agama = "Agama wajib diisi";
-       if (!formData.pendidikan) newErrors.pendidikan = "Pendidikan wajib diisi";
-       if (!formData.motherName) newErrors.motherName = "Nama ibu kandung wajib diisi";
-       if (!formData.citizenship) newErrors.citizenship = "Kewarganegaraan wajib diisi";
-       if (!formData.address) newErrors.address = "Alamat wajib diisi";
-       if (!formData.province) newErrors.province = "Provinsi wajib diisi";
-       if (!formData.city) newErrors.city = "Kota/Kabupaten wajib diisi";
-       if (!formData.postalCode) newErrors.postalCode = "Kode pos wajib diisi";
-       if (!formData.statusRumah) newErrors.statusRumah = "Status tempat tinggal wajib diisi";
-       if (!formData.jenisId) newErrors.jenisId = "Jenis identitas wajib diisi";
-       if (formData.jenisId === 'Lainnya' && !formData.jenisIdCustom) {
-          newErrors.jenisIdCustom = "Sebutkan jenis identitas Anda";
-       }
-       
-       // Async validations
-       if (!newErrors.nik && (!formData.jenisId || formData.jenisId === 'KTP')) {
-         const nikErr = await validateNikAsync(formData.nik);
-         if (nikErr) newErrors.nik = nikErr;
-       }
-       if (!newErrors.email) {
-         const emailErr = await validateEmailAsync(formData.email);
-         if (emailErr) newErrors.email = emailErr;
-       }
-       if (!newErrors.phone) {
-         const phoneErr = await validatePhoneAsync(formData.phone);
-         if (phoneErr) newErrors.phone = phoneErr;
-       }
-    } else if (currentStep === 3) {
-       // Step 3: Validate Data Pekerjaan & Keuangan
-       if (!formData.employmentStatus) newErrors.employmentStatus = "Status pekerjaan wajib diisi";
-       if (!formData.monthlyIncome) newErrors.monthlyIncome = "Penghasilan per bulan wajib diisi";
-       if (!formData.sumberDana) newErrors.sumberDana = "Sumber dana wajib diisi";
-    } else if (currentStep === 4) {
-       // Step 4: Validate Data Rekening
-       if (!formData.tujuanRekening) newErrors.tujuanRekening = "Tujuan rekening wajib diisi";
-       if (formData.tujuanRekening === 'Lainnya' && !formData.tujuanRekeningLainnya) {
-         newErrors.tujuanRekeningLainnya = "Sebutkan tujuan pembukaan rekening";
-       }
-       
-       // Validate BO if account is for others
-       if (formData.rekeningUntukSendiri === false) {
-         if (!formData.boNama) newErrors.boNama = "Nama beneficial owner wajib diisi";
-         if (!formData.boAlamat) newErrors.boAlamat = "Alamat beneficial owner wajib diisi";
-         if (!formData.boTempatLahir) newErrors.boTempatLahir = "Tempat lahir beneficial owner wajib diisi";
-         if (!formData.boTanggalLahir) newErrors.boTanggalLahir = "Tanggal lahir beneficial owner wajib diisi";
-         if (!formData.boJenisKelamin) newErrors.boJenisKelamin = "Jenis kelamin beneficial owner wajib diisi";
-         if (!formData.boKewarganegaraan) newErrors.boKewarganegaraan = "Kewarganegaraan beneficial owner wajib diisi";
-         if (!formData.boStatusPernikahan) newErrors.boStatusPernikahan = "Status pernikahan beneficial owner wajib diisi";
-         if (!formData.boJenisId) newErrors.boJenisId = "Jenis identitas beneficial owner wajib diisi";
-         if (!formData.boNomorId) newErrors.boNomorId = "Nomor identitas beneficial owner wajib diisi";
-         if (!formData.boSumberDana) newErrors.boSumberDana = "Sumber dana beneficial owner wajib diisi";
-         if (!formData.boHubungan) newErrors.boHubungan = "Hubungan dengan beneficial owner wajib diisi";
-         if (!formData.boNomorHp) newErrors.boNomorHp = "Nomor HP beneficial owner wajib diisi";
-         if (!formData.boPekerjaan) newErrors.boPekerjaan = "Pekerjaan beneficial owner wajib diisi";
-         if (!formData.boPendapatanTahun) newErrors.boPendapatanTahun = "Pendapatan tahunan beneficial owner wajib diisi";
-         if (!formData.boPersetujuan) newErrors.boPersetujuan = "Persetujuan beneficial owner harus dicentang";
-       }
+          
+          // Show alert with error count
+          alert(`Terdapat ${Object.keys(newErrors).length} kesalahan. Silakan lengkapi semua field yang wajib diisi.`);
+          return;
+        }
+    
+        // Clear errors for current step and proceed
+        setErrors({});
+        setCurrentStep(prev => prev + 1);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    } finally {
+        setLoadingNext(false);
     }
-    // Step 5 (Review) doesn't need validation here, will be validated on submit
-
-    // If there are validation errors, prevent navigation
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(prev => ({ ...prev, ...newErrors }));
-      
-      // Scroll to first error field
-      const firstErrorKey = Object.keys(newErrors)[0];
-      const element = document.getElementById(firstErrorKey);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        // Focus the element after scrolling
-        setTimeout(() => {
-          element.focus();
-        }, 500);
-      }
-      
-      // Show alert with error count
-      alert(`Terdapat ${Object.keys(newErrors).length} kesalahan. Silakan lengkapi semua field yang wajib diisi.`);
-      return;
-    }
-
-    // Clear errors for current step and proceed
-    setErrors({});
-    setCurrentStep(prev => prev + 1);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handlePrevStep = () => {
@@ -874,7 +880,50 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       {/* Stepper */}
       <div className="bg-white border-b border-slate-200 py-6">
         <div className="max-w-3xl mx-auto px-6">
-          <div className="flex items-center justify-between relative">
+          
+          {/* Mobile Stepper (< md) */}
+          <div className="md:hidden">
+            <div className="flex items-center justify-center gap-4 relative">
+              {steps.filter(step => step.number >= currentStep - 1 && step.number <= currentStep + 1).map((step, index, array) => {
+                 const Icon = step.icon;
+                 const isActive = step.number === currentStep;
+                 const isCompleted = step.number < currentStep;
+
+                // Adjust Progress Bar for adjacent steps if needed, 
+                // but simpler to just show the nodes for mobile to avoid layout shifts.
+                // Or maybe just small connecting lines between them? 
+                // Let's keep it simple first as requested: "nama step dan highlight".
+                
+                 return (
+                  <div key={step.number} className="flex flex-col items-center gap-2 bg-white px-2 z-10">
+                    <div 
+                      className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+                        isActive 
+                          ? "bg-green-500 text-white shadow-lg shadow-green-500/30 scale-110" 
+                          : isCompleted 
+                            ? "bg-green-100 text-green-600" 
+                            : "bg-slate-100 text-slate-400"
+                      }`}
+                    >
+                      {isCompleted ? <Check className="w-6 h-6" /> : <Icon className="w-5 h-5" />}
+                    </div>
+                    <span className={`text-xs font-bold whitespace-nowrap ${isActive ? "text-slate-900" : "text-slate-500"}`}>
+                      {step.title}
+                    </span>
+                  </div>
+                 );
+              })}
+            </div>
+            {/* Simple progress indicator dots for total context */}
+            <div className="flex justify-center gap-1 mt-4">
+               {steps.map(s => (
+                 <div key={s.number} className={`h-1.5 rounded-full transition-all ${s.number === currentStep ? 'w-6 bg-green-500' : s.number < currentStep ? 'w-1.5 bg-green-300' : 'w-1.5 bg-slate-200'}`} />
+               ))}
+            </div>
+          </div>
+
+          {/* Desktop Stepper (>= md) */}
+          <div className="hidden md:flex items-center justify-between relative">
             {/* Progress Bar Background */}
             <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-slate-100 -z-10" />
             
@@ -954,9 +1003,19 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
                   <Button 
                     type="button" 
                     onClick={handleNextStep}
-                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-sm text-lg shadow-sm hover:shadow-green-300/20 transition-all"
+                    disabled={loadingNext}
+                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-sm text-lg shadow-sm hover:shadow-green-300/20 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
                   >
-                    Lanjut <ChevronRight className="ml-2 h-5 w-5" />
+                    {loadingNext ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        Memproses...
+                      </>
+                    ) : (
+                      <>
+                        Lanjut <ChevronRight className="ml-2 h-5 w-5" />
+                      </>
+                    )}
                   </Button>
                 ) : currentStep === 5 ? (
                   <Button 
@@ -965,7 +1024,12 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
                     disabled={loadingSubmit}
                     className="bg-yellow-500 hover:bg-yellow-400 text-green-900 font-bold px-6 py-2 rounded-sm text-lg shadow-sm transition-all disabled:opacity-50"
                   >
-                    {loadingSubmit ? 'Mengirim...' : 'Kirim Permohonan'}
+                    {loadingSubmit ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        Mengirim...
+                      </>
+                    ) : 'Kirim Permohonan'}
                   </Button>
                 ) : null}
               </div>

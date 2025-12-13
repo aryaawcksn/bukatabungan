@@ -1,16 +1,18 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { FormSubmissionCard } from './components/form-submission-card';
+import { SubmissionTable } from './components/SubmissionTable';
 import CabangSetting, { type Cabang } from './components/CabangSetting';
 import AccountSetting from './components/AccountSetting';
 
 import { FormDetailDialog } from './components/form-detail-dialog';
 import { ApprovalDialog } from './components/approval-dialog';
-import { Search, LayoutDashboard, ClipboardCheck, FileBarChart, LogOut, FileCog, X, Clock3, Check, TrendingDown, TrendingUp, LayoutGrid, List, ArrowUp } from 'lucide-react';
+import { Search, FileBarChart, LogOut, X, Clock3, Check, TrendingDown, TrendingUp, ArrowUp } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './components/ui/select';
 import { toast } from 'sonner';
 import { Toaster } from './components/ui/sonner';
 import { Button } from './components/ui/button';
 import { StatCard } from "./components/ui/StatCard";
+import { Sidebar } from './components/Sidebar';
+import { DashboardHeader } from './components/DashboardHeader';
 
 export interface FormSubmission {
   id: string;
@@ -223,11 +225,6 @@ export const mapBackendDataToFormSubmission = (data: any): FormSubmission => {
       tipeNasabah: (() => {
         const tipe = (data.tipe_nasabah && data.tipe_nasabah.trim() !== '') ? data.tipe_nasabah as 'baru' | 'lama' : 'baru';
         if (data.kode_referensi === 'REG-1765523075976-875') {
-          console.log(`🔍 MAPPING DEBUG for ${data.kode_referensi}:`, {
-            raw_tipe_nasabah: data.tipe_nasabah,
-            mapped_tipe: tipe,
-            source: 'mapBackendDataToFormSubmission'
-          });
         }
         return tipe;
       })(),
@@ -309,7 +306,6 @@ export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [viewMode, setViewMode] = useState<"vertical" | "horizontal">("vertical");
   const [showScrollTop, setShowScrollTop] = useState(false);
 
 
@@ -684,100 +680,22 @@ const scrollToTop = () => {
 
 
   return (
-    <div className="min-h-screen bg-slate-50/50 font-sans text-slate-900 selection:bg-blue-100 selection:text-blue-900">
-      {/* Header */}
-      <header className="sticky top-0 z-50 w-full bg-white/30 backdrop-blur-md border-b border-slate-200/50">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          {/* Left Side - Branding */}
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-transparent rounded-xl flex items-center justify-center">
-            <img 
-              src="./bss2.png" 
-              alt="Dashboard" 
-              className="w-10 h-10 object-contain"
-            />
-          </div>
+    <div className="flex min-h-screen bg-slate-50/50 font-sans text-slate-900 selection:bg-blue-100 selection:text-blue-900">
+      <Sidebar 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+        user={user} 
+        onLogout={() => setActiveTab('logout')} 
+      />
 
-            <div>
-              <h1
-                className="text-slate-900 font-bold text-xl tracking-tight leading-none"
-                style={{ fontFamily: '"", sans-serif, text-sm' }}
-              >
-                Bank Sleman
-              </h1>
-              <p className="text-slate-500 text-xs font-medium mt-1">
-                Sistem Pemantauan Permohonan Rekening
-              </p>
-            </div>
-          </div>
+      <div className="flex-1 pl-64 transition-all duration-300">
+        <DashboardHeader 
+          user={user} 
+          title={activeTab === 'dashboard' ? 'Overview' : activeTab === 'submissions' ? 'Daftar Permohonan' : activeTab === 'manage' ? 'Pengaturan' : 'Dashboard'}
+          lastFetchTime={lastFetchTime}
+        />
 
-          {/* Right Side - Profile & Info */}
-          <div className="flex items-center gap-6">
-            <div className="hidden md:block text-right">
-              <p className="text-xs font-medium text-slate-500 mb-0.5">
-                {user?.nama_cabang || "Pusat"}
-              </p>
-              {lastFetchTime && (
-                <p className="text-[10px] text-slate-400 flex items-center justify-end gap-1">
-                  <Clock3 className="w-3 h-3" />
-                  Last Update {lastFetchTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
-                </p>
-              )}
-            </div>
-            
-            <div className="h-8 w-[1px] bg-slate-200 hidden md:block"></div>
-
-            <div className="flex items-center gap-3 pl-2">
-              <div className="text-right hidden sm:block">
-                <p className="text-sm font-semibold text-slate-800 leading-tight">
-                  {(user?.username || "Admin").charAt(0).toUpperCase() + (user?.username || "Admin").slice(1)}
-                </p>
-                <p className="text-xs text-slate-500">
-                {(user?.role || "Admin").charAt(0).toUpperCase() + (user?.role || "Admin").slice(1)}
-
-                </p>
-              </div>
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold ring-2 ring-white">
-                {(user?.username || "A").charAt(0).toUpperCase()}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Navigation Tabs - Integrated into Header for cleaner look */}
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex items-center gap-1 -mb-px overflow-x-auto scrollbar-hide">
-            {[
-              { id: 'dashboard', label: 'Overview', icon: LayoutDashboard },
-              { id: 'submissions', label: 'Permohonan', icon: ClipboardCheck },
-              { id: 'manage', label: 'Pengaturan', icon: FileCog, hidden: user?.role === "employement" },
-              { id: 'logout', label: 'Keluar', icon: LogOut }
-            ].filter(tab => !tab.hidden).map(tab => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`
-                    group flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition-all duration-200 whitespace-nowrap
-                    ${isActive 
-                      ? 'border-blue-600 text-blue-600' 
-                      : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
-                    }
-                  `}
-                >
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600'}`} />
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-8">
+        <main className="max-w-7xl mx-auto px-6 py-8">
         
         {/* Welcome Message */}
         {activeTab === 'dashboard' && (
@@ -846,36 +764,7 @@ const scrollToTop = () => {
                 <p className="text-slate-500">Kelola dan verifikasi data nasabah.</p>
               </div>
               
-              {/* Filter Bar */}
               <div className="flex items-center gap-3 bg-white p-1.5 rounded-2xl border border-slate-200">
-              <div className="flex bg-slate-100 rounded-xl overflow-hidden border border-slate-200">
-  {/* LIST / VERTICAL */}
-  <button
-    onClick={() => setViewMode("vertical")}
-    className={`p-2 transition-all flex items-center justify-center ${
-      viewMode === "vertical"
-        ? "bg-blue-600 text-white shadow"
-        : "text-slate-600 hover:bg-slate-200"
-    }`}
-    title="Tampilan List"
-  >
-    <List className="w-4 h-4" />
-  </button>
-
-  {/* GRID / HORIZONTAL */}
-  <button
-    onClick={() => setViewMode("horizontal")}
-    className={`p-2 transition-all flex items-center justify-center ${
-      viewMode === "horizontal"
-        ? "bg-blue-600 text-white shadow"
-        : "text-slate-600 hover:bg-slate-200"
-    }`}
-    title="Tampilan Grid"
-  >
-    <LayoutGrid className="w-4 h-4" />
-  </button>
-</div>
-
                 <div className="relative group">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 group-focus-within:text-blue-500 transition-colors" />
 
@@ -902,44 +791,13 @@ const scrollToTop = () => {
             </div>
 
             {/* List */}
-            {loading ? (
-              <div className="grid place-items-center py-20">
-                <div className="flex flex-col items-center gap-3">
-                  <div className="w-10 h-10 border-4 border-blue-600/30 border-t-blue-600 rounded-full animate-spin"></div>
-                  <p className="text-slate-500 font-medium animate-pulse">Mengambil data...</p>
-                </div>
-              </div>
-            ) : filteredSubmissions.length === 0 ? (
-              <div className="bg-white border border-dashed border-slate-300 rounded-3xl p-16 text-center">
-                <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Search className="w-10 h-10 text-slate-300" />
-                </div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-1">Tidak ada data ditemukan</h3>
-                <p className="text-slate-500 max-w-sm mx-auto">
-                  Coba ubah kata kunci pencarian atau filter status untuk menemukan data yang Anda cari.
-                </p>
-              </div>
-            ) : (
-              <div
-                  className={
-                    viewMode === "vertical"
-                      ? "flex flex-col gap-4"
-                      : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
-                  }
-                >
-
-                  {filteredSubmissions.map(sub => (
-                                  <FormSubmissionCard
-                  key={sub.id}
-                  submission={sub}
-                  viewMode={viewMode}
-                  onViewDetails={() => setSelectedSubmission(sub)}
-                  onApprove={() => handleApprove(sub.id)}
-                  onReject={() => handleReject(sub.id)}
-                />
-                ))}
-              </div>
-            )}
+            <SubmissionTable 
+              submissions={filteredSubmissions}
+              loading={loading}
+              onViewDetails={(sub) => setSelectedSubmission(sub)}
+              onApprove={(id) => handleApprove(id)}
+              onReject={(id) => handleReject(id)}
+            />
           </div>
         )}
 
@@ -1132,6 +990,7 @@ const scrollToTop = () => {
   </button>
 )}
 
+      </div>
     </div>
   );
 }

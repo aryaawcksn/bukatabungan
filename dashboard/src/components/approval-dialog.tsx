@@ -4,12 +4,12 @@ import { Button } from './ui/button';
 import { Checkbox } from './ui/checkbox';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
-import { CheckCircle, XCircle, MessageCircle } from 'lucide-react';
+import { CheckCircle, XCircle, MessageCircle, Loader2 } from 'lucide-react';
 
 interface ApprovalDialogProps {
   open: boolean;
   onClose: () => void;
-  onConfirm: (sendWhatsApp: boolean, message: string) => void;
+  onConfirm: (sendWhatsApp: boolean, message: string) => Promise<void> | void;
   type: 'approve' | 'reject';
   applicantName: string;
   phone: string;
@@ -31,11 +31,13 @@ export function ApprovalDialog({
   const [message, setMessage] = useState(
     type === 'approve' ? defaultApproveMessage : defaultRejectMessage
   );
+  const [loading, setLoading] = useState(false);
 
   // Auto-check WhatsApp saat modal dibuka
   useEffect(() => {
     if (open) {
       setSendWhatsApp(true);
+      setLoading(false); // Reset loading state
     }
   }, [open]);
 
@@ -44,12 +46,19 @@ export function ApprovalDialog({
     setMessage(type === 'approve' ? defaultApproveMessage : defaultRejectMessage);
   }, [type]);
 
-  const handleConfirm = () => {
-    onConfirm(sendWhatsApp, message);
+  const handleConfirm = async () => {
+    setLoading(true);
+    try {
+      await onConfirm(sendWhatsApp, message);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={(isOpen) => !loading && onClose()}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <div className="flex items-center gap-3">
@@ -85,6 +94,7 @@ export function ApprovalDialog({
               onChange={(e) => setMessage(e.target.value)}
               rows={6}
               className="resize-none"
+              disabled={loading}
             />
           </div>
 
@@ -97,6 +107,7 @@ export function ApprovalDialog({
                 id="whatsapp"
                 checked={sendWhatsApp}
                 onCheckedChange={(checked) => setSendWhatsApp(checked as boolean)}
+                disabled={loading}
               />
               <div className="flex-1">
                 <Label htmlFor="whatsapp" className="flex items-center gap-2 cursor-pointer">
@@ -119,14 +130,20 @@ export function ApprovalDialog({
         </div>
 
         <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={onClose} disabled={loading}>
             Batal
           </Button>
           <Button
             onClick={handleConfirm}
             className={type === 'approve' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}
+            disabled={loading}
           >
-            {type === 'approve' ? (
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Memproses...
+              </>
+            ) : type === 'approve' ? (
               <>
                 <CheckCircle className="w-4 h-4 mr-2" />
                 Konfirmasi Persetujuan
