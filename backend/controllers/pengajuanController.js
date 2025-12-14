@@ -964,6 +964,9 @@ export const getAllCabangForAnalytics = async (req, res) => {
 /**
  * Export data permohonan ke Excel
  */
+/**
+ * Export data permohonan ke Excel
+ */
 export const exportToExcel = async (req, res) => {
   try {
     // Import ExcelJS
@@ -977,19 +980,35 @@ export const exportToExcel = async (req, res) => {
     const userRole = req.user.role;
     const adminCabang = req.user.cabang_id;
 
-    // Query berdasarkan role
+    // Query berdasarkan role dengan JOIN ke tabel-tabel baru
     let query = `
       SELECT 
-        p.*,
-        c.nama_cabang,
-        e.bank_name, e.jenis_rekening as edd_jenis_rekening, e.nomor_rekening as edd_nomor_rekening,
-        ep.jenis_usaha
-      FROM pengajuan p
+        p.id,
+        p.status,
+        p.created_at,
+        p.approved_at,
+        p.rejected_at,
+        cs.kode_referensi,
+        cs.nama AS nama_lengkap,
+        cs.no_id AS nik,
+        cs.email,
+        cs.no_hp,
+        cs.tempat_lahir,
+        cs.tanggal_lahir,
+        cs.alamat_id AS alamat,
+        cs.kewarganegaraan,
+        cj.pekerjaan,
+        cj.gaji_per_bulan AS penghasilan,
+        acc.tabungan_tipe AS jenis_rekening,
+        acc.atm_tipe AS jenis_kartu,
+        c.nama_cabang
+      FROM pengajuan_tabungan p
+      LEFT JOIN cdd_self cs ON p.id = cs.pengajuan_id
+      LEFT JOIN cdd_job cj ON p.id = cj.pengajuan_id
+      LEFT JOIN account acc ON p.id = acc.pengajuan_id
       LEFT JOIN cabang c ON p.cabang_id = c.id
-      LEFT JOIN edd_bank_lain e ON p.id = e.edd_id
-      LEFT JOIN edd_pekerjaan_lain ep ON p.id = ep.edd_id
     `;
-    
+
     let queryParams = [];
 
     if (userRole !== 'super') {
@@ -1050,7 +1069,7 @@ export const exportToExcel = async (req, res) => {
     // Set response headers
     const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
     const filename = `data-permohonan-${timestamp}.xlsx`;
-    
+
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
 
@@ -1073,6 +1092,9 @@ export const exportToExcel = async (req, res) => {
 /**
  * Export backup data sebagai JSON
  */
+/**
+ * Export backup data sebagai JSON
+ */
 export const exportBackup = async (req, res) => {
   try {
     console.log('💾 Backup export request received');
@@ -1081,41 +1103,127 @@ export const exportBackup = async (req, res) => {
     const userRole = req.user.role;
     const adminCabang = req.user.cabang_id;
 
-    // Query berdasarkan role
+    // Query untuk mengambil data lengkap dengan JOIN
+    // Note: Menggunakan query yang mirip dengan getPengajuanById tapi untuk banyak row
     let query = `
       SELECT 
-        p.*,
+        p.id,
+        p.status,
+        p.created_at,
+        p.approved_at,
+        p.rejected_at,
+        p.cabang_id,
+        cs.kode_referensi,
+        cs.nama AS nama_lengkap,
+        cs.alias,
+        cs.jenis_id AS "identityType",
+        cs.no_id AS nik,
+        cs.berlaku_id,
+        cs.no_hp,
+        cs.email,
+        cs.tempat_lahir,
+        cs.tanggal_lahir,
+        cs.jenis_kelamin,
+        cs.status_kawin AS status_pernikahan,
+        cs.agama,
+        cs.pendidikan,
+        cs.kewarganegaraan,
+        cs.nama_ibu_kandung,
+        cs.npwp,
+        cs.status_rumah,
+        cs.tipe_nasabah,
+        cs.nomor_rekening_lama,
+        cs.alamat_id AS alamat,
+        cs.alamat_now AS alamat_domisili,
+        cs.kode_pos_id AS kode_pos,
+        cs.rekening_untuk_sendiri,
+        
+        -- Job Info
+        job.pekerjaan,
+        job.gaji_per_bulan AS penghasilan,
+        job.nama_perusahaan AS tempat_bekerja,
+        job.alamat_perusahaan AS alamat_kantor,
+        job.no_telepon AS telepon_perusahaan,
+        job.jabatan,
+        job.bidang_usaha,
+        job.sumber_dana,
+        job.rata_transaksi_per_bulan AS rata_rata_transaksi,
+        acc.tujuan_pembukaan AS tujuan_rekening,
+        
+        -- Account Info
+        acc.tabungan_tipe AS jenis_rekening,
+        acc.atm_tipe AS jenis_kartu,
+        acc.nominal_setoran,
+        
+        -- Emergency Contact
+        ec.nama AS kontak_darurat_nama,
+        ec.no_hp AS kontak_darurat_hp,
+        ec.alamat AS kontak_darurat_alamat,
+        ec.hubungan AS kontak_darurat_hubungan,
+        
+        -- Beneficial Owner
+        bo.nama AS bo_nama,
+        bo.alamat AS bo_alamat,
+        bo.tempat_lahir AS bo_tempat_lahir,
+        bo.tanggal_lahir AS bo_tanggal_lahir,
+        bo.jenis_kelamin AS bo_jenis_kelamin,
+        bo.kewarganegaraan AS bo_kewarganegaraan,
+        bo.status_pernikahan AS bo_status_pernikahan,
+        bo.jenis_id AS bo_jenis_id,
+        bo.nomor_id AS bo_nomor_id,
+        bo.sumber_dana AS bo_sumber_dana,
+        bo.hubungan AS bo_hubungan,
+        bo.nomor_hp AS bo_nomor_hp,
+        bo.pekerjaan AS bo_pekerjaan,
+        bo.pendapatan_tahunan AS bo_pendapatan_tahun,
+        bo.persetujuan AS bo_persetujuan,
+        
+        -- Branch Info
         c.nama_cabang,
+        
+        -- Approval Info
+        ua.username AS "approvedBy",
+        ur.username AS "rejectedBy",
+
+        -- EDD Bank Lain (JSON Aggregated)
         COALESCE(
-          json_agg(
-            DISTINCT jsonb_build_object(
-              'id', e.id,
-              'edd_id', e.edd_id,
-              'bank_name', e.bank_name,
-              'jenis_rekening', e.jenis_rekening,
-              'nomor_rekening', e.nomor_rekening,
-              'created_at', e.created_at
+          (SELECT JSON_AGG(
+            JSON_BUILD_OBJECT(
+              'id', ebl.id,
+              'edd_id', ebl.edd_id,
+              'bank_name', ebl.bank_name,
+              'jenis_rekening', ebl.jenis_rekening,
+              'nomor_rekening', ebl.nomor_rekening,
+              'created_at', ebl.created_at
             )
-          ) FILTER (WHERE e.id IS NOT NULL), 
+          ) FROM edd_bank_lain ebl WHERE ebl.pengajuan_id = p.id),
           '[]'::json
-        ) as edd_bank_lain,
+        ) AS edd_bank_lain,
+        
+        -- EDD Pekerjaan Lain (JSON Aggregated)
         COALESCE(
-          json_agg(
-            DISTINCT jsonb_build_object(
-              'id', ep.id,
-              'edd_id', ep.edd_id,
-              'jenis_usaha', ep.jenis_usaha,
-              'created_at', ep.created_at
+          (SELECT JSON_AGG(
+            JSON_BUILD_OBJECT(
+              'id', epl.id,
+              'edd_id', epl.edd_id,
+              'jenis_usaha', epl.jenis_usaha,
+              'created_at', epl.created_at
             )
-          ) FILTER (WHERE ep.id IS NOT NULL), 
+          ) FROM edd_pekerjaan_lain epl WHERE epl.pengajuan_id = p.id),
           '[]'::json
-        ) as edd_pekerjaan_lain
-      FROM pengajuan p
+        ) AS edd_pekerjaan_lain
+
+      FROM pengajuan_tabungan p
+      LEFT JOIN cdd_self cs ON p.id = cs.pengajuan_id
+      LEFT JOIN cdd_job job ON p.id = job.pengajuan_id
+      LEFT JOIN account acc ON p.id = acc.pengajuan_id
+      LEFT JOIN cdd_reference ec ON p.id = ec.pengajuan_id
+      LEFT JOIN bo bo ON p.id = bo.pengajuan_id
       LEFT JOIN cabang c ON p.cabang_id = c.id
-      LEFT JOIN edd_bank_lain e ON p.id = e.edd_id
-      LEFT JOIN edd_pekerjaan_lain ep ON p.id = ep.edd_id
+      LEFT JOIN users ua ON p.approved_by = ua.id
+      LEFT JOIN users ur ON p.rejected_by = ur.id
     `;
-    
+
     let queryParams = [];
 
     if (userRole !== 'super') {
@@ -1123,7 +1231,7 @@ export const exportBackup = async (req, res) => {
       queryParams = [adminCabang];
     }
 
-    query += " GROUP BY p.id, c.nama_cabang ORDER BY p.created_at DESC";
+    query += " ORDER BY p.created_at DESC";
 
     const result = await pool.query(query, queryParams);
 
@@ -1134,7 +1242,7 @@ export const exportBackup = async (req, res) => {
         exportedBy: req.user.username,
         userRole: userRole,
         totalRecords: result.rows.length,
-        version: '1.0'
+        version: '2.0' // Version bump for new schema
       },
       data: result.rows
     };
@@ -1142,7 +1250,7 @@ export const exportBackup = async (req, res) => {
     // Set response headers
     const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
     const filename = `backup-data-${timestamp}.json`;
-    
+
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
 
@@ -1165,7 +1273,7 @@ export const exportBackup = async (req, res) => {
  */
 export const importData = async (req, res) => {
   const client = await pool.connect();
-  
+
   try {
     console.log('📥 Import data request received');
     console.log('👤 User:', req.user?.username, 'Role:', req.user?.role);
@@ -1184,7 +1292,7 @@ export const importData = async (req, res) => {
     if (file.mimetype === 'application/json') {
       const fileContent = file.buffer.toString('utf8');
       const parsedData = JSON.parse(fileContent);
-      
+
       // Jika format backup dengan metadata
       if (parsedData.metadata && parsedData.data) {
         importData = parsedData.data;
