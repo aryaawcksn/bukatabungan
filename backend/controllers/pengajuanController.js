@@ -960,3 +960,319 @@ export const getAllCabangForAnalytics = async (req, res) => {
     });
   }
 };
+
+/**
+ * Export data permohonan ke Excel
+ */
+export const exportToExcel = async (req, res) => {
+  try {
+    // Import ExcelJS
+    const ExcelJS = await import('exceljs');
+    const workbook = new ExcelJS.default.Workbook();
+    const worksheet = workbook.addWorksheet('Data Permohonan');
+
+    console.log('📊 Excel export request received');
+    console.log('👤 User:', req.user?.username, 'Role:', req.user?.role, 'Cabang:', req.user?.cabang_id);
+
+    const userRole = req.user.role;
+    const adminCabang = req.user.cabang_id;
+
+    // Query berdasarkan role
+    let query = `
+      SELECT 
+        p.*,
+        c.nama_cabang,
+        e.bank_name, e.jenis_rekening as edd_jenis_rekening, e.nomor_rekening as edd_nomor_rekening,
+        ep.jenis_usaha
+      FROM pengajuan p
+      LEFT JOIN cabang c ON p.cabang_id = c.id
+      LEFT JOIN edd_bank_lain e ON p.id = e.edd_id
+      LEFT JOIN edd_pekerjaan_lain ep ON p.id = ep.edd_id
+    `;
+    
+    let queryParams = [];
+
+    if (userRole !== 'super') {
+      query += " WHERE p.cabang_id = $1";
+      queryParams = [adminCabang];
+    }
+
+    query += " ORDER BY p.created_at DESC";
+
+    const result = await pool.query(query, queryParams);
+
+    // Setup header Excel
+    worksheet.columns = [
+      { header: 'Kode Referensi', key: 'kode_referensi', width: 20 },
+      { header: 'Nama Lengkap', key: 'nama_lengkap', width: 25 },
+      { header: 'NIK', key: 'nik', width: 20 },
+      { header: 'Email', key: 'email', width: 25 },
+      { header: 'No HP', key: 'no_hp', width: 15 },
+      { header: 'Tanggal Lahir', key: 'tanggal_lahir', width: 15 },
+      { header: 'Alamat', key: 'alamat', width: 30 },
+      { header: 'Pekerjaan', key: 'pekerjaan', width: 20 },
+      { header: 'Penghasilan', key: 'penghasilan', width: 20 },
+      { header: 'Jenis Rekening', key: 'jenis_rekening', width: 20 },
+      { header: 'Jenis Kartu', key: 'jenis_kartu', width: 15 },
+      { header: 'Cabang', key: 'nama_cabang', width: 20 },
+      { header: 'Status', key: 'status', width: 12 },
+      { header: 'Tanggal Pengajuan', key: 'created_at', width: 20 },
+    ];
+
+    // Style header
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.getRow(1).fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFE6F3FF' }
+    };
+
+    // Add data
+    result.rows.forEach(row => {
+      worksheet.addRow({
+        kode_referensi: row.kode_referensi,
+        nama_lengkap: row.nama_lengkap,
+        nik: row.nik,
+        email: row.email,
+        no_hp: row.no_hp,
+        tanggal_lahir: row.tanggal_lahir ? new Date(row.tanggal_lahir).toLocaleDateString('id-ID') : '',
+        alamat: row.alamat,
+        pekerjaan: row.pekerjaan,
+        penghasilan: row.penghasilan,
+        jenis_rekening: row.jenis_rekening,
+        jenis_kartu: row.jenis_kartu,
+        nama_cabang: row.nama_cabang,
+        status: row.status,
+        created_at: row.created_at ? new Date(row.created_at).toLocaleString('id-ID') : '',
+      });
+    });
+
+    // Set response headers
+    const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+    const filename = `data-permohonan-${timestamp}.xlsx`;
+    
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+    // Write to response
+    await workbook.xlsx.write(res);
+    res.end();
+
+    console.log(`✅ Excel export completed: ${result.rows.length} records exported`);
+
+  } catch (err) {
+    console.error('❌ Excel export error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Gagal mengekspor data ke Excel',
+      error: err.message
+    });
+  }
+};
+
+/**
+ * Export backup data sebagai JSON
+ */
+export const exportBackup = async (req, res) => {
+  try {
+    console.log('💾 Backup export request received');
+    console.log('👤 User:', req.user?.username, 'Role:', req.user?.role, 'Cabang:', req.user?.cabang_id);
+
+    const userRole = req.user.role;
+    const adminCabang = req.user.cabang_id;
+
+    // Query berdasarkan role
+    let query = `
+      SELECT 
+        p.*,
+        c.nama_cabang,
+        COALESCE(
+          json_agg(
+            DISTINCT jsonb_build_object(
+              'id', e.id,
+              'edd_id', e.edd_id,
+              'bank_name', e.bank_name,
+              'jenis_rekening', e.jenis_rekening,
+              'nomor_rekening', e.nomor_rekening,
+              'created_at', e.created_at
+            )
+          ) FILTER (WHERE e.id IS NOT NULL), 
+          '[]'::json
+        ) as edd_bank_lain,
+        COALESCE(
+          json_agg(
+            DISTINCT jsonb_build_object(
+              'id', ep.id,
+              'edd_id', ep.edd_id,
+              'jenis_usaha', ep.jenis_usaha,
+              'created_at', ep.created_at
+            )
+          ) FILTER (WHERE ep.id IS NOT NULL), 
+          '[]'::json
+        ) as edd_pekerjaan_lain
+      FROM pengajuan p
+      LEFT JOIN cabang c ON p.cabang_id = c.id
+      LEFT JOIN edd_bank_lain e ON p.id = e.edd_id
+      LEFT JOIN edd_pekerjaan_lain ep ON p.id = ep.edd_id
+    `;
+    
+    let queryParams = [];
+
+    if (userRole !== 'super') {
+      query += " WHERE p.cabang_id = $1";
+      queryParams = [adminCabang];
+    }
+
+    query += " GROUP BY p.id, c.nama_cabang ORDER BY p.created_at DESC";
+
+    const result = await pool.query(query, queryParams);
+
+    // Prepare backup data
+    const backupData = {
+      metadata: {
+        exportedAt: new Date().toISOString(),
+        exportedBy: req.user.username,
+        userRole: userRole,
+        totalRecords: result.rows.length,
+        version: '1.0'
+      },
+      data: result.rows
+    };
+
+    // Set response headers
+    const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+    const filename = `backup-data-${timestamp}.json`;
+    
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+    res.json(backupData);
+
+    console.log(`✅ Backup export completed: ${result.rows.length} records exported`);
+
+  } catch (err) {
+    console.error('❌ Backup export error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Gagal membuat backup data',
+      error: err.message
+    });
+  }
+};
+
+/**
+ * Import data dari file
+ */
+export const importData = async (req, res) => {
+  const client = await pool.connect();
+  
+  try {
+    console.log('📥 Import data request received');
+    console.log('👤 User:', req.user?.username, 'Role:', req.user?.role);
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'File tidak ditemukan'
+      });
+    }
+
+    const file = req.file;
+    let importData;
+
+    // Parse file berdasarkan tipe
+    if (file.mimetype === 'application/json') {
+      const fileContent = file.buffer.toString('utf8');
+      const parsedData = JSON.parse(fileContent);
+      
+      // Jika format backup dengan metadata
+      if (parsedData.metadata && parsedData.data) {
+        importData = parsedData.data;
+      } else if (Array.isArray(parsedData)) {
+        importData = parsedData;
+      } else {
+        throw new Error('Format JSON tidak valid');
+      }
+    } else {
+      throw new Error('Format file tidak didukung. Gunakan JSON untuk import.');
+    }
+
+    if (!Array.isArray(importData) || importData.length === 0) {
+      throw new Error('Data import kosong atau format tidak valid');
+    }
+
+    await client.query('BEGIN');
+
+    let importedCount = 0;
+    let skippedCount = 0;
+
+    for (const item of importData) {
+      try {
+        // Cek apakah data sudah ada berdasarkan kode_referensi
+        const existingCheck = await client.query(
+          'SELECT id FROM pengajuan WHERE kode_referensi = $1',
+          [item.kode_referensi]
+        );
+
+        if (existingCheck.rows.length > 0) {
+          skippedCount++;
+          continue;
+        }
+
+        // Insert data baru
+        const insertQuery = `
+          INSERT INTO pengajuan (
+            kode_referensi, nama_lengkap, nik, email, no_hp, tanggal_lahir,
+            alamat, pekerjaan, penghasilan, jenis_rekening, jenis_kartu,
+            cabang_id, status, created_at
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+        `;
+
+        await client.query(insertQuery, [
+          item.kode_referensi || `IMP-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          item.nama_lengkap || '',
+          item.nik || '',
+          item.email || '',
+          item.no_hp || '',
+          item.tanggal_lahir || null,
+          item.alamat || '',
+          item.pekerjaan || '',
+          item.penghasilan || '',
+          item.jenis_rekening || '',
+          item.jenis_kartu || '',
+          item.cabang_id || req.user.cabang_id,
+          item.status || 'pending',
+          item.created_at || new Date()
+        ]);
+
+        importedCount++;
+      } catch (itemError) {
+        console.error('Error importing item:', itemError);
+        skippedCount++;
+      }
+    }
+
+    await client.query('COMMIT');
+
+    console.log(`✅ Import completed: ${importedCount} imported, ${skippedCount} skipped`);
+
+    res.json({
+      success: true,
+      message: `Import berhasil diselesaikan`,
+      imported: importedCount,
+      skipped: skippedCount,
+      total: importData.length
+    });
+
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('❌ Import error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Gagal mengimpor data',
+      error: err.message
+    });
+  } finally {
+    client.release();
+  }
+};

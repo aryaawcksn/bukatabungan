@@ -15,6 +15,7 @@ import type { Cabang } from './components/CabangSetting';
 const SubmissionTable = lazy(() => import('./components/SubmissionTable').then(module => ({ default: module.SubmissionTable })));
 const CabangSetting = lazy(() => import('./components/CabangSetting'));
 const AccountSetting = lazy(() => import('./components/AccountSetting'));
+const DataManagement = lazy(() => import('./components/DataManagement'));
 const FormDetailDialog = lazy(() => import('./components/form-detail-dialog').then(module => ({ default: module.FormDetailDialog })));
 const ApprovalDialog = lazy(() => import('./components/approval-dialog').then(module => ({ default: module.ApprovalDialog })));
 
@@ -335,6 +336,7 @@ export default function DashboardPage() {
   const [openAccordion, setOpenAccordion] = useState({
     cabang: false,
     account: false,
+    dataManagement: false,
   });
 
   
@@ -1141,6 +1143,49 @@ const scrollToTop = () => {
               />
             </Suspense>
           )}
+        </div>
+      </div>
+    </div>
+
+    {/* Accordion: Olah Data */}
+    <div className="bg-white border border-slate-200 rounded-xl shadow-sm">
+      {/* Header Accordion */}
+      <button
+        onClick={() =>
+          setOpenAccordion(prev => ({ ...prev, dataManagement: !prev.dataManagement }))
+        }
+        className="w-full flex items-center justify-between p-5 text-left hover:bg-slate-50 transition-all duration-500"
+      >
+        <div>
+          <h4 className="text-xl font-semibold text-slate-900">Olah Data</h4>
+          <p className="text-slate-500 text-sm">
+            Export, import, dan backup data permohonan.
+          </p>
+        </div>
+
+        <svg
+          className={`w-5 h-5 text-slate-600 transition-transform ${
+            openAccordion.dataManagement ? "rotate-180" : ""
+          }`}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {/* Body Accordion */}
+      <div
+        className={`overflow-hidden transition-all duration-500 ${
+          openAccordion.dataManagement ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        <div className="p-6 border-t border-slate-200">
+          <Suspense fallback={<LoadingSpinner />}>
+            <DataManagement onDataImported={() => fetchSubmissions(false)} />
+          </Suspense>
         </div>
       </div>
     </div>
