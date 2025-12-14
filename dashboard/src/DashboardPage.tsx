@@ -166,17 +166,12 @@ export const mapBackendDataToFormSubmission = (data: any): FormSubmission => {
     if (!jenisKartu) return '';
     const normalized = jenisKartu.toLowerCase().trim();
     const map: Record<string, string> = {
-      'silver': 'Kartu Debit Silver',
-      'gold': 'Kartu Debit Gold',
-      'platinum': 'Kartu Debit Platinum',
-      'silver-card': 'Kartu Debit Silver',
-      'gold-card': 'Kartu Debit Gold',
-      'platinum-card': 'Kartu Debit Platinum',
-      'mutiara': 'Tabungan Mutiara',
-      'bisnis': 'Tabungan Bank Sleman',
-      'simpel': 'Tabungan Simpel',
-      'individu': 'Tabungan Individu',
-      'promosi': 'Tabungan Promosi'
+      'silver': 'Silver',
+      'gold': 'Gold',
+      'platinum': 'Platinum',
+      'silver-card': 'Silver',
+      'gold-card': 'Gold',
+      'platinum-card': 'Platinum'
     };
     // Jika ada di map, return mapped value, jika tidak return as-is dengan format yang lebih baik
     if (map[normalized]) {

@@ -222,13 +222,15 @@ export function FormDetailDialog({ submission, open, onClose, onApprove, onRejec
                       <Wallet className="w-5 h-5 text-blue-600" />
                       {detailSubmission.savingsType || "-"}
                   </div>
-                  <div className="text-sm text-slate-500">{detailSubmission.accountInfo.accountType}</div>
+                  <div className="text-sm text-slate-500">{detailSubmission.personalData.tipeNasabah === 'lama' ? 'Nasabah Lama' : 'Nasabah Baru'}</div>
               </div>
               <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm flex flex-col gap-1">
                    <div className="text-xs text-slate-500 uppercase font-semibold">Jenis Kartu</div>
                    <div className="text-lg font-bold text-slate-800 flex items-center gap-2">
                        <CreditCard className="w-5 h-5 text-purple-600" />
-                       {detailSubmission.cardType || "-"}
+                       {detailSubmission.savingsType === 'Mutiara' 
+                         ? (detailSubmission.cardType || "Belum Dipilih")
+                         : "Non Kartu"}
                    </div>
                    <div className="text-sm text-slate-500">
                       {detailSubmission.accountInfo.isForSelf ? 'Milik Sendiri' : 'Untuk Orang Lain'}

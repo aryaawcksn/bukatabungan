@@ -6,8 +6,7 @@ import { Textarea } from '../ui/textarea';
 import { Checkbox } from '../ui/checkbox';
 import type { AccountFormProps } from './types';
 import TermsModal from '../TermsModal';
-import { validateIdentityNumber } from '../../utils/formValidation';
-import { validateMinimumDeposit } from '../../utils/formValidation';
+
 
 // Helper to format number string to IDR currency format
 const formatRupiah = (angka: string) => {
