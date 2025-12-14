@@ -1564,9 +1564,10 @@ export const previewImportData = async (req, res) => {
     if (referensiCodes.length > 0) {
       const placeholders = referensiCodes.map((_, index) => `$${index + 1}`).join(',');
       const existingQuery = `
-        SELECT kode_referensi, status, cabang_id 
-        FROM pengajuan_tabungan 
-        WHERE kode_referensi IN (${placeholders})
+        SELECT cs.kode_referensi, p.status, p.cabang_id 
+        FROM pengajuan_tabungan p
+        LEFT JOIN cdd_self cs ON p.id = cs.pengajuan_id
+        WHERE cs.kode_referensi IN (${placeholders})
       `;
 
       const existingResult = await pool.query(existingQuery, referensiCodes);
