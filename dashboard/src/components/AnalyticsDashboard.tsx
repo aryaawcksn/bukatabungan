@@ -383,7 +383,7 @@ const AnalyticsDashboard = memo(({ submissions, cabangList = [] }: AnalyticsDash
           
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={cardTypeData} layout="horizontal">
+              <BarChart data={cardTypeData} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                 <XAxis 
                   type="number"
@@ -545,7 +545,7 @@ const AnalyticsDashboard = memo(({ submissions, cabangList = [] }: AnalyticsDash
           
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={salaryData} layout="horizontal">
+              <BarChart data={salaryData} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                 <XAxis 
                   type="number"

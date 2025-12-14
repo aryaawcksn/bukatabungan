@@ -14,17 +14,19 @@ const QuickStats = memo(({ submissions }: QuickStatsProps) => {
     const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     
     // Helper function to parse date from submittedAt
-    const parseSubmissionDate = (submittedAt: string) => {
-      try {
-        // Format: "13/12/2024, 10:30" atau "13/12/2024 10:30"
-        const dateStr = submittedAt.split(/[, ]/)[0]; // Ambil bagian tanggal saja
-        const [day, month, year] = dateStr.split('/');
-        return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-      } catch (error) {
-        console.warn('Error parsing date:', submittedAt, error);
-        return new Date(0); // Return epoch jika parsing gagal
-      }
-    };
+          const parseSubmissionDate = (submittedAt: string) => {
+        try {
+          const cleaned = submittedAt.replace(',', '');
+          const [datePart, timePart] = cleaned.split(' ');
+          const [d, m, y] = datePart.split('/').map(Number);
+          const [hh = 0, mm = 0] = (timePart || '').split(':').map(Number);
+
+          return new Date(y, m - 1, d, hh, mm);
+        } catch {
+          return new Date(0);
+        }
+      };
+
     
     // Today's stats
     const todaySubmissions = submissions.filter(sub => {

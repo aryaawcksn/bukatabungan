@@ -500,7 +500,9 @@ export default function DashboardPage() {
         const hasChanged = prev.some((item, index) => 
           item.id !== mappedData[index]?.id || 
           item.status !== mappedData[index]?.status ||
-          item.submittedAt !== mappedData[index]?.submittedAt
+          item.submittedAt !== mappedData[index]?.submittedAt ||
+           // Check if we have enriched data that changed
+           (item.jobInfo?.salaryRange !== mappedData[index]?.jobInfo?.salaryRange)
         );
         return hasChanged ? mappedData : prev;
       });
@@ -624,7 +626,9 @@ export default function DashboardPage() {
           const hasChanged = prev.some((item, index) => 
             item.id !== mappedData[index]?.id || 
             item.status !== mappedData[index]?.status ||
-            item.submittedAt !== mappedData[index]?.submittedAt
+            item.submittedAt !== mappedData[index]?.submittedAt ||
+            // Check if we have enriched data (e.g. salary) that was missing before
+            (item.jobInfo?.salaryRange !== mappedData[index]?.jobInfo?.salaryRange)
           );
           return hasChanged ? mappedData : prev;
         });
@@ -983,10 +987,10 @@ const scrollToTop = () => {
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="mb-8">
               <h2 className="text-3xl font-bold text-slate-900 tracking-tight mb-2">
-                📊 Data Analytics & Insights
+                Data Analytics & Insights
               </h2>
               <p className="text-slate-500 text-lg">
-                Analisis mendalam tentang permohonan rekening dan tren bisnis.
+                Analisis permohonan dan tren bisnis.
               </p>
             </div>
 

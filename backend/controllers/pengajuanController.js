@@ -924,7 +924,6 @@ export const getAnalyticsData = async (req, res) => {
 
     // Log untuk debugging
     console.log(`📊 Analytics query executed for user role: ${userRole}, cabang: ${adminCabang}`);
-    console.log(`📊 Analytics query executed for user role: ${userRole}, cabang: ${adminCabang}`);
     console.log(`📊 Returned ${result.rows.length} records`);
 
     // Debug info for first record
