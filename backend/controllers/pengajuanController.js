@@ -1571,6 +1571,9 @@ export const previewImportData = async (req, res) => {
 
     // Cek data yang sudah ada berdasarkan kode_referensi
     const referensiCodes = importData.map(item => item.kode_referensi).filter(Boolean);
+    
+    console.log('🔍 Debug preview - referensiCodes:', referensiCodes.length, 'dari', importData.length, 'total');
+    console.log('🔍 Sample referensi codes:', referensiCodes.slice(0, 3));
 
     if (referensiCodes.length > 0) {
       const placeholders = referensiCodes.map((_, index) => `$${index + 1}`).join(',');
@@ -1589,8 +1592,12 @@ export const previewImportData = async (req, res) => {
       });
 
       // Kategorikan data
+      console.log('🔍 Existing map size:', existingMap.size);
+      console.log('🔍 Sample existing keys:', Array.from(existingMap.keys()).slice(0, 3));
+      
       importData.forEach(item => {
         const existing = existingMap.get(item.kode_referensi);
+        console.log('🔍 Checking item:', item.kode_referensi, 'existing:', !!existing);
 
         if (existing) {
           analysis.existingRecords.push({
@@ -1650,6 +1657,13 @@ export const previewImportData = async (req, res) => {
     }
 
     console.log(`✅ Preview completed: ${analysis.totalRecords} total, ${analysis.newRecords.length} new, ${analysis.existingRecords.length} existing, ${analysis.conflicts.length} conflicts`);
+    console.log('🔍 Analysis breakdown:', {
+      totalRecords: analysis.totalRecords,
+      newRecords: analysis.newRecords.length,
+      existingRecords: analysis.existingRecords.length,
+      conflicts: analysis.conflicts.length,
+      crossCabangWarnings: analysis.crossCabangWarnings?.length || 0
+    });
 
     res.json({
       success: true,
