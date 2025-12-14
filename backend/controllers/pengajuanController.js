@@ -2007,10 +2007,10 @@ export const deleteDataByStatus = async (req, res) => {
       const idPlaceholders = recordIds.map((_, index) => `$${index + 1}`).join(',');
 
       // Delete from related tables
-      await client.query(`DELETE FROM edd_bank_lain WHERE edd_id IN (${idPlaceholders})`, recordIds);
-      await client.query(`DELETE FROM edd_pekerjaan_lain WHERE edd_id IN (${idPlaceholders})`, recordIds);
-      await client.query(`DELETE FROM beneficial_owner WHERE pengajuan_id IN (${idPlaceholders})`, recordIds);
-      await client.query(`DELETE FROM kontak_darurat WHERE pengajuan_id IN (${idPlaceholders})`, recordIds);
+      await client.query(`DELETE FROM edd_bank_lain WHERE pengajuan_id IN (${idPlaceholders})`, recordIds);
+      await client.query(`DELETE FROM edd_pekerjaan_lain WHERE pengajuan_id IN (${idPlaceholders})`, recordIds);
+      await client.query(`DELETE FROM bo WHERE pengajuan_id IN (${idPlaceholders})`, recordIds);
+      await client.query(`DELETE FROM cdd_reference WHERE pengajuan_id IN (${idPlaceholders})`, recordIds);
       await client.query(`DELETE FROM account WHERE pengajuan_id IN (${idPlaceholders})`, recordIds);
       await client.query(`DELETE FROM cdd_job WHERE pengajuan_id IN (${idPlaceholders})`, recordIds);
       await client.query(`DELETE FROM cdd_self WHERE pengajuan_id IN (${idPlaceholders})`, recordIds);
