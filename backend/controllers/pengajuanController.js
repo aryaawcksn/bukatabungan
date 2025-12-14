@@ -981,7 +981,7 @@ export const exportToExcel = async (req, res) => {
 
     const userRole = req.user.role;
     const adminCabang = req.user.cabang_id;
-    const { fullData, startDate, endDate } = req.query;
+    const { fullData, startDate, endDate, cabangId } = req.query;
 
     // Query berdasarkan role - menggunakan struktur yang sudah terbukti bekerja dari getAllPengajuan
     let query = `

@@ -44,10 +44,13 @@ export default function DataManagement({ onDataImported, cabangList = [], userRo
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [showBackupModal, setShowBackupModal] = useState(false);
   const [selectedBackupCabang, setSelectedBackupCabang] = useState<number | 'all'>('all');
+  const [showExcelModal, setShowExcelModal] = useState(false);
+  const [selectedExcelCabang, setSelectedExcelCabang] = useState<number | 'all'>('all');
+  const [excelFullData, setExcelFullData] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Export data sebagai Excel
-  const handleExportExcel = async (fullData = false) => {
+  const handleExportExcel = async (fullData = false, cabangId?: number | 'all') => {
     setIsExporting(true);
     try {
       let url = `${API_BASE_URL}/api/pengajuan/export/excel`;
@@ -57,6 +60,7 @@ export default function DataManagement({ onDataImported, cabangList = [], userRo
       if (fullData) params.append('fullData', 'true');
       if (dateRange.startDate) params.append('startDate', dateRange.startDate);
       if (dateRange.endDate) params.append('endDate', dateRange.endDate);
+      if (cabangId && cabangId !== 'all') params.append('cabangId', cabangId.toString());
       
       if (params.toString()) {
         url += `?${params.toString()}`;
@@ -427,7 +431,14 @@ export default function DataManagement({ onDataImported, cabangList = [], userRo
                 <p className="text-xs font-medium text-slate-700">Export Excel</p>
                 <div className="flex gap-2">
                   <Button
-                    onClick={() => handleExportExcel(false)}
+                    onClick={() => {
+                      if (userRole === 'super') {
+                        setExcelFullData(false);
+                        setShowExcelModal(true);
+                      } else {
+                        handleExportExcel(false);
+                      }
+                    }}
                     disabled={isExporting}
                     className="bg-green-600 hover:bg-green-700 text-white flex-1"
                     size="sm"
@@ -440,7 +451,14 @@ export default function DataManagement({ onDataImported, cabangList = [], userRo
                     Data Utama
                   </Button>
                   <Button
-                    onClick={() => handleExportExcel(true)}
+                    onClick={() => {
+                      if (userRole === 'super') {
+                        setExcelFullData(true);
+                        setShowExcelModal(true);
+                      } else {
+                        handleExportExcel(true);
+                      }
+                    }}
                     disabled={isExporting}
                     variant="outline"
                     className="border-green-300 text-green-700 hover:bg-green-50 flex-1"
@@ -968,6 +986,92 @@ export default function DataManagement({ onDataImported, cabangList = [], userRo
                   <Archive className="w-4 h-4 mr-2" />
                 )}
                 Backup Data
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Excel Export Modal for Super Admin */}
+      {showExcelModal && userRole === 'super' && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-2xl max-w-md w-full mx-4 animate-in zoom-in duration-300">
+            
+            {/* Icon */}
+            <div className="relative w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+              <div className="absolute inset-0 bg-green-100 rounded-full animate-pulse opacity-30" />
+              <div className="relative w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-500 text-white rounded-full flex items-center justify-center shadow-lg">
+                <FileSpreadsheet className="w-8 h-8" />
+              </div>
+            </div>
+
+            {/* Title */}
+            <h2 className="text-2xl font-bold text-slate-900 mb-3 text-center">
+              Export Excel
+            </h2>
+
+            <div className="space-y-4">
+              <p className="text-slate-600 text-sm text-center mb-4">
+                Pilih cabang yang ingin di-export ke Excel:
+              </p>
+              
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-slate-700 text-left">
+                  Pilih Cabang:
+                </label>
+                <select
+                  value={selectedExcelCabang}
+                  onChange={(e) => setSelectedExcelCabang(e.target.value === 'all' ? 'all' : parseInt(e.target.value))}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                >
+                  <option value="all">Semua Cabang</option>
+                  {cabangList.map((cabang) => (
+                    <option key={cabang.id} value={cabang.id}>
+                      {cabang.nama_cabang}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3 mt-4">
+                <p className="text-green-800 text-xs">
+                  📊 Export akan mencakup {excelFullData ? 'data lengkap' : 'data utama'} 
+                  {selectedExcelCabang === 'all' ? ' dari semua cabang' : ` dari cabang yang dipilih`}
+                  {dateRange.startDate || dateRange.endDate ? ' sesuai filter tanggal' : ''}.
+                </p>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 justify-center mt-6">
+              <Button
+                onClick={() => {
+                  setShowExcelModal(false);
+                  setSelectedExcelCabang('all');
+                  setExcelFullData(false);
+                }}
+                variant="outline"
+                className="px-6 py-2.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium transition-all"
+              >
+                Batal
+              </Button>
+
+              <Button
+                onClick={() => {
+                  handleExportExcel(excelFullData, selectedExcelCabang);
+                  setShowExcelModal(false);
+                  setSelectedExcelCabang('all');
+                  setExcelFullData(false);
+                }}
+                disabled={isExporting}
+                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:opacity-90 font-semibold shadow-lg transition-all"
+              >
+                {isExporting ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <FileSpreadsheet className="w-4 h-4 mr-2" />
+                )}
+                Export Excel
               </Button>
             </div>
           </div>
