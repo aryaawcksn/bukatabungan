@@ -983,7 +983,7 @@ export const exportToExcel = async (req, res) => {
     const adminCabang = req.user.cabang_id;
     const { fullData, startDate, endDate } = req.query;
 
-    // Query berdasarkan role dengan JOIN ke tabel-tabel baru
+    // Query berdasarkan role - menggunakan struktur yang sudah terbukti bekerja dari getAllPengajuan
     let query = `
       SELECT 
         p.id,
@@ -1014,6 +1014,7 @@ export const exportToExcel = async (req, res) => {
         cs.status_rumah,
         cs.tipe_nasabah,
         cs.nomor_rekening_lama,
+        cs.rekening_untuk_sendiri,
         cj.pekerjaan,
         cj.nama_perusahaan AS tempat_bekerja,
         cj.alamat_perusahaan AS alamat_kantor,
@@ -1027,7 +1028,6 @@ export const exportToExcel = async (req, res) => {
         acc.tabungan_tipe AS jenis_rekening,
         acc.atm_tipe AS jenis_kartu,
         acc.nominal_setoran,
-        cs.rekening_untuk_sendiri,
         kd.nama AS kontak_darurat_nama,
         kd.no_hp AS kontak_darurat_hp,
         kd.alamat AS kontak_darurat_alamat,
@@ -1045,7 +1045,7 @@ export const exportToExcel = async (req, res) => {
         bo.hubungan AS bo_hubungan,
         bo.nomor_hp AS bo_nomor_hp,
         bo.pekerjaan AS bo_pekerjaan,
-        bo.pendapatan_tahun AS bo_pendapatan_tahun,
+        bo.pendapatan_tahunan AS bo_pendapatan_tahun,
         bo.persetujuan AS bo_persetujuan,
         c.nama_cabang
       FROM pengajuan_tabungan p
