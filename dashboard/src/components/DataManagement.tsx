@@ -772,6 +772,31 @@ export default function DataManagement({ onDataImported, cabangList = [], userRo
               </div>
             </div>
 
+            {/* Cross-Cabang Warning */}
+            {importPreviewData.crossCabangWarnings && importPreviewData.crossCabangWarnings.length > 0 && (
+              <div className="mb-6 bg-amber-50 border border-amber-200 rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-amber-800 mb-2">🚫 Peringatan Cross-Cabang</h3>
+                <p className="text-amber-700 text-sm mb-3">
+                  Data berikut dari cabang lain akan dilewati (admin cabang hanya bisa import data cabang sendiri):
+                </p>
+                <div className="max-h-32 overflow-y-auto space-y-2">
+                  {importPreviewData.crossCabangWarnings.slice(0, 5).map((warning: any, index: number) => (
+                    <div key={index} className="bg-white rounded p-2 text-xs">
+                      <div className="font-medium">{warning.nama_lengkap} ({warning.kode_referensi})</div>
+                      <div className="text-slate-600">
+                        Cabang {warning.originalCabang} → Akan dilewati
+                      </div>
+                    </div>
+                  ))}
+                  {importPreviewData.crossCabangWarnings.length > 5 && (
+                    <div className="text-xs text-amber-600">
+                      +{importPreviewData.crossCabangWarnings.length - 5} data lainnya akan dilewati
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Conflicts Warning */}
             {importPreviewData.conflicts.length > 0 && (
               <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">

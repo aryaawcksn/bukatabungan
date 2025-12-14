@@ -1546,13 +1546,24 @@ export const previewImportData = async (req, res) => {
       cabangBreakdown: {},
       existingRecords: [],
       newRecords: [],
-      conflicts: []
+      conflicts: [],
+      crossCabangWarnings: []
     };
 
     // Analisis status dan cabang
     importData.forEach(item => {
       const status = item.status || 'pending';
       const cabangId = item.cabang_id || req.user.cabang_id;
+
+      // Check for cross-cabang import (admin cabang only)
+      if (req.user.role !== 'super' && item.cabang_id && item.cabang_id !== req.user.cabang_id) {
+        analysis.crossCabangWarnings.push({
+          kode_referensi: item.kode_referensi,
+          nama_lengkap: item.nama_lengkap,
+          originalCabang: item.cabang_id,
+          userCabang: req.user.cabang_id
+        });
+      }
 
       analysis.statusBreakdown[status] = (analysis.statusBreakdown[status] || 0) + 1;
       analysis.cabangBreakdown[cabangId] = (analysis.cabangBreakdown[cabangId] || 0) + 1;
@@ -1707,6 +1718,21 @@ export const importData = async (req, res) => {
 
     for (const item of importData) {
       try {
+        // Role-based access control untuk cabang_id
+        let targetCabangId = item.cabang_id || req.user.cabang_id;
+        
+        // Admin cabang hanya bisa import ke cabang mereka sendiri
+        if (req.user.role !== 'super' && item.cabang_id && item.cabang_id !== req.user.cabang_id) {
+          console.log(`⚠️ Admin cabang ${req.user.cabang_id} mencoba import data cabang ${item.cabang_id} - dilewati`);
+          skippedCount++;
+          continue;
+        }
+        
+        // Pastikan admin cabang hanya import ke cabang mereka
+        if (req.user.role !== 'super') {
+          targetCabangId = req.user.cabang_id;
+        }
+
         // Cek apakah data sudah ada berdasarkan kode_referensi
         const existingCheck = await client.query(
           `SELECT p.id, p.status 
@@ -1748,7 +1774,7 @@ export const importData = async (req, res) => {
         `;
 
         const pengajuanRes = await client.query(insertPengajuanQuery, [
-          item.cabang_id || req.user.cabang_id,
+          targetCabangId,
           item.status || 'pending',
           item.created_at || new Date()
         ]);
@@ -1895,9 +1921,10 @@ export const importData = async (req, res) => {
     console.log(`✅ Import completed: ${importedCount} imported, ${overwrittenCount} overwritten, ${skippedCount} skipped`);
 
     // Log aktivitas import
+    const roleInfo = req.user.role === 'super' ? 'Super Admin' : `Admin Cabang ${req.user.cabang_id}`;
     const logDescription = overwriteMode
-      ? `Import Data (Overwrite): ${importedCount} baru, ${overwrittenCount} ditimpa, ${skippedCount} dilewati dari ${importData.length} total`
-      : `Import Data: ${importedCount} berhasil, ${skippedCount} dilewati dari ${importData.length} total`;
+      ? `Import Data (Overwrite) oleh ${roleInfo}: ${importedCount} baru, ${overwrittenCount} ditimpa, ${skippedCount} dilewati dari ${importData.length} total`
+      : `Import Data oleh ${roleInfo}: ${importedCount} berhasil, ${skippedCount} dilewati dari ${importData.length} total`;
 
     await logUserActivity(
       req.user.id,
