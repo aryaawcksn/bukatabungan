@@ -12,6 +12,7 @@ import {
   Calendar,
   Filter
 } from 'lucide-react';
+
 import { Button } from './ui/button';
 import { toast } from 'sonner';
 import { API_BASE_URL } from '../config/api';
@@ -375,7 +376,7 @@ export default function DataManagement({ onDataImported, cabangList = [], userRo
               <div>
                 <h4 className="text-lg font-semibold text-slate-900">Filter Tanggal Export</h4>
                 <p className="text-slate-600 text-sm">
-                  Atur rentang tanggal untuk export data (opsional)
+                  Atur rentang tanggal untuk export data (Kosongkan jika tidak perlu)
                 </p>
               </div>
               <Button
@@ -439,7 +440,7 @@ export default function DataManagement({ onDataImported, cabangList = [], userRo
           <div className="flex-1">
             <h4 className="text-lg font-semibold text-slate-900 mb-2">Export Data</h4>
             <p className="text-slate-600 text-sm mb-4">
-              Unduh data permohonan dalam berbagai format untuk analisis atau backup
+              Unduh data permohonan dalam format Excel atau buat backup lengkap dalam format JSON
             </p>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -528,13 +529,13 @@ export default function DataManagement({ onDataImported, cabangList = [], userRo
           <div className="flex-1">
             <h4 className="text-lg font-semibold text-slate-900 mb-2">Import Data</h4>
             <p className="text-slate-600 text-sm mb-4">
-              Unggah file untuk mengimpor data permohonan (JSON)
+              Unggah file data permohonan, hanya mendukung format JSON!
             </p>
             
             <input
               ref={fileInputRef}
               type="file"
-              accept=".json,.xlsx,.xls,.csv"
+              accept=".json"
               onChange={handleFileSelect}
               className="hidden"
             />
@@ -666,13 +667,14 @@ export default function DataManagement({ onDataImported, cabangList = [], userRo
           <div className="text-sm">
             <p className="text-amber-800 font-medium mb-1">Catatan Penting:</p>
             <ul className="text-amber-700 space-y-1 text-xs">
-              <li>• Format yang didukung: JSON, Excel (.xlsx, .xls), CSV</li>
+              <li>• Format yang didukung: JSON, Excel (.xlsx, .xls)</li>
               <li>• Ukuran file maksimal: 10MB</li>
               <li>• Backup JSON berisi data lengkap termasuk metadata</li>
               <li>• Excel "Data Utama" berisi kolom penting, "Data Lengkap" berisi semua field</li>
               <li>• Import akan menambahkan data baru, tidak mengganti yang ada</li>
               <li>• Filter tanggal berlaku untuk semua jenis export</li>
               <li>• Fitur hapus data bersifat permanen dan tidak dapat dibatalkan</li>
+              <li>• Hubungi developer jika menemukan bug</li>
             </ul>
           </div>
         </div>

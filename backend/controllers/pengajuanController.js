@@ -1819,18 +1819,50 @@ export const importData = async (req, res) => {
 
         if (existingCheck.rows.length > 0) {
           if (overwriteMode) {
-            // Update data yang sudah ada
+            // Update data yang sudah ada dengan semua field approval
             const pengajuanId = existingCheck.rows[0].id;
-            const updateQuery = `
+            const newStatus = item.status || 'pending';
+            
+            let updateQuery = `
               UPDATE pengajuan_tabungan 
-              SET status = $1
-              WHERE id = $2
+              SET status = $1, updated_at = NOW()
             `;
+            let updateParams = [newStatus, pengajuanId];
+            let paramIndex = 2;
+            
+            // Update approval fields berdasarkan status
+            if (newStatus === 'approved') {
+              updateQuery += `, approved_at = $${++paramIndex}, rejected_at = NULL, rejected_by = NULL`;
+              updateParams.splice(-1, 0, item.approved_at || new Date());
+              
+              if (item.approvedBy) {
+                // Cari user ID berdasarkan username
+                const userQuery = await client.query('SELECT id FROM users WHERE username = $1', [item.approvedBy]);
+                if (userQuery.rows.length > 0) {
+                  updateQuery += `, approved_by = $${++paramIndex}`;
+                  updateParams.splice(-1, 0, userQuery.rows[0].id);
+                }
+              }
+            } else if (newStatus === 'rejected') {
+              updateQuery += `, rejected_at = $${++paramIndex}, approved_at = NULL, approved_by = NULL`;
+              updateParams.splice(-1, 0, item.rejected_at || new Date());
+              
+              if (item.rejectedBy) {
+                // Cari user ID berdasarkan username
+                const userQuery = await client.query('SELECT id FROM users WHERE username = $1', [item.rejectedBy]);
+                if (userQuery.rows.length > 0) {
+                  updateQuery += `, rejected_by = $${++paramIndex}`;
+                  updateParams.splice(-1, 0, userQuery.rows[0].id);
+                }
+              }
+            } else {
+              // Status pending - clear approval fields
+              updateQuery += `, approved_at = NULL, approved_by = NULL, rejected_at = NULL, rejected_by = NULL`;
+            }
+            
+            updateQuery += ` WHERE id = $${paramIndex + 1}`;
 
-            await client.query(updateQuery, [
-              item.status || 'pending',
-              pengajuanId
-            ]);
+            await client.query(updateQuery, updateParams);
 
             overwrittenCount++;
             continue; // Skip the insert part
@@ -1857,19 +1889,54 @@ export const importData = async (req, res) => {
           status: item.status || 'pending'
         });
 
-        // Insert data baru (Multi-table insert)
-        const insertPengajuanQuery = `
+        // Insert data baru (Multi-table insert) dengan approval fields
+        const newStatus = item.status || 'pending';
+        let insertPengajuanQuery = `
           INSERT INTO pengajuan_tabungan (
             cabang_id, status, created_at
-          ) VALUES ($1, $2, $3)
-          RETURNING id
         `;
+        let insertParams = [targetCabangId, newStatus, item.created_at || new Date()];
+        let paramIndex = 3;
+        
+        // Tambahkan approval fields berdasarkan status
+        if (newStatus === 'approved') {
+          insertPengajuanQuery += `, approved_at`;
+          insertParams.push(item.approved_at || new Date());
+          paramIndex++;
+          
+          if (item.approvedBy) {
+            // Cari user ID berdasarkan username
+            const userQuery = await client.query('SELECT id FROM users WHERE username = $1', [item.approvedBy]);
+            if (userQuery.rows.length > 0) {
+              insertPengajuanQuery += `, approved_by`;
+              insertParams.push(userQuery.rows[0].id);
+              paramIndex++;
+            }
+          }
+        } else if (newStatus === 'rejected') {
+          insertPengajuanQuery += `, rejected_at`;
+          insertParams.push(item.rejected_at || new Date());
+          paramIndex++;
+          
+          if (item.rejectedBy) {
+            // Cari user ID berdasarkan username
+            const userQuery = await client.query('SELECT id FROM users WHERE username = $1', [item.rejectedBy]);
+            if (userQuery.rows.length > 0) {
+              insertPengajuanQuery += `, rejected_by`;
+              insertParams.push(userQuery.rows[0].id);
+              paramIndex++;
+            }
+          }
+        }
+        
+        insertPengajuanQuery += `) VALUES (`;
+        for (let i = 1; i <= insertParams.length; i++) {
+          insertPengajuanQuery += `$${i}`;
+          if (i < insertParams.length) insertPengajuanQuery += ', ';
+        }
+        insertPengajuanQuery += `) RETURNING id`;
 
-        const pengajuanRes = await client.query(insertPengajuanQuery, [
-          targetCabangId,
-          item.status || 'pending',
-          item.created_at || new Date()
-        ]);
+        const pengajuanRes = await client.query(insertPengajuanQuery, insertParams);
         const pengajuanId = pengajuanRes.rows[0].id;
 
         // Insert cdd_self
