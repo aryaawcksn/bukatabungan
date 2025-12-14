@@ -1052,8 +1052,8 @@ export const exportToExcel = async (req, res) => {
       LEFT JOIN cdd_self cs ON p.id = cs.pengajuan_id
       LEFT JOIN cdd_job cj ON p.id = cj.pengajuan_id
       LEFT JOIN account acc ON p.id = acc.pengajuan_id
-      LEFT JOIN kontak_darurat kd ON p.id = kd.pengajuan_id
-      LEFT JOIN beneficial_owner bo ON p.id = bo.pengajuan_id
+      LEFT JOIN cdd_reference kd ON p.id = kd.pengajuan_id
+      LEFT JOIN bo bo ON p.id = bo.pengajuan_id
       LEFT JOIN cabang c ON p.cabang_id = c.id
     `;
 
@@ -1522,7 +1522,7 @@ export const previewImportData = async (req, res) => {
     if (file.mimetype === 'application/json') {
       const fileContent = file.buffer.toString('utf8');
       const parsedData = JSON.parse(fileContent);
-      
+
       // Jika format backup dengan metadata
       if (parsedData.metadata && parsedData.data) {
         importData = parsedData.data;
@@ -1553,14 +1553,14 @@ export const previewImportData = async (req, res) => {
     importData.forEach(item => {
       const status = item.status || 'pending';
       const cabangId = item.cabang_id || req.user.cabang_id;
-      
+
       analysis.statusBreakdown[status] = (analysis.statusBreakdown[status] || 0) + 1;
       analysis.cabangBreakdown[cabangId] = (analysis.cabangBreakdown[cabangId] || 0) + 1;
     });
 
     // Cek data yang sudah ada berdasarkan kode_referensi
     const referensiCodes = importData.map(item => item.kode_referensi).filter(Boolean);
-    
+
     if (referensiCodes.length > 0) {
       const placeholders = referensiCodes.map((_, index) => `$${index + 1}`).join(',');
       const existingQuery = `
@@ -1568,10 +1568,10 @@ export const previewImportData = async (req, res) => {
         FROM pengajuan_tabungan 
         WHERE kode_referensi IN (${placeholders})
       `;
-      
+
       const existingResult = await pool.query(existingQuery, referensiCodes);
       const existingMap = new Map();
-      
+
       existingResult.rows.forEach(row => {
         existingMap.set(row.kode_referensi, row);
       });
@@ -1579,7 +1579,7 @@ export const previewImportData = async (req, res) => {
       // Kategorikan data
       importData.forEach(item => {
         const existing = existingMap.get(item.kode_referensi);
-        
+
         if (existing) {
           analysis.existingRecords.push({
             kode_referensi: item.kode_referensi,
@@ -1588,7 +1588,7 @@ export const previewImportData = async (req, res) => {
             newStatus: item.status || 'pending',
             willOverwrite: existing.status !== (item.status || 'pending')
           });
-          
+
           // Cek konflik status
           if (existing.status !== (item.status || 'pending')) {
             analysis.conflicts.push({
@@ -1622,12 +1622,12 @@ export const previewImportData = async (req, res) => {
     if (cabangIds.length > 0) {
       const cabangQuery = `SELECT id, nama_cabang FROM cabang WHERE id IN (${cabangIds.map((_, i) => `$${i + 1}`).join(',')})`;
       const cabangResult = await pool.query(cabangQuery, cabangIds);
-      
+
       const cabangNames = {};
       cabangResult.rows.forEach(row => {
         cabangNames[row.id] = row.nama_cabang;
       });
-      
+
       // Replace cabang IDs with names
       const namedCabangBreakdown = {};
       Object.entries(analysis.cabangBreakdown).forEach(([id, count]) => {
@@ -1720,12 +1720,12 @@ export const importData = async (req, res) => {
               SET status = $1, updated_at = NOW()
               WHERE kode_referensi = $2
             `;
-            
+
             await client.query(updateQuery, [
               item.status || 'pending',
               item.kode_referensi
             ]);
-            
+
             overwrittenCount++;
           } else {
             skippedCount++;
@@ -1771,10 +1771,10 @@ export const importData = async (req, res) => {
     console.log(`✅ Import completed: ${importedCount} imported, ${overwrittenCount} overwritten, ${skippedCount} skipped`);
 
     // Log aktivitas import
-    const logDescription = overwriteMode 
+    const logDescription = overwriteMode
       ? `Import Data (Overwrite): ${importedCount} baru, ${overwrittenCount} ditimpa, ${skippedCount} dilewati dari ${importData.length} total`
       : `Import Data: ${importedCount} berhasil, ${skippedCount} dilewati dari ${importData.length} total`;
-      
+
     await logUserActivity(
       req.user.id,
       'IMPORT_DATA',
@@ -1810,7 +1810,7 @@ export const importData = async (req, res) => {
  */
 export const deleteDataByStatus = async (req, res) => {
   const client = await pool.connect();
-  
+
   try {
     console.log('🗑️ Delete data request received');
     console.log('👤 User:', req.user?.username, 'Role:', req.user?.role, 'Cabang:', req.user?.cabang_id);
@@ -1881,7 +1881,7 @@ export const deleteDataByStatus = async (req, res) => {
     // Delete related records first (to handle foreign key constraints)
     if (recordIds.length > 0) {
       const idPlaceholders = recordIds.map((_, index) => `$${index + 1}`).join(',');
-      
+
       // Delete from related tables
       await client.query(`DELETE FROM edd_bank_lain WHERE edd_id IN (${idPlaceholders})`, recordIds);
       await client.query(`DELETE FROM edd_pekerjaan_lain WHERE edd_id IN (${idPlaceholders})`, recordIds);
@@ -1928,7 +1928,7 @@ export const deleteDataByStatus = async (req, res) => {
       approved: 'data disetujui',
       rejected: 'data ditolak'
     };
-    
+
     let logDescription = `Hapus ${statusTextForLog[status]}: ${recordCount} records`;
     if (userRole === 'super' && cabangId && cabangId !== 'all') {
       const cabangQuery = await pool.query('SELECT nama_cabang FROM cabang WHERE id = $1', [cabangId]);
