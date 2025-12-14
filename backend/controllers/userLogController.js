@@ -1,5 +1,30 @@
 import pool from "../config/db.js";
 
+// ✅ Helper function untuk mencatat log aktivitas
+export const logUserActivity = async (userId, action, description, cabangId = null, ipAddress = null, userAgent = null) => {
+  try {
+    const query = `
+      INSERT INTO user_log (user_id, action, description, cabang_id, ip_address, user_agent, performed_by, created_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+    `;
+    
+    await pool.query(query, [
+      userId,
+      action,
+      description,
+      cabangId,
+      ipAddress,
+      userAgent,
+      userId // performed_by sama dengan user_id untuk aktivitas sendiri
+    ]);
+    
+    console.log(`📝 Log recorded: ${action} by user ${userId}`);
+  } catch (error) {
+    console.error('❌ Error logging user activity:', error);
+    // Don't throw error to prevent breaking main functionality
+  }
+};
+
 // ✅ Ambil log berdasarkan role - super admin lihat semua, admin cabang lihat cabangnya
 export const getUserLogs = async (req, res) => {
   try {

@@ -1,6 +1,7 @@
 import pool from "../config/db.js";
 import { sendEmailNotification } from "../services/emailService.js";
 import { sendWhatsAppNotification } from "../services/whatsappService.js";
+import { logUserActivity } from "./userLogController.js";
 import fs from 'fs';
 
 /**
@@ -976,9 +977,11 @@ export const exportToExcel = async (req, res) => {
 
     console.log('📊 Excel export request received');
     console.log('👤 User:', req.user?.username, 'Role:', req.user?.role, 'Cabang:', req.user?.cabang_id);
+    console.log('🔍 Query params:', req.query);
 
     const userRole = req.user.role;
     const adminCabang = req.user.cabang_id;
+    const { fullData, startDate, endDate } = req.query;
 
     // Query berdasarkan role dengan JOIN ke tabel-tabel baru
     let query = `
@@ -990,53 +993,183 @@ export const exportToExcel = async (req, res) => {
         p.rejected_at,
         cs.kode_referensi,
         cs.nama AS nama_lengkap,
+        cs.alias,
+        cs.jenis_id AS "identityType",
         cs.no_id AS nik,
+        cs.berlaku_id,
         cs.email,
         cs.no_hp,
         cs.tempat_lahir,
         cs.tanggal_lahir,
-        cs.alamat_id AS alamat,
+        cs.jenis_kelamin,
+        cs.status_pernikahan,
+        cs.agama,
+        cs.pendidikan,
         cs.kewarganegaraan,
+        cs.nama_ibu_kandung,
+        cs.npwp,
+        cs.alamat_id AS alamat,
+        cs.alamat_domisili,
+        cs.kode_pos,
+        cs.status_rumah,
+        cs.tipe_nasabah,
+        cs.nomor_rekening_lama,
         cj.pekerjaan,
+        cj.tempat_bekerja,
+        cj.alamat_kantor,
+        cj.telepon_perusahaan,
+        cj.jabatan,
+        cj.bidang_usaha,
         cj.gaji_per_bulan AS penghasilan,
+        cj.sumber_dana,
+        cj.rata_rata_transaksi,
+        cj.tujuan_rekening,
         acc.tabungan_tipe AS jenis_rekening,
         acc.atm_tipe AS jenis_kartu,
+        acc.nominal_setoran,
+        acc.rekening_untuk_sendiri,
+        kd.nama AS kontak_darurat_nama,
+        kd.no_hp AS kontak_darurat_hp,
+        kd.alamat AS kontak_darurat_alamat,
+        kd.hubungan AS kontak_darurat_hubungan,
+        bo.nama AS bo_nama,
+        bo.alamat AS bo_alamat,
+        bo.tempat_lahir AS bo_tempat_lahir,
+        bo.tanggal_lahir AS bo_tanggal_lahir,
+        bo.jenis_kelamin AS bo_jenis_kelamin,
+        bo.kewarganegaraan AS bo_kewarganegaraan,
+        bo.status_pernikahan AS bo_status_pernikahan,
+        bo.jenis_id AS bo_jenis_id,
+        bo.nomor_id AS bo_nomor_id,
+        bo.sumber_dana AS bo_sumber_dana,
+        bo.hubungan AS bo_hubungan,
+        bo.nomor_hp AS bo_nomor_hp,
+        bo.pekerjaan AS bo_pekerjaan,
+        bo.pendapatan_tahun AS bo_pendapatan_tahun,
+        bo.persetujuan AS bo_persetujuan,
         c.nama_cabang
       FROM pengajuan_tabungan p
       LEFT JOIN cdd_self cs ON p.id = cs.pengajuan_id
       LEFT JOIN cdd_job cj ON p.id = cj.pengajuan_id
       LEFT JOIN account acc ON p.id = acc.pengajuan_id
+      LEFT JOIN kontak_darurat kd ON p.id = kd.pengajuan_id
+      LEFT JOIN beneficial_owner bo ON p.id = bo.pengajuan_id
       LEFT JOIN cabang c ON p.cabang_id = c.id
     `;
 
     let queryParams = [];
+    let whereConditions = [];
 
+    // Role-based filtering
     if (userRole !== 'super') {
-      query += " WHERE p.cabang_id = $1";
-      queryParams = [adminCabang];
+      whereConditions.push(`p.cabang_id = $${queryParams.length + 1}`);
+      queryParams.push(adminCabang);
+    }
+
+    // Date range filtering
+    if (startDate) {
+      whereConditions.push(`p.created_at >= $${queryParams.length + 1}`);
+      queryParams.push(startDate);
+    }
+    if (endDate) {
+      whereConditions.push(`p.created_at <= $${queryParams.length + 1}`);
+      queryParams.push(endDate + ' 23:59:59');
+    }
+
+    if (whereConditions.length > 0) {
+      query += ` WHERE ${whereConditions.join(' AND ')}`;
     }
 
     query += " ORDER BY p.created_at DESC";
 
     const result = await pool.query(query, queryParams);
 
-    // Setup header Excel
-    worksheet.columns = [
-      { header: 'Kode Referensi', key: 'kode_referensi', width: 20 },
-      { header: 'Nama Lengkap', key: 'nama_lengkap', width: 25 },
-      { header: 'NIK', key: 'nik', width: 20 },
-      { header: 'Email', key: 'email', width: 25 },
-      { header: 'No HP', key: 'no_hp', width: 15 },
-      { header: 'Tanggal Lahir', key: 'tanggal_lahir', width: 15 },
-      { header: 'Alamat', key: 'alamat', width: 30 },
-      { header: 'Pekerjaan', key: 'pekerjaan', width: 20 },
-      { header: 'Penghasilan', key: 'penghasilan', width: 20 },
-      { header: 'Jenis Rekening', key: 'jenis_rekening', width: 20 },
-      { header: 'Jenis Kartu', key: 'jenis_kartu', width: 15 },
-      { header: 'Cabang', key: 'nama_cabang', width: 20 },
-      { header: 'Status', key: 'status', width: 12 },
-      { header: 'Tanggal Pengajuan', key: 'created_at', width: 20 },
-    ];
+    // Setup header Excel berdasarkan fullData
+    if (fullData === 'true') {
+      // Full data export - semua kolom
+      worksheet.columns = [
+        { header: 'ID', key: 'id', width: 10 },
+        { header: 'Kode Referensi', key: 'kode_referensi', width: 20 },
+        { header: 'Nama Lengkap', key: 'nama_lengkap', width: 25 },
+        { header: 'Alias', key: 'alias', width: 20 },
+        { header: 'Jenis ID', key: 'identityType', width: 15 },
+        { header: 'NIK', key: 'nik', width: 20 },
+        { header: 'Berlaku ID', key: 'berlaku_id', width: 15 },
+        { header: 'Email', key: 'email', width: 25 },
+        { header: 'No HP', key: 'no_hp', width: 15 },
+        { header: 'Tempat Lahir', key: 'tempat_lahir', width: 20 },
+        { header: 'Tanggal Lahir', key: 'tanggal_lahir', width: 15 },
+        { header: 'Jenis Kelamin', key: 'jenis_kelamin', width: 15 },
+        { header: 'Status Pernikahan', key: 'status_pernikahan', width: 18 },
+        { header: 'Agama', key: 'agama', width: 15 },
+        { header: 'Pendidikan', key: 'pendidikan', width: 20 },
+        { header: 'Kewarganegaraan', key: 'kewarganegaraan', width: 18 },
+        { header: 'Nama Ibu Kandung', key: 'nama_ibu_kandung', width: 25 },
+        { header: 'NPWP', key: 'npwp', width: 20 },
+        { header: 'Alamat', key: 'alamat', width: 30 },
+        { header: 'Alamat Domisili', key: 'alamat_domisili', width: 30 },
+        { header: 'Kode Pos', key: 'kode_pos', width: 12 },
+        { header: 'Status Rumah', key: 'status_rumah', width: 15 },
+        { header: 'Tipe Nasabah', key: 'tipe_nasabah', width: 15 },
+        { header: 'Nomor Rekening Lama', key: 'nomor_rekening_lama', width: 20 },
+        { header: 'Pekerjaan', key: 'pekerjaan', width: 20 },
+        { header: 'Tempat Bekerja', key: 'tempat_bekerja', width: 25 },
+        { header: 'Alamat Kantor', key: 'alamat_kantor', width: 30 },
+        { header: 'Telepon Perusahaan', key: 'telepon_perusahaan', width: 18 },
+        { header: 'Jabatan', key: 'jabatan', width: 20 },
+        { header: 'Bidang Usaha', key: 'bidang_usaha', width: 20 },
+        { header: 'Penghasilan', key: 'penghasilan', width: 20 },
+        { header: 'Sumber Dana', key: 'sumber_dana', width: 20 },
+        { header: 'Rata-rata Transaksi', key: 'rata_rata_transaksi', width: 20 },
+        { header: 'Tujuan Rekening', key: 'tujuan_rekening', width: 20 },
+        { header: 'Jenis Rekening', key: 'jenis_rekening', width: 20 },
+        { header: 'Jenis Kartu', key: 'jenis_kartu', width: 15 },
+        { header: 'Nominal Setoran', key: 'nominal_setoran', width: 18 },
+        { header: 'Rekening Untuk Sendiri', key: 'rekening_untuk_sendiri', width: 22 },
+        { header: 'Kontak Darurat Nama', key: 'kontak_darurat_nama', width: 25 },
+        { header: 'Kontak Darurat HP', key: 'kontak_darurat_hp', width: 18 },
+        { header: 'Kontak Darurat Alamat', key: 'kontak_darurat_alamat', width: 30 },
+        { header: 'Kontak Darurat Hubungan', key: 'kontak_darurat_hubungan', width: 22 },
+        { header: 'BO Nama', key: 'bo_nama', width: 25 },
+        { header: 'BO Alamat', key: 'bo_alamat', width: 30 },
+        { header: 'BO Tempat Lahir', key: 'bo_tempat_lahir', width: 20 },
+        { header: 'BO Tanggal Lahir', key: 'bo_tanggal_lahir', width: 18 },
+        { header: 'BO Jenis Kelamin', key: 'bo_jenis_kelamin', width: 18 },
+        { header: 'BO Kewarganegaraan', key: 'bo_kewarganegaraan', width: 20 },
+        { header: 'BO Status Pernikahan', key: 'bo_status_pernikahan', width: 22 },
+        { header: 'BO Jenis ID', key: 'bo_jenis_id', width: 15 },
+        { header: 'BO Nomor ID', key: 'bo_nomor_id', width: 20 },
+        { header: 'BO Sumber Dana', key: 'bo_sumber_dana', width: 18 },
+        { header: 'BO Hubungan', key: 'bo_hubungan', width: 15 },
+        { header: 'BO Nomor HP', key: 'bo_nomor_hp', width: 15 },
+        { header: 'BO Pekerjaan', key: 'bo_pekerjaan', width: 20 },
+        { header: 'BO Pendapatan Tahun', key: 'bo_pendapatan_tahun', width: 20 },
+        { header: 'BO Persetujuan', key: 'bo_persetujuan', width: 15 },
+        { header: 'Cabang', key: 'nama_cabang', width: 20 },
+        { header: 'Status', key: 'status', width: 12 },
+        { header: 'Tanggal Pengajuan', key: 'created_at', width: 20 },
+        { header: 'Tanggal Disetujui', key: 'approved_at', width: 20 },
+        { header: 'Tanggal Ditolak', key: 'rejected_at', width: 20 },
+      ];
+    } else {
+      // Standard export - kolom utama saja
+      worksheet.columns = [
+        { header: 'Kode Referensi', key: 'kode_referensi', width: 20 },
+        { header: 'Nama Lengkap', key: 'nama_lengkap', width: 25 },
+        { header: 'NIK', key: 'nik', width: 20 },
+        { header: 'Email', key: 'email', width: 25 },
+        { header: 'No HP', key: 'no_hp', width: 15 },
+        { header: 'Tanggal Lahir', key: 'tanggal_lahir', width: 15 },
+        { header: 'Alamat', key: 'alamat', width: 30 },
+        { header: 'Pekerjaan', key: 'pekerjaan', width: 20 },
+        { header: 'Penghasilan', key: 'penghasilan', width: 20 },
+        { header: 'Jenis Rekening', key: 'jenis_rekening', width: 20 },
+        { header: 'Jenis Kartu', key: 'jenis_kartu', width: 15 },
+        { header: 'Cabang', key: 'nama_cabang', width: 20 },
+        { header: 'Status', key: 'status', width: 12 },
+        { header: 'Tanggal Pengajuan', key: 'created_at', width: 20 },
+      ];
+    }
 
     // Style header
     worksheet.getRow(1).font = { bold: true };
@@ -1048,7 +1181,7 @@ export const exportToExcel = async (req, res) => {
 
     // Add data
     result.rows.forEach(row => {
-      worksheet.addRow({
+      const baseData = {
         kode_referensi: row.kode_referensi,
         nama_lengkap: row.nama_lengkap,
         nik: row.nik,
@@ -1063,12 +1196,70 @@ export const exportToExcel = async (req, res) => {
         nama_cabang: row.nama_cabang,
         status: row.status,
         created_at: row.created_at ? new Date(row.created_at).toLocaleString('id-ID') : '',
-      });
+      };
+
+      if (fullData === 'true') {
+        // Add all fields for full export
+        worksheet.addRow({
+          ...baseData,
+          id: row.id,
+          alias: row.alias || '',
+          identityType: row.identityType || '',
+          berlaku_id: row.berlaku_id ? new Date(row.berlaku_id).toLocaleDateString('id-ID') : '',
+          tempat_lahir: row.tempat_lahir || '',
+          jenis_kelamin: row.jenis_kelamin || '',
+          status_pernikahan: row.status_pernikahan || '',
+          agama: row.agama || '',
+          pendidikan: row.pendidikan || '',
+          kewarganegaraan: row.kewarganegaraan || '',
+          nama_ibu_kandung: row.nama_ibu_kandung || '',
+          npwp: row.npwp || '',
+          alamat_domisili: row.alamat_domisili || '',
+          kode_pos: row.kode_pos || '',
+          status_rumah: row.status_rumah || '',
+          tipe_nasabah: row.tipe_nasabah || '',
+          nomor_rekening_lama: row.nomor_rekening_lama || '',
+          tempat_bekerja: row.tempat_bekerja || '',
+          alamat_kantor: row.alamat_kantor || '',
+          telepon_perusahaan: row.telepon_perusahaan || '',
+          jabatan: row.jabatan || '',
+          bidang_usaha: row.bidang_usaha || '',
+          sumber_dana: row.sumber_dana || '',
+          rata_rata_transaksi: row.rata_rata_transaksi || '',
+          tujuan_rekening: row.tujuan_rekening || '',
+          nominal_setoran: row.nominal_setoran || '',
+          rekening_untuk_sendiri: row.rekening_untuk_sendiri ? 'Ya' : 'Tidak',
+          kontak_darurat_nama: row.kontak_darurat_nama || '',
+          kontak_darurat_hp: row.kontak_darurat_hp || '',
+          kontak_darurat_alamat: row.kontak_darurat_alamat || '',
+          kontak_darurat_hubungan: row.kontak_darurat_hubungan || '',
+          bo_nama: row.bo_nama || '',
+          bo_alamat: row.bo_alamat || '',
+          bo_tempat_lahir: row.bo_tempat_lahir || '',
+          bo_tanggal_lahir: row.bo_tanggal_lahir ? new Date(row.bo_tanggal_lahir).toLocaleDateString('id-ID') : '',
+          bo_jenis_kelamin: row.bo_jenis_kelamin || '',
+          bo_kewarganegaraan: row.bo_kewarganegaraan || '',
+          bo_status_pernikahan: row.bo_status_pernikahan || '',
+          bo_jenis_id: row.bo_jenis_id || '',
+          bo_nomor_id: row.bo_nomor_id || '',
+          bo_sumber_dana: row.bo_sumber_dana || '',
+          bo_hubungan: row.bo_hubungan || '',
+          bo_nomor_hp: row.bo_nomor_hp || '',
+          bo_pekerjaan: row.bo_pekerjaan || '',
+          bo_pendapatan_tahun: row.bo_pendapatan_tahun || '',
+          bo_persetujuan: row.bo_persetujuan ? 'Ya' : 'Tidak',
+          approved_at: row.approved_at ? new Date(row.approved_at).toLocaleString('id-ID') : '',
+          rejected_at: row.rejected_at ? new Date(row.rejected_at).toLocaleString('id-ID') : '',
+        });
+      } else {
+        worksheet.addRow(baseData);
+      }
     });
 
     // Set response headers
     const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
-    const filename = `data-permohonan-${timestamp}.xlsx`;
+    const prefix = fullData === 'true' ? 'full-data' : 'data-permohonan';
+    const filename = `${prefix}-${timestamp}.xlsx`;
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
@@ -1077,7 +1268,19 @@ export const exportToExcel = async (req, res) => {
     await workbook.xlsx.write(res);
     res.end();
 
-    console.log(`✅ Excel export completed: ${result.rows.length} records exported`);
+    console.log(`✅ Excel export completed: ${result.rows.length} records exported (fullData: ${fullData})`);
+
+    // Log aktivitas export
+    const exportType = fullData === 'true' ? 'Data Lengkap' : 'Data Utama';
+    const dateFilter = startDate || endDate ? ` (${startDate || 'awal'} - ${endDate || 'akhir'})` : '';
+    await logUserActivity(
+      req.user.id,
+      'EXPORT_EXCEL',
+      `Export Excel ${exportType}: ${result.rows.length} records${dateFilter}`,
+      req.user.cabang_id,
+      req.ip,
+      req.get('User-Agent')
+    );
 
   } catch (err) {
     console.error('❌ Excel export error:', err);
@@ -1099,9 +1302,11 @@ export const exportBackup = async (req, res) => {
   try {
     console.log('💾 Backup export request received');
     console.log('👤 User:', req.user?.username, 'Role:', req.user?.role, 'Cabang:', req.user?.cabang_id);
+    console.log('🔍 Query params:', req.query);
 
     const userRole = req.user.role;
     const adminCabang = req.user.cabang_id;
+    const { startDate, endDate } = req.query;
 
     // Query untuk mengambil data lengkap dengan JOIN
     // Note: Menggunakan query yang mirip dengan getPengajuanById tapi untuk banyak row
@@ -1225,10 +1430,26 @@ export const exportBackup = async (req, res) => {
     `;
 
     let queryParams = [];
+    let whereConditions = [];
 
+    // Role-based filtering
     if (userRole !== 'super') {
-      query += " WHERE p.cabang_id = $1";
-      queryParams = [adminCabang];
+      whereConditions.push(`p.cabang_id = $${queryParams.length + 1}`);
+      queryParams.push(adminCabang);
+    }
+
+    // Date range filtering
+    if (startDate) {
+      whereConditions.push(`p.created_at >= $${queryParams.length + 1}`);
+      queryParams.push(startDate);
+    }
+    if (endDate) {
+      whereConditions.push(`p.created_at <= $${queryParams.length + 1}`);
+      queryParams.push(endDate + ' 23:59:59');
+    }
+
+    if (whereConditions.length > 0) {
+      query += ` WHERE ${whereConditions.join(' AND ')}`;
     }
 
     query += " ORDER BY p.created_at DESC";
@@ -1258,11 +1479,177 @@ export const exportBackup = async (req, res) => {
 
     console.log(`✅ Backup export completed: ${result.rows.length} records exported`);
 
+    // Log aktivitas backup
+    const dateFilter = startDate || endDate ? ` (${startDate || 'awal'} - ${endDate || 'akhir'})` : '';
+    await logUserActivity(
+      req.user.id,
+      'EXPORT_BACKUP',
+      `Export Backup JSON: ${result.rows.length} records${dateFilter}`,
+      req.user.cabang_id,
+      req.ip,
+      req.get('User-Agent')
+    );
+
   } catch (err) {
     console.error('❌ Backup export error:', err);
     res.status(500).json({
       success: false,
       message: 'Gagal membuat backup data',
+      error: err.message
+    });
+  }
+};
+
+/**
+ * Preview import data untuk konfirmasi sebelum import
+ */
+export const previewImportData = async (req, res) => {
+  try {
+    console.log('👀 Preview import data request received');
+    console.log('👤 User:', req.user?.username, 'Role:', req.user?.role);
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'File tidak ditemukan'
+      });
+    }
+
+    const file = req.file;
+    let importData;
+
+    // Parse file berdasarkan tipe
+    if (file.mimetype === 'application/json') {
+      const fileContent = file.buffer.toString('utf8');
+      const parsedData = JSON.parse(fileContent);
+      
+      // Jika format backup dengan metadata
+      if (parsedData.metadata && parsedData.data) {
+        importData = parsedData.data;
+      } else if (Array.isArray(parsedData)) {
+        importData = parsedData;
+      } else {
+        throw new Error('Format JSON tidak valid');
+      }
+    } else {
+      throw new Error('Format file tidak didukung untuk preview. Gunakan JSON.');
+    }
+
+    if (!Array.isArray(importData) || importData.length === 0) {
+      throw new Error('Data import kosong atau format tidak valid');
+    }
+
+    // Analisis data yang akan diimport
+    const analysis = {
+      totalRecords: importData.length,
+      statusBreakdown: {},
+      cabangBreakdown: {},
+      existingRecords: [],
+      newRecords: [],
+      conflicts: []
+    };
+
+    // Analisis status dan cabang
+    importData.forEach(item => {
+      const status = item.status || 'pending';
+      const cabangId = item.cabang_id || req.user.cabang_id;
+      
+      analysis.statusBreakdown[status] = (analysis.statusBreakdown[status] || 0) + 1;
+      analysis.cabangBreakdown[cabangId] = (analysis.cabangBreakdown[cabangId] || 0) + 1;
+    });
+
+    // Cek data yang sudah ada berdasarkan kode_referensi
+    const referensiCodes = importData.map(item => item.kode_referensi).filter(Boolean);
+    
+    if (referensiCodes.length > 0) {
+      const placeholders = referensiCodes.map((_, index) => `$${index + 1}`).join(',');
+      const existingQuery = `
+        SELECT kode_referensi, status, cabang_id 
+        FROM pengajuan_tabungan 
+        WHERE kode_referensi IN (${placeholders})
+      `;
+      
+      const existingResult = await pool.query(existingQuery, referensiCodes);
+      const existingMap = new Map();
+      
+      existingResult.rows.forEach(row => {
+        existingMap.set(row.kode_referensi, row);
+      });
+
+      // Kategorikan data
+      importData.forEach(item => {
+        const existing = existingMap.get(item.kode_referensi);
+        
+        if (existing) {
+          analysis.existingRecords.push({
+            kode_referensi: item.kode_referensi,
+            nama_lengkap: item.nama_lengkap,
+            currentStatus: existing.status,
+            newStatus: item.status || 'pending',
+            willOverwrite: existing.status !== (item.status || 'pending')
+          });
+          
+          // Cek konflik status
+          if (existing.status !== (item.status || 'pending')) {
+            analysis.conflicts.push({
+              kode_referensi: item.kode_referensi,
+              nama_lengkap: item.nama_lengkap,
+              currentStatus: existing.status,
+              newStatus: item.status || 'pending'
+            });
+          }
+        } else {
+          analysis.newRecords.push({
+            kode_referensi: item.kode_referensi,
+            nama_lengkap: item.nama_lengkap,
+            status: item.status || 'pending'
+          });
+        }
+      });
+    } else {
+      // Semua data baru (tidak ada kode referensi)
+      importData.forEach(item => {
+        analysis.newRecords.push({
+          kode_referensi: item.kode_referensi || `NEW-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          nama_lengkap: item.nama_lengkap,
+          status: item.status || 'pending'
+        });
+      });
+    }
+
+    // Get cabang names untuk breakdown
+    const cabangIds = Object.keys(analysis.cabangBreakdown);
+    if (cabangIds.length > 0) {
+      const cabangQuery = `SELECT id, nama_cabang FROM cabang WHERE id IN (${cabangIds.map((_, i) => `$${i + 1}`).join(',')})`;
+      const cabangResult = await pool.query(cabangQuery, cabangIds);
+      
+      const cabangNames = {};
+      cabangResult.rows.forEach(row => {
+        cabangNames[row.id] = row.nama_cabang;
+      });
+      
+      // Replace cabang IDs with names
+      const namedCabangBreakdown = {};
+      Object.entries(analysis.cabangBreakdown).forEach(([id, count]) => {
+        const name = cabangNames[id] || `Cabang ${id}`;
+        namedCabangBreakdown[name] = count;
+      });
+      analysis.cabangBreakdown = namedCabangBreakdown;
+    }
+
+    console.log(`✅ Preview completed: ${analysis.totalRecords} total, ${analysis.newRecords.length} new, ${analysis.existingRecords.length} existing, ${analysis.conflicts.length} conflicts`);
+
+    res.json({
+      success: true,
+      analysis: analysis,
+      message: 'Preview data berhasil dianalisis'
+    });
+
+  } catch (err) {
+    console.error('❌ Preview import error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Gagal menganalisis data import',
       error: err.message
     });
   }
@@ -1277,6 +1664,7 @@ export const importData = async (req, res) => {
   try {
     console.log('📥 Import data request received');
     console.log('👤 User:', req.user?.username, 'Role:', req.user?.role);
+    console.log('🔄 Overwrite mode:', req.body.overwrite);
 
     if (!req.file) {
       return res.status(400).json({
@@ -1311,20 +1699,38 @@ export const importData = async (req, res) => {
 
     await client.query('BEGIN');
 
+    const overwriteMode = req.body.overwrite === 'true';
     let importedCount = 0;
     let skippedCount = 0;
+    let overwrittenCount = 0;
 
     for (const item of importData) {
       try {
         // Cek apakah data sudah ada berdasarkan kode_referensi
         const existingCheck = await client.query(
-          'SELECT id FROM pengajuan WHERE kode_referensi = $1',
+          'SELECT id, status FROM pengajuan_tabungan WHERE kode_referensi = $1',
           [item.kode_referensi]
         );
 
         if (existingCheck.rows.length > 0) {
-          skippedCount++;
-          continue;
+          if (overwriteMode) {
+            // Update data yang sudah ada
+            const updateQuery = `
+              UPDATE pengajuan_tabungan 
+              SET status = $1, updated_at = NOW()
+              WHERE kode_referensi = $2
+            `;
+            
+            await client.query(updateQuery, [
+              item.status || 'pending',
+              item.kode_referensi
+            ]);
+            
+            overwrittenCount++;
+          } else {
+            skippedCount++;
+            continue;
+          }
         }
 
         // Insert data baru
@@ -1362,12 +1768,27 @@ export const importData = async (req, res) => {
 
     await client.query('COMMIT');
 
-    console.log(`✅ Import completed: ${importedCount} imported, ${skippedCount} skipped`);
+    console.log(`✅ Import completed: ${importedCount} imported, ${overwrittenCount} overwritten, ${skippedCount} skipped`);
+
+    // Log aktivitas import
+    const logDescription = overwriteMode 
+      ? `Import Data (Overwrite): ${importedCount} baru, ${overwrittenCount} ditimpa, ${skippedCount} dilewati dari ${importData.length} total`
+      : `Import Data: ${importedCount} berhasil, ${skippedCount} dilewati dari ${importData.length} total`;
+      
+    await logUserActivity(
+      req.user.id,
+      'IMPORT_DATA',
+      logDescription,
+      req.user.cabang_id,
+      req.ip,
+      req.get('User-Agent')
+    );
 
     res.json({
       success: true,
       message: `Import berhasil diselesaikan`,
       imported: importedCount,
+      overwritten: overwrittenCount,
       skipped: skippedCount,
       total: importData.length
     });
@@ -1378,6 +1799,169 @@ export const importData = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Gagal mengimpor data',
+      error: err.message
+    });
+  } finally {
+    client.release();
+  }
+};
+/**
+ * Delete data berdasarkan status
+ */
+export const deleteDataByStatus = async (req, res) => {
+  const client = await pool.connect();
+  
+  try {
+    console.log('🗑️ Delete data request received');
+    console.log('👤 User:', req.user?.username, 'Role:', req.user?.role, 'Cabang:', req.user?.cabang_id);
+    console.log('🎯 Status to delete:', req.params.status);
+    console.log('🏢 Cabang filter:', req.query.cabangId);
+
+    const userRole = req.user.role;
+    const adminCabang = req.user.cabang_id;
+    const { status } = req.params;
+    const { cabangId } = req.query;
+
+    // Validasi status
+    const validStatuses = ['all', 'pending', 'approved', 'rejected'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Status tidak valid'
+      });
+    }
+
+    await client.query('BEGIN');
+
+    // Build query berdasarkan status dan role
+    let whereConditions = [];
+    let queryParams = [];
+
+    // Role-based filtering
+    if (userRole === 'super') {
+      // Super admin bisa pilih cabang atau semua
+      if (cabangId && cabangId !== 'all') {
+        whereConditions.push(`cabang_id = $${queryParams.length + 1}`);
+        queryParams.push(parseInt(cabangId));
+      }
+      // Jika cabangId = 'all' atau tidak ada, tidak ada filter cabang (hapus semua)
+    } else {
+      // Admin cabang hanya bisa hapus data cabangnya sendiri
+      whereConditions.push(`cabang_id = $${queryParams.length + 1}`);
+      queryParams.push(adminCabang);
+    }
+
+    // Status filtering
+    if (status !== 'all') {
+      whereConditions.push(`status = $${queryParams.length + 1}`);
+      queryParams.push(status);
+    }
+
+    const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+
+    // First, get count of records to be deleted
+    const countQuery = `SELECT COUNT(*) as count FROM pengajuan_tabungan ${whereClause}`;
+    const countResult = await client.query(countQuery, queryParams);
+    const recordCount = parseInt(countResult.rows[0].count);
+
+    if (recordCount === 0) {
+      await client.query('ROLLBACK');
+      return res.json({
+        success: true,
+        message: 'Tidak ada data yang ditemukan untuk dihapus',
+        deletedCount: 0
+      });
+    }
+
+    // Get IDs of records to be deleted for cascade deletion
+    const idsQuery = `SELECT id FROM pengajuan_tabungan ${whereClause}`;
+    const idsResult = await client.query(idsQuery, queryParams);
+    const recordIds = idsResult.rows.map(row => row.id);
+
+    // Delete related records first (to handle foreign key constraints)
+    if (recordIds.length > 0) {
+      const idPlaceholders = recordIds.map((_, index) => `$${index + 1}`).join(',');
+      
+      // Delete from related tables
+      await client.query(`DELETE FROM edd_bank_lain WHERE edd_id IN (${idPlaceholders})`, recordIds);
+      await client.query(`DELETE FROM edd_pekerjaan_lain WHERE edd_id IN (${idPlaceholders})`, recordIds);
+      await client.query(`DELETE FROM beneficial_owner WHERE pengajuan_id IN (${idPlaceholders})`, recordIds);
+      await client.query(`DELETE FROM kontak_darurat WHERE pengajuan_id IN (${idPlaceholders})`, recordIds);
+      await client.query(`DELETE FROM account WHERE pengajuan_id IN (${idPlaceholders})`, recordIds);
+      await client.query(`DELETE FROM cdd_job WHERE pengajuan_id IN (${idPlaceholders})`, recordIds);
+      await client.query(`DELETE FROM cdd_self WHERE pengajuan_id IN (${idPlaceholders})`, recordIds);
+    }
+
+    // Finally, delete from main table
+    const deleteQuery = `DELETE FROM pengajuan_tabungan ${whereClause}`;
+    const deleteResult = await client.query(deleteQuery, queryParams);
+
+    await client.query('COMMIT');
+
+    const statusText = {
+      all: 'semua data',
+      pending: 'data dengan status pending',
+      approved: 'data dengan status disetujui',
+      rejected: 'data dengan status ditolak'
+    };
+
+    // Get cabang name for response message
+    let cabangInfo = '';
+    if (userRole === 'super' && cabangId && cabangId !== 'all') {
+      const cabangQuery = await pool.query('SELECT nama_cabang FROM cabang WHERE id = $1', [cabangId]);
+      if (cabangQuery.rows.length > 0) {
+        cabangInfo = ` dari ${cabangQuery.rows[0].nama_cabang}`;
+      }
+    } else if (userRole !== 'super') {
+      const cabangQuery = await pool.query('SELECT nama_cabang FROM cabang WHERE id = $1', [adminCabang]);
+      if (cabangQuery.rows.length > 0) {
+        cabangInfo = ` dari ${cabangQuery.rows[0].nama_cabang}`;
+      }
+    }
+
+    console.log(`✅ Delete completed: ${recordCount} records deleted (status: ${status}, cabang: ${cabangId || 'current'})`);
+
+    // Log aktivitas delete
+    const statusTextForLog = {
+      all: 'semua data',
+      pending: 'data pending',
+      approved: 'data disetujui',
+      rejected: 'data ditolak'
+    };
+    
+    let logDescription = `Hapus ${statusTextForLog[status]}: ${recordCount} records`;
+    if (userRole === 'super' && cabangId && cabangId !== 'all') {
+      const cabangQuery = await pool.query('SELECT nama_cabang FROM cabang WHERE id = $1', [cabangId]);
+      if (cabangQuery.rows.length > 0) {
+        logDescription += ` dari ${cabangQuery.rows[0].nama_cabang}`;
+      }
+    } else if (userRole === 'super' && (!cabangId || cabangId === 'all')) {
+      logDescription += ' dari semua cabang';
+    }
+
+    await logUserActivity(
+      req.user.id,
+      'DELETE_DATA',
+      logDescription,
+      req.user.cabang_id,
+      req.ip,
+      req.get('User-Agent')
+    );
+
+    res.json({
+      success: true,
+      message: `Berhasil menghapus ${statusText[status]}${cabangInfo}`,
+      deletedCount: recordCount,
+      status: status,
+      cabangId: cabangId || 'current'
+    });
+
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('❌ Delete error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Gagal menghapus data',
       error: err.message
     });
   } finally {

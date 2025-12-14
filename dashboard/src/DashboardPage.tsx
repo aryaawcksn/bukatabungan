@@ -1184,7 +1184,11 @@ const scrollToTop = () => {
       >
         <div className="p-6 border-t border-slate-200">
           <Suspense fallback={<LoadingSpinner />}>
-            <DataManagement onDataImported={() => fetchSubmissions(false)} />
+            <DataManagement 
+              onDataImported={() => fetchSubmissions(false)} 
+              cabangList={cabangList}
+              userRole={user?.role}
+            />
           </Suspense>
         </div>
       </div>

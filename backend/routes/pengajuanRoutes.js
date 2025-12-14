@@ -10,7 +10,9 @@ import {
   getAllCabangForAnalytics,
   exportToExcel,
   exportBackup,
+  previewImportData,
   importData,
+  deleteDataByStatus,
 } from "../controllers/pengajuanController.js";
 
 // Konfigurasi multer untuk import file
@@ -51,7 +53,11 @@ router.get("/analytics/cabang", verifyToken, getAllCabangForAnalytics);
 // Route export/import data - HARUS SEBELUM /:id (protected)
 router.get("/export/excel", verifyToken, exportToExcel);
 router.get("/export/backup", verifyToken, exportBackup);
+router.post("/import/preview", verifyToken, upload.single('file'), previewImportData);
 router.post("/import", verifyToken, upload.single('file'), importData);
+
+// Route delete data - HARUS SEBELUM /:id (protected)
+router.delete("/delete/:status", verifyToken, deleteDataByStatus);
 
 // Route ambil satu pengajuan berdasarkan ID (protected)
 router.get("/:id", verifyToken, getPengajuanById);
