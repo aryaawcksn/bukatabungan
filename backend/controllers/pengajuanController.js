@@ -4,6 +4,46 @@ import { sendWhatsAppNotification } from "../services/whatsappService.js";
 import { logUserActivity } from "./userLogController.js";
 import fs from 'fs';
 
+// In-memory progress store (in production, use Redis or database)
+const importProgressStore = new Map();
+
+/**
+ * Update import progress
+ */
+const updateImportProgress = (sessionId, progress, message) => {
+  importProgressStore.set(sessionId, {
+    progress: Math.min(100, Math.max(0, progress)),
+    message,
+    timestamp: new Date()
+  });
+  console.log(`📊 Progress [${sessionId}]: ${progress}% - ${message}`);
+};
+
+/**
+ * Get import progress
+ */
+export const getImportProgress = async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    const progress = importProgressStore.get(sessionId);
+    
+    if (!progress) {
+      return res.json({
+        progress: 0,
+        message: 'Session tidak ditemukan'
+      });
+    }
+    
+    res.json(progress);
+  } catch (err) {
+    console.error('❌ Get progress error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Gagal mengambil progress'
+    });
+  }
+};
+
 /**
  * Helper function to convert empty strings to null
  * This is needed because PostgreSQL doesn't accept empty strings for date/numeric fields
@@ -1691,6 +1731,11 @@ export const importData = async (req, res) => {
     console.log('📥 Import data request received');
     console.log('👤 User:', req.user?.username, 'Role:', req.user?.role);
     console.log('🔄 Overwrite mode:', req.body.overwrite);
+    
+    const sessionId = req.body.sessionId;
+    if (sessionId) {
+      updateImportProgress(sessionId, 5, 'Memulai proses import...');
+    }
 
     if (!req.file) {
       return res.status(400).json({
@@ -1723,14 +1768,30 @@ export const importData = async (req, res) => {
       throw new Error('Data import kosong atau format tidak valid');
     }
 
+    if (sessionId) {
+      updateImportProgress(sessionId, 10, `File berhasil diparse. Ditemukan ${importData.length} records.`);
+    }
+
     await client.query('BEGIN');
 
     const overwriteMode = req.body.overwrite === 'true';
     let importedCount = 0;
     let skippedCount = 0;
     let overwrittenCount = 0;
+    const totalRecords = importData.length;
 
-    for (const item of importData) {
+    for (let index = 0; index < importData.length; index++) {
+      const item = importData[index];
+      
+      // Update progress
+      if (sessionId && index % 5 === 0) { // Update every 5 records to avoid spam
+        const progress = 15 + Math.floor((index / totalRecords) * 70); // 15% to 85%
+        const message = overwriteMode 
+          ? `Memproses record ${index + 1}/${totalRecords} (Mode: Replace)`
+          : `Memproses record ${index + 1}/${totalRecords} (Mode: Add New)`;
+        updateImportProgress(sessionId, progress, message);
+      }
+      
       try {
         // Role-based access control untuk cabang_id
         let targetCabangId = item.cabang_id || req.user.cabang_id;
@@ -1966,6 +2027,10 @@ export const importData = async (req, res) => {
 
     await client.query('COMMIT');
 
+    if (sessionId) {
+      updateImportProgress(sessionId, 90, 'Menyimpan perubahan ke database...');
+    }
+
     console.log(`✅ Import completed: ${importedCount} imported, ${overwrittenCount} overwritten, ${skippedCount} skipped`);
 
     // Log aktivitas import
@@ -1983,6 +2048,15 @@ export const importData = async (req, res) => {
       req.get('User-Agent')
     );
 
+    if (sessionId) {
+      updateImportProgress(sessionId, 100, `Import selesai! ${importedCount} berhasil, ${overwrittenCount} ditimpa, ${skippedCount} dilewati.`);
+      
+      // Clean up progress after 30 seconds
+      setTimeout(() => {
+        importProgressStore.delete(sessionId);
+      }, 30000);
+    }
+
     res.json({
       success: true,
       message: `Import berhasil diselesaikan`,
@@ -1995,6 +2069,16 @@ export const importData = async (req, res) => {
   } catch (err) {
     await client.query('ROLLBACK');
     console.error('❌ Import error:', err);
+    
+    const sessionId = req.body.sessionId;
+    if (sessionId) {
+      updateImportProgress(sessionId, 0, `Error: ${err.message}`);
+      // Clean up progress after 10 seconds on error
+      setTimeout(() => {
+        importProgressStore.delete(sessionId);
+      }, 10000);
+    }
+    
     res.status(500).json({
       success: false,
       message: 'Gagal mengimpor data',

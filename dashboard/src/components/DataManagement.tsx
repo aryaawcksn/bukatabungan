@@ -31,6 +31,7 @@ export default function DataManagement({ onDataImported, cabangList = [], userRo
   const [isImporting, setIsImporting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [importProgress, setImportProgress] = useState(0);
+  const [importStatus, setImportStatus] = useState('');
   const [showDateFilter, setShowDateFilter] = useState(false);
   const [dateRange, setDateRange] = useState({
     startDate: '',
@@ -196,19 +197,30 @@ export default function DataManagement({ onDataImported, cabangList = [], userRo
 
     setIsImporting(true);
     setImportProgress(0);
+    setImportStatus('Memulai import data...');
     setShowImportPreview(false);
 
     try {
-      // Simulasi progress
-      const progressInterval = setInterval(() => {
-        setImportProgress(prev => {
-          if (prev >= 90) {
-            clearInterval(progressInterval);
-            return prev;
+      // Generate unique session ID for this import
+      const sessionId = `import_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      formData.append('sessionId', sessionId);
+
+      // Start progress polling
+      const progressInterval = setInterval(async () => {
+        try {
+          const progressResponse = await fetch(`${API_BASE_URL}/api/pengajuan/import/progress/${sessionId}`, {
+            credentials: 'include'
+          });
+          
+          if (progressResponse.ok) {
+            const progressData = await progressResponse.json();
+            setImportProgress(progressData.progress || 0);
+            setImportStatus(progressData.message || 'Memproses data...');
           }
-          return prev + 10;
-        });
-      }, 200);
+        } catch (error) {
+          console.log('Progress polling error:', error);
+        }
+      }, 500);
 
       const response = await fetch(`${API_BASE_URL}/api/pengajuan/import`, {
         method: 'POST',
@@ -218,6 +230,7 @@ export default function DataManagement({ onDataImported, cabangList = [], userRo
 
       clearInterval(progressInterval);
       setImportProgress(100);
+      setImportStatus('Import selesai!');
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -247,13 +260,16 @@ export default function DataManagement({ onDataImported, cabangList = [], userRo
       console.error('Import error:', error);
       toast.error(error.message || 'Gagal mengimpor data');
     } finally {
-      setIsImporting(false);
-      setImportProgress(0);
-      setSelectedFile(null);
-      setImportPreviewData(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+      setTimeout(() => {
+        setIsImporting(false);
+        setImportProgress(0);
+        setImportStatus('');
+        setSelectedFile(null);
+        setImportPreviewData(null);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      }, 2000); // Show final status for 2 seconds
     }
   };
 
@@ -538,16 +554,27 @@ export default function DataManagement({ onDataImported, cabangList = [], userRo
             
             {/* Progress Bar */}
             {isImporting && (
-              <div className="mt-4">
+              <div className="mt-4 space-y-3">
                 <div className="flex items-center justify-between text-sm text-slate-600 mb-2">
-                  <span>Mengimpor data...</span>
-                  <span>{importProgress}%</span>
+                  <span className="flex items-center">
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    {importStatus || 'Mengimpor data...'}
+                  </span>
+                  <span className="font-medium">{importProgress}%</span>
                 </div>
-                <div className="w-full bg-slate-200 rounded-full h-2">
+                <div className="w-full bg-slate-200 rounded-full h-3">
                   <div 
-                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 h-3 rounded-full transition-all duration-500 ease-out"
                     style={{ width: `${importProgress}%` }}
                   />
+                </div>
+                
+                {/* Status Details */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <div className="flex items-center text-blue-800 text-xs">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse"></div>
+                    <span>{importStatus || 'Memproses data import...'}</span>
+                  </div>
                 </div>
               </div>
             )}

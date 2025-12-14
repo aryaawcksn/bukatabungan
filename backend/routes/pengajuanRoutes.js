@@ -12,6 +12,7 @@ import {
   exportBackup,
   previewImportData,
   importData,
+  getImportProgress,
   deleteDataByStatus,
 } from "../controllers/pengajuanController.js";
 
@@ -55,6 +56,7 @@ router.get("/export/excel", verifyToken, exportToExcel);
 router.get("/export/backup", verifyToken, exportBackup);
 router.post("/import/preview", verifyToken, upload.single('file'), previewImportData);
 router.post("/import", verifyToken, upload.single('file'), importData);
+router.get("/import/progress/:sessionId", verifyToken, getImportProgress);
 
 // Route delete data - HARUS SEBELUM /:id (protected)
 router.delete("/delete/:status", verifyToken, deleteDataByStatus);
