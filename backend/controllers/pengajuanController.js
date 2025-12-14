@@ -1709,25 +1709,30 @@ export const importData = async (req, res) => {
       try {
         // Cek apakah data sudah ada berdasarkan kode_referensi
         const existingCheck = await client.query(
-          'SELECT id, status FROM pengajuan_tabungan WHERE kode_referensi = $1',
+          `SELECT p.id, p.status 
+           FROM pengajuan_tabungan p
+           LEFT JOIN cdd_self cs ON p.id = cs.pengajuan_id
+           WHERE cs.kode_referensi = $1`,
           [item.kode_referensi]
         );
 
         if (existingCheck.rows.length > 0) {
           if (overwriteMode) {
             // Update data yang sudah ada
+            const pengajuanId = existingCheck.rows[0].id;
             const updateQuery = `
               UPDATE pengajuan_tabungan 
-              SET status = $1, updated_at = NOW()
-              WHERE kode_referensi = $2
+              SET status = $1
+              WHERE id = $2
             `;
 
             await client.query(updateQuery, [
               item.status || 'pending',
-              item.kode_referensi
+              pengajuanId
             ]);
 
             overwrittenCount++;
+            continue; // Skip the insert part
           } else {
             skippedCount++;
             continue;

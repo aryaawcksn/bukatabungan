@@ -486,7 +486,7 @@ export default function DataManagement({ onDataImported, cabangList = [], userRo
           <div className="flex-1">
             <h4 className="text-lg font-semibold text-slate-900 mb-2">Import Data</h4>
             <p className="text-slate-600 text-sm mb-4">
-              Unggah file untuk mengimpor data permohonan (JSON, Excel, CSV)
+              Unggah file untuk mengimpor data permohonan (JSON)
             </p>
             
             <input
