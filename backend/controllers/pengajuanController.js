@@ -1546,7 +1546,7 @@ export const exportBackup = async (req, res) => {
 export const previewImportData = async (req, res) => {
   try {
     console.log('👀 Preview import data request received');
-    console.log('👤 User:', req.user?.username, 'Role:', req.user?.role);
+    console.log('👤 User:', req.user?.username, 'Role:', req.user?.role, 'Cabang ID:', req.user?.cabang_id, 'Type:', typeof req.user?.cabang_id);
 
     if (!req.file) {
       return res.status(400).json({
@@ -1596,13 +1596,29 @@ export const previewImportData = async (req, res) => {
       const cabangId = item.cabang_id || req.user.cabang_id;
 
       // Check for cross-cabang import (admin cabang only)
-      if (req.user.role !== 'super' && item.cabang_id && item.cabang_id !== req.user.cabang_id) {
-        analysis.crossCabangWarnings.push({
-          kode_referensi: item.kode_referensi,
-          nama_lengkap: item.nama_lengkap,
-          originalCabang: item.cabang_id,
-          userCabang: req.user.cabang_id
+      if (req.user.role !== 'super' && item.cabang_id) {
+        // Convert both to numbers for proper comparison
+        const itemCabangId = parseInt(item.cabang_id);
+        const userCabangId = parseInt(req.user.cabang_id);
+        
+        console.log('🔍 Cross-cabang check:', {
+          itemCabangId,
+          userCabangId,
+          itemCabangIdType: typeof item.cabang_id,
+          userCabangIdType: typeof req.user.cabang_id,
+          itemCabangIdRaw: item.cabang_id,
+          userCabangIdRaw: req.user.cabang_id,
+          isDifferent: itemCabangId !== userCabangId
         });
+        
+        if (itemCabangId !== userCabangId) {
+          analysis.crossCabangWarnings.push({
+            kode_referensi: item.kode_referensi,
+            nama_lengkap: item.nama_lengkap,
+            originalCabang: item.cabang_id,
+            userCabang: req.user.cabang_id
+          });
+        }
       }
 
       analysis.statusBreakdown[status] = (analysis.statusBreakdown[status] || 0) + 1;
@@ -1729,7 +1745,7 @@ export const importData = async (req, res) => {
 
   try {
     console.log('📥 Import data request received');
-    console.log('👤 User:', req.user?.username, 'Role:', req.user?.role);
+    console.log('👤 User:', req.user?.username, 'Role:', req.user?.role, 'Cabang ID:', req.user?.cabang_id, 'Type:', typeof req.user?.cabang_id);
     console.log('🔄 Overwrite mode:', req.body.overwrite);
     
     const sessionId = req.body.sessionId;
@@ -1797,10 +1813,24 @@ export const importData = async (req, res) => {
         let targetCabangId = item.cabang_id || req.user.cabang_id;
         
         // Admin cabang hanya bisa import ke cabang mereka sendiri
-        if (req.user.role !== 'super' && item.cabang_id && item.cabang_id !== req.user.cabang_id) {
-          console.log(`⚠️ Admin cabang ${req.user.cabang_id} mencoba import data cabang ${item.cabang_id} - dilewati`);
-          skippedCount++;
-          continue;
+        if (req.user.role !== 'super' && item.cabang_id) {
+          // Convert both to numbers for proper comparison
+          const itemCabangId = parseInt(item.cabang_id);
+          const userCabangId = parseInt(req.user.cabang_id);
+          
+          console.log('🔍 Import cabang check:', {
+            itemCabangId,
+            userCabangId,
+            itemCabangIdType: typeof item.cabang_id,
+            userCabangIdType: typeof req.user.cabang_id,
+            isDifferent: itemCabangId !== userCabangId
+          });
+          
+          if (itemCabangId !== userCabangId) {
+            console.log(`⚠️ Admin cabang ${req.user.cabang_id} mencoba import data cabang ${item.cabang_id} - dilewati`);
+            skippedCount++;
+            continue;
+          }
         }
         
         // Pastikan admin cabang hanya import ke cabang mereka
