@@ -5,7 +5,6 @@ import {
   FileSpreadsheet, 
   Database, 
   AlertCircle, 
-  CheckCircle, 
   Loader2,
   FileText,
   Archive,
