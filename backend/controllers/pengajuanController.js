@@ -1779,6 +1779,23 @@ export const importData = async (req, res) => {
           }
         }
 
+        // Validasi data sebelum insert
+        if (!item.nama_lengkap || !item.kode_referensi) {
+          console.log(`⚠️ Skipping item with missing required data:`, {
+            kode_referensi: item.kode_referensi,
+            nama_lengkap: item.nama_lengkap
+          });
+          skippedCount++;
+          continue;
+        }
+
+        console.log(`📝 Inserting item:`, {
+          kode_referensi: item.kode_referensi,
+          nama_lengkap: item.nama_lengkap,
+          targetCabangId,
+          status: item.status || 'pending'
+        });
+
         // Insert data baru (Multi-table insert)
         const insertPengajuanQuery = `
           INSERT INTO pengajuan_tabungan (
@@ -1811,33 +1828,36 @@ export const importData = async (req, res) => {
           )
         `;
 
-        await client.query(insertCddSelfQuery, [
+        // Prepare safe values with proper defaults
+        const cddSelfValues = [
           pengajuanId,
           item.kode_referensi || `IMP-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-          item.nama_lengkap || '',
+          item.nama_lengkap || 'Unknown',
           item.alias || null,
-          item.identityType || 'KTP',
-          item.nik || '',
-          item.berlaku_id || null, // Date string or null
-          item.tempat_lahir || '',
+          item.identityType || item.jenis_id || 'KTP',
+          item.nik || item.no_id || 'UNKNOWN',
+          item.berlaku_id || null,
+          item.tempat_lahir || 'Unknown',
           item.tanggal_lahir || null,
-          item.alamat || '',
-          item.kode_pos || '',
-          item.alamat_domisili || item.alamat || '',
-          item.jenis_kelamin || '',
-          item.status_pernikahan || '',
-          item.agama || '',
-          item.pendidikan || '',
-          item.nama_ibu_kandung || '',
-          item.npwp || '',
-          item.email || '',
-          item.no_hp || '',
+          item.alamat || item.alamat_id || 'Unknown',
+          item.kode_pos || item.kode_pos_id || '00000',
+          item.alamat_domisili || item.alamat_now || item.alamat || item.alamat_id || 'Unknown',
+          item.jenis_kelamin || 'L',
+          item.status_pernikahan || item.status_kawin || 'Belum Kawin',
+          item.agama || 'Islam',
+          item.pendidikan || 'SMA',
+          item.nama_ibu_kandung || 'Unknown',
+          item.npwp || null,
+          item.email || 'unknown@example.com',
+          item.no_hp || '08000000000',
           item.kewarganegaraan || 'WNI',
-          item.status_rumah || '',
-          item.rekening_untuk_sendiri !== false, // Default true
+          item.status_rumah || 'Milik Sendiri',
+          item.rekening_untuk_sendiri !== false,
           item.tipe_nasabah || 'baru',
           item.nomor_rekening_lama || null
-        ]);
+        ];
+
+        await client.query(insertCddSelfQuery, cddSelfValues);
 
         // Insert cdd_job
         const insertCddJobQuery = `
@@ -1849,15 +1869,15 @@ export const importData = async (req, res) => {
 
         await client.query(insertCddJobQuery, [
           pengajuanId,
-          item.pekerjaan || '',
-          item.penghasilan || '',
-          item.sumber_dana || '',
-          item.rata_rata_transaksi || '',
-          item.tempat_bekerja || '',
-          item.alamat_kantor || '',
-          item.telepon_perusahaan || '',
-          item.jabatan || '',
-          item.bidang_usaha || ''
+          item.pekerjaan || 'Tidak Bekerja',
+          item.penghasilan || item.gaji_per_bulan || '0',
+          item.sumber_dana || 'Gaji',
+          item.rata_rata_transaksi || item.rata_transaksi_per_bulan || '0',
+          item.tempat_bekerja || item.nama_perusahaan || 'Tidak Ada',
+          item.alamat_kantor || item.alamat_perusahaan || 'Tidak Ada',
+          item.telepon_perusahaan || item.no_telepon || null,
+          item.jabatan || 'Tidak Ada',
+          item.bidang_usaha || 'Lainnya'
         ]);
 
         // Insert account
@@ -1925,7 +1945,21 @@ export const importData = async (req, res) => {
 
         importedCount++;
       } catch (itemError) {
-        console.error('Error importing item:', itemError);
+        console.error('❌ Error importing item:', {
+          kode_referensi: item.kode_referensi,
+          nama_lengkap: item.nama_lengkap,
+          error: itemError.message,
+          code: itemError.code,
+          detail: itemError.detail,
+          hint: itemError.hint,
+          position: itemError.position
+        });
+        
+        // If this is the first error, it will abort the transaction
+        if (itemError.code !== '25P02') {
+          console.error('🔥 ORIGINAL ERROR (not transaction abort):', itemError);
+        }
+        
         skippedCount++;
       }
     }

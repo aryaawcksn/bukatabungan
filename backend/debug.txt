@@ -1,0 +1,111 @@
+  internalPosition: undefined,
+  internalQuery: undefined,
+  schema: undefined,
+Error importing item: error: current transaction is aborted, commands ignored until end of transaction block
+  code: '25P02',
+  table: undefined,
+    at /app/node_modules/pg/lib/client.js:545:17
+  where: undefined,
+Error importing item: error: current transaction is aborted, commands ignored until end of transaction block
+  column: undefined,
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+  detail: undefined,
+    at /app/node_modules/pg/lib/client.js:545:17
+  schema: undefined,
+    at async importData (file:///app/controllers/pengajuanController.js:1751:31) {
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+  table: undefined,
+  length: 145,
+  hint: undefined,
+    at async importData (file:///app/controllers/pengajuanController.js:1751:31) {
+  severity: 'ERROR',
+  length: 145,
+  position: undefined,
+  column: undefined,
+  severity: 'ERROR',
+  internalPosition: undefined,
+  code: '25P02',
+  internalQuery: undefined,
+  dataType: undefined,
+  detail: undefined,
+  hint: undefined,
+  constraint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  file: 'postgres.c',
+  internalQuery: undefined,
+  where: undefined,
+  line: '1498',
+  schema: undefined,
+  table: undefined,
+  routine: 'exec_parse_message'
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'postgres.c',
+  line: '1498',
+  routine: 'exec_parse_message'
+}
+Error importing item: error: current transaction is aborted, commands ignored until end of transaction block
+    at /app/node_modules/pg/lib/client.js:545:17
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async importData (file:///app/controllers/pengajuanController.js:1751:31) {
+  length: 145,
+  severity: 'ERROR',
+  code: '25P02',
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'postgres.c',
+  line: '1498',
+  routine: 'exec_parse_message'
+}
+Error importing item: error: current transaction is aborted, commands ignored until end of transaction block
+    at /app/node_modules/pg/lib/client.js:545:17
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async importData (file:///app/controllers/pengajuanController.js:1751:31) {
+  length: 145,
+  severity: 'ERROR',
+  code: '25P02',
+  detail: undefined,
+  hint: undefined,
+}
+  position: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'postgres.c',
+  line: '1498',
+  routine: 'exec_parse_message'
+Error importing item: error: current transaction is aborted, commands ignored until end of transaction block
+    at /app/node_modules/pg/lib/client.js:545:17
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async importData (file:///app/controllers/pengajuanController.js:1751:31) {
+  length: 145,
+  severity: 'ERROR',
+  code: '25P02',
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'postgres.c',
+  line: '1498',
+  routine: 'exec_parse_message'
+}
+✅ Import completed: 0 imported, 0 overwritten, 34 skipped
+📝 Log recorded: IMPORT_DATA by user 30
+📋 Super admin access - showing all pengajuan
