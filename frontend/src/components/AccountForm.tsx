@@ -235,32 +235,40 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     setShowOtpModal(true);
   }, []);
 
-  // Map default jenis_kartu: samakan dengan savingsType
+  // Map default jenis_kartu: untuk Mutiara tidak ada default, harus dipilih
   const getDefaultCardType = () => {
+    if (savingsType === 'mutiara') {
+      return ''; // Mutiara harus pilih Gold/Silver/Platinum
+    }
     return savingsType;
   };
 
-  // Isi otomatis cardType saat savingsType berubah
+  // Isi otomatis cardType saat savingsType berubah (kecuali untuk Mutiara)
   useEffect(() => {
-    setFormData((prev) => ({ ...prev, cardType: getDefaultCardType() }));
+    if (savingsType !== 'mutiara') {
+      setFormData((prev) => ({ ...prev, cardType: getDefaultCardType() }));
+    } else {
+       // Reset logic for mutiara if accidentally switched
+       setFormData((prev) => ({ ...prev, cardType: '' })); 
+    }
   }, [savingsType]);
 
   const getSavingsTypeName = () => {
     switch (savingsType) {
       case 'mutiara':
-        return 'Tabungan Mutiara';
+        return 'Mutiara';
       case 'regular':
-        return 'Tabungan Bank Sleman';
+        return 'Reguler';
       case 'simpel':
-        return 'Tabungan Simpel';
+        return 'SimPel';
       case 'arofah':
-        return 'Tabungan Arofah';
+        return 'Arofah';
       case 'tamasya':
-        return 'Tabungan Tamasya';
+        return 'TamasyaPlus';
       case 'tabunganku':
-        return 'Tabungan Ku';
+        return 'TabunganKu';
       case 'pensiun':
-        return 'Tabungan Pensiun(Taspen)';
+        return 'Pensiun';
       default:
         return 'Undefinied';
     }
@@ -426,6 +434,11 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     if (!formData.tujuanRekening) newErrors.tujuanRekening = "Tujuan rekening wajib diisi";
     if (formData.tujuanRekening === 'Lainnya' && !formData.tujuanRekeningLainnya) {
       newErrors.tujuanRekeningLainnya = "Sebutkan tujuan pembukaan rekening";
+    }
+    
+    // Card Type validation for Mutiara
+    if (savingsType === 'mutiara' && !formData.cardType) {
+      newErrors.cardType = "Jenis kartu wajib dipilih untuk rekening Mutiara";
     }
     
     // Emergency Contact - Optional but all-or-nothing
@@ -657,8 +670,8 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       tujuan_pembukaan: data.tujuanRekening,
       tujuan_rekening_lainnya: data.tujuanRekeningLainnya,
       nominal_setoran: data.nominalSetoran,
-      jenis_kartu: savingsType?.toLowerCase().trim() === 'simpel' ? undefined : (data.atmPreference || data.cardType || getDefaultCardType()),
-      card_type: savingsType?.toLowerCase().trim() === 'simpel' ? undefined : (data.atmPreference || data.cardType || getDefaultCardType()),
+      jenis_kartu: savingsType?.toLowerCase().trim() === 'simpel' ? undefined : (data.cardType || data.atmPreference || getDefaultCardType()),
+      card_type: savingsType?.toLowerCase().trim() === 'simpel' ? undefined : (data.cardType || data.atmPreference || getDefaultCardType()),
       
       // cdd_reference - Emergency contact
       kontak_darurat_nama: data.kontakDaruratNama,
@@ -701,6 +714,8 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
 
     };
   
+
+
     // ============================
     // 4. Submit ke backend
     // ============================

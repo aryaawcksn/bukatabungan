@@ -18,7 +18,7 @@ import {
 
 // Konfigurasi multer untuk import file
 const storage = multer.memoryStorage();
-const upload = multer({ 
+const upload = multer({
   storage,
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB
@@ -30,7 +30,7 @@ const upload = multer({
       'application/vnd.ms-excel',
       'text/csv'
     ];
-    
+
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {

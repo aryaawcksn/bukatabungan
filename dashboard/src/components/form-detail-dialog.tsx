@@ -228,9 +228,9 @@ export function FormDetailDialog({ submission, open, onClose, onApprove, onRejec
                    <div className="text-xs text-slate-500 uppercase font-semibold">Jenis Kartu</div>
                    <div className="text-lg font-bold text-slate-800 flex items-center gap-2">
                        <CreditCard className="w-5 h-5 text-purple-600" />
-                       {detailSubmission.savingsType === 'Mutiara' 
-                         ? (detailSubmission.cardType || "Belum Dipilih")
-                         : "Non Kartu"}
+                       {detailSubmission.cardType 
+                         ? detailSubmission.cardType
+                         : (detailSubmission.savingsType === 'Mutiara' ? "Belum Dipilih" : "Tanpa Kartu ATM")}
                    </div>
                    <div className="text-sm text-slate-500">
                       {detailSubmission.accountInfo.isForSelf ? 'Milik Sendiri' : 'Untuk Orang Lain'}
