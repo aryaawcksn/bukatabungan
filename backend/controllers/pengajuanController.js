@@ -1002,7 +1002,7 @@ export const exportToExcel = async (req, res) => {
         cs.tempat_lahir,
         cs.tanggal_lahir,
         cs.jenis_kelamin,
-        cs.status_pernikahan,
+        cs.status_kawin AS status_pernikahan,
         cs.agama,
         cs.pendidikan,
         cs.kewarganegaraan,
@@ -1733,31 +1733,149 @@ export const importData = async (req, res) => {
           }
         }
 
-        // Insert data baru
-        const insertQuery = `
-          INSERT INTO pengajuan (
-            kode_referensi, nama_lengkap, nik, email, no_hp, tanggal_lahir,
-            alamat, pekerjaan, penghasilan, jenis_rekening, jenis_kartu,
+        // Insert data baru (Multi-table insert)
+        const insertPengajuanQuery = `
+          INSERT INTO pengajuan_tabungan (
             cabang_id, status, created_at
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+          ) VALUES ($1, $2, $3)
+          RETURNING id
         `;
 
-        await client.query(insertQuery, [
-          item.kode_referensi || `IMP-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-          item.nama_lengkap || '',
-          item.nik || '',
-          item.email || '',
-          item.no_hp || '',
-          item.tanggal_lahir || null,
-          item.alamat || '',
-          item.pekerjaan || '',
-          item.penghasilan || '',
-          item.jenis_rekening || '',
-          item.jenis_kartu || '',
+        const pengajuanRes = await client.query(insertPengajuanQuery, [
           item.cabang_id || req.user.cabang_id,
           item.status || 'pending',
           item.created_at || new Date()
         ]);
+        const pengajuanId = pengajuanRes.rows[0].id;
+
+        // Insert cdd_self
+        const insertCddSelfQuery = `
+          INSERT INTO cdd_self (
+            pengajuan_id, kode_referensi, nama, alias, jenis_id, no_id, berlaku_id,
+            tempat_lahir, tanggal_lahir, alamat_id, kode_pos_id, alamat_now,
+            jenis_kelamin, status_kawin, agama, pendidikan, nama_ibu_kandung,
+            npwp, email, no_hp, kewarganegaraan, status_rumah, rekening_untuk_sendiri,
+            tipe_nasabah, nomor_rekening_lama, created_at
+          ) VALUES (
+            $1, $2, $3, $4, $5, $6, $7,
+            $8, $9, $10, $11, $12,
+            $13, $14, $15, $16, $17,
+            $18, $19, $20, $21, $22, $23,
+            $24, $25, NOW()
+          )
+        `;
+
+        await client.query(insertCddSelfQuery, [
+          pengajuanId,
+          item.kode_referensi || `IMP-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          item.nama_lengkap || '',
+          item.alias || null,
+          item.identityType || 'KTP',
+          item.nik || '',
+          item.berlaku_id || null, // Date string or null
+          item.tempat_lahir || '',
+          item.tanggal_lahir || null,
+          item.alamat || '',
+          item.kode_pos || '',
+          item.alamat_domisili || item.alamat || '',
+          item.jenis_kelamin || '',
+          item.status_pernikahan || '',
+          item.agama || '',
+          item.pendidikan || '',
+          item.nama_ibu_kandung || '',
+          item.npwp || '',
+          item.email || '',
+          item.no_hp || '',
+          item.kewarganegaraan || 'WNI',
+          item.status_rumah || '',
+          item.rekening_untuk_sendiri !== false, // Default true
+          item.tipe_nasabah || 'baru',
+          item.nomor_rekening_lama || null
+        ]);
+
+        // Insert cdd_job
+        const insertCddJobQuery = `
+          INSERT INTO cdd_job (
+            pengajuan_id, pekerjaan, gaji_per_bulan, sumber_dana, rata_transaksi_per_bulan,
+            nama_perusahaan, alamat_perusahaan, no_telepon, jabatan, bidang_usaha, created_at
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
+        `;
+
+        await client.query(insertCddJobQuery, [
+          pengajuanId,
+          item.pekerjaan || '',
+          item.penghasilan || '',
+          item.sumber_dana || '',
+          item.rata_rata_transaksi || '',
+          item.tempat_bekerja || '',
+          item.alamat_kantor || '',
+          item.telepon_perusahaan || '',
+          item.jabatan || '',
+          item.bidang_usaha || ''
+        ]);
+
+        // Insert account
+        const insertAccountQuery = `
+          INSERT INTO account (
+            pengajuan_id, tabungan_tipe, atm, atm_tipe,
+            nominal_setoran, tujuan_pembukaan, created_at
+          ) VALUES ($1, $2, $3, $4, $5, $6, NOW())
+        `;
+
+        await client.query(insertAccountQuery, [
+          pengajuanId,
+          item.jenis_rekening || 'simpel',
+          item.jenis_kartu ? 1 : 0,
+          item.jenis_kartu || null,
+          item.nominal_setoran || null,
+          item.tujuan_rekening || ''
+        ]);
+
+        // Insert cdd_reference (Emergency Contact)
+        if (item.kontak_darurat_nama) {
+          const insertRefQuery = `
+            INSERT INTO cdd_reference (
+              pengajuan_id, nama, alamat, no_hp, hubungan, created_at
+            ) VALUES ($1, $2, $3, $4, $5, NOW())
+          `;
+          await client.query(insertRefQuery, [
+            pengajuanId,
+            item.kontak_darurat_nama,
+            item.kontak_darurat_alamat || '',
+            item.kontak_darurat_hp || '',
+            item.kontak_darurat_hubungan || ''
+          ]);
+        }
+
+        // Insert BO (Beneficial Owner)
+        if (item.rekening_untuk_sendiri === false && item.bo_nama) {
+          const insertBoQuery = `
+            INSERT INTO bo (
+              pengajuan_id, nama, alamat, tempat_lahir, tanggal_lahir,
+              jenis_kelamin, kewarganegaraan, status_pernikahan,
+              jenis_id, nomor_id, sumber_dana, hubungan, nomor_hp,
+              pekerjaan, pendapatan_tahunan, persetujuan, created_at
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, NOW())
+          `;
+          await client.query(insertBoQuery, [
+            pengajuanId,
+            item.bo_nama,
+            item.bo_alamat || '',
+            item.bo_tempat_lahir || '',
+            item.bo_tanggal_lahir || null,
+            item.bo_jenis_kelamin || '',
+            item.bo_kewarganegaraan || '',
+            item.bo_status_pernikahan || '',
+            item.bo_jenis_id || '',
+            item.bo_nomor_id || '',
+            item.bo_sumber_dana || '',
+            item.bo_hubungan || '',
+            item.bo_nomor_hp || '',
+            item.bo_pekerjaan || '',
+            item.bo_pendapatan_tahun || '',
+            item.bo_persetujuan === true
+          ]);
+        }
 
         importedCount++;
       } catch (itemError) {
