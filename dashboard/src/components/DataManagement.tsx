@@ -42,6 +42,8 @@ export default function DataManagement({ onDataImported, cabangList = [], userRo
   const [showImportPreview, setShowImportPreview] = useState(false);
   const [importPreviewData, setImportPreviewData] = useState<any>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [showBackupModal, setShowBackupModal] = useState(false);
+  const [selectedBackupCabang, setSelectedBackupCabang] = useState<number | 'all'>('all');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Export data sebagai Excel
@@ -97,15 +99,16 @@ export default function DataManagement({ onDataImported, cabangList = [], userRo
   };
 
   // Export data sebagai JSON backup
-  const handleExportBackup = async () => {
+  const handleExportBackup = async (cabangId?: number | 'all') => {
     setIsExporting(true);
     try {
       let url = `${API_BASE_URL}/api/pengajuan/export/backup`;
       
-      // Add query parameters for date range
+      // Add query parameters
       const params = new URLSearchParams();
       if (dateRange.startDate) params.append('startDate', dateRange.startDate);
       if (dateRange.endDate) params.append('endDate', dateRange.endDate);
+      if (cabangId && cabangId !== 'all') params.append('cabangId', cabangId.toString());
       
       if (params.toString()) {
         url += `?${params.toString()}`;
@@ -456,7 +459,13 @@ export default function DataManagement({ onDataImported, cabangList = [], userRo
               <div className="space-y-2">
                 <p className="text-xs font-medium text-slate-700">Backup JSON</p>
                 <Button
-                  onClick={handleExportBackup}
+                  onClick={() => {
+                    if (userRole === 'super') {
+                      setShowBackupModal(true);
+                    } else {
+                      handleExportBackup();
+                    }
+                  }}
                   disabled={isExporting}
                   variant="outline"
                   className="border-green-300 text-green-700 hover:bg-green-50 w-full"
@@ -875,6 +884,90 @@ export default function DataManagement({ onDataImported, cabangList = [], userRo
                 className="w-full"
               >
                 Batal
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Backup Modal for Super Admin */}
+      {showBackupModal && userRole === 'super' && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-2xl max-w-md w-full mx-4 animate-in zoom-in duration-300">
+            
+            {/* Icon */}
+            <div className="relative w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+              <div className="absolute inset-0 bg-green-100 rounded-full animate-pulse opacity-30" />
+              <div className="relative w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-500 text-white rounded-full flex items-center justify-center shadow-lg">
+                <Archive className="w-8 h-8" />
+              </div>
+            </div>
+
+            {/* Title */}
+            <h2 className="text-2xl font-bold text-slate-900 mb-3 text-center">
+              Backup Data
+            </h2>
+
+            <div className="space-y-4">
+              <p className="text-slate-600 text-sm text-center mb-4">
+                Pilih cabang yang ingin di-backup:
+              </p>
+              
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-slate-700 text-left">
+                  Pilih Cabang:
+                </label>
+                <select
+                  value={selectedBackupCabang}
+                  onChange={(e) => setSelectedBackupCabang(e.target.value === 'all' ? 'all' : parseInt(e.target.value))}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                >
+                  <option value="all">Semua Cabang</option>
+                  {cabangList.map((cabang) => (
+                    <option key={cabang.id} value={cabang.id}>
+                      {cabang.nama_cabang}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3 mt-4">
+                <p className="text-green-800 text-xs">
+                  💾 Backup akan mencakup semua data permohonan 
+                  {selectedBackupCabang === 'all' ? ' dari semua cabang' : ` dari cabang yang dipilih`}
+                  {dateRange.startDate || dateRange.endDate ? ' sesuai filter tanggal' : ''}.
+                </p>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 justify-center mt-6">
+              <Button
+                onClick={() => {
+                  setShowBackupModal(false);
+                  setSelectedBackupCabang('all');
+                }}
+                variant="outline"
+                className="px-6 py-2.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium transition-all"
+              >
+                Batal
+              </Button>
+
+              <Button
+                onClick={() => {
+                  handleExportBackup(selectedBackupCabang);
+                  setShowBackupModal(false);
+                  setSelectedBackupCabang('all');
+                }}
+                disabled={isExporting}
+                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:opacity-90 font-semibold shadow-lg transition-all"
+              >
+                {isExporting ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Archive className="w-4 h-4 mr-2" />
+                )}
+                Backup Data
               </Button>
             </div>
           </div>

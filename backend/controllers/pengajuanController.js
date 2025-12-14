@@ -1306,7 +1306,7 @@ export const exportBackup = async (req, res) => {
 
     const userRole = req.user.role;
     const adminCabang = req.user.cabang_id;
-    const { startDate, endDate } = req.query;
+    const { startDate, endDate, cabangId } = req.query;
 
     // Query untuk mengambil data lengkap dengan JOIN
     // Note: Menggunakan query yang mirip dengan getPengajuanById tapi untuk banyak row
