@@ -26,14 +26,14 @@ export const getImportProgress = async (req, res) => {
   try {
     const { sessionId } = req.params;
     const progress = importProgressStore.get(sessionId);
-    
+
     if (!progress) {
       return res.json({
         progress: 0,
         message: 'Session tidak ditemukan'
       });
     }
-    
+
     res.json(progress);
   } catch (err) {
     console.error('❌ Get progress error:', err);
@@ -924,7 +924,19 @@ export const getAnalyticsData = async (req, res) => {
 
     // Log untuk debugging
     console.log(`📊 Analytics query executed for user role: ${userRole}, cabang: ${adminCabang}`);
+    console.log(`📊 Analytics query executed for user role: ${userRole}, cabang: ${adminCabang}`);
     console.log(`📊 Returned ${result.rows.length} records`);
+
+    // Debug info for first record
+    if (result.rows.length > 0) {
+      console.log('📊 [DEBUG] Sample record (first):', {
+        id: result.rows[0].id,
+        penghasilan: result.rows[0].penghasilan,
+        pekerjaan: result.rows[0].pekerjaan,
+        jabatan: result.rows[0].jabatan,
+        nama_perusahaan: result.rows[0].nama_perusahaan
+      });
+    }
 
     res.json({
       success: true,
@@ -1600,7 +1612,7 @@ export const previewImportData = async (req, res) => {
         // Convert both to numbers for proper comparison
         const itemCabangId = parseInt(item.cabang_id);
         const userCabangId = parseInt(req.user.cabang_id);
-        
+
         console.log('🔍 Cross-cabang check:', {
           itemCabangId,
           userCabangId,
@@ -1610,7 +1622,7 @@ export const previewImportData = async (req, res) => {
           userCabangIdRaw: req.user.cabang_id,
           isDifferent: itemCabangId !== userCabangId
         });
-        
+
         if (itemCabangId !== userCabangId) {
           analysis.crossCabangWarnings.push({
             kode_referensi: item.kode_referensi,
@@ -1627,7 +1639,7 @@ export const previewImportData = async (req, res) => {
 
     // Cek data yang sudah ada berdasarkan kode_referensi
     const referensiCodes = importData.map(item => item.kode_referensi).filter(Boolean);
-    
+
     console.log('🔍 Debug preview - referensiCodes:', referensiCodes.length, 'dari', importData.length, 'total');
     console.log('🔍 Sample referensi codes:', referensiCodes.slice(0, 3));
 
@@ -1650,7 +1662,7 @@ export const previewImportData = async (req, res) => {
       // Kategorikan data
       console.log('🔍 Existing map size:', existingMap.size);
       console.log('🔍 Sample existing keys:', Array.from(existingMap.keys()).slice(0, 3));
-      
+
       importData.forEach(item => {
         const existing = existingMap.get(item.kode_referensi);
         console.log('🔍 Checking item:', item.kode_referensi, 'existing:', !!existing);
@@ -1747,7 +1759,7 @@ export const importData = async (req, res) => {
     console.log('📥 Import data request received');
     console.log('👤 User:', req.user?.username, 'Role:', req.user?.role, 'Cabang ID:', req.user?.cabang_id, 'Type:', typeof req.user?.cabang_id);
     console.log('🔄 Overwrite mode:', req.body.overwrite);
-    
+
     const sessionId = req.body.sessionId;
     if (sessionId) {
       updateImportProgress(sessionId, 5, 'Memulai proses import...');
@@ -1798,26 +1810,26 @@ export const importData = async (req, res) => {
 
     for (let index = 0; index < importData.length; index++) {
       const item = importData[index];
-      
+
       // Update progress
       if (sessionId && index % 5 === 0) { // Update every 5 records to avoid spam
         const progress = 15 + Math.floor((index / totalRecords) * 70); // 15% to 85%
-        const message = overwriteMode 
+        const message = overwriteMode
           ? `Memproses record ${index + 1}/${totalRecords} (Mode: Replace)`
           : `Memproses record ${index + 1}/${totalRecords} (Mode: Add New)`;
         updateImportProgress(sessionId, progress, message);
       }
-      
+
       try {
         // Role-based access control untuk cabang_id
         let targetCabangId = item.cabang_id || req.user.cabang_id;
-        
+
         // Admin cabang hanya bisa import ke cabang mereka sendiri
         if (req.user.role !== 'super' && item.cabang_id) {
           // Convert both to numbers for proper comparison
           const itemCabangId = parseInt(item.cabang_id);
           const userCabangId = parseInt(req.user.cabang_id);
-          
+
           console.log('🔍 Import cabang check:', {
             itemCabangId,
             userCabangId,
@@ -1825,14 +1837,14 @@ export const importData = async (req, res) => {
             userCabangIdType: typeof req.user.cabang_id,
             isDifferent: itemCabangId !== userCabangId
           });
-          
+
           if (itemCabangId !== userCabangId) {
             console.log(`⚠️ Admin cabang ${req.user.cabang_id} mencoba import data cabang ${item.cabang_id} - dilewati`);
             skippedCount++;
             continue;
           }
         }
-        
+
         // Pastikan admin cabang hanya import ke cabang mereka
         if (req.user.role !== 'super') {
           targetCabangId = req.user.cabang_id;
@@ -1852,19 +1864,19 @@ export const importData = async (req, res) => {
             // Update data yang sudah ada dengan semua field approval
             const pengajuanId = existingCheck.rows[0].id;
             const newStatus = item.status || 'pending';
-            
+
             let updateQuery = `
               UPDATE pengajuan_tabungan 
               SET status = $1, updated_at = NOW()
             `;
             let updateParams = [newStatus, pengajuanId];
             let paramIndex = 2;
-            
+
             // Update approval fields berdasarkan status
             if (newStatus === 'approved') {
               updateQuery += `, approved_at = $${++paramIndex}, rejected_at = NULL, rejected_by = NULL`;
               updateParams.splice(-1, 0, item.approved_at || new Date());
-              
+
               if (item.approvedBy) {
                 // Cari user ID berdasarkan username
                 const userQuery = await client.query('SELECT id FROM users WHERE username = $1', [item.approvedBy]);
@@ -1876,7 +1888,7 @@ export const importData = async (req, res) => {
             } else if (newStatus === 'rejected') {
               updateQuery += `, rejected_at = $${++paramIndex}, approved_at = NULL, approved_by = NULL`;
               updateParams.splice(-1, 0, item.rejected_at || new Date());
-              
+
               if (item.rejectedBy) {
                 // Cari user ID berdasarkan username
                 const userQuery = await client.query('SELECT id FROM users WHERE username = $1', [item.rejectedBy]);
@@ -1889,7 +1901,7 @@ export const importData = async (req, res) => {
               // Status pending - clear approval fields
               updateQuery += `, approved_at = NULL, approved_by = NULL, rejected_at = NULL, rejected_by = NULL`;
             }
-            
+
             updateQuery += ` WHERE id = $${paramIndex + 1}`;
 
             await client.query(updateQuery, updateParams);
@@ -1927,13 +1939,13 @@ export const importData = async (req, res) => {
         `;
         let insertParams = [targetCabangId, newStatus, item.created_at || new Date()];
         let paramIndex = 3;
-        
+
         // Tambahkan approval fields berdasarkan status
         if (newStatus === 'approved') {
           insertPengajuanQuery += `, approved_at`;
           insertParams.push(item.approved_at || new Date());
           paramIndex++;
-          
+
           if (item.approvedBy) {
             // Cari user ID berdasarkan username
             const userQuery = await client.query('SELECT id FROM users WHERE username = $1', [item.approvedBy]);
@@ -1947,7 +1959,7 @@ export const importData = async (req, res) => {
           insertPengajuanQuery += `, rejected_at`;
           insertParams.push(item.rejected_at || new Date());
           paramIndex++;
-          
+
           if (item.rejectedBy) {
             // Cari user ID berdasarkan username
             const userQuery = await client.query('SELECT id FROM users WHERE username = $1', [item.rejectedBy]);
@@ -1958,7 +1970,7 @@ export const importData = async (req, res) => {
             }
           }
         }
-        
+
         insertPengajuanQuery += `) VALUES (`;
         for (let i = 1; i <= insertParams.length; i++) {
           insertPengajuanQuery += `$${i}`;
@@ -2112,12 +2124,12 @@ export const importData = async (req, res) => {
           hint: itemError.hint,
           position: itemError.position
         });
-        
+
         // If this is the first error, it will abort the transaction
         if (itemError.code !== '25P02') {
           console.error('🔥 ORIGINAL ERROR (not transaction abort):', itemError);
         }
-        
+
         skippedCount++;
       }
     }
@@ -2147,7 +2159,7 @@ export const importData = async (req, res) => {
 
     if (sessionId) {
       updateImportProgress(sessionId, 100, `Import selesai! ${importedCount} berhasil, ${overwrittenCount} ditimpa, ${skippedCount} dilewati.`);
-      
+
       // Clean up progress after 30 seconds
       setTimeout(() => {
         importProgressStore.delete(sessionId);
@@ -2166,7 +2178,7 @@ export const importData = async (req, res) => {
   } catch (err) {
     await client.query('ROLLBACK');
     console.error('❌ Import error:', err);
-    
+
     const sessionId = req.body.sessionId;
     if (sessionId) {
       updateImportProgress(sessionId, 0, `Error: ${err.message}`);
@@ -2175,7 +2187,7 @@ export const importData = async (req, res) => {
         importProgressStore.delete(sessionId);
       }, 10000);
     }
-    
+
     res.status(500).json({
       success: false,
       message: 'Gagal mengimpor data',

@@ -156,8 +156,10 @@ export const mapBackendDataToFormSubmission = (data: any): FormSubmission => {
       'below5': '< Rp 5.000.000',
       '5-10jt': 'Rp 5.000.000 - Rp 10.000.000',
       '10-20jt': 'Rp 10.000.000 - Rp 20.000.000',
-      'above20': '> Rp 20.000.000'
+    'above20': '> Rp 20.000.000'
     };
+    // Debug log for penghasilan
+    // console.log(`[DEBUG] Mapping penghasilan: "${penghasilan}" -> "${map[penghasilan] || penghasilan}"`); // Too noisy for every item
     return map[penghasilan] || penghasilan;
   };
 
@@ -205,10 +207,10 @@ export const mapBackendDataToFormSubmission = (data: any): FormSubmission => {
       'pembayaran': 'Pembayaran / Transaksi',
       'lainnya': 'Lainnya'
     };
-    return map[tujuan] || tujuan;
+  return map[tujuan] || tujuan;
   };
 
-  return {
+  const result = {
     id: data.id?.toString() || '',
     referenceCode: data.kode_referensi || '',
     cardType: mapJenisKartu(data.jenis_kartu),
@@ -298,6 +300,13 @@ export const mapBackendDataToFormSubmission = (data: any): FormSubmission => {
     rejectedBy: data.rejectedBy || undefined,
     rejectedAt: data.rejected_at ? formatDateTime(data.rejected_at) : undefined
   };
+  
+  // Debug log for first item only or specific check
+  // if (data.id === 1 || data.id === '1') {
+  //   console.log('[DEBUG] Mapped submission 1:', result);
+  // }
+  
+  return result;
 };
 
 import { useAuth } from "./context/AuthContext";

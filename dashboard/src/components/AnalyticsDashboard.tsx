@@ -222,6 +222,13 @@ const AnalyticsDashboard = memo(({ submissions, cabangList = [] }: AnalyticsDash
       return acc;
     }, {} as Record<string, number>);
 
+
+
+    console.log('Salary raw data sample:', submissions.slice(0, 3).map(s => ({ 
+      id: s.id, 
+      salary: s.jobInfo?.salaryRange,
+      rawJobInfo: s.jobInfo 
+    })));
     console.log('Salary counts:', counts); // Debug log
     
     return Object.entries(counts)
