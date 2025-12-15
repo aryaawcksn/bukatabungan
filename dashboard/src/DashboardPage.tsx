@@ -18,6 +18,7 @@ const AccountSetting = lazy(() => import('./components/AccountSetting'));
 const DataManagement = lazy(() => import('./components/DataManagement'));
 const FormDetailDialog = lazy(() => import('./components/form-detail-dialog').then(module => ({ default: module.FormDetailDialog })));
 const ApprovalDialog = lazy(() => import('./components/approval-dialog').then(module => ({ default: module.ApprovalDialog })));
+const EditSubmissionDialog = lazy(() => import('./components/edit-submission-dialog').then(module => ({ default: module.EditSubmissionDialog })));
 
 // Lazy load analytics components
 const AnalyticsDashboard = lazy(() => import('./components/AnalyticsDashboard'));
@@ -318,6 +319,10 @@ export default function DashboardPage() {
   const [approvalDialog, setApprovalDialog] = useState<{ open: boolean; type: 'approve' | 'reject'; submission: FormSubmission | null }>({
     open: false,
     type: 'approve',
+    submission: null
+  });
+  const [editDialog, setEditDialog] = useState<{ open: boolean; submission: FormSubmission | null }>({
+    open: false,
     submission: null
   });
   const [searchQuery, setSearchQuery] = useState('');
@@ -796,6 +801,19 @@ export default function DashboardPage() {
     const submission = submissions.find(sub => sub.id === id);
     if (submission) setApprovalDialog({ open: true, type: 'reject', submission });
   }, [submissions]);
+
+  const handleEdit = useCallback((id: string) => {
+    const submission = submissions.find(sub => sub.id === id);
+    if (submission && submission.status === 'approved') {
+      setEditDialog({ open: true, submission });
+    }
+  }, [submissions]);
+
+  const handleEditSuccess = useCallback(() => {
+    setEditDialog({ open: false, submission: null });
+    fetchSubmissions(); // Refresh data
+    toast.success('Data berhasil diperbarui');
+  }, [fetchSubmissions]);
 
   const handleApprovalConfirm = useCallback(async (sendWhatsApp: boolean, message: string) => {
     if (!approvalDialog.submission) return;
@@ -1776,6 +1794,7 @@ const handleToggleMark = useCallback((id: string) => {
             onClose={() => setSelectedSubmission(null)}
             onApprove={() => handleApprove(selectedSubmission.id)}
             onReject={() => handleReject(selectedSubmission.id)}
+            onEdit={selectedSubmission.status === 'approved' ? () => handleEdit(selectedSubmission.id) : undefined}
             isMarked={markedSubmissions.has(selectedSubmission.id)}
             onToggleMark={selectedSubmission.status === 'pending' ? () => handleToggleMark(selectedSubmission.id) : undefined}
           />
@@ -1791,6 +1810,17 @@ const handleToggleMark = useCallback((id: string) => {
             type={approvalDialog.type}
             applicantName={approvalDialog.submission.personalData.fullName}
             phone={approvalDialog.submission.personalData.phone}
+          />
+        </Suspense>
+      )}
+
+      {editDialog.submission && (
+        <Suspense fallback={null}>
+          <EditSubmissionDialog
+            submission={editDialog.submission}
+            open={editDialog.open}
+            onClose={() => setEditDialog({ open: false, submission: null })}
+            onSuccess={handleEditSuccess}
           />
         </Suspense>
       )}

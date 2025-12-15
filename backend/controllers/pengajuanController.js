@@ -2349,3 +2349,330 @@ export const deleteDataByStatus = async (req, res) => {
     client.release();
   }
 };
+
+/**
+ * Edit submission data (only for approved submissions)
+ */
+export const editSubmission = async (req, res) => {
+  const client = await pool.connect();
+
+  try {
+    const { id } = req.params;
+    const { editReason, ...editData } = req.body;
+    const { cabang_id: adminCabang, role: userRole, id: userId } = req.user;
+
+    console.log('✏️ Edit submission request:', {
+      submissionId: id,
+      userId,
+      userRole,
+      editReason,
+      fieldsToEdit: Object.keys(editData)
+    });
+
+    // Check if submission exists and is approved
+    const submissionQuery = `
+      SELECT p.*, cs.kode_referensi, cs.nama
+      FROM pengajuan_tabungan p
+      LEFT JOIN cdd_self cs ON p.id = cs.pengajuan_id
+      WHERE p.id = $1 ${userRole === 'super' ? '' : 'AND p.cabang_id = $2'}
+    `;
+    
+    const queryParams = userRole === 'super' ? [id] : [id, adminCabang];
+    const submissionResult = await client.query(submissionQuery, queryParams);
+
+    if (submissionResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Submission tidak ditemukan atau tidak memiliki akses'
+      });
+    }
+
+    const submission = submissionResult.rows[0];
+
+    // Only allow editing approved submissions
+    if (submission.status !== 'approved') {
+      return res.status(400).json({
+        success: false,
+        message: 'Hanya submission yang sudah disetujui yang dapat diedit'
+      });
+    }
+
+    await client.query('BEGIN');
+
+    // Store original approval info if this is the first edit
+    if (!submission.original_approved_by) {
+      await client.query(`
+        UPDATE pengajuan_tabungan 
+        SET original_approved_by = approved_by, original_approved_at = approved_at
+        WHERE id = $1
+      `, [id]);
+    }
+
+    // Get current data for comparison
+    const currentDataQuery = `
+      SELECT 
+        cs.*, cj.*, acc.*, cref.nama as ref_nama, cref.no_hp as ref_no_hp, 
+        cref.alamat as ref_alamat, cref.hubungan as ref_hubungan,
+        bo.nama as bo_nama, bo.alamat as bo_alamat, bo.tempat_lahir as bo_tempat_lahir,
+        bo.tanggal_lahir as bo_tanggal_lahir, bo.jenis_kelamin as bo_jenis_kelamin,
+        bo.kewarganegaraan as bo_kewarganegaraan, bo.status_pernikahan as bo_status_pernikahan,
+        bo.jenis_id as bo_jenis_id, bo.nomor_id as bo_nomor_id, bo.sumber_dana as bo_sumber_dana,
+        bo.hubungan as bo_hubungan, bo.nomor_hp as bo_nomor_hp, bo.pekerjaan as bo_pekerjaan,
+        bo.pendapatan_tahunan as bo_pendapatan_tahun, bo.persetujuan as bo_persetujuan
+      FROM cdd_self cs
+      LEFT JOIN cdd_job cj ON cs.pengajuan_id = cj.pengajuan_id
+      LEFT JOIN account acc ON cs.pengajuan_id = acc.pengajuan_id
+      LEFT JOIN cdd_reference cref ON cs.pengajuan_id = cref.pengajuan_id
+      LEFT JOIN bo bo ON cs.pengajuan_id = bo.pengajuan_id
+      WHERE cs.pengajuan_id = $1
+    `;
+
+    const currentData = await client.query(currentDataQuery, [id]);
+    const current = currentData.rows[0];
+
+    // Field mapping for different tables
+    const fieldMapping = {
+      // cdd_self fields
+      nama: { table: 'cdd_self', column: 'nama', current: current.nama },
+      alias: { table: 'cdd_self', column: 'alias', current: current.alias },
+      jenis_id: { table: 'cdd_self', column: 'jenis_id', current: current.jenis_id },
+      no_id: { table: 'cdd_self', column: 'no_id', current: current.no_id },
+      berlaku_id: { table: 'cdd_self', column: 'berlaku_id', current: current.berlaku_id },
+      tempat_lahir: { table: 'cdd_self', column: 'tempat_lahir', current: current.tempat_lahir },
+      tanggal_lahir: { table: 'cdd_self', column: 'tanggal_lahir', current: current.tanggal_lahir },
+      alamat_id: { table: 'cdd_self', column: 'alamat_id', current: current.alamat_id },
+      kode_pos_id: { table: 'cdd_self', column: 'kode_pos_id', current: current.kode_pos_id },
+      alamat_now: { table: 'cdd_self', column: 'alamat_now', current: current.alamat_now },
+      jenis_kelamin: { table: 'cdd_self', column: 'jenis_kelamin', current: current.jenis_kelamin },
+      status_kawin: { table: 'cdd_self', column: 'status_kawin', current: current.status_kawin },
+      agama: { table: 'cdd_self', column: 'agama', current: current.agama },
+      pendidikan: { table: 'cdd_self', column: 'pendidikan', current: current.pendidikan },
+      nama_ibu_kandung: { table: 'cdd_self', column: 'nama_ibu_kandung', current: current.nama_ibu_kandung },
+      npwp: { table: 'cdd_self', column: 'npwp', current: current.npwp },
+      email: { table: 'cdd_self', column: 'email', current: current.email },
+      no_hp: { table: 'cdd_self', column: 'no_hp', current: current.no_hp },
+      kewarganegaraan: { table: 'cdd_self', column: 'kewarganegaraan', current: current.kewarganegaraan },
+      status_rumah: { table: 'cdd_self', column: 'status_rumah', current: current.status_rumah },
+      
+      // cdd_job fields
+      pekerjaan: { table: 'cdd_job', column: 'pekerjaan', current: current.pekerjaan },
+      gaji_per_bulan: { table: 'cdd_job', column: 'gaji_per_bulan', current: current.gaji_per_bulan },
+      sumber_dana: { table: 'cdd_job', column: 'sumber_dana', current: current.sumber_dana },
+      rata_transaksi_per_bulan: { table: 'cdd_job', column: 'rata_transaksi_per_bulan', current: current.rata_transaksi_per_bulan },
+      nama_perusahaan: { table: 'cdd_job', column: 'nama_perusahaan', current: current.nama_perusahaan },
+      alamat_perusahaan: { table: 'cdd_job', column: 'alamat_perusahaan', current: current.alamat_perusahaan },
+      no_telepon: { table: 'cdd_job', column: 'no_telepon', current: current.no_telepon },
+      jabatan: { table: 'cdd_job', column: 'jabatan', current: current.jabatan },
+      bidang_usaha: { table: 'cdd_job', column: 'bidang_usaha', current: current.bidang_usaha },
+      
+      // account fields
+      tabungan_tipe: { table: 'account', column: 'tabungan_tipe', current: current.tabungan_tipe },
+      atm_tipe: { table: 'account', column: 'atm_tipe', current: current.atm_tipe },
+      nominal_setoran: { table: 'account', column: 'nominal_setoran', current: current.nominal_setoran },
+      tujuan_pembukaan: { table: 'account', column: 'tujuan_pembukaan', current: current.tujuan_pembukaan },
+      
+      // cdd_reference fields
+      kontak_darurat_nama: { table: 'cdd_reference', column: 'nama', current: current.ref_nama },
+      kontak_darurat_hp: { table: 'cdd_reference', column: 'no_hp', current: current.ref_no_hp },
+      kontak_darurat_alamat: { table: 'cdd_reference', column: 'alamat', current: current.ref_alamat },
+      kontak_darurat_hubungan: { table: 'cdd_reference', column: 'hubungan', current: current.ref_hubungan }
+    };
+
+    const editHistory = [];
+    const tableUpdates = {};
+
+    // Process each field to edit
+    for (const [fieldName, newValue] of Object.entries(editData)) {
+      const fieldInfo = fieldMapping[fieldName];
+      
+      if (!fieldInfo) {
+        console.log(`⚠️ Unknown field: ${fieldName}`);
+        continue;
+      }
+
+      const oldValue = fieldInfo.current;
+      
+      // Only update if value actually changed
+      if (String(oldValue || '') !== String(newValue || '')) {
+        // Group updates by table
+        if (!tableUpdates[fieldInfo.table]) {
+          tableUpdates[fieldInfo.table] = {};
+        }
+        tableUpdates[fieldInfo.table][fieldInfo.column] = newValue;
+
+        // Record for audit trail
+        editHistory.push({
+          field_name: fieldName,
+          old_value: oldValue,
+          new_value: newValue
+        });
+      }
+    }
+
+    if (editHistory.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({
+        success: false,
+        message: 'Tidak ada perubahan yang terdeteksi'
+      });
+    }
+
+    // Execute table updates
+    for (const [tableName, updates] of Object.entries(tableUpdates)) {
+      const setClause = Object.keys(updates).map((col, idx) => `${col} = $${idx + 2}`).join(', ');
+      const values = [id, ...Object.values(updates)];
+      
+      const updateQuery = `UPDATE ${tableName} SET ${setClause} WHERE pengajuan_id = $1`;
+      await client.query(updateQuery, values);
+    }
+
+    // Insert audit trail records
+    for (const edit of editHistory) {
+      await client.query(`
+        INSERT INTO submission_edit_history 
+        (pengajuan_id, edited_by, field_name, old_value, new_value, edit_reason)
+        VALUES ($1, $2, $3, $4, $5, $6)
+      `, [id, userId, edit.field_name, edit.old_value, edit.new_value, editReason]);
+    }
+
+    // Update main submission record
+    await client.query(`
+      UPDATE pengajuan_tabungan 
+      SET last_edited_at = NOW(), 
+          last_edited_by = $1, 
+          edit_count = COALESCE(edit_count, 0) + 1
+      WHERE id = $2
+    `, [userId, id]);
+
+    await client.query('COMMIT');
+
+    // Log activity
+    await logUserActivity(
+      userId,
+      'EDIT_SUBMISSION',
+      `Edit submission ${submission.kode_referensi} (${submission.nama}): ${editHistory.length} fields changed`,
+      adminCabang,
+      req.ip,
+      req.get('User-Agent')
+    );
+
+    res.json({
+      success: true,
+      message: 'Submission berhasil diedit',
+      changedFields: editHistory.length,
+      editHistory: editHistory.map(h => ({
+        field: h.field_name,
+        oldValue: h.old_value,
+        newValue: h.new_value
+      }))
+    });
+
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('❌ Edit submission error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Gagal mengedit submission',
+      error: err.message
+    });
+  } finally {
+    client.release();
+  }
+};
+
+/**
+ * Get edit history for a submission
+ */
+export const getEditHistory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { cabang_id: adminCabang, role: userRole } = req.user;
+
+    // Check access to submission
+    const accessQuery = `
+      SELECT p.id, cs.kode_referensi, cs.nama
+      FROM pengajuan_tabungan p
+      LEFT JOIN cdd_self cs ON p.id = cs.pengajuan_id
+      WHERE p.id = $1 ${userRole === 'super' ? '' : 'AND p.cabang_id = $2'}
+    `;
+    
+    const accessParams = userRole === 'super' ? [id] : [id, adminCabang];
+    const accessResult = await pool.query(accessQuery, accessParams);
+
+    if (accessResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Submission tidak ditemukan atau tidak memiliki akses'
+      });
+    }
+
+    // Get edit history
+    const historyQuery = `
+      SELECT 
+        seh.*,
+        u.username as edited_by_username,
+        u.nama as edited_by_name
+      FROM submission_edit_history seh
+      LEFT JOIN users u ON seh.edited_by = u.id
+      WHERE seh.pengajuan_id = $1
+      ORDER BY seh.edited_at DESC
+    `;
+
+    const historyResult = await pool.query(historyQuery, [id]);
+
+    // Get submission info with original approver
+    const submissionQuery = `
+      SELECT 
+        p.*,
+        ua_orig.username as original_approved_by_username,
+        ua_orig.nama as original_approved_by_name,
+        ua_curr.username as current_approved_by_username,
+        ua_curr.nama as current_approved_by_name,
+        ue.username as last_edited_by_username,
+        ue.nama as last_edited_by_name
+      FROM pengajuan_tabungan p
+      LEFT JOIN users ua_orig ON p.original_approved_by = ua_orig.id
+      LEFT JOIN users ua_curr ON p.approved_by = ua_curr.id
+      LEFT JOIN users ue ON p.last_edited_by = ue.id
+      WHERE p.id = $1
+    `;
+
+    const submissionResult = await pool.query(submissionQuery, [id]);
+    const submission = submissionResult.rows[0];
+
+    res.json({
+      success: true,
+      data: {
+        submission: {
+          id: submission.id,
+          status: submission.status,
+          edit_count: submission.edit_count || 0,
+          last_edited_at: submission.last_edited_at,
+          last_edited_by: {
+            username: submission.last_edited_by_username,
+            nama: submission.last_edited_by_name
+          },
+          original_approved_by: {
+            username: submission.original_approved_by_username,
+            nama: submission.original_approved_by_name,
+            approved_at: submission.original_approved_at
+          },
+          current_approved_by: {
+            username: submission.current_approved_by_username,
+            nama: submission.current_approved_by_name,
+            approved_at: submission.approved_at
+          }
+        },
+        history: historyResult.rows
+      }
+    });
+
+  } catch (err) {
+    console.error('❌ Get edit history error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Gagal mengambil riwayat edit',
+      error: err.message
+    });
+  }
+};

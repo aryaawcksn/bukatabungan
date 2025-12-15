@@ -14,6 +14,8 @@ import {
   importData,
   getImportProgress,
   deleteDataByStatus,
+  editSubmission,
+  getEditHistory,
 } from "../controllers/pengajuanController.js";
 
 // Konfigurasi multer untuk import file
@@ -60,6 +62,10 @@ router.get("/import/progress/:sessionId", verifyToken, getImportProgress);
 
 // Route delete data - HARUS SEBELUM /:id (protected)
 router.delete("/delete/:status", verifyToken, deleteDataByStatus);
+
+// Route edit submission - HARUS SEBELUM /:id (protected)
+router.put("/:id/edit", verifyToken, editSubmission);
+router.get("/:id/history", verifyToken, getEditHistory);
 
 // Route ambil satu pengajuan berdasarkan ID (protected)
 router.get("/:id", verifyToken, getPengajuanById);

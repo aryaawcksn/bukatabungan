@@ -27,6 +27,7 @@ import {
   Target,
   Building2,
   Clock,
+  Edit3,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { API_BASE_URL } from '../config/api';
@@ -39,6 +40,7 @@ interface FormDetailDialogProps {
   onReject: () => void;
   isMarked?: boolean;
   onToggleMark?: () => void;
+  onEdit?: () => void;
 }
 
 // Helper UI components ------------------------------------------------------
@@ -97,7 +99,7 @@ const Field = ({ label, value, icon, fullWidth = false }: FieldProps) => {
   );
 };
 
-export function FormDetailDialog({ submission, open, onClose, onApprove, onReject}: FormDetailDialogProps) {
+export function FormDetailDialog({ submission, open, onClose, onApprove, onReject, onEdit}: FormDetailDialogProps) {
   const [loading, setLoading] = useState(false);
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
   const [detailSubmission, setDetailSubmission] = useState<FormSubmission>(submission);
@@ -401,9 +403,15 @@ export function FormDetailDialog({ submission, open, onClose, onApprove, onRejec
            </div>
 
            <DialogFooter className="gap-3 sm:gap-4 w-full sm:w-auto">
-            {/* Approved: PDF Button */}
+            {/* Approved: PDF Button & Edit Button */}
             {detailSubmission.status === 'approved' && (
               <>
+                {onEdit && (
+                  <Button variant="outline" onClick={onEdit} className="w-full sm:w-auto border-blue-200 text-blue-600 hover:bg-blue-50">
+                    <Edit3 className="w-4 h-4 mr-2" />
+                    Edit Data
+                  </Button>
+                )}
                 {!pdfBlob ? (
                   <Button variant="outline" onClick={handleGeneratePdf} disabled={loading} className="w-full sm:w-auto">
                     <FileText className="w-4 h-4 mr-2" />
