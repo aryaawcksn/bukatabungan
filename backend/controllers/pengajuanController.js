@@ -668,7 +668,13 @@ export const getAllPengajuan = async (req, res) => {
  */
 export const updatePengajuanStatus = async (req, res) => {
   const { id } = req.params;
-  const { status, sendEmail, sendWhatsApp, message } = req.body;
+  const { status, sendEmail, sendWhatsApp, message, isEdit, editReason, ...editData } = req.body;
+
+  // If this is an edit request, delegate to editSubmission
+  if (isEdit) {
+    req.body = { ...editData, editReason };
+    return editSubmission(req, res);
+  }
 
   try {
     let query, values;
@@ -2487,6 +2493,15 @@ export const editSubmission = async (req, res) => {
       const dateFields = ['tanggal_lahir', 'berlaku_id'];
       if (dateFields.includes(fieldName)) {
         return value && value.trim() !== '' ? value : null;
+      }
+      
+      // Handle currency/numeric fields - remove formatting
+      const currencyFields = ['gaji_per_bulan', 'rata_transaksi_per_bulan', 'nominal_setoran'];
+      if (currencyFields.includes(fieldName)) {
+        if (!value || value.trim() === '') return null;
+        // Remove "Rp", dots, commas, and spaces, keep only numbers
+        const numericValue = value.toString().replace(/[Rp\s\.,]/g, '');
+        return numericValue || null;
       }
       
       // Fields with NOT NULL constraints - provide defaults

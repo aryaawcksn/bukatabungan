@@ -1,265 +1,118 @@
-ailed to load resource: the server responded with a status of 500 ()Understand this error
-edit-submission-dialog.tsx:248 Error editing submission: Error: Gagal mengedit submission
-    at handleSave (edit-submission-dialog.tsx:237:15)
-handleSave @ edit-submission-dialog.tsx:248Understand this error
+https://bukatabungan-production.up.railway.app/api/pengajuan/351/edit
 
-{
-  "success": false,
-  "message": "Route tidak ditemukan: GET /api/pengajuan/295/edit"
+
+
+{   "success": false,   "message": "Route tidak ditemukan: GET /api/pengajuan/351/edit" }
+
+
+    'alamat_perusahaan',
+    'no_telepon',
+    'jabatan',
+    'bidang_usaha',
+    'tabungan_tipe',
+    'atm_tipe',
+    'nominal_setoran',
+    'tujuan_pembukaan',
+    'kontak_darurat_nama',
+    'kontak_darurat_hp',
+    'kontak_darurat_alamat',
+    'kontak_darurat_hubungan'
+  ]
 }
-
-
-
-2025-12-15T08:08:48.000000000Z [inf]  Starting Container
-2025-12-15T08:08:49.985830130Z [inf]  🚀 Server berjalan di http://localhost:8080
-2025-12-15T08:08:49.985881600Z [err]  npm warn config production Use `--omit=dev` instead.
-2025-12-15T08:08:49.985887598Z [inf]  
-2025-12-15T08:08:49.985892763Z [inf]  > backend@1.0.0 start
-2025-12-15T08:08:49.985898690Z [inf]  > node index.js
-2025-12-15T08:08:49.985903277Z [inf]  
-2025-12-15T08:08:49.985907383Z [inf]  [dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  override existing env vars with { override: true }
-2025-12-15T08:08:49.985913382Z [inf]  [dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  override existing env vars with { override: true }
-2025-12-15T08:08:49.985918956Z [inf]  [dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  suppress all logs with { quiet: true }
-2025-12-15T08:08:55.783363556Z [inf]  📊 Analytics query executed for user role: super, cabang: 1
-2025-12-15T08:08:55.783372987Z [inf]  📊 Returned 57 records
-2025-12-15T08:08:55.783380042Z [inf]  📊 [DEBUG] Sample record (first): {
-2025-12-15T08:08:55.783388236Z [inf]    id: '351',
-2025-12-15T08:08:55.783394481Z [inf]    penghasilan: '3 - 5 Juta',
-2025-12-15T08:08:55.783399778Z [inf]    pekerjaan: 'pelajar-mahasiswa',
-2025-12-15T08:08:55.783404362Z [inf]    jabatan: 'ggrttg',
-2025-12-15T08:08:55.783412003Z [inf]    nama_perusahaan: 'rsrtgs'
-2025-12-15T08:08:55.783419655Z [inf]  }
-2025-12-15T08:09:45.845784899Z [inf]  📊 Analytics query executed for user role: admin, cabang: 2
-2025-12-15T08:09:45.845785756Z [inf]    id: '351',
-2025-12-15T08:09:45.845794010Z [inf]  📊 Returned 23 records
-2025-12-15T08:09:45.845796965Z [inf]    penghasilan: '3 - 5 Juta',
-2025-12-15T08:09:45.845801137Z [inf]  📊 [DEBUG] Sample record (first): {
-2025-12-15T08:09:45.845806443Z [inf]    id: '351',
-2025-12-15T08:09:45.845812315Z [inf]    pekerjaan: 'pelajar-mahasiswa',
-2025-12-15T08:09:45.845815033Z [inf]    penghasilan: '3 - 5 Juta',
-2025-12-15T08:09:45.845821313Z [inf]    pekerjaan: 'pelajar-mahasiswa',
-2025-12-15T08:09:45.845823314Z [inf]    jabatan: 'ggrttg',
-2025-12-15T08:09:45.845827628Z [inf]    jabatan: 'ggrttg',
-2025-12-15T08:09:45.845834180Z [inf]    nama_perusahaan: 'rsrtgs'
-2025-12-15T08:09:45.845835007Z [inf]    nama_perusahaan: 'rsrtgs'
-2025-12-15T08:09:45.845839854Z [inf]  }
-2025-12-15T08:09:45.845846032Z [inf]  📊 Analytics query executed for user role: admin, cabang: 2
-2025-12-15T08:09:45.845848037Z [inf]  }
-2025-12-15T08:09:45.845852049Z [inf]  📊 Returned 23 records
-2025-12-15T08:09:45.845856973Z [inf]  📊 [DEBUG] Sample record (first): {
-2025-12-15T08:09:54.308078464Z [inf]  📊 Analytics query executed for user role: super, cabang: 1
-2025-12-15T08:09:54.308089137Z [inf]  📊 Returned 57 records
-2025-12-15T08:09:54.308098353Z [inf]  📊 [DEBUG] Sample record (first): {
-2025-12-15T08:09:54.308105304Z [inf]    id: '351',
-2025-12-15T08:09:54.308113147Z [inf]    penghasilan: '3 - 5 Juta',
-2025-12-15T08:09:54.308120801Z [inf]    pekerjaan: 'pelajar-mahasiswa',
-2025-12-15T08:09:54.308128102Z [inf]    jabatan: 'ggrttg',
-2025-12-15T08:09:54.308135489Z [inf]    nama_perusahaan: 'rsrtgs'
-2025-12-15T08:09:54.308143191Z [inf]  }
-2025-12-15T08:10:02.804552551Z [inf]      'sumber_dana',
-2025-12-15T08:10:02.804567276Z [inf]      'rata_transaksi_per_bulan',
-2025-12-15T08:10:02.804574400Z [inf]      'nama_perusahaan',
-2025-12-15T08:10:02.804580326Z [inf]      'alamat_perusahaan',
-2025-12-15T08:10:02.804586391Z [inf]      'no_telepon',
-2025-12-15T08:10:02.804654464Z [inf]      'kontak_darurat_hubungan'
-2025-12-15T08:10:02.804655376Z [inf]  ✏️ Edit submission request: {
-2025-12-15T08:10:02.804657720Z [inf]      'bidang_usaha',
-2025-12-15T08:10:02.804664683Z [inf]    submissionId: '295',
-2025-12-15T08:10:02.804664752Z [inf]    ]
-2025-12-15T08:10:02.804667998Z [inf]      'tabungan_tipe',
-2025-12-15T08:10:02.804668833Z [inf]      'jabatan',
-2025-12-15T08:10:02.804674547Z [inf]    userId: 30,
-2025-12-15T08:10:02.804674715Z [inf]  }
-2025-12-15T08:10:02.804682525Z [inf]    userRole: 'super',
-2025-12-15T08:10:02.804688613Z [inf]      'atm_tipe',
-2025-12-15T08:10:02.804690443Z [inf]    editReason: 'a',
-2025-12-15T08:10:02.804697416Z [inf]    fieldsToEdit: [
-2025-12-15T08:10:02.804699498Z [inf]      'nominal_setoran',
-2025-12-15T08:10:02.804705207Z [inf]      'nama',
-2025-12-15T08:10:02.804707537Z [inf]      'tujuan_pembukaan',
-2025-12-15T08:10:02.804712731Z [inf]      'alias',
-2025-12-15T08:10:02.804714821Z [inf]      'kontak_darurat_nama',
-2025-12-15T08:10:02.804720684Z [inf]      'jenis_id',
-2025-12-15T08:10:02.804721730Z [inf]      'kontak_darurat_hp',
-2025-12-15T08:10:02.804728499Z [inf]      'no_id',
-2025-12-15T08:10:02.804731111Z [inf]      'kontak_darurat_alamat',
-2025-12-15T08:10:02.804735393Z [inf]      'berlaku_id',
-2025-12-15T08:10:02.804740273Z [inf]      'tempat_lahir',
-2025-12-15T08:10:02.804745718Z [inf]      'tanggal_lahir',
-2025-12-15T08:10:02.804750603Z [inf]      'alamat_id',
-2025-12-15T08:10:02.804755466Z [inf]      'kode_pos_id',
-2025-12-15T08:10:02.804772628Z [inf]      'alamat_now',
-2025-12-15T08:10:02.804778548Z [inf]      'jenis_kelamin',
-2025-12-15T08:10:02.804783201Z [inf]      'status_kawin',
-2025-12-15T08:10:02.804788672Z [inf]      'agama',
-2025-12-15T08:10:02.804793444Z [inf]      'pendidikan',
-2025-12-15T08:10:02.804798594Z [inf]      'nama_ibu_kandung',
-2025-12-15T08:10:02.804803307Z [inf]      'npwp',
-2025-12-15T08:10:02.804808553Z [inf]      'email',
-2025-12-15T08:10:02.804815090Z [inf]      'no_hp',
-2025-12-15T08:10:02.804820033Z [inf]      'kewarganegaraan',
-2025-12-15T08:10:02.804824804Z [inf]      'status_rumah',
-2025-12-15T08:10:02.804829443Z [inf]      'pekerjaan',
-2025-12-15T08:10:02.804834512Z [inf]      'gaji_per_bulan',
-2025-12-15T08:10:03.945567680Z [err]  ❌ Edit submission error: error: null value in column "pekerjaan" of relation "cdd_job" violates not-null constraint
-2025-12-15T08:10:03.945567821Z [err]    column: 'pekerjaan',
-2025-12-15T08:10:03.945576906Z [err]      at /app/node_modules/pg/lib/client.js:545:17
-2025-12-15T08:10:03.945582047Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-2025-12-15T08:10:03.945587852Z [err]      at async editSubmission (file:///app/controllers/pengajuanController.js:2539:7) {
-2025-12-15T08:10:03.945590260Z [err]    dataType: undefined,
-2025-12-15T08:10:03.945596043Z [err]    length: 296,
-2025-12-15T08:10:03.945598473Z [err]    constraint: undefined,
-2025-12-15T08:10:03.945604808Z [err]    file: 'execMain.c',
-2025-12-15T08:10:03.945608574Z [err]    severity: 'ERROR',
-2025-12-15T08:10:03.945611546Z [err]    line: '1981',
-2025-12-15T08:10:03.945615183Z [err]    code: '23502',
-2025-12-15T08:10:03.945622986Z [err]    routine: 'ExecConstraints'
-2025-12-15T08:10:03.945624826Z [err]    detail: 'Failing row contains (279, 295, null, null, null, null, null, null, null, null, null, null, 2025-12-15 04:45:46.719357).',
-2025-12-15T08:10:03.945629138Z [err]  }
-2025-12-15T08:10:03.945633248Z [err]    hint: undefined,
-2025-12-15T08:10:03.945637918Z [err]    position: undefined,
-2025-12-15T08:10:03.945642813Z [err]    internalPosition: undefined,
-2025-12-15T08:10:03.945647539Z [err]    internalQuery: undefined,
-2025-12-15T08:10:03.945652203Z [err]    where: undefined,
-2025-12-15T08:10:03.945656707Z [err]    schema: 'public',
-2025-12-15T08:10:03.945662065Z [err]    table: 'cdd_job',
-2025-12-15T08:10:13.578508803Z [inf]    nama_perusahaan: 'rsrtgs'
-2025-12-15T08:10:13.578518886Z [inf]  }
-2025-12-15T08:10:13.578547973Z [inf]  📊 Analytics query executed for user role: admin, cabang: 2
-2025-12-15T08:10:13.578556948Z [inf]  📊 Returned 23 records
-2025-12-15T08:10:13.578564659Z [inf]  📊 [DEBUG] Sample record (first): {
-2025-12-15T08:10:13.578575127Z [inf]    id: '351',
-2025-12-15T08:10:13.578583466Z [inf]    penghasilan: '3 - 5 Juta',
-2025-12-15T08:10:13.578593119Z [inf]    pekerjaan: 'pelajar-mahasiswa',
-2025-12-15T08:10:13.578601655Z [inf]    jabatan: 'ggrttg',
-
-
-
-
-
-[UI MODAL ACC/REJECTED]
-Detail Permohonan
-REG-1765713786654-33
-14/12/2025, 19.03
-Oleh: turi
-Disetujui
-
-Jenis Rekening
-SimPel
-Nasabah Baru
-Jenis Kartu
-Tanpa Kartu ATM
-Milik Sendiri
-Setoran Awal
-Rp 900.000
-Data Pribadi Nasabah
-Nama Lengkap
-Anjas Mara
-Alias
-Njas
-Nama Ibu Kandung
-aweweedwaf
-No Identitas
-111111
-Jenis Identitas
-Paspor
-NPWP
--
-Tempat, Tgl Lahir
-Yogyakarta, 08/02/1979
-Jenis Kelamin
-Laki-laki
-Status Pernikahan
-Belum Kawin
-Nama Ibu Kandung
-aweweedwaf
-Agama
-Kristen
-Pendidikan
-Magister
-Kewarganegaraan
-Indonesia
-Email
-superwefwrfwadmin@gmail.com
-No. Telepon
-08195042899
-Alamat Lengkap
-Alamat KTP
-Mulungan kulon Sendangadi, Mlati, Sleman, Yogykarta
-Kode Pos
-55288
-Status Rumah
-Milik Orang Tua
-Sekolah & Pekerjaan
-Pekerjaan
-pelajar-mahasiswa
-Nama Sekolah
-wfefaweffwea
-Bidang Usaha
-awwaeffaweff
-Jabatan
-4343443
-Penghasilan
-> 10 Juta
-Sumber Dana
-Gaji
-Rata-rata Transaksi
-Rp 434.343
-Tujuan Rekening
-Menabung
-Alamat Kantor
-awfaewfaerf
-Telp Kantor
-34434343
-Kontak Darurat
-Nama
-hdtghdjy
-Hubungan
-Suami/Istri
-Nomor Telepon
-081915042899
-Alamat
-Mulungan kulon Sendangadi, Mlati, Sleman, Yogykarta
-Permohonan disetujui pada 14/12/2025, 19.06
-Edit Data
-Generate PDF
-Tutup
-
-
-
-[UI MODAL RIWAYAT EDIT FIELD]
-Riwayat Edit Submission
-REG-1765713786654-33
-Anjas Mara
-Edit Data
-
-Status Approval
-Disetujui Pertama Kali
-1 Jan 1970, 07.00
-0 kali diedit
-Status: approved
-Riwayat Perubahan
-Belum ada riwayat edit
-Submission ini telah diedit 0 kali
-
-
-[UI MODAL EDIT FIELD (KOSONG SEBAGIAN)]
-Edit Submission
-REG-1765713786654-33
-Anjas Mara
-
-Jelaskan alasan mengapa data perlu diedit...
-Data Pribadi
-Anjas Mara
-Njas
-Paspor
-111111
-Yogyakarta
-
-dd/mm/yyyy
-superwefwrfwadmin@gmail.com
-08195042899
-Informasi Pekerjaan
-Kontak Darurat
-Pastikan data yang diubah sudah benar sebelum menyimpan
-
+❌ Edit submission error: error: invalid input syntax for type integer: "Rp 1.000.000"
+    at /app/node_modules/pg/lib/client.js:545:17
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async editSubmission (file:///app/controllers/pengajuanController.js:2553:7) {
+  length: 155,
+  severity: 'ERROR',
+  code: '22P02',
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: "unnamed portal parameter $2 = '...'",
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'numutils.c',
+  line: '616',
+  routine: 'pg_strtoint32_safe'
+}
+❌ Edit submission error: error: invalid input syntax for type integer: "Rp 44.444"
+    at /app/node_modules/pg/lib/client.js:545:17
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async editSubmission (file:///app/controllers/pengajuanController.js:2553:7) {
+  length: 152,
+  severity: 'ERROR',
+  code: '22P02',
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: "unnamed portal parameter $2 = '...'",
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'numutils.c',
+  line: '616',
+  routine: 'pg_strtoint32_safe'
+📊 Analytics query executed for user role: super, cabang: 1
+📊 Returned 58 records
+📊 [DEBUG] Sample record (first): {
+  id: '352',
+  penghasilan: '> 10 Juta',
+  pekerjaan: 'karyawan-swasta',
+  jabatan: 'IT',
+  nama_perusahaan: 'PT ABCD'
+}
+📊 Analytics query executed for user role: super, cabang: 1
+📊 Returned 58 records
+📊 [DEBUG] Sample record (first): {
+  id: '352',
+  penghasilan: '> 10 Juta',
+  pekerjaan: 'karyawan-swasta',
+  jabatan: 'IT',
+  nama_perusahaan: 'PT ABCD'
+}
+📊 Analytics query executed for user role: super, cabang: 1
+📊 Returned 58 records
+📊 [DEBUG] Sample record (first): {
+  id: '352',
+  penghasilan: '> 10 Juta',
+  pekerjaan: 'karyawan-swasta',
+  jabatan: 'IT',
+  nama_perusahaan: 'PT ABCD'
+}
+📊 Analytics query executed for user role: super, cabang: 1
+📊 Returned 58 records
+📊 [DEBUG] Sample record (first): {
+  id: '352',
+  penghasilan: '> 10 Juta',
+  pekerjaan: 'karyawan-swasta',
+  jabatan: 'IT',
+  nama_perusahaan: 'PT ABCD'
+}
+📊 Analytics query executed for user role: super, cabang: 1
+📊 Returned 58 records
+📊 [DEBUG] Sample record (first): {
+  id: '352',
+  penghasilan: '> 10 Juta',
+  pekerjaan: 'karyawan-swasta',
+  jabatan: 'IT',
+  nama_perusahaan: 'PT ABCD'
+}
+📊 Analytics query executed for user role: super, cabang: 1
+📊 Returned 58 records
+📊 [DEBUG] Sample record (first): {
+  id: '352',
+  penghasilan: '> 10 Juta',
+  pekerjaan: 'karyawan-swasta',
+  jabatan: 'IT',
+  nama_perusahaan: 'PT ABCD'
+}

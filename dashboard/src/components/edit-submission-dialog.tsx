@@ -290,7 +290,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
 
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/pengajuan/${submission.id}/edit`, {
+      const res = await fetch(`${API_BASE_URL}/api/pengajuan/${submission.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -298,7 +298,8 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
         credentials: 'include',
         body: JSON.stringify({
           ...formData,
-          editReason
+          editReason,
+          isEdit: true
         })
       });
 
