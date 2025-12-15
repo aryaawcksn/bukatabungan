@@ -672,38 +672,90 @@ export const updatePengajuanStatus = async (req, res) => {
 
   try {
     let query, values;
+    const userRole = req.user.role;
+    const isSuper = userRole === 'super';
 
     if (status === 'approved') {
-      query = `
-        UPDATE pengajuan_tabungan 
-        SET status = $1, approved_by = $2, approved_at = NOW(), rejected_by = NULL, rejected_at = NULL
-        WHERE id = $3 AND cabang_id = $4
-    RETURNING *;
-    `;
-      values = [status, req.user.id, id, req.user.cabang_id];
+      if (isSuper) {
+        // Super admin can approve any application
+        query = `
+          UPDATE pengajuan_tabungan 
+          SET status = $1, approved_by = $2, approved_at = NOW(), rejected_by = NULL, rejected_at = NULL
+          WHERE id = $3
+        RETURNING *;
+        `;
+        values = [status, req.user.id, id];
+      } else {
+        // Regular admin can only approve applications from their branch
+        query = `
+          UPDATE pengajuan_tabungan 
+          SET status = $1, approved_by = $2, approved_at = NOW(), rejected_by = NULL, rejected_at = NULL
+          WHERE id = $3 AND cabang_id = $4
+        RETURNING *;
+        `;
+        values = [status, req.user.id, id, req.user.cabang_id];
+      }
     }
     else if (status === 'rejected') {
-      query = `
-        UPDATE pengajuan_tabungan 
-        SET status = $1, rejected_by = $2, rejected_at = NOW(), approved_by = NULL, approved_at = NULL
-        WHERE id = $3 AND cabang_id = $4
-    RETURNING *;
-    `;
-      values = [status, req.user.id, id, req.user.cabang_id];
+      if (isSuper) {
+        // Super admin can reject any application
+        query = `
+          UPDATE pengajuan_tabungan 
+          SET status = $1, rejected_by = $2, rejected_at = NOW(), approved_by = NULL, approved_at = NULL
+          WHERE id = $3
+        RETURNING *;
+        `;
+        values = [status, req.user.id, id];
+      } else {
+        // Regular admin can only reject applications from their branch
+        query = `
+          UPDATE pengajuan_tabungan 
+          SET status = $1, rejected_by = $2, rejected_at = NOW(), approved_by = NULL, approved_at = NULL
+          WHERE id = $3 AND cabang_id = $4
+        RETURNING *;
+        `;
+        values = [status, req.user.id, id, req.user.cabang_id];
+      }
     } else {
-      query = `
-        UPDATE pengajuan_tabungan 
-        SET status = $1, approved_by = NULL, approved_at = NULL, rejected_by = NULL, rejected_at = NULL
-        WHERE id = $2 AND cabang_id = $3
-    RETURNING *;
-    `;
-      values = [status, id, req.user.cabang_id];
+      if (isSuper) {
+        // Super admin can change any application to pending
+        query = `
+          UPDATE pengajuan_tabungan 
+          SET status = $1, approved_by = NULL, approved_at = NULL, rejected_by = NULL, rejected_at = NULL
+          WHERE id = $2
+        RETURNING *;
+        `;
+        values = [status, id];
+      } else {
+        // Regular admin can only change applications from their branch to pending
+        query = `
+          UPDATE pengajuan_tabungan 
+          SET status = $1, approved_by = NULL, approved_at = NULL, rejected_by = NULL, rejected_at = NULL
+          WHERE id = $2 AND cabang_id = $3
+        RETURNING *;
+        `;
+        values = [status, id, req.user.cabang_id];
+      }
     }
+
+    // Log for debugging
+    console.log(`🔄 Status update attempt:`, {
+      id,
+      status,
+      userRole,
+      userId: req.user.id,
+      userCabang: req.user.cabang_id,
+      isSuper
+    });
 
     const result = await pool.query(query, values);
 
-    if (result.rowCount === 0)
+    if (result.rowCount === 0) {
+      console.log(`❌ Status update failed: No rows affected for ID ${id}`);
       return res.status(404).json({ success: false, message: "Data tidak ditemukan atau akses ditolak" });
+    }
+
+    console.log(`✅ Status update successful for ID ${id}`);
 
     // Ambil data user untuk notifikasi
     const userDetails = await pool.query(
