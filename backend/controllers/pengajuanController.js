@@ -2611,7 +2611,7 @@ export const getEditHistory = async (req, res) => {
       SELECT 
         seh.*,
         u.username as edited_by_username,
-        u.nama as edited_by_name
+        u.username as edited_by_name
       FROM submission_edit_history seh
       LEFT JOIN users u ON seh.edited_by = u.id
       WHERE seh.pengajuan_id = $1
@@ -2625,11 +2625,11 @@ export const getEditHistory = async (req, res) => {
       SELECT 
         p.*,
         ua_orig.username as original_approved_by_username,
-        ua_orig.nama as original_approved_by_name,
+        ua_orig.username as original_approved_by_name,
         ua_curr.username as current_approved_by_username,
-        ua_curr.nama as current_approved_by_name,
+        ua_curr.username as current_approved_by_name,
         ue.username as last_edited_by_username,
-        ue.nama as last_edited_by_name
+        ue.username as last_edited_by_name
       FROM pengajuan_tabungan p
       LEFT JOIN users ua_orig ON p.original_approved_by = ua_orig.id
       LEFT JOIN users ua_curr ON p.approved_by = ua_curr.id

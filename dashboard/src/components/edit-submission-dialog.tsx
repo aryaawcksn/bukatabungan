@@ -45,16 +45,13 @@ interface SubmissionInfo {
   last_edited_at: string | null;
   last_edited_by: {
     username: string;
-    nama: string;
   } | null;
   original_approved_by: {
     username: string;
-    nama: string;
     approved_at: string;
   } | null;
   current_approved_by: {
     username: string;
-    nama: string;
     approved_at: string;
   } | null;
 }
@@ -574,7 +571,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
                       <div className="text-sm font-medium">
                         {editHistory.submission.original_approved_by ? (
                           <>
-                            <div>{editHistory.submission.original_approved_by.nama}</div>
+                            <div>{editHistory.submission.original_approved_by.username}</div>
                             <div className="text-slate-500">
                               {formatDate(editHistory.submission.original_approved_by.approved_at)}
                             </div>
@@ -591,7 +588,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
                         <div className="text-sm font-medium">
                           {editHistory.submission.last_edited_by ? (
                             <>
-                              <div>{editHistory.submission.last_edited_by.nama}</div>
+                              <div>{editHistory.submission.last_edited_by.username}</div>
                               <div className="text-slate-500">
                                 {formatDate(editHistory.submission.last_edited_at!)}
                               </div>
@@ -637,7 +634,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
                               {getFieldLabel(item.field_name)}
                             </div>
                             <div className="text-sm text-slate-500">
-                              Diedit oleh {item.edited_by_name} ({item.edited_by_username})
+                              Diedit oleh {item.edited_by_username}
                             </div>
                           </div>
                           <div className="text-sm text-slate-500">
