@@ -1,1075 +1,631 @@
-2025-12-15T04:06:16.405014370Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:16.405029190Z [err]    kode_referensi: 'REG-1765522656086-754',
-2025-12-15T04:06:16.405038634Z [err]    nama_lengkap: 'Test Final Fixes',
-2025-12-15T04:06:16.405049424Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:16.405057955Z [err]    code: '25P02',
-2025-12-15T04:06:16.405067092Z [err]    detail: undefined,
-2025-12-15T04:06:16.405076743Z [err]    hint: undefined,
-2025-12-15T04:06:16.405085703Z [err]    position: undefined
-2025-12-15T04:06:16.405094565Z [err]  }
-2025-12-15T04:06:16.405102181Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:16.405111281Z [err]    kode_referensi: 'REG-1765522213968-910',
-2025-12-15T04:06:16.405119531Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
-2025-12-15T04:06:16.405128941Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:16.405138643Z [err]    code: '25P02',
-2025-12-15T04:06:16.405146227Z [err]    detail: undefined,
-2025-12-15T04:06:16.405154157Z [err]    hint: undefined,
-2025-12-15T04:06:16.405161021Z [err]    position: undefined
-2025-12-15T04:06:16.405170666Z [err]  }
-2025-12-15T04:06:16.405177635Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:16.405193434Z [err]    kode_referensi: 'REG-1765521580336-363',
-2025-12-15T04:06:16.405200843Z [err]    nama_lengkap: 'Test BO Interface Fix',
-2025-12-15T04:06:16.405208198Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:16.405216420Z [err]    code: '25P02',
-2025-12-15T04:06:16.405225005Z [err]    detail: undefined,
-2025-12-15T04:06:16.405231419Z [err]    hint: undefined,
-2025-12-15T04:06:16.405239203Z [err]    position: undefined
-2025-12-15T04:06:16.405247043Z [err]  }
-2025-12-15T04:06:19.115268833Z [err]    detail: undefined,
-2025-12-15T04:06:19.115285766Z [err]    hint: undefined,
-2025-12-15T04:06:19.115295635Z [err]    position: undefined
-2025-12-15T04:06:19.115402047Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:19.115415935Z [err]    kode_referensi: 'REG-1765521342201-769',
-2025-12-15T04:06:19.115429012Z [err]    nama_lengkap: 'Test No Duplicate Contact',
-2025-12-15T04:06:19.115438106Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:19.115447753Z [err]    code: '25P02',
-2025-12-15T04:06:19.160592117Z [err]  }
-2025-12-15T04:06:19.160609900Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:19.160618087Z [err]    kode_referensi: 'REG-1765518940214-324',
-2025-12-15T04:06:19.160626016Z [err]    nama_lengkap: 'Test Emergency Contact',
-2025-12-15T04:06:19.160634608Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:19.160650917Z [err]    code: '25P02',
-2025-12-15T04:06:19.160732012Z [err]    detail: undefined,
-2025-12-15T04:06:19.160742573Z [err]    hint: undefined,
-2025-12-15T04:06:19.160752857Z [err]    position: undefined
-2025-12-15T04:06:19.160762452Z [err]  }
-2025-12-15T04:06:19.160774839Z [inf]  📊 Progress [import_1765771564761_vw4c7p872]: 34% - Memproses record 16/55 (Mode: Replace)
-2025-12-15T04:06:19.160786027Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:19.160795755Z [err]    kode_referensi: 'REG-1765518891447-998',
-2025-12-15T04:06:19.160805197Z [err]    nama_lengkap: 'Test Emergency Contact',
-2025-12-15T04:06:19.160815661Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:19.160825103Z [err]    code: '25P02',
-2025-12-15T04:06:19.160834423Z [err]    detail: undefined,
-2025-12-15T04:06:19.160846035Z [err]    hint: undefined,
-2025-12-15T04:06:21.936973514Z [err]    position: undefined
-2025-12-15T04:06:21.936980833Z [err]  }
-2025-12-15T04:06:21.936988667Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:21.937007980Z [err]    kode_referensi: 'REG-1765518782203-618',
-2025-12-15T04:06:21.937016036Z [err]    nama_lengkap: 'Test Missing Fields User',
-2025-12-15T04:06:21.937024345Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:21.937034286Z [err]    code: '25P02',
-2025-12-15T04:06:21.937041119Z [err]    detail: undefined,
-2025-12-15T04:06:21.937048671Z [err]    hint: undefined,
-2025-12-15T04:06:21.937056334Z [err]    position: undefined
-2025-12-15T04:06:21.937062970Z [err]  }
-2025-12-15T04:06:21.937070103Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:21.937078327Z [err]    kode_referensi: 'REG-1765511959852-730',
-2025-12-15T04:06:21.937090517Z [err]    nama_lengkap: 'Final Test BO User',
-2025-12-15T04:06:21.937098508Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:21.937106585Z [err]    code: '25P02',
-2025-12-15T04:06:21.937113765Z [err]    detail: undefined,
-2025-12-15T04:06:21.937120799Z [err]    hint: undefined,
-2025-12-15T04:06:21.937127897Z [err]    position: undefined
-2025-12-15T04:06:21.937135265Z [err]  }
-2025-12-15T04:06:21.937143405Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:21.937150984Z [err]    kode_referensi: 'REG-1765511707761-528',
-2025-12-15T04:06:21.937158542Z [err]    nama_lengkap: 'Test User BO 2',
-2025-12-15T04:06:21.937166549Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:21.937173261Z [err]    code: '25P02',
-2025-12-15T04:06:21.937180295Z [err]    detail: undefined,
-2025-12-15T04:06:21.937187909Z [err]    hint: undefined,
-2025-12-15T04:06:21.937194696Z [err]    position: undefined
-2025-12-15T04:06:24.535368684Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:24.535385596Z [err]    code: '25P02',
-2025-12-15T04:06:24.535397192Z [err]    detail: undefined,
-2025-12-15T04:06:24.535409283Z [err]    hint: undefined,
-2025-12-15T04:06:24.535426322Z [err]    position: undefined
-2025-12-15T04:06:24.535478176Z [err]  }
-2025-12-15T04:06:24.535480567Z [err]  }
-2025-12-15T04:06:24.535487544Z [inf]  📊 Progress [import_1765771564761_vw4c7p872]: 40% - Memproses record 21/55 (Mode: Replace)
-2025-12-15T04:06:24.535495327Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:24.535498699Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:24.535507084Z [err]    detail: undefined,
-2025-12-15T04:06:24.535508769Z [err]    kode_referensi: 'REG-1765510855678-206',
-2025-12-15T04:06:24.535510526Z [err]    kode_referensi: 'REG-1765511346060-349',
-2025-12-15T04:06:24.535522321Z [err]    nama_lengkap: 'Test User BO 2',
-2025-12-15T04:06:24.535522914Z [err]    nama_lengkap: 'Test User BO 2',
-2025-12-15T04:06:24.535525957Z [err]    hint: undefined,
-2025-12-15T04:06:24.535533235Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:24.535537152Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:24.535543088Z [err]    code: '25P02',
-2025-12-15T04:06:24.535549401Z [err]    code: '25P02',
-2025-12-15T04:06:24.535567905Z [err]    position: undefined
-2025-12-15T04:06:24.535578171Z [err]  }
-2025-12-15T04:06:24.535586109Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:24.535594386Z [err]    kode_referensi: 'REG-1765511096296-933',
-2025-12-15T04:06:24.535602731Z [err]    nama_lengkap: 'Test User BO 2',
-2025-12-15T04:06:24.565390102Z [err]    detail: undefined,
-2025-12-15T04:06:24.565410954Z [err]    hint: undefined,
-2025-12-15T04:06:26.372331406Z [err]    position: undefined
-2025-12-15T04:06:26.372344438Z [err]  }
-2025-12-15T04:06:26.372352266Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:26.372365910Z [err]    kode_referensi: 'REG-1765510666214-34',
-2025-12-15T04:06:26.372374438Z [err]    nama_lengkap: 'Test User BO 2',
-2025-12-15T04:06:26.372382973Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:26.372391499Z [err]    code: '25P02',
-2025-12-15T04:06:26.372399910Z [err]    detail: undefined,
-2025-12-15T04:06:26.372407257Z [err]    hint: undefined,
-2025-12-15T04:06:26.372414553Z [err]    position: undefined
-2025-12-15T04:06:26.372423351Z [err]  }
-2025-12-15T04:06:26.372431375Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:26.372439492Z [err]    kode_referensi: 'REG-1765510526246-924',
-2025-12-15T04:06:26.372447521Z [err]    nama_lengkap: 'Test User BO',
-2025-12-15T04:06:26.372456011Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:26.372465411Z [err]    code: '25P02',
-2025-12-15T04:06:26.372473602Z [err]    detail: undefined,
-2025-12-15T04:06:26.372483380Z [err]    hint: undefined,
-2025-12-15T04:06:26.372494068Z [err]    position: undefined
-2025-12-15T04:06:26.372506778Z [err]  }
-2025-12-15T04:06:26.372519045Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:26.372530480Z [err]    kode_referensi: 'REG-1765510164268-575',
-2025-12-15T04:06:26.372540583Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
-2025-12-15T04:06:26.372551707Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:26.372562557Z [err]    code: '25P02',
-2025-12-15T04:06:26.372573590Z [err]    detail: undefined,
-2025-12-15T04:06:26.372582699Z [err]    hint: undefined,
-2025-12-15T04:06:26.372595253Z [err]    position: undefined
-2025-12-15T04:06:28.535265352Z [err]  }
-2025-12-15T04:06:28.535271381Z [inf]  📊 Progress [import_1765771564761_vw4c7p872]: 46% - Memproses record 26/55 (Mode: Replace)
-2025-12-15T04:06:28.535278324Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:28.535284509Z [err]    kode_referensi: 'REG-1765505151961-645',
-2025-12-15T04:06:28.535290256Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
-2025-12-15T04:06:28.535297443Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:28.535303504Z [err]    code: '25P02',
-2025-12-15T04:06:28.535511242Z [err]    detail: undefined,
-2025-12-15T04:06:28.535766479Z [err]    hint: undefined,
-2025-12-15T04:06:28.535776744Z [err]    position: undefined
-2025-12-15T04:06:28.535785053Z [err]  }
-2025-12-15T04:06:28.535793788Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:28.535803272Z [err]    kode_referensi: 'REG-1765504637577-195',
-2025-12-15T04:06:28.535816414Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
-2025-12-15T04:06:28.535822734Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:28.535933308Z [err]    code: '25P02',
-2025-12-15T04:06:28.535941415Z [err]    detail: undefined,
-2025-12-15T04:06:28.535949931Z [err]    hint: undefined,
-2025-12-15T04:06:28.535956931Z [err]    position: undefined
-2025-12-15T04:06:28.535964609Z [err]  }
-2025-12-15T04:06:28.535970981Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:28.535977161Z [err]    kode_referensi: 'REG-1765504170402-427',
-2025-12-15T04:06:28.535983070Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
-2025-12-15T04:06:28.536003256Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:28.536009747Z [err]    code: '25P02',
-2025-12-15T04:06:28.536016123Z [err]    detail: undefined,
-2025-12-15T04:06:28.536023205Z [err]    hint: undefined,
-2025-12-15T04:06:30.887168710Z [err]    position: undefined
-2025-12-15T04:06:30.887175395Z [err]  }
-2025-12-15T04:06:30.887182272Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:30.887188631Z [err]    kode_referensi: 'REG-1765502332477-722',
-2025-12-15T04:06:30.887198972Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
-2025-12-15T04:06:30.887206996Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:30.887213816Z [err]    code: '25P02',
-2025-12-15T04:06:30.887226612Z [err]    detail: undefined,
-2025-12-15T04:06:30.887242729Z [err]    hint: undefined,
-2025-12-15T04:06:30.888779314Z [err]    position: undefined
-2025-12-15T04:06:30.888794479Z [err]  }
-2025-12-15T04:06:30.888803419Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:30.888810694Z [err]    kode_referensi: 'REG-1765501937691-718',
-2025-12-15T04:06:30.888818734Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
-2025-12-15T04:06:30.888828578Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:30.888836991Z [err]    code: '25P02',
-2025-12-15T04:06:30.888844687Z [err]    detail: undefined,
-2025-12-15T04:06:30.888852384Z [err]    hint: undefined,
-2025-12-15T04:06:30.888860400Z [err]    position: undefined
-2025-12-15T04:06:30.888867005Z [err]  }
-2025-12-15T04:06:30.888873771Z [inf]  📊 Progress [import_1765771564761_vw4c7p872]: 53% - Memproses record 31/55 (Mode: Replace)
-2025-12-15T04:06:30.888881887Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:30.888889631Z [err]    kode_referensi: 'REG-1765437503983-478',
-2025-12-15T04:06:30.888897117Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
-2025-12-15T04:06:30.888905938Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:30.888913531Z [err]    code: '25P02',
-2025-12-15T04:06:32.404429281Z [err]    detail: undefined,
-2025-12-15T04:06:32.404436894Z [err]    hint: undefined,
-2025-12-15T04:06:32.404444865Z [err]    position: undefined
-2025-12-15T04:06:32.404452649Z [err]  }
-2025-12-15T04:06:32.404461417Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:32.404467699Z [err]    kode_referensi: 'REG-1765437078375-305',
-2025-12-15T04:06:32.404474948Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
-2025-12-15T04:06:32.404482796Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:32.404491549Z [err]    code: '25P02',
-2025-12-15T04:06:32.404503994Z [err]    detail: undefined,
-2025-12-15T04:06:32.404512100Z [err]    hint: undefined,
-2025-12-15T04:06:32.404519473Z [err]    position: undefined
-2025-12-15T04:06:32.404526839Z [err]  }
-2025-12-15T04:06:32.404534398Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:32.404542695Z [err]    kode_referensi: 'REG-1765436780351-349',
-2025-12-15T04:06:32.404550711Z [err]    nama_lengkap: 'Budi Santoso',
-2025-12-15T04:06:32.404558561Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:32.404566260Z [err]    code: '25P02',
-2025-12-15T04:06:32.404573948Z [err]    detail: undefined,
-2025-12-15T04:06:32.404581330Z [err]    hint: undefined,
-2025-12-15T04:06:32.404588420Z [err]    position: undefined
-2025-12-15T04:06:32.404596880Z [err]  }
-2025-12-15T04:06:32.404604334Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:32.404613285Z [err]    kode_referensi: 'REG-1765436161526-278',
-2025-12-15T04:06:32.404623781Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
-2025-12-15T04:06:32.404631940Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:32.404640470Z [err]    code: '25P02',
-2025-12-15T04:06:32.404648362Z [err]    detail: undefined,
-2025-12-15T04:06:33.930549062Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:33.930561260Z [err]    code: '25P02',
-2025-12-15T04:06:33.931026202Z [err]    hint: undefined,
-2025-12-15T04:06:33.931032912Z [err]    position: undefined
-2025-12-15T04:06:33.931038341Z [err]  }
-2025-12-15T04:06:33.931045530Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:33.931052401Z [err]    kode_referensi: 'REG-1765435376674-384',
-2025-12-15T04:06:33.931060284Z [err]    nama_lengkap: 'Test Customer Type',
-2025-12-15T04:06:33.931065832Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:33.931092969Z [err]    code: '25P02',
-2025-12-15T04:06:33.931099312Z [err]    detail: undefined,
-2025-12-15T04:06:33.931122884Z [err]  }
-2025-12-15T04:06:33.931130365Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:33.931138146Z [err]    kode_referensi: 'REG-1765435125537-316',
-2025-12-15T04:06:33.931149062Z [err]    nama_lengkap: 'Test Customer Type',
-2025-12-15T04:06:33.931165627Z [err]    hint: undefined,
-2025-12-15T04:06:33.931173404Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:33.931176076Z [err]    position: undefined
-2025-12-15T04:06:33.931186749Z [err]  }
-2025-12-15T04:06:33.931197346Z [inf]  📊 Progress [import_1765771564761_vw4c7p872]: 59% - Memproses record 36/55 (Mode: Replace)
-2025-12-15T04:06:33.931203160Z [err]    code: '25P02',
-2025-12-15T04:06:33.931209843Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:33.931223266Z [err]    detail: undefined,
-2025-12-15T04:06:33.931223546Z [err]    kode_referensi: 'REG-1765435260050-964',
-2025-12-15T04:06:33.931239792Z [err]    hint: undefined,
-2025-12-15T04:06:33.931243373Z [err]    nama_lengkap: 'Test Customer Type',
-2025-12-15T04:06:33.931252373Z [err]    position: undefined
-2025-12-15T04:06:35.874225328Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:35.874243024Z [err]    kode_referensi: 'REG-1765434790546-274',
-2025-12-15T04:06:35.874253223Z [err]    nama_lengkap: 'Test Customer Type',
-2025-12-15T04:06:35.874263319Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:35.874378800Z [err]    detail: undefined,
-2025-12-15T04:06:35.874392095Z [err]    hint: undefined,
-2025-12-15T04:06:35.874603598Z [err]    position: undefined
-2025-12-15T04:06:35.874613404Z [err]  }
-2025-12-15T04:06:35.874622146Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:35.874641392Z [err]    kode_referensi: 'REG-1765434903039-961',
-2025-12-15T04:06:35.874650033Z [err]    nama_lengkap: 'Test Customer Type',
-2025-12-15T04:06:35.874659969Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:35.874667673Z [err]    code: '25P02',
-2025-12-15T04:06:35.874686726Z [err]    detail: undefined,
-2025-12-15T04:06:35.874694769Z [err]    hint: undefined,
-2025-12-15T04:06:35.874703937Z [err]    position: undefined
-2025-12-15T04:06:35.874711057Z [err]  }
-2025-12-15T04:06:35.885202531Z [err]    code: '25P02',
-2025-12-15T04:06:35.885218612Z [err]    detail: undefined,
-2025-12-15T04:06:35.885228823Z [err]    hint: undefined,
-2025-12-15T04:06:35.885235928Z [err]    position: undefined
-2025-12-15T04:06:35.885242745Z [err]  }
-2025-12-15T04:06:35.885250973Z [inf]  📊 Progress [import_1765771564761_vw4c7p872]: 65% - Memproses record 41/55 (Mode: Replace)
-2025-12-15T04:06:35.885257381Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:35.885263728Z [err]    kode_referensi: 'REG-1765434716178-468',
-2025-12-15T04:06:35.885270938Z [err]    nama_lengkap: 'Test Customer Type',
-2025-12-15T04:06:35.885279496Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:38.062238504Z [err]    code: '25P02',
-2025-12-15T04:06:38.062247889Z [err]    detail: undefined,
-2025-12-15T04:06:38.062255761Z [err]    hint: undefined,
-2025-12-15T04:06:38.062256110Z [err]    hint: undefined,
-2025-12-15T04:06:38.062269344Z [err]    position: undefined
-2025-12-15T04:06:38.062275842Z [err]    position: undefined
-2025-12-15T04:06:38.062279771Z [err]  }
-2025-12-15T04:06:38.062289525Z [err]  }
-2025-12-15T04:06:38.062290505Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:38.062304167Z [err]    kode_referensi: 'REG-1765434658735-207',
-2025-12-15T04:06:38.062305606Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:38.062315590Z [err]    nama_lengkap: 'Test Customer Type',
-2025-12-15T04:06:38.062318993Z [err]    kode_referensi: 'REG-1765434607460-902',
-2025-12-15T04:06:38.062324482Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:38.062332366Z [err]    nama_lengkap: 'Test Customer Type',
-2025-12-15T04:06:38.062335394Z [err]    code: '25P02',
-2025-12-15T04:06:38.062344971Z [err]    detail: undefined,
-2025-12-15T04:06:38.062347603Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:38.062362750Z [err]    code: '25P02',
-2025-12-15T04:06:38.062375976Z [err]    detail: undefined,
-2025-12-15T04:06:38.062387443Z [err]    hint: undefined,
-2025-12-15T04:06:38.062572795Z [err]    position: undefined
-2025-12-15T04:06:38.062589421Z [err]  }
-2025-12-15T04:06:38.062599424Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:38.062608799Z [err]    kode_referensi: 'REG-1765434479639-139',
-2025-12-15T04:06:38.062619541Z [err]    nama_lengkap: 'Test Customer Type',
-2025-12-15T04:06:38.062629697Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:38.062655894Z [err]    code: '25P02',
-2025-12-15T04:06:40.536151218Z [err]    detail: undefined,
-2025-12-15T04:06:40.538014889Z [err]    hint: undefined,
-2025-12-15T04:06:40.538023918Z [err]    position: undefined
-2025-12-15T04:06:40.538030253Z [err]  }
-2025-12-15T04:06:40.538037111Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:40.538044303Z [err]    kode_referensi: 'REG-1765434381539-99',
-2025-12-15T04:06:40.538051378Z [err]    nama_lengkap: 'Test Customer Type',
-2025-12-15T04:06:40.538058532Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:40.538065276Z [err]    code: '25P02',
-2025-12-15T04:06:40.538075429Z [err]    detail: undefined,
-2025-12-15T04:06:40.538082701Z [err]    hint: undefined,
-2025-12-15T04:06:40.538089078Z [err]    position: undefined
-2025-12-15T04:06:40.538095682Z [err]  }
-2025-12-15T04:06:40.538102399Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:40.538110158Z [err]    kode_referensi: 'REG-1765420707832-959',
-2025-12-15T04:06:40.538116241Z [err]    nama_lengkap: 'Ahmad Wijaya Kusuma',
-2025-12-15T04:06:40.538122506Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:40.538130304Z [err]    code: '25P02',
-2025-12-15T04:06:40.538137003Z [err]    detail: undefined,
-2025-12-15T04:06:40.538144069Z [err]    hint: undefined,
-2025-12-15T04:06:40.538150884Z [err]    position: undefined
-2025-12-15T04:06:40.538157755Z [err]  }
-2025-12-15T04:06:40.538164683Z [inf]  📊 Progress [import_1765771564761_vw4c7p872]: 72% - Memproses record 46/55 (Mode: Replace)
-2025-12-15T04:06:40.538171313Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:40.538178016Z [err]    kode_referensi: 'REG-1765420551964-832',
-2025-12-15T04:06:40.538185860Z [err]    nama_lengkap: 'Budi Santoso',
-2025-12-15T04:06:40.538192858Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:43.276679280Z [err]    hint: undefined,
-2025-12-15T04:06:43.276681762Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:43.276694726Z [err]    kode_referensi: 'REG-1765419401107-687',
-2025-12-15T04:06:43.276695444Z [err]    position: undefined
-2025-12-15T04:06:43.276702926Z [err]    detail: undefined,
-2025-12-15T04:06:43.276707689Z [err]  }
-2025-12-15T04:06:43.276719718Z [err]    hint: undefined,
-2025-12-15T04:06:43.276729803Z [err]    position: undefined
-2025-12-15T04:06:43.276746929Z [err]  }
-2025-12-15T04:06:43.276750969Z [err]    nama_lengkap: 'Test User EDD',
-2025-12-15T04:06:43.276751356Z [err]    code: '25P02',
-2025-12-15T04:06:43.276753067Z [err]    position: undefined
-2025-12-15T04:06:43.276753196Z [err]    nama_lengkap: 'arya agung wicaksono',
-2025-12-15T04:06:43.276761567Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:43.276767473Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:43.276767937Z [err]  }
-2025-12-15T04:06:43.276768394Z [err]    detail: undefined,
-2025-12-15T04:06:43.276778174Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:43.276782189Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:43.276785313Z [err]    code: '25P02',
-2025-12-15T04:06:43.276786749Z [err]    kode_referensi: 'REG-1765417246226-331',
-2025-12-15T04:06:43.276792748Z [err]    kode_referensi: 'REG-1765273321437-752',
-2025-12-15T04:06:43.276796120Z [err]    code: '25P02',
-2025-12-15T04:06:43.276802177Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
-2025-12-15T04:06:43.276812376Z [err]    code: '25P02',
-2025-12-15T04:06:43.276812445Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:43.276823686Z [err]    detail: undefined,
-2025-12-15T04:06:43.276833066Z [err]    hint: undefined,
-2025-12-15T04:06:45.516127710Z [inf]  📊 Progress [import_1765771564761_vw4c7p872]: 78% - Memproses record 51/55 (Mode: Replace)
-2025-12-15T04:06:45.516148475Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:45.516161915Z [err]    kode_referensi: 'REG-1765262653544-812',
-2025-12-15T04:06:45.516171810Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
-2025-12-15T04:06:45.516183052Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:45.516193196Z [err]    code: '25P02',
-2025-12-15T04:06:45.516202253Z [err]    detail: undefined,
-2025-12-15T04:06:45.516212290Z [err]    hint: undefined,
-2025-12-15T04:06:45.516222698Z [err]    position: undefined
-2025-12-15T04:06:45.516232983Z [err]  }
-2025-12-15T04:06:45.516243296Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:45.516256276Z [err]    kode_referensi: 'REG-1765245055908-720',
-2025-12-15T04:06:45.516269419Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
-2025-12-15T04:06:45.516278430Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:45.516288739Z [err]    code: '25P02',
-2025-12-15T04:06:45.516299549Z [err]    detail: undefined,
-2025-12-15T04:06:45.516308938Z [err]    hint: undefined,
-2025-12-15T04:06:45.516320128Z [err]    position: undefined
-2025-12-15T04:06:45.516331725Z [err]  }
-2025-12-15T04:06:45.516346340Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:45.516361946Z [err]    kode_referensi: 'REG-1765244635937-380',
-2025-12-15T04:06:45.516373755Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
-2025-12-15T04:06:45.516389827Z [err]    detail: undefined,
-2025-12-15T04:06:45.516395006Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:45.516399924Z [err]    hint: undefined,
-2025-12-15T04:06:45.516409718Z [err]    position: undefined
-2025-12-15T04:06:45.516419518Z [err]  }
-2025-12-15T04:06:48.317160863Z [err]    position: undefined
-2025-12-15T04:06:48.317173139Z [err]  }
-2025-12-15T04:06:48.317187394Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:48.317193648Z [err]    kode_referensi: 'REG-1765184320494-456',
-2025-12-15T04:06:48.317202544Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
-2025-12-15T04:06:48.317207610Z [err]    code: '25P02',
-2025-12-15T04:06:48.317210500Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:48.317215724Z [err]    detail: undefined,
-2025-12-15T04:06:48.317222981Z [err]    hint: undefined,
-2025-12-15T04:06:48.317234930Z [err]    position: undefined
-2025-12-15T04:06:48.317239126Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
-2025-12-15T04:06:48.317247446Z [err]  }
-2025-12-15T04:06:48.317249393Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:48.317255585Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:48.317259677Z [err]    code: '25P02',
-2025-12-15T04:06:48.317264190Z [err]    kode_referensi: 'REG-1765241735665-789',
-2025-12-15T04:06:48.317269684Z [err]    detail: undefined,
-2025-12-15T04:06:48.317278428Z [err]    hint: undefined,
-2025-12-15T04:06:48.317281988Z [err]    code: '25P02',
-2025-12-15T04:06:48.317290383Z [err]    position: undefined
-2025-12-15T04:06:48.317308204Z [err]  }
-2025-12-15T04:06:48.317317206Z [err]  ❌ Error importing item: {
-2025-12-15T04:06:48.317349901Z [err]    nama_lengkap: null,
-2025-12-15T04:06:48.317360439Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:06:48.317367125Z [err]    code: '25P02',
-2025-12-15T04:06:48.317373703Z [err]    detail: undefined,
-2025-12-15T04:06:48.317382250Z [err]    hint: undefined,
-2025-12-15T04:06:48.317500815Z [err]    kode_referensi: null,
-2025-12-15T04:06:50.478282413Z [err]    detail: undefined,
-2025-12-15T04:06:50.478289992Z [err]    hint: undefined,
-2025-12-15T04:06:50.478296517Z [err]    position: undefined
-2025-12-15T04:06:50.478303011Z [err]  }
-2025-12-15T04:06:50.478309015Z [inf]  📊 Progress [import_1765771564761_vw4c7p872]: 90% - Menyimpan perubahan ke database...
-2025-12-15T04:06:50.490705795Z [inf]  ✅ Import completed: 0 imported, 0 overwritten, 55 skipped
-2025-12-15T04:06:50.490730842Z [inf]  📝 Log recorded: IMPORT_DATA by user 30
-2025-12-15T04:06:50.490745350Z [inf]  📊 Progress [import_1765771564761_vw4c7p872]: 100% - Import selesai! 0 berhasil, 0 ditimpa, 55 dilewati.
-2025-12-15T04:06:50.490760263Z [inf]  📋 Super admin access - showing all pengajuan
-2025-12-15T04:06:55.560334460Z [inf]  📋 Super admin access - showing all pengajuan
-2025-12-15T04:06:55.560350243Z [inf]  📋 Super admin access - showing all pengajuan
-2025-12-15T04:07:59.678646423Z [inf]  📋 Super admin access - showing all pengajuan
-2025-12-15T04:07:59.678657125Z [inf]  📋 Super admin access - showing all pengajuan
-2025-12-15T04:07:59.678664670Z [inf]  📋 Super admin access - showing all pengajuan
-2025-12-15T04:08:02.760216284Z [inf]  📋 Super admin access - showing all pengajuan
-2025-12-15T04:08:07.934260526Z [inf]  💾 Backup export request received
-2025-12-15T04:08:07.934267334Z [inf]  👤 User: superadmin1 Role: super Cabang: 1
-2025-12-15T04:08:07.934275843Z [inf]  🔍 Query params: [Object: null prototype] {}
-2025-12-15T04:08:07.934283267Z [inf]  ✅ Backup export completed: 56 records exported
-2025-12-15T04:08:09.754899488Z [inf]  📝 Log recorded: EXPORT_BACKUP by user 30
-2025-12-15T04:08:16.288600979Z [inf]  📋 Super admin access - showing all pengajuan
-2025-12-15T04:08:18.991516002Z [inf]  📋 Super admin access - showing all pengajuan
-2025-12-15T04:08:26.601560638Z [inf]  📋 Super admin access - showing all pengajuan
-2025-12-15T04:08:31.247596365Z [inf]  👀 Preview import data request received
-2025-12-15T04:08:31.247629839Z [inf]  👤 User: superadmin1 Role: super Cabang ID: 1 Type: number
-2025-12-15T04:08:31.247643372Z [inf]  🔍 Debug preview - referensiCodes: 1 dari 1 total
-2025-12-15T04:08:31.247652076Z [inf]  🔍 Sample referensi codes: [ 'REG-1765245055908-720' ]
-2025-12-15T04:08:31.247664391Z [inf]  🔍 Existing map size: 1
-2025-12-15T04:08:31.247673742Z [inf]  🔍 Sample existing keys: [ 'REG-1765245055908-720' ]
-2025-12-15T04:08:31.247684190Z [inf]  🔍 Checking item: REG-1765245055908-720 existing: true
-2025-12-15T04:08:33.356734008Z [inf]    newRecords: 0,
-2025-12-15T04:08:33.356746823Z [inf]    conflicts: 0,
-2025-12-15T04:08:33.356749721Z [inf]    existingRecords: 1,
-2025-12-15T04:08:33.356759794Z [inf]    crossCabangWarnings: 0
-2025-12-15T04:08:33.356780274Z [inf]  }
-2025-12-15T04:08:33.356861021Z [inf]  ✅ Preview completed: 1 total, 0 new, 1 existing, 0 conflicts
-2025-12-15T04:08:33.356874009Z [inf]  🔍 Analysis breakdown: {
-2025-12-15T04:08:33.356885486Z [inf]    totalRecords: 1,
-2025-12-15T04:08:39.493448294Z [inf]  👀 Preview import data request received
-2025-12-15T04:08:39.493458900Z [inf]  👤 User: superadmin1 Role: super Cabang ID: 1 Type: number
-2025-12-15T04:08:39.493470679Z [inf]  🔍 Debug preview - referensiCodes: 56 dari 56 total
-2025-12-15T04:08:39.493480657Z [inf]  🔍 Sample referensi codes: [
-2025-12-15T04:08:39.493491212Z [inf]    'REG-1765713786654-33',
-2025-12-15T04:08:39.493505387Z [inf]    'REG-1765696480973-716',
-2025-12-15T04:08:39.493514181Z [inf]    'REG-1765619527742-49'
-2025-12-15T04:08:39.493523352Z [inf]  ]
-2025-12-15T04:08:41.938839519Z [inf]  🔍 Existing map size: 56
-2025-12-15T04:08:41.938847580Z [inf]  🔍 Sample existing keys: [
-2025-12-15T04:08:41.938857389Z [inf]    'REG-1765619527742-49',
-2025-12-15T04:08:41.938865509Z [inf]    'REG-1765589394282-852',
-2025-12-15T04:08:41.938874293Z [inf]    'REG-1765583091500-502'
-2025-12-15T04:08:41.938882659Z [inf]  ]
-2025-12-15T04:08:41.938890417Z [inf]  🔍 Checking item: REG-1765713786654-33 existing: true
-2025-12-15T04:08:41.938898807Z [inf]  🔍 Checking item: REG-1765696480973-716 existing: true
-2025-12-15T04:08:41.938907273Z [inf]  🔍 Checking item: REG-1765619527742-49 existing: true
-2025-12-15T04:08:41.938915046Z [inf]  🔍 Checking item: REG-1765589394282-852 existing: true
-2025-12-15T04:08:41.938921870Z [inf]  🔍 Checking item: REG-1765583091500-502 existing: true
-2025-12-15T04:08:41.938928719Z [inf]  🔍 Checking item: REG-1765555261168-529 existing: true
-2025-12-15T04:08:41.938936647Z [inf]  🔍 Checking item: REG-1765525980100-569 existing: true
-2025-12-15T04:08:41.938945126Z [inf]  🔍 Checking item: REG-1765525765374-681 existing: true
-2025-12-15T04:08:41.938953430Z [inf]  🔍 Checking item: REG-1765525765343-50 existing: true
-2025-12-15T04:08:41.938960986Z [inf]  🔍 Checking item: REG-1765524708994-102 existing: true
-2025-12-15T04:08:41.938969209Z [inf]  🔍 Checking item: REG-1765523075976-875 existing: true
-2025-12-15T04:08:41.938975947Z [inf]  🔍 Checking item: REG-1765522842672-132 existing: true
-2025-12-15T04:08:41.938984915Z [inf]  🔍 Checking item: REG-1765522656086-754 existing: true
-2025-12-15T04:08:41.938992444Z [inf]  🔍 Checking item: REG-1765522213968-910 existing: true
-2025-12-15T04:08:41.938999353Z [inf]  🔍 Checking item: REG-1765521580336-363 existing: true
-2025-12-15T04:08:41.939006587Z [inf]  🔍 Checking item: REG-1765521342201-769 existing: true
-2025-12-15T04:08:41.939016916Z [inf]  🔍 Checking item: REG-1765518940214-324 existing: true
-2025-12-15T04:08:44.520113633Z [inf]  🔍 Checking item: REG-1765518891447-998 existing: true
-2025-12-15T04:08:44.520119229Z [inf]  🔍 Checking item: REG-1765518782203-618 existing: true
-2025-12-15T04:08:44.520125129Z [inf]  🔍 Checking item: REG-1765511959852-730 existing: true
-2025-12-15T04:08:44.520132133Z [inf]  🔍 Checking item: REG-1765511707761-528 existing: true
-2025-12-15T04:08:44.520140532Z [inf]  🔍 Checking item: REG-1765511346060-349 existing: true
-2025-12-15T04:08:44.520146495Z [inf]  🔍 Checking item: REG-1765511096296-933 existing: true
-2025-12-15T04:08:44.520152735Z [inf]  🔍 Checking item: REG-1765510855678-206 existing: true
-2025-12-15T04:08:44.520159899Z [inf]  🔍 Checking item: REG-1765510666214-34 existing: true
-2025-12-15T04:08:44.520166608Z [inf]  🔍 Checking item: REG-1765510526246-924 existing: true
-2025-12-15T04:08:44.520173063Z [inf]  🔍 Checking item: REG-1765510164268-575 existing: true
-2025-12-15T04:08:44.520181935Z [inf]  🔍 Checking item: REG-1765505151961-645 existing: true
-2025-12-15T04:08:44.520196139Z [inf]  🔍 Checking item: REG-1765504637577-195 existing: true
-2025-12-15T04:08:44.520203618Z [inf]  🔍 Checking item: REG-1765504170402-427 existing: true
-2025-12-15T04:08:44.520209878Z [inf]  🔍 Checking item: REG-1765502332477-722 existing: true
-2025-12-15T04:08:44.520216174Z [inf]  🔍 Checking item: REG-1765501937691-718 existing: true
-2025-12-15T04:08:44.520223749Z [inf]  🔍 Checking item: REG-1765437503983-478 existing: true
-2025-12-15T04:08:44.520229260Z [inf]  🔍 Checking item: REG-1765437078375-305 existing: true
-2025-12-15T04:08:44.520234907Z [inf]  🔍 Checking item: REG-1765436780351-349 existing: true
-2025-12-15T04:08:44.520241954Z [inf]  🔍 Checking item: REG-1765436161526-278 existing: true
-2025-12-15T04:08:44.520249039Z [inf]  🔍 Checking item: REG-1765435376674-384 existing: true
-2025-12-15T04:08:44.520255244Z [inf]  🔍 Checking item: REG-1765435260050-964 existing: true
-2025-12-15T04:08:46.686074919Z [inf]  🔍 Checking item: REG-1765435125537-316 existing: true
-2025-12-15T04:08:46.686081353Z [inf]  🔍 Checking item: REG-1765434903039-961 existing: true
-2025-12-15T04:08:46.686089782Z [inf]  🔍 Checking item: REG-1765434790546-274 existing: true
-2025-12-15T04:08:46.686096561Z [inf]  🔍 Checking item: REG-1765434716178-468 existing: true
-2025-12-15T04:08:46.686104087Z [inf]  🔍 Checking item: REG-1765434658735-207 existing: true
-2025-12-15T04:08:46.686111691Z [inf]  🔍 Checking item: REG-1765434607460-902 existing: true
-2025-12-15T04:08:46.686119514Z [inf]  🔍 Checking item: REG-1765434479639-139 existing: true
-2025-12-15T04:08:46.686127545Z [inf]  🔍 Checking item: REG-1765434381539-99 existing: true
-2025-12-15T04:08:46.686185505Z [inf]  🔍 Checking item: REG-1765420707832-959 existing: true
-2025-12-15T04:08:46.686202548Z [inf]  🔍 Checking item: REG-1765420551964-832 existing: true
-2025-12-15T04:08:46.686211516Z [inf]  🔍 Checking item: REG-1765419401107-687 existing: true
-2025-12-15T04:08:46.686220196Z [inf]  🔍 Checking item: REG-1765417246226-331 existing: true
-2025-12-15T04:08:46.686229545Z [inf]  🔍 Checking item: REG-1765273321437-752 existing: true
-2025-12-15T04:08:46.686239441Z [inf]  🔍 Checking item: REG-1765262653544-812 existing: true
-2025-12-15T04:08:46.686246982Z [inf]  🔍 Checking item: REG-1765245055908-720 existing: true
-2025-12-15T04:08:46.686254512Z [inf]  🔍 Checking item: REG-1765244635937-380 existing: true
-2025-12-15T04:08:46.686263438Z [inf]  🔍 Checking item: REG-1765241735665-789 existing: true
-2025-12-15T04:08:46.686274199Z [inf]  🔍 Checking item: REG-1765184320494-456 existing: true
-2025-12-15T04:08:46.686283629Z [inf]  ✅ Preview completed: 56 total, 0 new, 56 existing, 1 conflicts
-2025-12-15T04:08:46.686295145Z [inf]  🔍 Analysis breakdown: {
-2025-12-15T04:08:46.686302273Z [inf]    totalRecords: 56,
-2025-12-15T04:08:49.545484079Z [inf]    newRecords: 0,
-2025-12-15T04:08:49.545494958Z [inf]    existingRecords: 56,
-2025-12-15T04:08:49.545503837Z [inf]    conflicts: 1,
-2025-12-15T04:08:49.545514770Z [inf]    crossCabangWarnings: 0
-2025-12-15T04:08:49.545526563Z [inf]  }
-2025-12-15T04:08:51.367865877Z [inf]  📥 Import data request received
-2025-12-15T04:08:51.367872655Z [inf]  👤 User: superadmin1 Role: super Cabang ID: 1 Type: number
-2025-12-15T04:08:51.367880754Z [inf]  🔄 Overwrite mode: true
-2025-12-15T04:08:51.367887797Z [inf]  📊 Progress [import_1765771730471_nfqltq4dn]: 5% - Memulai proses import...
-2025-12-15T04:08:51.367902317Z [inf]  📊 Progress [import_1765771730471_nfqltq4dn]: 10% - File berhasil diparse. Ditemukan 56 records.
-2025-12-15T04:08:51.367909856Z [inf]  📊 Progress [import_1765771730471_nfqltq4dn]: 15% - Memproses record 1/56 (Mode: Replace)
-2025-12-15T04:08:52.838968008Z [err]  ❌ Error importing item: {
-2025-12-15T04:08:52.838975282Z [err]    kode_referensi: 'REG-1765713786654-33',
-2025-12-15T04:08:52.838981781Z [err]    nama_lengkap: 'Anjas Mara',
-2025-12-15T04:08:52.838989100Z [err]    error: 'column "updated_at" of relation "pengajuan_tabungan" does not exist',
-2025-12-15T04:08:52.838995819Z [err]    code: '42703',
-2025-12-15T04:08:52.839004635Z [err]    detail: undefined,
-2025-12-15T04:08:52.839011848Z [err]    hint: undefined,
-2025-12-15T04:08:52.839021337Z [err]    position: '74'
-2025-12-15T04:08:52.839027837Z [err]  }
-2025-12-15T04:08:52.839035380Z [err]  🔥 ORIGINAL ERROR (not transaction abort): error: column "updated_at" of relation "pengajuan_tabungan" does not exist
-2025-12-15T04:08:52.839041623Z [err]      at /app/node_modules/pg/lib/client.js:545:17
-2025-12-15T04:08:52.839049299Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-2025-12-15T04:08:52.839056124Z [err]      at async importData (file:///app/controllers/pengajuanController.js:1906:13) {
-2025-12-15T04:08:52.843429084Z [err]    length: 143,
-2025-12-15T04:08:52.843448552Z [err]    severity: 'ERROR',
-2025-12-15T04:08:52.843462154Z [err]    code: '42703',
-2025-12-15T04:08:52.843472918Z [err]    detail: undefined,
-2025-12-15T04:08:52.843481324Z [err]    hint: undefined,
-2025-12-15T04:08:52.843492882Z [err]    position: '74',
-2025-12-15T04:08:52.843501188Z [err]    internalPosition: undefined,
-2025-12-15T04:08:52.843509852Z [err]    internalQuery: undefined,
-2025-12-15T04:08:52.843523479Z [err]    where: undefined,
-2025-12-15T04:08:52.843536105Z [err]    schema: undefined,
-2025-12-15T04:08:52.843808492Z [err]    table: undefined,
-2025-12-15T04:08:52.843824018Z [err]    column: undefined,
-2025-12-15T04:08:52.843837433Z [err]    dataType: undefined,
-2025-12-15T04:08:52.843845778Z [err]    constraint: undefined,
-2025-12-15T04:08:54.444562012Z [err]    file: 'analyze.c',
-2025-12-15T04:08:54.444573415Z [err]    line: '2528',
-2025-12-15T04:08:54.444583438Z [err]    routine: 'transformUpdateTargetList'
-2025-12-15T04:08:54.444599456Z [err]  }
-2025-12-15T04:08:54.444609564Z [err]  ❌ Error importing item: {
-2025-12-15T04:08:54.444623006Z [err]    kode_referensi: 'REG-1765696480973-716',
-2025-12-15T04:08:54.444637441Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
-2025-12-15T04:08:54.444649459Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:08:54.444660058Z [err]    code: '25P02',
-2025-12-15T04:08:54.444671304Z [err]    detail: undefined,
-2025-12-15T04:08:54.444681827Z [err]    hint: undefined,
-2025-12-15T04:08:54.445012523Z [err]    position: undefined
-2025-12-15T04:08:54.445021216Z [err]    detail: undefined,
-2025-12-15T04:08:54.445035651Z [err]    hint: undefined,
-2025-12-15T04:08:54.445041136Z [err]  }
-2025-12-15T04:08:54.445047811Z [err]    position: undefined
-2025-12-15T04:08:54.445054881Z [err]  ❌ Error importing item: {
-2025-12-15T04:08:54.445059988Z [err]  }
-2025-12-15T04:08:54.445069729Z [err]    kode_referensi: 'REG-1765619527742-49',
-2025-12-15T04:08:54.445070951Z [err]  ❌ Error importing item: {
-2025-12-15T04:08:54.445082879Z [err]    kode_referensi: 'REG-1765589394282-852',
-2025-12-15T04:08:54.445083699Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
-2025-12-15T04:08:54.445094714Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
-2025-12-15T04:08:54.445096367Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:08:54.445106332Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:08:54.445110179Z [err]    code: '25P02',
-2025-12-15T04:08:54.445116413Z [err]    code: '25P02',
-2025-12-15T04:08:56.511420381Z [err]    detail: undefined,
-2025-12-15T04:08:56.511427477Z [err]    hint: undefined,
-2025-12-15T04:08:56.511439423Z [err]    position: undefined
-2025-12-15T04:08:56.511447647Z [err]  }
-2025-12-15T04:08:56.512104060Z [err]  ❌ Error importing item: {
-2025-12-15T04:08:56.512120782Z [err]    kode_referensi: 'REG-1765583091500-502',
-2025-12-15T04:08:56.512140774Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
-2025-12-15T04:08:56.512149142Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:08:56.512327650Z [err]    code: '25P02',
-2025-12-15T04:08:56.512342016Z [err]    detail: undefined,
-2025-12-15T04:08:56.512352924Z [err]    hint: undefined,
-2025-12-15T04:08:56.512361920Z [err]    position: undefined
-2025-12-15T04:08:56.521311078Z [err]  }
-2025-12-15T04:08:56.521329891Z [inf]  📊 Progress [import_1765771730471_nfqltq4dn]: 21% - Memproses record 6/56 (Mode: Replace)
-2025-12-15T04:08:56.521338751Z [err]  ❌ Error importing item: {
-2025-12-15T04:08:56.521347615Z [err]    kode_referensi: 'REG-1765555261168-529',
-2025-12-15T04:08:56.521355022Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
-2025-12-15T04:08:56.521362448Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:08:56.521370414Z [err]    code: '25P02',
-2025-12-15T04:08:56.521379990Z [err]    detail: undefined,
-2025-12-15T04:08:56.521387647Z [err]    hint: undefined,
-2025-12-15T04:08:56.521395880Z [err]    position: undefined
-2025-12-15T04:08:56.521404665Z [err]  }
-2025-12-15T04:08:56.521415290Z [err]  ❌ Error importing item: {
-2025-12-15T04:08:56.521423357Z [err]    kode_referensi: 'REG-1765525980100-569',
-2025-12-15T04:08:56.521431489Z [err]    nama_lengkap: 'Test Fix Nasabah Lama',
-2025-12-15T04:08:56.521441486Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:08:58.826097168Z [err]    code: '25P02',
-2025-12-15T04:08:58.826105310Z [err]    detail: undefined,
-2025-12-15T04:08:58.826113394Z [err]    hint: undefined,
-2025-12-15T04:08:58.826126427Z [err]    position: undefined
-2025-12-15T04:08:58.826134692Z [err]  }
-2025-12-15T04:08:58.826142227Z [err]  ❌ Error importing item: {
-2025-12-15T04:08:58.826210796Z [err]    kode_referensi: 'REG-1765525765374-681',
-2025-12-15T04:08:58.826221264Z [err]    nama_lengkap: 'Test Nasabah Lama',
-2025-12-15T04:08:58.826234377Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:08:58.826247944Z [err]    code: '25P02',
-2025-12-15T04:08:58.826258198Z [err]    detail: undefined,
-2025-12-15T04:08:58.826271929Z [err]    hint: undefined,
-2025-12-15T04:08:58.826281437Z [err]    position: undefined
-2025-12-15T04:08:58.826289952Z [err]  }
-2025-12-15T04:08:58.826299769Z [err]  ❌ Error importing item: {
-2025-12-15T04:08:58.826310433Z [err]    kode_referensi: 'REG-1765525765343-50',
-2025-12-15T04:08:58.826319045Z [err]    nama_lengkap: 'Test Nasabah Baru',
-2025-12-15T04:08:58.826330234Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:08:58.826340356Z [err]    code: '25P02',
-2025-12-15T04:08:58.826349873Z [err]    detail: undefined,
-2025-12-15T04:08:58.826367388Z [err]    hint: undefined,
-2025-12-15T04:08:58.826375450Z [err]    position: undefined
-2025-12-15T04:08:58.826384157Z [err]  }
-2025-12-15T04:08:58.826393551Z [err]  ❌ Error importing item: {
-2025-12-15T04:08:58.826403874Z [err]    kode_referensi: 'REG-1765524708994-102',
-2025-12-15T04:08:58.826412866Z [err]    nama_lengkap: 'Test Submission Card',
-2025-12-15T04:08:58.826422300Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:08:58.826442771Z [err]    code: '25P02',
-2025-12-15T04:09:01.930907700Z [err]    detail: undefined,
-2025-12-15T04:09:01.930915606Z [err]    hint: undefined,
-2025-12-15T04:09:01.930923783Z [err]    position: undefined
-2025-12-15T04:09:01.930931273Z [err]  }
-2025-12-15T04:09:01.930939165Z [inf]  📊 Progress [import_1765771730471_nfqltq4dn]: 27% - Memproses record 11/56 (Mode: Replace)
-2025-12-15T04:09:01.930950488Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:01.930958821Z [err]    kode_referensi: 'REG-1765523075976-875',
-2025-12-15T04:09:01.930966966Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
-2025-12-15T04:09:01.930974051Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:01.930980830Z [err]    code: '25P02',
-2025-12-15T04:09:01.930988017Z [err]    detail: undefined,
-2025-12-15T04:09:01.930995823Z [err]    hint: undefined,
-2025-12-15T04:09:01.931003769Z [err]    position: undefined
-2025-12-15T04:09:01.931013304Z [err]  }
-2025-12-15T04:09:01.931020868Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:01.931028006Z [err]    kode_referensi: 'REG-1765522842672-132',
-2025-12-15T04:09:01.931035302Z [err]    nama_lengkap: 'Test Final Fixes',
-2025-12-15T04:09:01.931041598Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:01.931048189Z [err]    code: '25P02',
-2025-12-15T04:09:01.931055982Z [err]    detail: undefined,
-2025-12-15T04:09:01.931062797Z [err]    hint: undefined,
-2025-12-15T04:09:01.931069826Z [err]    position: undefined
-2025-12-15T04:09:01.931075674Z [err]  }
-2025-12-15T04:09:01.931081685Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:01.931088492Z [err]    kode_referensi: 'REG-1765522656086-754',
-2025-12-15T04:09:01.931096405Z [err]    nama_lengkap: 'Test Final Fixes',
-2025-12-15T04:09:01.931103858Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:03.985928686Z [err]    code: '25P02',
-2025-12-15T04:09:03.985945855Z [err]    detail: undefined,
-2025-12-15T04:09:03.985955965Z [err]    hint: undefined,
-2025-12-15T04:09:03.985963635Z [err]    position: undefined
-2025-12-15T04:09:03.985975708Z [err]  }
-2025-12-15T04:09:03.985991410Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:03.985999375Z [err]    kode_referensi: 'REG-1765522213968-910',
-2025-12-15T04:09:03.986009007Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
-2025-12-15T04:09:03.986016709Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:03.986028057Z [err]    code: '25P02',
-2025-12-15T04:09:03.986037612Z [err]    detail: undefined,
-2025-12-15T04:09:03.986046647Z [err]    hint: undefined,
-2025-12-15T04:09:03.986056688Z [err]    position: undefined
-2025-12-15T04:09:03.986068751Z [err]  }
-2025-12-15T04:09:03.986078575Z [inf]  📊 Progress [import_1765771730471_nfqltq4dn]: 33% - Memproses record 16/56 (Mode: Replace)
-2025-12-15T04:09:03.986088967Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:03.986099938Z [err]    kode_referensi: 'REG-1765521580336-363',
-2025-12-15T04:09:03.986108969Z [err]    nama_lengkap: 'Test BO Interface Fix',
-2025-12-15T04:09:03.986119274Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:03.986128484Z [err]    code: '25P02',
-2025-12-15T04:09:03.986137079Z [err]    detail: undefined,
-2025-12-15T04:09:03.986147990Z [err]    hint: undefined,
-2025-12-15T04:09:03.986156139Z [err]    position: undefined
-2025-12-15T04:09:03.986166197Z [err]  }
-2025-12-15T04:09:03.986175210Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:03.986182191Z [err]    kode_referensi: 'REG-1765521342201-769',
-2025-12-15T04:09:03.986190079Z [err]    nama_lengkap: 'Test No Duplicate Contact',
-2025-12-15T04:09:03.986197271Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:06.449831883Z [err]    code: '25P02',
-2025-12-15T04:09:06.449837957Z [err]    detail: undefined,
-2025-12-15T04:09:06.449843898Z [err]    hint: undefined,
-2025-12-15T04:09:06.449849683Z [err]    position: undefined
-2025-12-15T04:09:06.449856737Z [err]  }
-2025-12-15T04:09:06.449863205Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:06.449870010Z [err]    kode_referensi: 'REG-1765518940214-324',
-2025-12-15T04:09:06.449876489Z [err]    nama_lengkap: 'Test Emergency Contact',
-2025-12-15T04:09:06.449882786Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:06.449889439Z [err]    code: '25P02',
-2025-12-15T04:09:06.449896062Z [err]    detail: undefined,
-2025-12-15T04:09:06.449903716Z [err]    hint: undefined,
-2025-12-15T04:09:06.449911142Z [err]    position: undefined
-2025-12-15T04:09:06.449918261Z [err]  }
-2025-12-15T04:09:06.449924860Z [inf]  📋 Super admin access - showing all pengajuan
-2025-12-15T04:09:06.449932642Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:06.449938425Z [err]    kode_referensi: 'REG-1765518891447-998',
-2025-12-15T04:09:06.449944976Z [err]    nama_lengkap: 'Test Emergency Contact',
-2025-12-15T04:09:06.449951559Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:06.449958844Z [err]    code: '25P02',
-2025-12-15T04:09:06.449965257Z [err]    detail: undefined,
-2025-12-15T04:09:06.450004901Z [err]    hint: undefined,
-2025-12-15T04:09:06.450016773Z [err]    position: undefined
-2025-12-15T04:09:06.450023961Z [err]  }
-2025-12-15T04:09:06.450029866Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:06.450035706Z [err]    kode_referensi: 'REG-1765518782203-618',
-2025-12-15T04:09:06.450041463Z [err]    nama_lengkap: 'Test Missing Fields User',
-2025-12-15T04:09:06.450048027Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:08.234446219Z [err]    code: '25P02',
-2025-12-15T04:09:08.234455753Z [err]    detail: undefined,
-2025-12-15T04:09:08.234463549Z [err]    hint: undefined,
-2025-12-15T04:09:08.234471241Z [err]    position: undefined
-2025-12-15T04:09:08.234479454Z [err]  }
-2025-12-15T04:09:08.234488095Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:08.234495526Z [err]    kode_referensi: 'REG-1765511959852-730',
-2025-12-15T04:09:08.234502364Z [err]    nama_lengkap: 'Final Test BO User',
-2025-12-15T04:09:08.234509756Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:08.234517661Z [err]    code: '25P02',
-2025-12-15T04:09:08.234525888Z [err]    detail: undefined,
-2025-12-15T04:09:08.234535021Z [err]    hint: undefined,
-2025-12-15T04:09:08.234543090Z [err]    position: undefined
-2025-12-15T04:09:08.234551060Z [err]  }
-2025-12-15T04:09:08.234558854Z [inf]  📊 Progress [import_1765771730471_nfqltq4dn]: 40% - Memproses record 21/56 (Mode: Replace)
-2025-12-15T04:09:08.234565952Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:08.234573859Z [err]    kode_referensi: 'REG-1765511707761-528',
-2025-12-15T04:09:08.234580854Z [err]    nama_lengkap: 'Test User BO 2',
-2025-12-15T04:09:08.234589411Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:08.234599031Z [err]    code: '25P02',
-2025-12-15T04:09:08.234606710Z [err]    detail: undefined,
-2025-12-15T04:09:08.234614254Z [err]    hint: undefined,
-2025-12-15T04:09:08.234621950Z [err]    position: undefined
-2025-12-15T04:09:08.234629266Z [err]  }
-2025-12-15T04:09:08.234653056Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:08.234660765Z [err]    kode_referensi: 'REG-1765511346060-349',
-2025-12-15T04:09:08.234668283Z [err]    nama_lengkap: 'Test User BO 2',
-2025-12-15T04:09:08.234675241Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:10.000874741Z [err]    code: '25P02',
-2025-12-15T04:09:10.000893460Z [err]    detail: undefined,
-2025-12-15T04:09:10.051807021Z [err]    hint: undefined,
-2025-12-15T04:09:10.051884507Z [err]    position: undefined
-2025-12-15T04:09:10.051897064Z [err]  }
-2025-12-15T04:09:10.051907273Z [inf]  📋 Super admin access - showing all pengajuan
-2025-12-15T04:09:10.051916776Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:10.051924260Z [err]    kode_referensi: 'REG-1765511096296-933',
-2025-12-15T04:09:10.051932038Z [err]    nama_lengkap: 'Test User BO 2',
-2025-12-15T04:09:10.051940262Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:10.051949771Z [err]    code: '25P02',
-2025-12-15T04:09:10.051958202Z [err]    detail: undefined,
-2025-12-15T04:09:10.051966743Z [err]    hint: undefined,
-2025-12-15T04:09:10.051975525Z [err]    position: undefined
-2025-12-15T04:09:10.051983097Z [err]  }
-2025-12-15T04:09:10.051989960Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:10.051996809Z [err]    kode_referensi: 'REG-1765510855678-206',
-2025-12-15T04:09:10.052003382Z [err]    nama_lengkap: 'Test User BO 2',
-2025-12-15T04:09:10.052010387Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:10.052019377Z [err]    code: '25P02',
-2025-12-15T04:09:10.052026324Z [err]    detail: undefined,
-2025-12-15T04:09:10.052035032Z [err]    hint: undefined,
-2025-12-15T04:09:10.052042095Z [err]    position: undefined
-2025-12-15T04:09:10.052049591Z [err]  }
-2025-12-15T04:09:10.052057138Z [inf]  📊 Progress [import_1765771730471_nfqltq4dn]: 46% - Memproses record 26/56 (Mode: Replace)
-2025-12-15T04:09:10.052064013Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:10.052071283Z [err]    kode_referensi: 'REG-1765510666214-34',
-2025-12-15T04:09:10.052078409Z [err]    nama_lengkap: 'Test User BO 2',
-2025-12-15T04:09:12.035968077Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:12.036045735Z [err]    kode_referensi: 'REG-1765510164268-575',
-2025-12-15T04:09:12.036061821Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
-2025-12-15T04:09:12.036085524Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:12.036101338Z [err]    code: '25P02',
-2025-12-15T04:09:12.036113935Z [err]    detail: undefined,
-2025-12-15T04:09:12.036121819Z [err]    hint: undefined,
-2025-12-15T04:09:12.036128831Z [err]    position: undefined
-2025-12-15T04:09:12.036140982Z [err]  }
-2025-12-15T04:09:12.036156973Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:12.036164780Z [err]    kode_referensi: 'REG-1765505151961-645',
-2025-12-15T04:09:12.036173932Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
-2025-12-15T04:09:12.036186834Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:12.036861245Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:12.036869434Z [err]    code: '25P02',
-2025-12-15T04:09:12.036878155Z [err]    detail: undefined,
-2025-12-15T04:09:12.036886475Z [err]    hint: undefined,
-2025-12-15T04:09:12.036896217Z [err]    position: undefined
-2025-12-15T04:09:12.036905968Z [err]  }
-2025-12-15T04:09:12.036916194Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:12.036924920Z [err]    kode_referensi: 'REG-1765510526246-924',
-2025-12-15T04:09:12.036933889Z [err]    nama_lengkap: 'Test User BO',
-2025-12-15T04:09:12.036942429Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:12.036951334Z [err]    code: '25P02',
-2025-12-15T04:09:12.036960178Z [err]    detail: undefined,
-2025-12-15T04:09:12.036969591Z [err]    hint: undefined,
-2025-12-15T04:09:12.036980788Z [err]    position: undefined
-2025-12-15T04:09:12.036991158Z [err]  }
-2025-12-15T04:09:13.771238336Z [err]    code: '25P02',
-2025-12-15T04:09:13.771244361Z [err]    detail: undefined,
-2025-12-15T04:09:13.771269334Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:13.771287208Z [err]    kode_referensi: 'REG-1765502332477-722',
-2025-12-15T04:09:13.771298635Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
-2025-12-15T04:09:13.771308370Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:13.771396865Z [err]  }
-2025-12-15T04:09:13.771445834Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
-2025-12-15T04:09:13.771459407Z [err]    detail: undefined,
-2025-12-15T04:09:13.771472372Z [err]    hint: undefined,
-2025-12-15T04:09:13.771474400Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:13.771484044Z [err]    position: undefined
-2025-12-15T04:09:13.771484184Z [err]    kode_referensi: 'REG-1765504170402-427',
-2025-12-15T04:09:13.771493580Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
-2025-12-15T04:09:13.771496620Z [err]  }
-2025-12-15T04:09:13.771505669Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:13.771507658Z [err]    hint: undefined,
-2025-12-15T04:09:13.771510245Z [inf]  📊 Progress [import_1765771730471_nfqltq4dn]: 52% - Memproses record 31/56 (Mode: Replace)
-2025-12-15T04:09:13.771516696Z [err]    code: '25P02',
-2025-12-15T04:09:13.771523691Z [err]    position: undefined
-2025-12-15T04:09:13.771533147Z [err]  }
-2025-12-15T04:09:13.771551554Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:13.771559498Z [err]    kode_referensi: 'REG-1765504637577-195',
-2025-12-15T04:09:13.771670624Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:13.771688114Z [err]    code: '25P02',
-2025-12-15T04:09:13.771699802Z [err]    detail: undefined,
-2025-12-15T04:09:13.771711086Z [err]    hint: undefined,
-2025-12-15T04:09:13.771723708Z [err]    position: undefined
-2025-12-15T04:09:16.272403990Z [err]  }
-2025-12-15T04:09:16.272421820Z [err]    detail: undefined,
-2025-12-15T04:09:16.272423857Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:16.272466718Z [err]    hint: undefined,
-2025-12-15T04:09:16.272477862Z [err]    position: undefined
-2025-12-15T04:09:16.272482374Z [err]    kode_referensi: 'REG-1765437503983-478',
-2025-12-15T04:09:16.272488967Z [err]    code: '25P02',
-2025-12-15T04:09:16.272504960Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
-2025-12-15T04:09:16.272506861Z [err]  }
-2025-12-15T04:09:16.272518984Z [err]    kode_referensi: 'REG-1765437078375-305',
-2025-12-15T04:09:16.272525757Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:16.272529878Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:16.272542507Z [err]    code: '25P02',
-2025-12-15T04:09:16.272586936Z [err]    hint: undefined,
-2025-12-15T04:09:16.272603360Z [err]    position: undefined
-2025-12-15T04:09:16.272826206Z [err]    code: '25P02',
-2025-12-15T04:09:16.272837383Z [err]    detail: undefined,
-2025-12-15T04:09:16.272842871Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
-2025-12-15T04:09:16.272858871Z [err]    hint: undefined,
-2025-12-15T04:09:16.272867425Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:16.272876258Z [err]    position: undefined
-2025-12-15T04:09:16.272885758Z [err]  }
-2025-12-15T04:09:16.272894049Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:16.272903548Z [err]    kode_referensi: 'REG-1765501937691-718',
-2025-12-15T04:09:16.272912022Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
-2025-12-15T04:09:16.273836267Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:16.273875332Z [err]    code: '25P02',
-2025-12-15T04:09:16.273886105Z [err]    detail: undefined,
-2025-12-15T04:09:18.417057356Z [err]  }
-2025-12-15T04:09:18.417069577Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:18.417081678Z [err]    kode_referensi: 'REG-1765435376674-384',
-2025-12-15T04:09:18.417093521Z [err]    detail: undefined,
-2025-12-15T04:09:18.417096574Z [err]    nama_lengkap: 'Test Customer Type',
-2025-12-15T04:09:18.417098536Z [err]    hint: undefined,
-2025-12-15T04:09:18.417108838Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:18.417125610Z [err]    position: undefined
-2025-12-15T04:09:18.417138030Z [err]  }
-2025-12-15T04:09:18.417150709Z [inf]  📊 Progress [import_1765771730471_nfqltq4dn]: 58% - Memproses record 36/56 (Mode: Replace)
-2025-12-15T04:09:18.417170486Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:18.417187259Z [err]    kode_referensi: 'REG-1765436780351-349',
-2025-12-15T04:09:18.417196537Z [err]    nama_lengkap: 'Budi Santoso',
-2025-12-15T04:09:18.417205994Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:18.417215634Z [err]    code: '25P02',
-2025-12-15T04:09:18.417225577Z [err]    detail: undefined,
-2025-12-15T04:09:18.417234136Z [err]    hint: undefined,
-2025-12-15T04:09:18.417296145Z [err]    position: undefined
-2025-12-15T04:09:18.417310075Z [err]  }
-2025-12-15T04:09:18.417319476Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:18.417328010Z [err]    kode_referensi: 'REG-1765436161526-278',
-2025-12-15T04:09:18.417337237Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
-2025-12-15T04:09:18.417346655Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:18.417363717Z [err]    code: '25P02',
-2025-12-15T04:09:18.417374398Z [err]    detail: undefined,
-2025-12-15T04:09:18.417383672Z [err]    hint: undefined,
-2025-12-15T04:09:18.417398118Z [err]    position: undefined
-2025-12-15T04:09:20.537608590Z [err]    nama_lengkap: 'Test Customer Type',
-2025-12-15T04:09:20.537631785Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:20.537647549Z [err]    code: '25P02',
-2025-12-15T04:09:20.537655783Z [err]    detail: undefined,
-2025-12-15T04:09:20.537664552Z [err]    hint: undefined,
-2025-12-15T04:09:20.537679404Z [err]    position: undefined
-2025-12-15T04:09:20.537712785Z [err]  }
-2025-12-15T04:09:20.537721520Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:20.537729136Z [err]    kode_referensi: 'REG-1765434903039-961',
-2025-12-15T04:09:20.537738196Z [err]    nama_lengkap: 'Test Customer Type',
-2025-12-15T04:09:20.537747725Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:20.537755884Z [err]    code: '25P02',
-2025-12-15T04:09:20.538266870Z [err]    code: '25P02',
-2025-12-15T04:09:20.538274615Z [err]    detail: undefined,
-2025-12-15T04:09:20.538280954Z [err]    hint: undefined,
-2025-12-15T04:09:20.538291000Z [err]    position: undefined
-2025-12-15T04:09:20.538297229Z [err]  }
-2025-12-15T04:09:20.538303683Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:20.538309669Z [err]    kode_referensi: 'REG-1765435260050-964',
-2025-12-15T04:09:20.538322865Z [err]    nama_lengkap: 'Test Customer Type',
-2025-12-15T04:09:20.538329583Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:20.538336836Z [err]    code: '25P02',
-2025-12-15T04:09:20.538345461Z [err]    detail: undefined,
-2025-12-15T04:09:20.538351475Z [err]    hint: undefined,
-2025-12-15T04:09:20.538357940Z [err]    position: undefined
-2025-12-15T04:09:20.538364235Z [err]  }
-2025-12-15T04:09:20.538371163Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:20.538385305Z [err]    kode_referensi: 'REG-1765435125537-316',
-2025-12-15T04:09:22.499914477Z [err]    detail: undefined,
-2025-12-15T04:09:22.499923167Z [err]    hint: undefined,
-2025-12-15T04:09:22.499928489Z [err]    position: undefined
-2025-12-15T04:09:22.499933255Z [err]  }
-2025-12-15T04:09:22.499938960Z [inf]  📊 Progress [import_1765771730471_nfqltq4dn]: 65% - Memproses record 41/56 (Mode: Replace)
-2025-12-15T04:09:22.499943250Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:22.499950120Z [err]    kode_referensi: 'REG-1765434790546-274',
-2025-12-15T04:09:22.499955458Z [err]    nama_lengkap: 'Test Customer Type',
-2025-12-15T04:09:22.499960537Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:22.499966589Z [err]    code: '25P02',
-2025-12-15T04:09:22.499971399Z [err]    detail: undefined,
-2025-12-15T04:09:22.499976103Z [err]    hint: undefined,
-2025-12-15T04:09:22.499981928Z [err]    position: undefined
-2025-12-15T04:09:22.499987790Z [err]  }
-2025-12-15T04:09:22.499994730Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:22.500001809Z [err]    kode_referensi: 'REG-1765434716178-468',
-2025-12-15T04:09:22.500007040Z [err]    nama_lengkap: 'Test Customer Type',
-2025-12-15T04:09:22.500012463Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:22.500017626Z [err]    code: '25P02',
-2025-12-15T04:09:22.500024154Z [err]    detail: undefined,
-2025-12-15T04:09:22.500032153Z [err]    hint: undefined,
-2025-12-15T04:09:22.500039995Z [err]    position: undefined
-2025-12-15T04:09:22.500046388Z [err]  }
-2025-12-15T04:09:22.500053303Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:22.500058763Z [err]    kode_referensi: 'REG-1765434658735-207',
-2025-12-15T04:09:22.500064408Z [err]    nama_lengkap: 'Test Customer Type',
-2025-12-15T04:09:22.500114750Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:24.050399814Z [err]    code: '25P02',
-2025-12-15T04:09:24.065543035Z [err]    detail: undefined,
-2025-12-15T04:09:24.065563912Z [err]    hint: undefined,
-2025-12-15T04:09:24.065574425Z [err]    position: undefined
-2025-12-15T04:09:24.065584360Z [err]  }
-2025-12-15T04:09:24.065595521Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:24.065605301Z [err]    kode_referensi: 'REG-1765434607460-902',
-2025-12-15T04:09:24.065615364Z [err]    nama_lengkap: 'Test Customer Type',
-2025-12-15T04:09:24.065625337Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:24.065641627Z [err]    code: '25P02',
-2025-12-15T04:09:24.065652394Z [err]    detail: undefined,
-2025-12-15T04:09:24.065662547Z [err]    hint: undefined,
-2025-12-15T04:09:24.065675336Z [err]    position: undefined
-2025-12-15T04:09:24.065686285Z [err]  }
-2025-12-15T04:09:24.065696398Z [inf]  📊 Progress [import_1765771730471_nfqltq4dn]: 71% - Memproses record 46/56 (Mode: Replace)
-2025-12-15T04:09:24.065707613Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:24.065717909Z [err]    kode_referensi: 'REG-1765434479639-139',
-2025-12-15T04:09:24.065743476Z [err]    nama_lengkap: 'Test Customer Type',
-2025-12-15T04:09:24.065755026Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:24.065765601Z [err]    code: '25P02',
-2025-12-15T04:09:24.065775457Z [err]    detail: undefined,
-2025-12-15T04:09:24.065787439Z [err]    hint: undefined,
-2025-12-15T04:09:24.065800128Z [err]    position: undefined
-2025-12-15T04:09:24.065810632Z [err]  }
-2025-12-15T04:09:24.065821911Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:24.065833043Z [err]    kode_referensi: 'REG-1765434381539-99',
-2025-12-15T04:09:24.065845178Z [err]    nama_lengkap: 'Test Customer Type',
-2025-12-15T04:09:24.065855753Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:25.794754129Z [err]    code: '25P02',
-2025-12-15T04:09:25.794767168Z [err]    detail: undefined,
-2025-12-15T04:09:25.794778687Z [err]    hint: undefined,
-2025-12-15T04:09:25.794789080Z [err]    position: undefined
-2025-12-15T04:09:25.794800110Z [err]  }
-2025-12-15T04:09:25.794812725Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:25.794823414Z [err]    kode_referensi: 'REG-1765420707832-959',
-2025-12-15T04:09:25.794833668Z [err]    nama_lengkap: 'Ahmad Wijaya Kusuma',
-2025-12-15T04:09:25.794847435Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:25.794861165Z [err]    code: '25P02',
-2025-12-15T04:09:25.794872348Z [err]    detail: undefined,
-2025-12-15T04:09:25.794882736Z [err]    hint: undefined,
-2025-12-15T04:09:25.794898786Z [err]    position: undefined
-2025-12-15T04:09:25.794908816Z [err]  }
-2025-12-15T04:09:25.794921747Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:25.794930480Z [err]    kode_referensi: 'REG-1765420551964-832',
-2025-12-15T04:09:25.794939157Z [err]    nama_lengkap: 'Budi Santoso',
-2025-12-15T04:09:25.794948188Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:25.794957413Z [err]    code: '25P02',
-2025-12-15T04:09:25.794966088Z [err]    detail: undefined,
-2025-12-15T04:09:25.794972416Z [err]    hint: undefined,
-2025-12-15T04:09:25.794982230Z [err]    position: undefined
-2025-12-15T04:09:25.794990498Z [err]  }
-2025-12-15T04:09:25.795008671Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:25.795017968Z [err]    kode_referensi: 'REG-1765419401107-687',
-2025-12-15T04:09:25.795027862Z [err]    nama_lengkap: 'Test User EDD',
-2025-12-15T04:09:25.795036225Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:25.795044642Z [err]    code: '25P02',
-2025-12-15T04:09:27.751155466Z [err]    detail: undefined,
-2025-12-15T04:09:27.751162884Z [err]    hint: undefined,
-2025-12-15T04:09:27.751169808Z [err]    position: undefined
-2025-12-15T04:09:27.751177945Z [err]  }
-2025-12-15T04:09:27.751186545Z [inf]  📊 Progress [import_1765771730471_nfqltq4dn]: 77% - Memproses record 51/56 (Mode: Replace)
-2025-12-15T04:09:27.751194753Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:27.751202749Z [err]    kode_referensi: 'REG-1765417246226-331',
-2025-12-15T04:09:27.751211330Z [err]    nama_lengkap: 'arya agung wicaksono',
-2025-12-15T04:09:27.751219945Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:27.751227519Z [err]    code: '25P02',
-2025-12-15T04:09:27.751234571Z [err]    detail: undefined,
-2025-12-15T04:09:27.751242135Z [err]    hint: undefined,
-2025-12-15T04:09:27.751250882Z [err]    position: undefined
-2025-12-15T04:09:27.751263071Z [err]  }
-2025-12-15T04:09:27.751271820Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:27.751281995Z [err]    kode_referensi: 'REG-1765273321437-752',
-2025-12-15T04:09:27.751290495Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
-2025-12-15T04:09:27.751299966Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:27.751306320Z [err]    code: '25P02',
-2025-12-15T04:09:27.751330420Z [err]    detail: undefined,
-2025-12-15T04:09:27.751339368Z [err]    hint: undefined,
-2025-12-15T04:09:27.751347494Z [err]    position: undefined
-2025-12-15T04:09:27.751355595Z [err]  }
-2025-12-15T04:09:27.751369062Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:27.751376751Z [err]    kode_referensi: 'REG-1765262653544-812',
-2025-12-15T04:09:27.751384938Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
-2025-12-15T04:09:27.751390896Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:30.493920764Z [err]    code: '25P02',
-2025-12-15T04:09:30.493929051Z [err]    detail: undefined,
-2025-12-15T04:09:30.493938133Z [err]    hint: undefined,
-2025-12-15T04:09:30.493946295Z [err]    position: undefined
-2025-12-15T04:09:30.493957891Z [err]  }
-2025-12-15T04:09:30.493966912Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:30.493974755Z [err]    kode_referensi: 'REG-1765245055908-720',
-2025-12-15T04:09:30.493982518Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
-2025-12-15T04:09:30.493990165Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:30.493998220Z [err]    code: '25P02',
-2025-12-15T04:09:30.494006278Z [err]    detail: undefined,
-2025-12-15T04:09:30.494014767Z [err]    hint: undefined,
-2025-12-15T04:09:30.494021896Z [err]    position: undefined
-2025-12-15T04:09:30.494029877Z [err]  }
-2025-12-15T04:09:30.494037004Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:30.494046525Z [err]    kode_referensi: 'REG-1765244635937-380',
-2025-12-15T04:09:30.494054179Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
-2025-12-15T04:09:30.494061232Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:30.494068173Z [err]    code: '25P02',
-2025-12-15T04:09:30.494075795Z [err]    detail: undefined,
-2025-12-15T04:09:30.494084833Z [err]    hint: undefined,
-2025-12-15T04:09:30.494094593Z [err]    position: undefined
-2025-12-15T04:09:30.494101878Z [err]  }
-2025-12-15T04:09:30.494110796Z [inf]  📊 Progress [import_1765771730471_nfqltq4dn]: 83% - Memproses record 56/56 (Mode: Replace)
-2025-12-15T04:09:30.494120164Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:30.494129678Z [err]    kode_referensi: 'REG-1765241735665-789',
-2025-12-15T04:09:30.494138359Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
-2025-12-15T04:09:30.494153459Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:32.282135023Z [err]    code: '25P02',
-2025-12-15T04:09:32.282143780Z [err]    detail: undefined,
-2025-12-15T04:09:32.282153217Z [err]    hint: undefined,
-2025-12-15T04:09:32.282162307Z [err]    position: undefined
-2025-12-15T04:09:32.282170649Z [err]  }
-2025-12-15T04:09:32.282180887Z [err]  ❌ Error importing item: {
-2025-12-15T04:09:32.282189149Z [err]    kode_referensi: 'REG-1765184320494-456',
-2025-12-15T04:09:32.282198795Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
-2025-12-15T04:09:32.282207891Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
-2025-12-15T04:09:32.282218480Z [err]    code: '25P02',
-2025-12-15T04:09:32.282228399Z [err]    detail: undefined,
-2025-12-15T04:09:32.282237702Z [err]    hint: undefined,
-2025-12-15T04:09:32.282248806Z [err]    position: undefined
-2025-12-15T04:09:32.282265596Z [err]  }
-2025-12-15T04:09:32.282275047Z [inf]  📊 Progress [import_1765771730471_nfqltq4dn]: 90% - Menyimpan perubahan ke database...
-2025-12-15T04:09:32.282284363Z [inf]  ✅ Import completed: 0 imported, 0 overwritten, 56 skipped
-2025-12-15T04:09:32.282293724Z [inf]  📝 Log recorded: IMPORT_DATA by user 30
-2025-12-15T04:09:32.282303509Z [inf]  📊 Progress [import_1765771730471_nfqltq4dn]: 100% - Import selesai! 0 berhasil, 0 ditimpa, 56 dilewati.
-2025-12-15T04:09:32.282313290Z [inf]  📋 Super admin access - showing all pengajuan
+2025-12-15T04:16:16.000000000Z [inf]  Starting Container
+2025-12-15T04:16:17.102429050Z [inf]  > backend@1.0.0 start
+2025-12-15T04:16:17.102436935Z [inf]  > node index.js
+2025-12-15T04:16:17.102445491Z [inf]  
+2025-12-15T04:16:17.102472238Z [err]  npm warn config production Use `--omit=dev` instead.
+2025-12-15T04:16:17.102490735Z [inf]  
+2025-12-15T04:16:17.151222090Z [inf]  [dotenv@17.2.3] injecting env (0) from .env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+2025-12-15T04:16:17.210486807Z [inf]  [dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+2025-12-15T04:16:17.253298545Z [inf]  [dotenv@17.2.3] injecting env (0) from .env -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+2025-12-15T04:16:17.253305853Z [inf]  🚀 Server berjalan di http://localhost:8080
+2025-12-15T04:17:58.386330975Z [inf]  🏦 Analytics cabang request received
+2025-12-15T04:17:58.386335901Z [inf]  🏦 User: superadmin1 Role: super Cabang: 1
+2025-12-15T04:17:58.386340139Z [inf]  🏦 Super admin access - showing all branches
+2025-12-15T04:17:58.386344273Z [inf]  🏦 Cabang analytics query for role: super, returned 3 branches
+2025-12-15T04:17:58.386349171Z [inf]  📊 Analytics query executed for user role: super, cabang: 1
+2025-12-15T04:17:58.386353335Z [inf]  📊 Returned 56 records
+2025-12-15T04:17:58.386357427Z [inf]  📊 [DEBUG] Sample record (first): {
+2025-12-15T04:17:58.386361241Z [inf]    id: '261',
+2025-12-15T04:17:58.386365328Z [inf]    penghasilan: '> 10 Juta',
+2025-12-15T04:17:58.386370445Z [inf]    pekerjaan: 'pelajar-mahasiswa',
+2025-12-15T04:17:58.386374161Z [inf]    jabatan: '4343443',
+2025-12-15T04:17:58.386378597Z [inf]    nama_perusahaan: 'wfefaweffwea'
+2025-12-15T04:17:58.386382128Z [inf]  }
+2025-12-15T04:18:04.866034577Z [inf]    'REG-1765619527742-49'
+2025-12-15T04:18:04.866038158Z [inf]  👀 Preview import data request received
+2025-12-15T04:18:04.866047864Z [inf]  ]
+2025-12-15T04:18:04.866051337Z [inf]  👤 User: superadmin1 Role: super Cabang ID: 1 Type: number
+2025-12-15T04:18:04.866059568Z [inf]  🔍 Debug preview - referensiCodes: 56 dari 56 total
+2025-12-15T04:18:04.866068278Z [inf]  🔍 Sample referensi codes: [
+2025-12-15T04:18:04.866076480Z [inf]    'REG-1765713786654-33',
+2025-12-15T04:18:04.866083915Z [inf]    'REG-1765696480973-716',
+2025-12-15T04:18:05.031974062Z [inf]  🔍 Checking item: REG-1765713786654-33 existing: true
+2025-12-15T04:18:05.031985385Z [inf]  🔍 Checking item: REG-1765696480973-716 existing: true
+2025-12-15T04:18:05.031996809Z [inf]  🔍 Checking item: REG-1765619527742-49 existing: true
+2025-12-15T04:18:05.031999451Z [inf]  🔍 Checking item: REG-1765524708994-102 existing: true
+2025-12-15T04:18:05.032003565Z [inf]  🔍 Checking item: REG-1765521342201-769 existing: true
+2025-12-15T04:18:05.032009758Z [inf]  🔍 Checking item: REG-1765555261168-529 existing: true
+2025-12-15T04:18:05.032015694Z [inf]  🔍 Checking item: REG-1765523075976-875 existing: true
+2025-12-15T04:18:05.032019381Z [inf]  🔍 Checking item: REG-1765589394282-852 existing: true
+2025-12-15T04:18:05.032019960Z [inf]  🔍 Checking item: REG-1765518940214-324 existing: true
+2025-12-15T04:18:05.032032066Z [inf]  🔍 Checking item: REG-1765525980100-569 existing: true
+2025-12-15T04:18:05.032032345Z [inf]  🔍 Checking item: REG-1765522842672-132 existing: true
+2025-12-15T04:18:05.032035044Z [inf]  🔍 Checking item: REG-1765583091500-502 existing: true
+2025-12-15T04:18:05.032045424Z [inf]  🔍 Existing map size: 56
+2025-12-15T04:18:05.032048426Z [inf]  🔍 Checking item: REG-1765525765374-681 existing: true
+2025-12-15T04:18:05.032050588Z [inf]  🔍 Checking item: REG-1765522656086-754 existing: true
+2025-12-15T04:18:05.032059306Z [inf]  🔍 Sample existing keys: [
+2025-12-15T04:18:05.032064455Z [inf]  🔍 Checking item: REG-1765525765343-50 existing: true
+2025-12-15T04:18:05.032064748Z [inf]  🔍 Checking item: REG-1765522213968-910 existing: true
+2025-12-15T04:18:05.032075174Z [inf]    'REG-1765619527742-49',
+2025-12-15T04:18:05.032076536Z [inf]  🔍 Checking item: REG-1765521580336-363 existing: true
+2025-12-15T04:18:05.032086630Z [inf]    'REG-1765589394282-852',
+2025-12-15T04:18:05.032094631Z [inf]    'REG-1765583091500-502'
+2025-12-15T04:18:05.032103801Z [inf]  ]
+2025-12-15T04:18:05.032573978Z [inf]  🔍 Checking item: REG-1765518891447-998 existing: true
+2025-12-15T04:18:05.032585379Z [inf]  🔍 Checking item: REG-1765518782203-618 existing: true
+2025-12-15T04:18:05.032594733Z [inf]  🔍 Checking item: REG-1765511959852-730 existing: true
+2025-12-15T04:18:05.032602906Z [inf]  🔍 Checking item: REG-1765511707761-528 existing: true
+2025-12-15T04:18:05.032610883Z [inf]  🔍 Checking item: REG-1765511346060-349 existing: true
+2025-12-15T04:18:05.032618896Z [inf]  🔍 Checking item: REG-1765511096296-933 existing: true
+2025-12-15T04:18:05.032626585Z [inf]  🔍 Checking item: REG-1765510855678-206 existing: true
+2025-12-15T04:18:05.032635345Z [inf]  🔍 Checking item: REG-1765510666214-34 existing: true
+2025-12-15T04:18:05.032642875Z [inf]  🔍 Checking item: REG-1765510526246-924 existing: true
+2025-12-15T04:18:05.032650770Z [inf]  🔍 Checking item: REG-1765510164268-575 existing: true
+2025-12-15T04:18:05.032658090Z [inf]  🔍 Checking item: REG-1765505151961-645 existing: true
+2025-12-15T04:18:05.032666091Z [inf]  🔍 Checking item: REG-1765504637577-195 existing: true
+2025-12-15T04:18:05.032673519Z [inf]  🔍 Checking item: REG-1765504170402-427 existing: true
+2025-12-15T04:18:05.032680432Z [inf]  🔍 Checking item: REG-1765502332477-722 existing: true
+2025-12-15T04:18:05.032690207Z [inf]  🔍 Checking item: REG-1765501937691-718 existing: true
+2025-12-15T04:18:05.032699613Z [inf]  🔍 Checking item: REG-1765437503983-478 existing: true
+2025-12-15T04:18:05.032708657Z [inf]  🔍 Checking item: REG-1765437078375-305 existing: true
+2025-12-15T04:18:05.032720015Z [inf]  🔍 Checking item: REG-1765436780351-349 existing: true
+2025-12-15T04:18:05.032727524Z [inf]  🔍 Checking item: REG-1765436161526-278 existing: true
+2025-12-15T04:18:05.032735061Z [inf]  🔍 Checking item: REG-1765435376674-384 existing: true
+2025-12-15T04:18:05.032742506Z [inf]  🔍 Checking item: REG-1765435260050-964 existing: true
+2025-12-15T04:18:05.033853015Z [inf]  🔍 Checking item: REG-1765245055908-720 existing: true
+2025-12-15T04:18:05.033856584Z [inf]  🔍 Checking item: REG-1765435125537-316 existing: true
+2025-12-15T04:18:05.033859026Z [inf]  🔍 Checking item: REG-1765434381539-99 existing: true
+2025-12-15T04:18:05.033861937Z [inf]  🔍 Checking item: REG-1765244635937-380 existing: true
+2025-12-15T04:18:05.033866043Z [inf]  🔍 Checking item: REG-1765434903039-961 existing: true
+2025-12-15T04:18:05.033868800Z [inf]  🔍 Checking item: REG-1765241735665-789 existing: true
+2025-12-15T04:18:05.033870001Z [inf]  🔍 Checking item: REG-1765420707832-959 existing: true
+2025-12-15T04:18:05.033874627Z [inf]  🔍 Checking item: REG-1765434790546-274 existing: true
+2025-12-15T04:18:05.033874674Z [inf]  🔍 Checking item: REG-1765184320494-456 existing: true
+2025-12-15T04:18:05.033880156Z [inf]  🔍 Checking item: REG-1765420551964-832 existing: true
+2025-12-15T04:18:05.033881283Z [inf]  🔍 Checking item: REG-1765434716178-468 existing: true
+2025-12-15T04:18:05.033886655Z [inf]  🔍 Checking item: REG-1765434658735-207 existing: true
+2025-12-15T04:18:05.033892634Z [inf]  🔍 Checking item: REG-1765434607460-902 existing: true
+2025-12-15T04:18:05.033898280Z [inf]  🔍 Checking item: REG-1765434479639-139 existing: true
+2025-12-15T04:18:05.033902037Z [inf]  🔍 Checking item: REG-1765417246226-331 existing: true
+2025-12-15T04:18:05.033909305Z [inf]  🔍 Checking item: REG-1765273321437-752 existing: true
+2025-12-15T04:18:05.033915964Z [inf]  🔍 Checking item: REG-1765262653544-812 existing: true
+2025-12-15T04:18:05.192617323Z [inf]  ✅ Preview completed: 56 total, 0 new, 56 existing, 1 conflicts
+2025-12-15T04:18:05.192626242Z [inf]  🔍 Analysis breakdown: {
+2025-12-15T04:18:05.192631042Z [inf]    totalRecords: 56,
+2025-12-15T04:18:05.192634809Z [inf]    newRecords: 0,
+2025-12-15T04:18:05.192639413Z [inf]    existingRecords: 56,
+2025-12-15T04:18:05.192645039Z [inf]    conflicts: 1,
+2025-12-15T04:18:05.192649594Z [inf]    crossCabangWarnings: 0
+2025-12-15T04:18:05.192656399Z [inf]  }
+2025-12-15T04:18:07.872219617Z [inf]  📥 Import data request received
+2025-12-15T04:18:07.872226732Z [inf]  👤 User: superadmin1 Role: super Cabang ID: 1 Type: number
+2025-12-15T04:18:07.872233303Z [inf]  🔄 Overwrite mode: true
+2025-12-15T04:18:08.617137406Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:08.617142960Z [err]    kode_referensi: 'REG-1765713786654-33',
+2025-12-15T04:18:08.617148846Z [err]    nama_lengkap: 'Anjas Mara',
+2025-12-15T04:18:08.617159093Z [err]    error: 'could not determine data type of parameter $2',
+2025-12-15T04:18:08.617164734Z [err]    code: '42P18',
+2025-12-15T04:18:08.617172435Z [err]    detail: undefined,
+2025-12-15T04:18:08.617178886Z [err]    hint: undefined,
+2025-12-15T04:18:08.617185726Z [err]    position: undefined
+2025-12-15T04:18:08.617191513Z [err]  }
+2025-12-15T04:18:08.617196901Z [err]  🔥 ORIGINAL ERROR (not transaction abort): error: could not determine data type of parameter $2
+2025-12-15T04:18:08.617202603Z [err]      at /app/node_modules/pg/lib/client.js:545:17
+2025-12-15T04:18:08.617208608Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-12-15T04:18:08.617214378Z [err]      at async importData (file:///app/controllers/pengajuanController.js:1843:13) {
+2025-12-15T04:18:08.617221124Z [err]    length: 124,
+2025-12-15T04:18:08.617227122Z [err]    severity: 'ERROR',
+2025-12-15T04:18:08.617232268Z [err]    code: '42P18',
+2025-12-15T04:18:08.617237890Z [err]    detail: undefined,
+2025-12-15T04:18:08.617243262Z [err]    hint: undefined,
+2025-12-15T04:18:08.617248762Z [err]    position: undefined,
+2025-12-15T04:18:08.617252433Z [err]    internalPosition: undefined,
+2025-12-15T04:18:08.617256251Z [err]    internalQuery: undefined,
+2025-12-15T04:18:08.617260260Z [err]    where: undefined,
+2025-12-15T04:18:08.617267462Z [err]    schema: undefined,
+2025-12-15T04:18:08.617274247Z [err]    table: undefined,
+2025-12-15T04:18:08.617281186Z [err]    column: undefined,
+2025-12-15T04:18:08.617285016Z [err]    dataType: undefined,
+2025-12-15T04:18:08.617289012Z [err]    constraint: undefined,
+2025-12-15T04:18:08.617293036Z [err]    file: 'postgres.c',
+2025-12-15T04:18:08.618073056Z [err]    line: '742',
+2025-12-15T04:18:08.618084561Z [err]    routine: 'pg_analyze_and_rewrite_varparams'
+2025-12-15T04:18:08.618090966Z [err]  }
+2025-12-15T04:18:08.685688607Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:08.685699575Z [err]    kode_referensi: 'REG-1765696480973-716',
+2025-12-15T04:18:08.685706698Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
+2025-12-15T04:18:08.685713240Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:08.685719354Z [err]    code: '25P02',
+2025-12-15T04:18:08.685725135Z [err]    detail: undefined,
+2025-12-15T04:18:08.685732887Z [err]    hint: undefined,
+2025-12-15T04:18:08.685738426Z [err]    position: undefined
+2025-12-15T04:18:08.685743813Z [err]  }
+2025-12-15T04:18:08.844206992Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:08.844211899Z [err]    kode_referensi: 'REG-1765619527742-49',
+2025-12-15T04:18:08.844216410Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
+2025-12-15T04:18:08.844220139Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:08.844223833Z [err]    code: '25P02',
+2025-12-15T04:18:08.844228418Z [err]    detail: undefined,
+2025-12-15T04:18:08.844234503Z [err]    hint: undefined,
+2025-12-15T04:18:08.844241107Z [err]    position: undefined
+2025-12-15T04:18:08.844248772Z [err]  }
+2025-12-15T04:18:09.009965252Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:09.009970815Z [err]    kode_referensi: 'REG-1765589394282-852',
+2025-12-15T04:18:09.009975107Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
+2025-12-15T04:18:09.009979445Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:09.009984796Z [err]    code: '25P02',
+2025-12-15T04:18:09.009989597Z [err]    detail: undefined,
+2025-12-15T04:18:09.009994480Z [err]    hint: undefined,
+2025-12-15T04:18:09.009999117Z [err]    position: undefined
+2025-12-15T04:18:09.010003555Z [err]  }
+2025-12-15T04:18:09.175452786Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:09.175458843Z [err]    kode_referensi: 'REG-1765583091500-502',
+2025-12-15T04:18:09.175463073Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
+2025-12-15T04:18:09.175467043Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:09.175472215Z [err]    code: '25P02',
+2025-12-15T04:18:09.175478101Z [err]    detail: undefined,
+2025-12-15T04:18:09.175482352Z [err]    hint: undefined,
+2025-12-15T04:18:09.175486070Z [err]    position: undefined
+2025-12-15T04:18:09.175489638Z [err]  }
+2025-12-15T04:18:09.343949944Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:09.343958786Z [err]    kode_referensi: 'REG-1765555261168-529',
+2025-12-15T04:18:09.343967728Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
+2025-12-15T04:18:09.343972804Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:09.343978690Z [err]    code: '25P02',
+2025-12-15T04:18:09.343983359Z [err]    detail: undefined,
+2025-12-15T04:18:09.343987254Z [err]    hint: undefined,
+2025-12-15T04:18:09.343991748Z [err]    position: undefined
+2025-12-15T04:18:09.343996229Z [err]  }
+2025-12-15T04:18:09.621316877Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:09.621320898Z [err]    kode_referensi: 'REG-1765525980100-569',
+2025-12-15T04:18:09.621325723Z [err]    nama_lengkap: 'Test Fix Nasabah Lama',
+2025-12-15T04:18:09.621329728Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:09.621334632Z [err]    code: '25P02',
+2025-12-15T04:18:09.621340873Z [err]    detail: undefined,
+2025-12-15T04:18:09.621346629Z [err]    hint: undefined,
+2025-12-15T04:18:09.621351270Z [err]    position: undefined
+2025-12-15T04:18:09.621355522Z [err]  }
+2025-12-15T04:18:09.672140970Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:09.672143813Z [err]    hint: undefined,
+2025-12-15T04:18:09.672152779Z [err]    position: undefined
+2025-12-15T04:18:09.672152806Z [err]    kode_referensi: 'REG-1765525765374-681',
+2025-12-15T04:18:09.672159489Z [err]  }
+2025-12-15T04:18:09.672162695Z [err]    nama_lengkap: 'Test Nasabah Lama',
+2025-12-15T04:18:09.672169808Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:09.672176996Z [err]    code: '25P02',
+2025-12-15T04:18:09.672183843Z [err]    detail: undefined,
+2025-12-15T04:18:09.869904927Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:09.869911766Z [err]    kode_referensi: 'REG-1765525765343-50',
+2025-12-15T04:18:09.869917978Z [err]    nama_lengkap: 'Test Nasabah Baru',
+2025-12-15T04:18:09.869923526Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:09.869932313Z [err]    code: '25P02',
+2025-12-15T04:18:09.869939114Z [err]    detail: undefined,
+2025-12-15T04:18:09.869945070Z [err]    hint: undefined,
+2025-12-15T04:18:09.869950247Z [err]    position: undefined
+2025-12-15T04:18:09.869958326Z [err]  }
+2025-12-15T04:18:09.999078308Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:09.999087695Z [err]    kode_referensi: 'REG-1765524708994-102',
+2025-12-15T04:18:09.999094875Z [err]    nama_lengkap: 'Test Submission Card',
+2025-12-15T04:18:09.999101174Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:09.999107805Z [err]    code: '25P02',
+2025-12-15T04:18:09.999115698Z [err]    detail: undefined,
+2025-12-15T04:18:09.999121857Z [err]    hint: undefined,
+2025-12-15T04:18:09.999128372Z [err]    position: undefined
+2025-12-15T04:18:09.999133690Z [err]  }
+2025-12-15T04:18:10.177621925Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:10.177639317Z [err]    code: '25P02',
+2025-12-15T04:18:10.177648034Z [err]    detail: undefined,
+2025-12-15T04:18:10.177657973Z [err]    hint: undefined,
+2025-12-15T04:18:10.177669025Z [err]    position: undefined
+2025-12-15T04:18:10.177685601Z [err]  }
+2025-12-15T04:18:10.177686282Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:10.177693472Z [err]    kode_referensi: 'REG-1765523075976-875',
+2025-12-15T04:18:10.177697838Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
+2025-12-15T04:18:10.336857443Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:10.336861221Z [err]    kode_referensi: 'REG-1765522842672-132',
+2025-12-15T04:18:10.336865553Z [err]    nama_lengkap: 'Test Final Fixes',
+2025-12-15T04:18:10.336871311Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:10.336874825Z [err]    code: '25P02',
+2025-12-15T04:18:10.336878394Z [err]    detail: undefined,
+2025-12-15T04:18:10.336881993Z [err]    hint: undefined,
+2025-12-15T04:18:10.336886285Z [err]    position: undefined
+2025-12-15T04:18:10.336890625Z [err]  }
+2025-12-15T04:18:10.626042016Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:10.626048141Z [err]    kode_referensi: 'REG-1765522656086-754',
+2025-12-15T04:18:10.626053544Z [err]    nama_lengkap: 'Test Final Fixes',
+2025-12-15T04:18:10.626058125Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:10.626062429Z [err]    code: '25P02',
+2025-12-15T04:18:10.626067325Z [err]    detail: undefined,
+2025-12-15T04:18:10.626071954Z [err]    hint: undefined,
+2025-12-15T04:18:10.626076776Z [err]    position: undefined
+2025-12-15T04:18:10.626081575Z [err]  }
+2025-12-15T04:18:10.668216023Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:10.668220537Z [err]    kode_referensi: 'REG-1765522213968-910',
+2025-12-15T04:18:10.668224758Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
+2025-12-15T04:18:10.668230097Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:10.668234665Z [err]    code: '25P02',
+2025-12-15T04:18:10.668239003Z [err]    detail: undefined,
+2025-12-15T04:18:10.668243203Z [err]    hint: undefined,
+2025-12-15T04:18:10.668247563Z [err]    position: undefined
+2025-12-15T04:18:10.668252137Z [err]  }
+2025-12-15T04:18:10.831556292Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:10.831561877Z [err]    kode_referensi: 'REG-1765521580336-363',
+2025-12-15T04:18:10.831565578Z [err]    nama_lengkap: 'Test BO Interface Fix',
+2025-12-15T04:18:10.831569556Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:10.831574187Z [err]    code: '25P02',
+2025-12-15T04:18:10.831577956Z [err]    detail: undefined,
+2025-12-15T04:18:10.831582048Z [err]    hint: undefined,
+2025-12-15T04:18:10.831585887Z [err]    position: undefined
+2025-12-15T04:18:10.831589413Z [err]  }
+2025-12-15T04:18:11.004270716Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:11.004275182Z [err]    kode_referensi: 'REG-1765521342201-769',
+2025-12-15T04:18:11.004279151Z [err]    nama_lengkap: 'Test No Duplicate Contact',
+2025-12-15T04:18:11.004295604Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:11.004299794Z [err]    code: '25P02',
+2025-12-15T04:18:11.004304876Z [err]    detail: undefined,
+2025-12-15T04:18:11.004308562Z [err]    hint: undefined,
+2025-12-15T04:18:11.004313032Z [err]    position: undefined
+2025-12-15T04:18:11.004316748Z [err]  }
+2025-12-15T04:18:11.159253209Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:11.159260499Z [err]    kode_referensi: 'REG-1765518940214-324',
+2025-12-15T04:18:11.159273173Z [err]    nama_lengkap: 'Test Emergency Contact',
+2025-12-15T04:18:11.159277675Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:11.159282066Z [err]    code: '25P02',
+2025-12-15T04:18:11.159285830Z [err]    detail: undefined,
+2025-12-15T04:18:11.159290870Z [err]    hint: undefined,
+2025-12-15T04:18:11.159305646Z [err]    position: undefined
+2025-12-15T04:18:11.159312400Z [err]  }
+2025-12-15T04:18:11.322276678Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:11.322282792Z [err]    kode_referensi: 'REG-1765518891447-998',
+2025-12-15T04:18:11.322288499Z [err]    nama_lengkap: 'Test Emergency Contact',
+2025-12-15T04:18:11.322294731Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:11.322300182Z [err]    code: '25P02',
+2025-12-15T04:18:11.322306207Z [err]    detail: undefined,
+2025-12-15T04:18:11.322311948Z [err]    hint: undefined,
+2025-12-15T04:18:11.322318627Z [err]    position: undefined
+2025-12-15T04:18:11.322327104Z [err]  }
+2025-12-15T04:18:11.641314023Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:11.641320159Z [err]    kode_referensi: 'REG-1765518782203-618',
+2025-12-15T04:18:11.641329107Z [err]    nama_lengkap: 'Test Missing Fields User',
+2025-12-15T04:18:11.641334866Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:11.641349033Z [err]    code: '25P02',
+2025-12-15T04:18:11.641355200Z [err]    detail: undefined,
+2025-12-15T04:18:11.641360051Z [err]    hint: undefined,
+2025-12-15T04:18:11.641363635Z [err]    position: undefined
+2025-12-15T04:18:11.641370580Z [err]  }
+2025-12-15T04:18:11.647369706Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:11.647377488Z [err]    kode_referensi: 'REG-1765511959852-730',
+2025-12-15T04:18:11.647384017Z [err]    nama_lengkap: 'Final Test BO User',
+2025-12-15T04:18:11.647390922Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:11.647397049Z [err]    code: '25P02',
+2025-12-15T04:18:11.647402575Z [err]    detail: undefined,
+2025-12-15T04:18:11.647408650Z [err]    hint: undefined,
+2025-12-15T04:18:11.647414201Z [err]    position: undefined
+2025-12-15T04:18:11.647419805Z [err]  }
+2025-12-15T04:18:11.840793270Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:11.840799834Z [err]    kode_referensi: 'REG-1765511707761-528',
+2025-12-15T04:18:11.840803614Z [err]    nama_lengkap: 'Test User BO 2',
+2025-12-15T04:18:11.840807233Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:11.840810897Z [err]    code: '25P02',
+2025-12-15T04:18:11.840814896Z [err]    detail: undefined,
+2025-12-15T04:18:11.840819128Z [err]    hint: undefined,
+2025-12-15T04:18:11.840822673Z [err]    position: undefined
+2025-12-15T04:18:11.840827189Z [err]  }
+2025-12-15T04:18:11.980016255Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:11.980024564Z [err]    kode_referensi: 'REG-1765511346060-349',
+2025-12-15T04:18:11.980030622Z [err]    nama_lengkap: 'Test User BO 2',
+2025-12-15T04:18:11.980035900Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:11.980040855Z [err]    code: '25P02',
+2025-12-15T04:18:11.980056862Z [err]    detail: undefined,
+2025-12-15T04:18:11.980065346Z [err]    hint: undefined,
+2025-12-15T04:18:11.980068942Z [err]    position: undefined
+2025-12-15T04:18:11.980072368Z [err]  }
+2025-12-15T04:18:12.142498230Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:12.142506591Z [err]    kode_referensi: 'REG-1765511096296-933',
+2025-12-15T04:18:12.142512174Z [err]    nama_lengkap: 'Test User BO 2',
+2025-12-15T04:18:12.142516814Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:12.142562305Z [err]    code: '25P02',
+2025-12-15T04:18:12.142567368Z [err]    detail: undefined,
+2025-12-15T04:18:12.142579774Z [err]    hint: undefined,
+2025-12-15T04:18:12.142583606Z [err]    position: undefined
+2025-12-15T04:18:12.142587573Z [err]  }
+2025-12-15T04:18:12.309683016Z [err]    nama_lengkap: 'Test User BO 2',
+2025-12-15T04:18:12.309693177Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:12.309702280Z [err]    code: '25P02',
+2025-12-15T04:18:12.309709111Z [err]    detail: undefined,
+2025-12-15T04:18:12.309715900Z [err]    hint: undefined,
+2025-12-15T04:18:12.309724643Z [err]    position: undefined
+2025-12-15T04:18:12.309732584Z [err]  }
+2025-12-15T04:18:12.309744723Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:12.309750014Z [err]    kode_referensi: 'REG-1765510855678-206',
+2025-12-15T04:18:12.657699555Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:12.657707142Z [err]    kode_referensi: 'REG-1765510666214-34',
+2025-12-15T04:18:12.657716031Z [err]    nama_lengkap: 'Test User BO 2',
+2025-12-15T04:18:12.657724778Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:12.657734360Z [err]    code: '25P02',
+2025-12-15T04:18:12.657743178Z [err]    detail: undefined,
+2025-12-15T04:18:12.657751277Z [err]    hint: undefined,
+2025-12-15T04:18:12.657760054Z [err]    position: undefined
+2025-12-15T04:18:12.657768234Z [err]  }
+2025-12-15T04:18:12.657777647Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:12.657785490Z [err]    kode_referensi: 'REG-1765510526246-924',
+2025-12-15T04:18:12.657792878Z [err]    nama_lengkap: 'Test User BO',
+2025-12-15T04:18:12.657799912Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:12.657807723Z [err]    code: '25P02',
+2025-12-15T04:18:12.657815591Z [err]    detail: undefined,
+2025-12-15T04:18:12.657823030Z [err]    hint: undefined,
+2025-12-15T04:18:12.662777986Z [err]    position: undefined
+2025-12-15T04:18:12.662790181Z [err]  }
+2025-12-15T04:18:12.802005234Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:12.802012849Z [err]    kode_referensi: 'REG-1765510164268-575',
+2025-12-15T04:18:12.802018400Z [err]    hint: undefined,
+2025-12-15T04:18:12.802020240Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
+2025-12-15T04:18:12.802028257Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:12.802029537Z [err]    position: undefined
+2025-12-15T04:18:12.802035910Z [err]    code: '25P02',
+2025-12-15T04:18:12.802037587Z [err]  }
+2025-12-15T04:18:12.802044567Z [err]    detail: undefined,
+2025-12-15T04:18:12.974955029Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:12.974961749Z [err]    kode_referensi: 'REG-1765505151961-645',
+2025-12-15T04:18:12.974970948Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
+2025-12-15T04:18:12.974976979Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:12.974983044Z [err]    code: '25P02',
+2025-12-15T04:18:12.974989961Z [err]    detail: undefined,
+2025-12-15T04:18:12.974996721Z [err]    hint: undefined,
+2025-12-15T04:18:12.975003455Z [err]    position: undefined
+2025-12-15T04:18:12.975010142Z [err]  }
+2025-12-15T04:18:13.136905562Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:13.136915353Z [err]    kode_referensi: 'REG-1765504637577-195',
+2025-12-15T04:18:13.136922783Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
+2025-12-15T04:18:13.136928521Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:13.136935153Z [err]    code: '25P02',
+2025-12-15T04:18:13.136943583Z [err]    detail: undefined,
+2025-12-15T04:18:13.136949334Z [err]    hint: undefined,
+2025-12-15T04:18:13.136954858Z [err]    position: undefined
+2025-12-15T04:18:13.136960654Z [err]  }
+2025-12-15T04:18:13.299636403Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:13.299647074Z [err]    kode_referensi: 'REG-1765504170402-427',
+2025-12-15T04:18:13.299653756Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
+2025-12-15T04:18:13.299660102Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:13.299665494Z [err]    code: '25P02',
+2025-12-15T04:18:13.299670181Z [err]    detail: undefined,
+2025-12-15T04:18:13.299674770Z [err]    hint: undefined,
+2025-12-15T04:18:13.299679386Z [err]    position: undefined
+2025-12-15T04:18:13.299683498Z [err]  }
+2025-12-15T04:18:13.708329469Z [err]    position: undefined
+2025-12-15T04:18:13.708341656Z [err]  }
+2025-12-15T04:18:13.708347276Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:13.708352809Z [err]    kode_referensi: 'REG-1765501937691-718',
+2025-12-15T04:18:13.708358094Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
+2025-12-15T04:18:13.708363670Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:13.708368739Z [err]    code: '25P02',
+2025-12-15T04:18:13.708373541Z [err]    detail: undefined,
+2025-12-15T04:18:13.708378916Z [err]    hint: undefined,
+2025-12-15T04:18:13.708384852Z [err]    position: undefined
+2025-12-15T04:18:13.708391876Z [err]  }
+2025-12-15T04:18:13.708495746Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:13.708500799Z [err]    kode_referensi: 'REG-1765502332477-722',
+2025-12-15T04:18:13.708506009Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
+2025-12-15T04:18:13.708512626Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:13.708517534Z [err]    code: '25P02',
+2025-12-15T04:18:13.708521409Z [err]    detail: undefined,
+2025-12-15T04:18:13.708527498Z [err]    hint: undefined,
+2025-12-15T04:18:13.792681724Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:13.792689912Z [err]    kode_referensi: 'REG-1765437503983-478',
+2025-12-15T04:18:13.792696540Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
+2025-12-15T04:18:13.792702208Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:13.792707948Z [err]    code: '25P02',
+2025-12-15T04:18:13.792713429Z [err]    detail: undefined,
+2025-12-15T04:18:13.792719607Z [err]    hint: undefined,
+2025-12-15T04:18:13.792725502Z [err]    position: undefined
+2025-12-15T04:18:13.792731212Z [err]  }
+2025-12-15T04:18:13.963919535Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:13.963927149Z [err]    kode_referensi: 'REG-1765437078375-305',
+2025-12-15T04:18:13.963930958Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
+2025-12-15T04:18:13.963935079Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:13.963939074Z [err]    code: '25P02',
+2025-12-15T04:18:13.963946673Z [err]    detail: undefined,
+2025-12-15T04:18:13.963950659Z [err]    hint: undefined,
+2025-12-15T04:18:13.963954345Z [err]    position: undefined
+2025-12-15T04:18:13.963959014Z [err]  }
+2025-12-15T04:18:14.122786254Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:14.122792859Z [err]    kode_referensi: 'REG-1765436780351-349',
+2025-12-15T04:18:14.122797286Z [err]    nama_lengkap: 'Budi Santoso',
+2025-12-15T04:18:14.122801752Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:14.122806568Z [err]    code: '25P02',
+2025-12-15T04:18:14.122811316Z [err]    detail: undefined,
+2025-12-15T04:18:14.122815586Z [err]    hint: undefined,
+2025-12-15T04:18:14.122820355Z [err]    position: undefined
+2025-12-15T04:18:14.122825045Z [err]  }
+2025-12-15T04:18:14.282914715Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:14.282922658Z [err]    kode_referensi: 'REG-1765436161526-278',
+2025-12-15T04:18:14.282929944Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
+2025-12-15T04:18:14.282937685Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:14.282944834Z [err]    code: '25P02',
+2025-12-15T04:18:14.282952432Z [err]    detail: undefined,
+2025-12-15T04:18:14.282959758Z [err]    hint: undefined,
+2025-12-15T04:18:14.282968011Z [err]    position: undefined
+2025-12-15T04:18:14.282974899Z [err]  }
+2025-12-15T04:18:14.447814018Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:14.447820059Z [err]    kode_referensi: 'REG-1765435376674-384',
+2025-12-15T04:18:14.447825806Z [err]    nama_lengkap: 'Test Customer Type',
+2025-12-15T04:18:14.447831012Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:14.447836104Z [err]    code: '25P02',
+2025-12-15T04:18:14.447842031Z [err]    detail: undefined,
+2025-12-15T04:18:14.447849885Z [err]    hint: undefined,
+2025-12-15T04:18:14.447858012Z [err]    position: undefined
+2025-12-15T04:18:14.447865439Z [err]  }
+2025-12-15T04:18:14.730737017Z [err]    position: undefined
+2025-12-15T04:18:14.730748457Z [err]  }
+2025-12-15T04:18:14.730841134Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:14.730848150Z [err]    kode_referensi: 'REG-1765435260050-964',
+2025-12-15T04:18:14.730854570Z [err]    nama_lengkap: 'Test Customer Type',
+2025-12-15T04:18:14.730861234Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:14.730868831Z [err]    code: '25P02',
+2025-12-15T04:18:14.730875742Z [err]    detail: undefined,
+2025-12-15T04:18:14.730882480Z [err]    hint: undefined,
+2025-12-15T04:18:14.774212940Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:14.774223425Z [err]    kode_referensi: 'REG-1765435125537-316',
+2025-12-15T04:18:14.774230196Z [err]    nama_lengkap: 'Test Customer Type',
+2025-12-15T04:18:14.774236833Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:14.774243179Z [err]    code: '25P02',
+2025-12-15T04:18:14.774249180Z [err]    detail: undefined,
+2025-12-15T04:18:14.774255119Z [err]    hint: undefined,
+2025-12-15T04:18:14.774260790Z [err]    position: undefined
+2025-12-15T04:18:14.774266045Z [err]  }
+2025-12-15T04:18:14.945241572Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:14.945249478Z [err]    kode_referensi: 'REG-1765434903039-961',
+2025-12-15T04:18:14.945257184Z [err]    nama_lengkap: 'Test Customer Type',
+2025-12-15T04:18:14.945263480Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:14.945269255Z [err]    code: '25P02',
+2025-12-15T04:18:14.945275023Z [err]    detail: undefined,
+2025-12-15T04:18:14.945280250Z [err]    hint: undefined,
+2025-12-15T04:18:14.945285499Z [err]    position: undefined
+2025-12-15T04:18:14.945291223Z [err]  }
+2025-12-15T04:18:15.120198804Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:15.120210932Z [err]    code: '25P02',
+2025-12-15T04:18:15.120218906Z [err]    detail: undefined,
+2025-12-15T04:18:15.120227402Z [err]    hint: undefined,
+2025-12-15T04:18:15.120234815Z [err]    position: undefined
+2025-12-15T04:18:15.120240472Z [err]  }
+2025-12-15T04:18:15.120243419Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:15.120247518Z [err]    kode_referensi: 'REG-1765434790546-274',
+2025-12-15T04:18:15.120252128Z [err]    nama_lengkap: 'Test Customer Type',
+2025-12-15T04:18:15.326475665Z [err]    nama_lengkap: 'Test Customer Type',
+2025-12-15T04:18:15.326484936Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:15.326494895Z [err]    code: '25P02',
+2025-12-15T04:18:15.326501305Z [err]    detail: undefined,
+2025-12-15T04:18:15.326507298Z [err]    hint: undefined,
+2025-12-15T04:18:15.326514742Z [err]    position: undefined
+2025-12-15T04:18:15.326515185Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:15.326563521Z [err]    kode_referensi: 'REG-1765434716178-468',
+2025-12-15T04:18:15.326579478Z [err]  }
+2025-12-15T04:18:15.442047887Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:15.442057569Z [err]    kode_referensi: 'REG-1765434658735-207',
+2025-12-15T04:18:15.442064799Z [err]    nama_lengkap: 'Test Customer Type',
+2025-12-15T04:18:15.442071983Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:15.442078748Z [err]    code: '25P02',
+2025-12-15T04:18:15.442087905Z [err]    detail: undefined,
+2025-12-15T04:18:15.442094615Z [err]    hint: undefined,
+2025-12-15T04:18:15.442100863Z [err]    position: undefined
+2025-12-15T04:18:15.442105877Z [err]  }
+2025-12-15T04:18:15.727999658Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:15.728005144Z [err]    kode_referensi: 'REG-1765434607460-902',
+2025-12-15T04:18:15.728011171Z [err]    nama_lengkap: 'Test Customer Type',
+2025-12-15T04:18:15.728016611Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:15.728022709Z [err]    code: '25P02',
+2025-12-15T04:18:15.728028169Z [err]    detail: undefined,
+2025-12-15T04:18:15.728033884Z [err]    hint: undefined,
+2025-12-15T04:18:15.728040946Z [err]    position: undefined
+2025-12-15T04:18:15.728046537Z [err]  }
+2025-12-15T04:18:15.764596399Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:15.764604643Z [err]    kode_referensi: 'REG-1765434479639-139',
+2025-12-15T04:18:15.764611653Z [err]    nama_lengkap: 'Test Customer Type',
+2025-12-15T04:18:15.764618408Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:15.764625257Z [err]    code: '25P02',
+2025-12-15T04:18:15.764632462Z [err]    detail: undefined,
+2025-12-15T04:18:15.764639561Z [err]    hint: undefined,
+2025-12-15T04:18:15.764646007Z [err]    position: undefined
+2025-12-15T04:18:15.764652244Z [err]  }
+2025-12-15T04:18:15.937835430Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:15.937842837Z [err]    kode_referensi: 'REG-1765434381539-99',
+2025-12-15T04:18:15.937846995Z [err]    nama_lengkap: 'Test Customer Type',
+2025-12-15T04:18:15.937851276Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:15.937855820Z [err]    code: '25P02',
+2025-12-15T04:18:15.937859987Z [err]    detail: undefined,
+2025-12-15T04:18:15.937864559Z [err]    hint: undefined,
+2025-12-15T04:18:15.937868830Z [err]    position: undefined
+2025-12-15T04:18:15.937872756Z [err]  }
+2025-12-15T04:18:16.094621897Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:16.094632747Z [err]    kode_referensi: 'REG-1765420707832-959',
+2025-12-15T04:18:16.094639453Z [err]    nama_lengkap: 'Ahmad Wijaya Kusuma',
+2025-12-15T04:18:16.094645327Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:16.094653853Z [err]    code: '25P02',
+2025-12-15T04:18:16.094660675Z [err]    detail: undefined,
+2025-12-15T04:18:16.094666612Z [err]    hint: undefined,
+2025-12-15T04:18:16.094674027Z [err]    position: undefined
+2025-12-15T04:18:16.094680732Z [err]  }
+2025-12-15T04:18:16.258998418Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:16.259005210Z [err]    kode_referensi: 'REG-1765420551964-832',
+2025-12-15T04:18:16.259009543Z [err]    nama_lengkap: 'Budi Santoso',
+2025-12-15T04:18:16.259014006Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:16.259019466Z [err]    code: '25P02',
+2025-12-15T04:18:16.259023793Z [err]    detail: undefined,
+2025-12-15T04:18:16.259028804Z [err]    hint: undefined,
+2025-12-15T04:18:16.259033898Z [err]    position: undefined
+2025-12-15T04:18:16.259038614Z [err]  }
+2025-12-15T04:18:16.452628552Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:16.452634189Z [err]    kode_referensi: 'REG-1765419401107-687',
+2025-12-15T04:18:16.452639487Z [err]    nama_lengkap: 'Test User EDD',
+2025-12-15T04:18:16.452644506Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:16.452650801Z [err]    code: '25P02',
+2025-12-15T04:18:16.452655931Z [err]    detail: undefined,
+2025-12-15T04:18:16.452660960Z [err]    hint: undefined,
+2025-12-15T04:18:16.452667173Z [err]    position: undefined
+2025-12-15T04:18:16.452672181Z [err]  }
+2025-12-15T04:18:16.724509980Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:16.724518416Z [err]    kode_referensi: 'REG-1765417246226-331',
+2025-12-15T04:18:16.724525151Z [err]    nama_lengkap: 'arya agung wicaksono',
+2025-12-15T04:18:16.724531413Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:16.724537796Z [err]    code: '25P02',
+2025-12-15T04:18:16.724544282Z [err]    detail: undefined,
+2025-12-15T04:18:16.724550467Z [err]    hint: undefined,
+2025-12-15T04:18:16.724556032Z [err]    position: undefined
+2025-12-15T04:18:16.724560138Z [err]  }
+2025-12-15T04:18:16.759221498Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:16.759227785Z [err]    kode_referensi: 'REG-1765273321437-752',
+2025-12-15T04:18:16.759232525Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
+2025-12-15T04:18:16.759236448Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:16.759241102Z [err]    code: '25P02',
+2025-12-15T04:18:16.759245486Z [err]    detail: undefined,
+2025-12-15T04:18:16.759249264Z [err]    hint: undefined,
+2025-12-15T04:18:16.759255463Z [err]    position: undefined
+2025-12-15T04:18:16.759259457Z [err]  }
+2025-12-15T04:18:16.923155469Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:16.923159473Z [err]    kode_referensi: 'REG-1765262653544-812',
+2025-12-15T04:18:16.923164343Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
+2025-12-15T04:18:16.923175325Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:16.923179363Z [err]    code: '25P02',
+2025-12-15T04:18:16.923184044Z [err]    detail: undefined,
+2025-12-15T04:18:16.923188598Z [err]    hint: undefined,
+2025-12-15T04:18:16.923192520Z [err]    position: undefined
+2025-12-15T04:18:16.923197058Z [err]  }
+2025-12-15T04:18:17.096150945Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:17.096155360Z [err]    kode_referensi: 'REG-1765245055908-720',
+2025-12-15T04:18:17.096160073Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
+2025-12-15T04:18:17.096165359Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:17.096169411Z [err]    code: '25P02',
+2025-12-15T04:18:17.096174476Z [err]    detail: undefined,
+2025-12-15T04:18:17.096178680Z [err]    hint: undefined,
+2025-12-15T04:18:17.096183354Z [err]    position: undefined
+2025-12-15T04:18:17.096189624Z [err]  }
+2025-12-15T04:18:17.260498137Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:17.260508151Z [err]    kode_referensi: 'REG-1765244635937-380',
+2025-12-15T04:18:17.260517147Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
+2025-12-15T04:18:17.260524159Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:17.260532092Z [err]    code: '25P02',
+2025-12-15T04:18:17.260538853Z [err]    detail: undefined,
+2025-12-15T04:18:17.260544087Z [err]    hint: undefined,
+2025-12-15T04:18:17.260548566Z [err]    position: undefined
+2025-12-15T04:18:17.260553069Z [err]  }
+2025-12-15T04:18:17.411751261Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:17.411759081Z [err]    kode_referensi: 'REG-1765241735665-789',
+2025-12-15T04:18:17.411766870Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
+2025-12-15T04:18:17.411773008Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:17.411778179Z [err]    code: '25P02',
+2025-12-15T04:18:17.411784040Z [err]    detail: undefined,
+2025-12-15T04:18:17.411790233Z [err]    hint: undefined,
+2025-12-15T04:18:17.411795926Z [err]    position: undefined
+2025-12-15T04:18:17.411801454Z [err]  }
+2025-12-15T04:18:17.729233093Z [err]  ❌ Error importing item: {
+2025-12-15T04:18:17.729237743Z [err]    kode_referensi: 'REG-1765184320494-456',
+2025-12-15T04:18:17.729241799Z [err]    nama_lengkap: 'Arya Agung Wicaksono',
+2025-12-15T04:18:17.729246489Z [err]    error: 'current transaction is aborted, commands ignored until end of transaction block',
+2025-12-15T04:18:17.729250922Z [err]    code: '25P02',
+2025-12-15T04:18:17.729256307Z [err]    detail: undefined,
+2025-12-15T04:18:17.729260527Z [err]    hint: undefined,
+2025-12-15T04:18:17.729265207Z [err]    position: undefined
+2025-12-15T04:18:17.729270013Z [err]  }
+2025-12-15T04:18:17.739921988Z [inf]  ✅ Import completed: 0 imported, 0 overwritten, 56 skipped
+2025-12-15T04:18:17.922649257Z [inf]  📝 Log recorded: IMPORT_DATA by user 30

@@ -1805,32 +1805,32 @@ export const importData = async (req, res) => {
               UPDATE pengajuan_tabungan 
               SET status = $1
             `;
-            let updateParams = [newStatus, pengajuanId];
-            let paramIndex = 2;
+            let updateParams = [newStatus];
+            let paramIndex = 1;
 
             // Update approval fields berdasarkan status
             if (newStatus === 'approved') {
               updateQuery += `, approved_at = $${++paramIndex}, rejected_at = NULL, rejected_by = NULL`;
-              updateParams.splice(-1, 0, item.approved_at || new Date());
+              updateParams.push(item.approved_at || new Date());
 
               if (item.approvedBy) {
                 // Cari user ID berdasarkan username
                 const userQuery = await client.query('SELECT id FROM users WHERE username = $1', [item.approvedBy]);
                 if (userQuery.rows.length > 0) {
                   updateQuery += `, approved_by = $${++paramIndex}`;
-                  updateParams.splice(-1, 0, userQuery.rows[0].id);
+                  updateParams.push(userQuery.rows[0].id);
                 }
               }
             } else if (newStatus === 'rejected') {
               updateQuery += `, rejected_at = $${++paramIndex}, approved_at = NULL, approved_by = NULL`;
-              updateParams.splice(-1, 0, item.rejected_at || new Date());
+              updateParams.push(item.rejected_at || new Date());
 
               if (item.rejectedBy) {
                 // Cari user ID berdasarkan username
                 const userQuery = await client.query('SELECT id FROM users WHERE username = $1', [item.rejectedBy]);
                 if (userQuery.rows.length > 0) {
                   updateQuery += `, rejected_by = $${++paramIndex}`;
-                  updateParams.splice(-1, 0, userQuery.rows[0].id);
+                  updateParams.push(userQuery.rows[0].id);
                 }
               }
             } else {
@@ -1838,7 +1838,8 @@ export const importData = async (req, res) => {
               updateQuery += `, approved_at = NULL, approved_by = NULL, rejected_at = NULL, rejected_by = NULL`;
             }
 
-            updateQuery += ` WHERE id = $${paramIndex + 1}`;
+            updateQuery += ` WHERE id = $${++paramIndex}`;
+            updateParams.push(pengajuanId);
 
             await client.query(updateQuery, updateParams);
 
