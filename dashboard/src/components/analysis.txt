@@ -1,0 +1,110 @@
+🚀 Server berjalan di http://localhost:8080
+npm warn config production Use `--omit=dev` instead.
+> backend@1.0.0 start
+  jabatan: 'ggrttg',
+📊 Analytics query executed for user role: super, cabang: 1
+  nama_perusahaan: 'rsrtgs'
+📊 Returned 57 records
+}
+📊 Analytics query executed for user role: admin, cabang: 2
+📊 [DEBUG] Sample record (first): {
+  id: '351',
+  penghasilan: '3 - 5 Juta',
+📊 Returned 23 records
+  pekerjaan: 'pelajar-mahasiswa',
+📊 [DEBUG] Sample record (first): {
+  id: '351',
+  penghasilan: '3 - 5 Juta',
+  pekerjaan: 'pelajar-mahasiswa',
+  jabatan: 'ggrttg',
+  nama_perusahaan: 'rsrtgs'
+}
+📊 Analytics query executed for user role: admin, cabang: 2
+  penghasilan: '3 - 5 Juta',
+  nama_perusahaan: 'rsrtgs'
+📊 Returned 23 records
+  id: '351',
+  pekerjaan: 'pelajar-mahasiswa',
+📊 Returned 23 records
+📊 [DEBUG] Sample record (first): {
+}
+  penghasilan: '3 - 5 Juta',
+  jabatan: 'ggrttg',
+  jabatan: 'ggrttg',
+  id: '351',
+📊 [DEBUG] Sample record (first): {
+  pekerjaan: 'pelajar-mahasiswa',
+  nama_perusahaan: 'rsrtgs'
+}
+📊 Analytics query executed for user role: admin, cabang: 2
+    'rata_transaksi_per_bulan',
+    'nama_perusahaan',
+    'alamat_id',
+    'alamat_perusahaan',
+    'kode_pos_id',
+    'no_telepon',
+    'alamat_now',
+    'jenis_kelamin',
+    'status_kawin',
+    'agama',
+✏️ Edit submission request: {
+    'pendidikan',
+  submissionId: '351',
+    'nama_ibu_kandung',
+  userId: 30,
+    'npwp',
+  userRole: 'super',
+    'email',
+  editReason: 'Typo Correction',
+    'no_hp',
+  fieldsToEdit: [
+    'kewarganegaraan',
+    'nama',
+    'status_rumah',
+    'alias',
+    'pekerjaan',
+    'jenis_id',
+    'gaji_per_bulan',
+    'no_id',
+    'sumber_dana',
+    'berlaku_id',
+    'tempat_lahir',
+    'tanggal_lahir',
+    'jabatan',
+    'bidang_usaha',
+    'tabungan_tipe',
+    'atm_tipe',
+    'nominal_setoran',
+    'tujuan_pembukaan',
+    'kontak_darurat_nama',
+    'kontak_darurat_hp',
+    'kontak_darurat_alamat',
+    'kontak_darurat_hubungan'
+  ]
+}
+❌ Edit submission error: error: invalid input syntax for type date: ""
+    at /app/node_modules/pg/lib/client.js:545:17
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async editSubmission (file:///app/controllers/pengajuanController.js:2526:7) {
+  length: 138,
+  severity: 'ERROR',
+  code: '22007',
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: "unnamed portal parameter $3 = ''",
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+
+
+  Failed to load resource: the server responded with a status of 500 ()Understand this error
+edit-submission-dialog.tsx:188 Error editing submission: Error: Gagal mengedit submission
+    at handleSave (edit-submission-dialog.tsx:177:15)
+
+
+dan tampilan edit fieldnya ada yang kosong kemungkinan data belum terpanggil atau pengalaman CORS atau hak akses bisa menjadi sebab juga.

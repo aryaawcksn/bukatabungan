@@ -67,6 +67,16 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
   const [editReason, setEditReason] = useState('');
   const [editHistory, setEditHistory] = useState<EditHistoryData | null>(null);
   const [loadingHistory, setLoadingHistory] = useState(false);
+
+  // Helper function to format date for input
+  const formatDateForInput = (dateString: string | undefined) => {
+    if (!dateString) return '';
+    try {
+      return new Date(dateString).toISOString().split('T')[0];
+    } catch {
+      return '';
+    }
+  };
   
   // Form data state
   const [formData, setFormData] = useState({
@@ -77,7 +87,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
     no_id: submission.personalData.nik || '',
     berlaku_id: '',
     tempat_lahir: submission.personalData.birthPlace || '',
-    tanggal_lahir: submission.personalData.birthDate || '',
+    tanggal_lahir: formatDateForInput(submission.personalData.birthDate),
     alamat_id: submission.personalData.address.street || '',
     kode_pos_id: submission.personalData.address.postalCode || '',
     alamat_now: submission.personalData.address.domicile || '',
@@ -115,6 +125,56 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
     kontak_darurat_alamat: submission.emergencyContact?.address || '',
     kontak_darurat_hubungan: submission.emergencyContact?.relationship || '',
   });
+
+  // Update form data when submission changes
+  useEffect(() => {
+    setFormData({
+      // Personal Data
+      nama: submission.personalData.fullName || '',
+      alias: submission.personalData.alias || '',
+      jenis_id: submission.personalData.identityType || '',
+      no_id: submission.personalData.nik || '',
+      berlaku_id: '',
+      tempat_lahir: submission.personalData.birthPlace || '',
+      tanggal_lahir: formatDateForInput(submission.personalData.birthDate),
+      alamat_id: submission.personalData.address.street || '',
+      kode_pos_id: submission.personalData.address.postalCode || '',
+      alamat_now: submission.personalData.address.domicile || '',
+      jenis_kelamin: submission.personalData.gender || '',
+      status_kawin: submission.personalData.maritalStatus || '',
+      agama: submission.personalData.religion || '',
+      pendidikan: submission.personalData.education || '',
+      nama_ibu_kandung: submission.personalData.motherName || '',
+      npwp: submission.personalData.npwp || '',
+      email: submission.personalData.email || '',
+      no_hp: submission.personalData.phone || '',
+      kewarganegaraan: submission.personalData.citizenship || '',
+      status_rumah: submission.personalData.homeStatus || '',
+      
+      // Job Info
+      pekerjaan: submission.jobInfo.occupation || '',
+      gaji_per_bulan: submission.jobInfo.salaryRange || '',
+      sumber_dana: submission.jobInfo.incomeSource || '',
+      rata_transaksi_per_bulan: submission.jobInfo.averageTransaction || '',
+      nama_perusahaan: submission.jobInfo.workplace || '',
+      alamat_perusahaan: submission.jobInfo.officeAddress || '',
+      no_telepon: submission.jobInfo.officePhone || '',
+      jabatan: submission.jobInfo.position || '',
+      bidang_usaha: submission.jobInfo.businessField || '',
+      
+      // Account Info
+      tabungan_tipe: submission.savingsType || '',
+      atm_tipe: submission.cardType || '',
+      nominal_setoran: submission.accountInfo.initialDeposit || '',
+      tujuan_pembukaan: submission.jobInfo.accountPurpose || '',
+      
+      // Emergency Contact
+      kontak_darurat_nama: submission.emergencyContact?.name || '',
+      kontak_darurat_hp: submission.emergencyContact?.phone || '',
+      kontak_darurat_alamat: submission.emergencyContact?.address || '',
+      kontak_darurat_hubungan: submission.emergencyContact?.relationship || '',
+    });
+  }, [submission]);
 
   // Load edit history when dialog opens
   useEffect(() => {
@@ -203,7 +263,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
       no_id: submission.personalData.nik || '',
       berlaku_id: '',
       tempat_lahir: submission.personalData.birthPlace || '',
-      tanggal_lahir: submission.personalData.birthDate || '',
+      tanggal_lahir: formatDateForInput(submission.personalData.birthDate),
       alamat_id: submission.personalData.address.street || '',
       kode_pos_id: submission.personalData.address.postalCode || '',
       alamat_now: submission.personalData.address.domicile || '',

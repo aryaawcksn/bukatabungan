@@ -2481,8 +2481,20 @@ export const editSubmission = async (req, res) => {
     const editHistory = [];
     const tableUpdates = {};
 
+    // Helper function to process field values
+    const processFieldValue = (fieldName, value) => {
+      // Handle date fields - convert empty string to null
+      const dateFields = ['tanggal_lahir', 'berlaku_id'];
+      if (dateFields.includes(fieldName)) {
+        return value && value.trim() !== '' ? value : null;
+      }
+      
+      // Handle other empty strings
+      return value && value.trim() !== '' ? value : null;
+    };
+
     // Process each field to edit
-    for (const [fieldName, newValue] of Object.entries(editData)) {
+    for (const [fieldName, rawValue] of Object.entries(editData)) {
       const fieldInfo = fieldMapping[fieldName];
       
       if (!fieldInfo) {
@@ -2491,6 +2503,7 @@ export const editSubmission = async (req, res) => {
       }
 
       const oldValue = fieldInfo.current;
+      const newValue = processFieldValue(fieldName, rawValue);
       
       // Only update if value actually changed
       if (String(oldValue || '') !== String(newValue || '')) {
