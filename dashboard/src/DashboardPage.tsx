@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback, lazy, Suspense, memo } from 'react';
-import { Search, FileBarChart, LogOut, X, Clock3, Check, TrendingDown, TrendingUp, ArrowUp } from 'lucide-react';
+import { Search, FileBarChart, LogOut, X, Clock3, Check, TrendingDown, TrendingUp, ArrowUp, Calendar as CalendarIcon, AlertTriangle, BarChart3 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './components/ui/select';
 import { toast } from 'sonner';
 import { Toaster } from './components/ui/sonner';
@@ -158,8 +158,7 @@ export const mapBackendDataToFormSubmission = (data: any): FormSubmission => {
       '10-20jt': 'Rp 10.000.000 - Rp 20.000.000',
     'above20': '> Rp 20.000.000'
     };
-    // Debug log for penghasilan
-    // console.log(`[DEBUG] Mapping penghasilan: "${penghasilan}" -> "${map[penghasilan] || penghasilan}"`); // Too noisy for every item
+    // Penghasilan mapping
     return map[penghasilan] || penghasilan;
   };
 
@@ -301,10 +300,7 @@ export const mapBackendDataToFormSubmission = (data: any): FormSubmission => {
     rejectedAt: data.rejected_at ? formatDateTime(data.rejected_at) : undefined
   };
   
-  // Debug log for first item only or specific check
-  // if (data.id === 1 || data.id === '1') {
-  //   console.log('[DEBUG] Mapped submission 1:', result);
-  // }
+  // Data mapping completed
   
   return result;
 };
@@ -331,6 +327,47 @@ export default function DashboardPage() {
   const itemsPerPage = 20; // Limit items per page untuk performa
   const [activeTab, setActiveTab] = useState('dashboard');
   const [showScrollTop, setShowScrollTop] = useState(false);
+  
+  // Marking & Bulk Operations State
+  const [markedSubmissions, setMarkedSubmissions] = useState<Set<string>>(new Set());
+  
+  // Date range filter untuk analytics
+  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+    from: undefined,
+    to: undefined
+  });
+  
+  // State untuk input manual tanggal (format YYYY-MM-DD untuk input type="date")
+  const [dateFromInput, setDateFromInput] = useState<string>('');
+  const [dateToInput, setDateToInput] = useState<string>('');
+  
+  // Helper untuk convert string YYYY-MM-DD ke Date
+  const stringToDate = useCallback((dateString: string): Date | undefined => {
+    if (!dateString) return undefined;
+    const date = new Date(dateString + 'T00:00:00');
+    if (isNaN(date.getTime())) return undefined;
+    return date;
+  }, []);
+  
+  // Handler untuk perubahan input tanggal
+  const handleDateFromChange = useCallback((value: string) => {
+    setDateFromInput(value);
+    const date = stringToDate(value);
+    setDateRange(prev => ({ ...prev, from: date }));
+  }, [stringToDate]);
+  
+  const handleDateToChange = useCallback((value: string) => {
+    setDateToInput(value);
+    const date = stringToDate(value);
+    setDateRange(prev => ({ ...prev, to: date }));
+  }, [stringToDate]);
+  
+  // Handler untuk clear filter
+  const handleClearDateFilter = useCallback(() => {
+    setDateRange({ from: undefined, to: undefined });
+    setDateFromInput('');
+    setDateToInput('');
+  }, []);
 
 
   // State untuk CabangSetting
@@ -439,7 +476,7 @@ export default function DashboardPage() {
         credentials: 'include'
       });
       if (response.ok) {
-        console.log('status koneksi backend: OK');
+        // Backend connection OK
       }
     } catch (error) {
       console.error('Backend server tidak dapat diakses:', error);
@@ -869,12 +906,164 @@ export default function DashboardPage() {
 
   const totalPages = Math.ceil(filteredSubmissions.length / itemsPerPage);
 
-  const stats = useMemo(() => ({
-    total: submissions.length,
-    pending: submissions.filter(s => s.status === 'pending').length,
-    approved: submissions.filter(s => s.status === 'approved').length,
-    rejected: submissions.filter(s => s.status === 'rejected').length
-  }), [submissions]);
+  // Helper function to parse date from submittedAt
+  const parseSubmissionDate = useCallback((submittedAt: string): Date => {
+    try {
+      // Format: "13/12/2024, 10:30" atau "13/12/2024 10:30"
+      const dateStr = submittedAt.split(/[, ]/)[0]; // Ambil bagian tanggal saja
+      const [day, month, year] = dateStr.split('/');
+      return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    } catch (error) {
+      console.warn('Error parsing date:', submittedAt, error);
+      return new Date(0);
+    }
+  }, []);
+
+  // Filter submissions berdasarkan date range untuk analytics
+  const filteredAnalyticsSubmissions = useMemo(() => {
+    if (!dateRange.from && !dateRange.to) {
+      return submissions; // Tidak ada filter tanggal
+    }
+
+    return submissions.filter(sub => {
+      const subDate = parseSubmissionDate(sub.submittedAt);
+      
+      // Reset waktu untuk perbandingan tanggal saja
+      const submissionDate = new Date(subDate.getFullYear(), subDate.getMonth(), subDate.getDate());
+      
+      if (dateRange.from && dateRange.to) {
+        // Filter range: from <= date <= to
+        const fromDate = new Date(dateRange.from.getFullYear(), dateRange.from.getMonth(), dateRange.from.getDate());
+        const toDate = new Date(dateRange.to.getFullYear(), dateRange.to.getMonth(), dateRange.to.getDate());
+        return submissionDate >= fromDate && submissionDate <= toDate;
+      } else if (dateRange.from) {
+        // Hanya filter from
+        const fromDate = new Date(dateRange.from.getFullYear(), dateRange.from.getMonth(), dateRange.from.getDate());
+        return submissionDate >= fromDate;
+      } else if (dateRange.to) {
+        // Hanya filter to
+        const toDate = new Date(dateRange.to.getFullYear(), dateRange.to.getMonth(), dateRange.to.getDate());
+        return submissionDate <= toDate;
+      }
+      
+      return true;
+    });
+  }, [submissions, dateRange, parseSubmissionDate]);
+
+  const stats = useMemo(() => {
+    const today = new Date();
+    const todayStr = today.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    
+    // Helper function untuk parsing tanggal dari format Indonesia
+    const parseIndonesianDate = (dateStr: string): Date => {
+      try {
+        const [day, month, year] = dateStr.split('/');
+        return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      } catch {
+        return new Date(0);
+      }
+    };
+    
+    // Filter submissions hari ini
+    const todaySubmissions = submissions.filter(s => {
+      const submissionDate = s.submittedAt.split(',')[0]; // Ambil bagian tanggal saja
+      return submissionDate === todayStr;
+    });
+    
+    // Filter approved/rejected hari ini
+    const approvedToday = submissions.filter(s => {
+      if (s.status !== 'approved' || !s.approvedAt) return false;
+      const approvedDate = s.approvedAt.split(',')[0];
+      return approvedDate === todayStr;
+    });
+    
+    const rejectedToday = submissions.filter(s => {
+      if (s.status !== 'rejected' || !s.rejectedAt) return false;
+      const rejectedDate = s.rejectedAt.split(',')[0];
+      return rejectedDate === todayStr;
+    });
+    
+    // Recent submissions (5 terbaru)
+    const recentSubmissions = [...submissions]
+      .sort((a, b) => new Date(b.submittedAt.split(',').reverse().join('-')).getTime() - new Date(a.submittedAt.split(',').reverse().join('-')).getTime())
+      .slice(0, 5);
+    
+    // Cabang aktif dari submissions
+    const activeBranches = new Set(submissions.map(s => s.cabangName).filter(Boolean)).size;
+    
+    // Jenis rekening paling populer
+    const accountTypes = submissions.reduce((acc, s) => {
+      const type = s.accountInfo.accountType || 'Tabungan';
+      acc[type] = (acc[type] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    
+    const popularAccountType = Object.entries(accountTypes)
+      .sort(([,a], [,b]) => b - a)[0]?.[0] || 'Tabungan';
+    
+    // Tingkat persetujuan
+    const totalProcessed = submissions.filter(s => s.status !== 'pending').length;
+    const approvedCount = submissions.filter(s => s.status === 'approved').length;
+    const approvalRate = totalProcessed > 0 ? Math.round((approvedCount / totalProcessed) * 100) : 0;
+    
+    // Trend 7 hari terakhir
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      return date.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    }).reverse();
+    
+    const weeklyTrend = last7Days.map(dateStr => {
+      const daySubmissions = submissions.filter(s => {
+        const submissionDate = s.submittedAt.split(',')[0];
+        return submissionDate === dateStr;
+      });
+      return {
+        date: dateStr,
+        count: daySubmissions.length,
+        approved: daySubmissions.filter(s => s.status === 'approved').length,
+        pending: daySubmissions.filter(s => s.status === 'pending').length
+      };
+    });
+    
+    // Permohonan yang sudah lama pending (lebih dari 3 hari)
+    const threeDaysAgo = new Date(today);
+    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+    
+    const oldPendingSubmissions = submissions.filter(s => {
+      if (s.status !== 'pending') return false;
+      const submissionDate = parseIndonesianDate(s.submittedAt.split(',')[0]);
+      return submissionDate < threeDaysAgo;
+    });
+    
+    // Permohonan urgent (lebih dari 5 hari)
+    const fiveDaysAgo = new Date(today);
+    fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
+    
+    const urgentSubmissions = submissions.filter(s => {
+      if (s.status !== 'pending') return false;
+      const submissionDate = parseIndonesianDate(s.submittedAt.split(',')[0]);
+      return submissionDate < fiveDaysAgo;
+    });
+    
+    return {
+      total: submissions.length,
+      pending: submissions.filter(s => s.status === 'pending').length,
+      approved: submissions.filter(s => s.status === 'approved').length,
+      rejected: submissions.filter(s => s.status === 'rejected').length,
+      todaySubmissions: todaySubmissions.length,
+      approvedToday: approvedToday.length,
+      rejectedToday: rejectedToday.length,
+      recentSubmissions,
+      activeBranches,
+      popularAccountType,
+      avgProcessTime: 2, // Placeholder - bisa dihitung dari data real
+      approvalRate,
+      weeklyTrend,
+      oldPendingSubmissions,
+      urgentSubmissions
+    };
+  }, [submissions]);
 
   const handleLogout = () => {
     logout();
@@ -903,6 +1092,22 @@ const scrollToTop = () => {
     behavior: "smooth"
   });
 };
+
+// Marking & Bulk Operations Handlers
+const handleToggleMark = useCallback((id: string) => {
+  setMarkedSubmissions(prev => {
+    const newSet = new Set(prev);
+    if (newSet.has(id)) {
+      newSet.delete(id);
+    } else {
+      newSet.add(id);
+    }
+    return newSet;
+  });
+}, []);
+
+
+
 
 
   return (
@@ -937,13 +1142,13 @@ const scrollToTop = () => {
 
         {activeTab === "dashboard" && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
       <StatCard
         title="Total Permohonan"
         value={stats.total}
         color="#3b82f6"
         icon={FileBarChart}
-        trend="+12% dari kemarin"
+        trend={`${stats.todaySubmissions || 0} hari ini`}
         trendColor="text-emerald-600"
         trendIcon={TrendingUp}
       />
@@ -963,7 +1168,7 @@ const scrollToTop = () => {
         value={stats.approved}
         color="#10b981"
         icon={Check}
-        trend="Minggu ini"
+        trend={`${stats.approvedToday || 0} hari ini`}
         trendColor="text-emerald-600"
         trendIcon={TrendingUp}
       />
@@ -973,40 +1178,308 @@ const scrollToTop = () => {
         value={stats.rejected}
         color="#ef4444"
         icon={X}
-        trend="Minggu ini"
+        trend={`${stats.rejectedToday || 0} hari ini`}
         trendColor="text-rose-600"
         trendIcon={TrendingDown}
       />
     </div>
 
-            {/* Recent Activity Section could go here */}
+            {/* Recent Activity Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+              {/* Aktivitas Terbaru */}
+              <div className="bg-white rounded-xl border border-slate-200 p-6">
+                <h3 className="text-lg font-semibold text-slate-900 mb-4">Aktivitas Terbaru</h3>
+                <div className="space-y-3">
+                  {stats.recentSubmissions?.slice(0, 5).map((submission) => (
+                    <div key={submission.id} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
+                      <div className="flex-1">
+                        <p className="font-medium text-slate-900 text-sm">{submission.personalData.fullName}</p>
+                        <p className="text-xs text-slate-500">{submission.referenceCode}</p>
+                      </div>
+                      <div className="text-right">
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                          submission.status === 'pending' ? 'bg-amber-100 text-amber-800' :
+                          submission.status === 'approved' ? 'bg-emerald-100 text-emerald-800' :
+                          'bg-rose-100 text-rose-800'
+                        }`}>
+                          {submission.status === 'pending' ? 'Menunggu' : 
+                           submission.status === 'approved' ? 'Disetujui' : 'Ditolak'}
+                        </span>
+                        <p className="text-xs text-slate-500 mt-1">{submission.submittedAt.split(',')[0]}</p>
+                      </div>
+                    </div>
+                  ))}
+                  {(!stats.recentSubmissions || stats.recentSubmissions.length === 0) && (
+                    <p className="text-slate-500 text-sm text-center py-4">Belum ada aktivitas terbaru</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Quick Stats */}
+              <div className="bg-white rounded-xl border border-slate-200 p-6">
+                <h3 className="text-lg font-semibold text-slate-900 mb-4">Ringkasan Cepat</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-600">Cabang Aktif</span>
+                    <span className="font-semibold text-slate-900">{stats.activeBranches || 0}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-600">Jenis Rekening Populer</span>
+                    <span className="font-semibold text-slate-900">{stats.popularAccountType || 'Tabungan'}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-600">Rata-rata Proses</span>
+                    <span className="font-semibold text-slate-900">{stats.avgProcessTime || '2'} hari</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-600">Tingkat Persetujuan</span>
+                    <span className="font-semibold text-emerald-600">{stats.approvalRate || '85'}%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Trend Chart & Notifications */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+              {/* Mini Chart - Trend 7 Hari */}
+              <div className="bg-white rounded-xl border border-slate-200 p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-slate-900">Trend 7 Hari Terakhir</h3>
+                  <BarChart3 className="w-5 h-5 text-slate-400" />
+                </div>
+                <div className="space-y-3">
+                  {stats.weeklyTrend?.map((day) => {
+                    const maxCount = Math.max(...(stats.weeklyTrend?.map(d => d.count) || [1]));
+                    const percentage = maxCount > 0 ? (day.count / maxCount) * 100 : 0;
+                    
+                    return (
+                      <div key={day.date} className="flex items-center gap-3">
+                        <div className="w-16 text-xs text-slate-600 font-medium">
+                          {day.date.split('/').slice(0, 2).join('/')}
+                        </div>
+                        <div className="flex-1 flex items-center gap-2">
+                          <div className="flex-1 bg-slate-100 rounded-full h-2 overflow-hidden">
+                            <div 
+                              className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-500"
+                              style={{ width: `${percentage}%` }}
+                            />
+                          </div>
+                          <div className="w-8 text-xs font-semibold text-slate-900">
+                            {day.count}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="mt-4 pt-4 border-t border-slate-100">
+                  <div className="flex items-center justify-between text-xs text-slate-500">
+                    <span>Total minggu ini: {stats.weeklyTrend?.reduce((sum, day) => sum + day.count, 0) || 0}</span>
+                    <span>Rata-rata: {Math.round((stats.weeklyTrend?.reduce((sum, day) => sum + day.count, 0) || 0) / 7)} per hari</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Notifikasi & Alerts */}
+              <div className="bg-white rounded-xl border border-slate-200 p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-slate-900">Notifikasi & Peringatan</h3>
+                  <AlertTriangle className="w-5 h-5 text-amber-500" />
+                </div>
+                <div className="space-y-3">
+                  {/* Urgent Submissions */}
+                  {stats.urgentSubmissions && stats.urgentSubmissions.length > 0 && (
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <AlertTriangle className="w-4 h-4 text-red-600" />
+                        <span className="font-semibold text-red-800 text-sm">Urgent - Lebih dari 5 hari</span>
+                      </div>
+                      <p className="text-red-700 text-xs mb-2">
+                        {stats.urgentSubmissions.length} permohonan memerlukan tindakan segera
+                      </p>
+                      <div className="space-y-1">
+                        {stats.urgentSubmissions.slice(0, 2).map((submission) => (
+                          <div key={submission.id} className="text-xs text-red-600">
+                            • {submission.personalData.fullName} ({submission.referenceCode})
+                          </div>
+                        ))}
+                        {stats.urgentSubmissions.length > 2 && (
+                          <div className="text-xs text-red-600">
+                            • dan {stats.urgentSubmissions.length - 2} lainnya...
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Old Pending Submissions */}
+                  {stats.oldPendingSubmissions && stats.oldPendingSubmissions.length > 0 && (
+                    <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Clock3 className="w-4 h-4 text-amber-600" />
+                        <span className="font-semibold text-amber-800 text-sm">Perlu Perhatian - Lebih dari 3 hari</span>
+                      </div>
+                      <p className="text-amber-700 text-xs mb-2">
+                        {stats.oldPendingSubmissions.length} permohonan menunggu review
+                      </p>
+                      <div className="space-y-1">
+                        {stats.oldPendingSubmissions.slice(0, 2).map((submission) => (
+                          <div key={submission.id} className="text-xs text-amber-600">
+                            • {submission.personalData.fullName} ({submission.referenceCode})
+                          </div>
+                        ))}
+                        {stats.oldPendingSubmissions.length > 2 && (
+                          <div className="text-xs text-amber-600">
+                            • dan {stats.oldPendingSubmissions.length - 2} lainnya...
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* No Alerts */}
+                  {(!stats.urgentSubmissions || stats.urgentSubmissions.length === 0) && 
+                   (!stats.oldPendingSubmissions || stats.oldPendingSubmissions.length === 0) && (
+                    <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg text-center">
+                      <Check className="w-8 h-8 text-emerald-600 mx-auto mb-2" />
+                      <p className="text-emerald-800 font-medium text-sm">Semua Terkendali</p>
+                      <p className="text-emerald-600 text-xs">Tidak ada permohonan yang memerlukan perhatian khusus</p>
+                    </div>
+                  )}
+
+                  {/* Quick Action Button */}
+                  {((stats.urgentSubmissions && stats.urgentSubmissions.length > 0) || 
+                    (stats.oldPendingSubmissions && stats.oldPendingSubmissions.length > 0)) && (
+                    <button
+                      onClick={() => {
+                        setActiveTab('submissions');
+                        setStatusFilter('pending');
+                      }}
+                      className="w-full mt-3 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+                    >
+                      Review Semua Pending
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            {/* <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 p-6">
+              <h3 className="text-lg font-semibold text-slate-900 mb-4">Aksi Cepat</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <button
+                  onClick={() => setActiveTab('submissions')}
+                  className="flex items-center justify-center gap-2 bg-white hover:bg-blue-50 border border-blue-200 rounded-lg p-4 transition-colors"
+                >
+                  <Clock3 className="w-5 h-5 text-blue-600" />
+                  <span className="font-medium text-slate-900">Review Pending</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab('analytics')}
+                  className="flex items-center justify-center gap-2 bg-white hover:bg-blue-50 border border-blue-200 rounded-lg p-4 transition-colors"
+                >
+                  <FileBarChart className="w-5 h-5 text-blue-600" />
+                  <span className="font-medium text-slate-900">Lihat Analytics</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab('manage')}
+                  className="flex items-center justify-center gap-2 bg-white hover:bg-blue-50 border border-blue-200 rounded-lg p-4 transition-colors"
+                >
+                  <Check className="w-5 h-5 text-blue-600" />
+                  <span className="font-medium text-slate-900">Pengaturan</span>
+                </button>
+              </div>
+            </div> */}
           </div>
         )}
 
         {activeTab === 'analytics' && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="mb-8">
-              <h2 className="text-3xl font-bold text-slate-900 tracking-tight mb-2">
-                Data Analytics & Insights
-              </h2>
-              <p className="text-slate-500 text-lg">
-                Analisis permohonan dan tren bisnis.
-              </p>
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+                <div>
+                  <h2 className="text-3xl font-bold text-slate-900 tracking-tight mb-2">
+                    Data Analytics & Insights
+                  </h2>
+                  <p className="text-slate-500 text-lg">
+                    Analisis permohonan dan tren bisnis.
+                  </p>
+                </div>
+                
+                {/* Date Range Filter - Manual Input */}
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-3 py-2">
+                    <CalendarIcon className="h-4 w-4 text-slate-500" />
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1">
+                        <label htmlFor="date-from" className="text-sm text-slate-600 whitespace-nowrap">
+                          Dari:
+                        </label>
+                        <input
+                          id="date-from"
+                          type="date"
+                          value={dateFromInput}
+                          onChange={(e) => handleDateFromChange(e.target.value)}
+                          className="border-none outline-none text-sm text-slate-900 bg-transparent cursor-pointer focus:ring-0 w-[140px]"
+                          placeholder="Tanggal awal"
+                        />
+                      </div>
+                      <span className="text-slate-400">-</span>
+                      <div className="flex items-center gap-1">
+                        <label htmlFor="date-to" className="text-sm text-slate-600 whitespace-nowrap">
+                          Sampai:
+                        </label>
+                        <input
+                          id="date-to"
+                          type="date"
+                          value={dateToInput}
+                          onChange={(e) => handleDateToChange(e.target.value)}
+                          className="border-none outline-none text-sm text-slate-900 bg-transparent cursor-pointer focus:ring-0 w-[140px]"
+                          placeholder="Tanggal akhir"
+                        />
+                      </div>
+                      {(dateRange.from || dateRange.to) && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2 text-xs hover:bg-slate-100"
+                          onClick={handleClearDateFilter}
+                        >
+                          ✕
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Info jumlah data yang difilter */}
+              {(dateRange.from || dateRange.to) && (
+                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-800">
+                    Menampilkan <span className="font-semibold">{filteredAnalyticsSubmissions.length}</span> dari <span className="font-semibold">{submissions.length}</span> permohonan
+                    {dateRange.from && dateRange.to && (
+                      <> dalam rentang {dateRange.from.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })} - {dateRange.to.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}</>
+                    )}
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Quick Stats */}
             <Suspense fallback={<LoadingSpinner />}>
-              <QuickStats submissions={submissions} />
+              <QuickStats submissions={filteredAnalyticsSubmissions} />
             </Suspense>
 
             {/* Insight Cards */}
             <Suspense fallback={<LoadingSpinner />}>
-              <InsightCards submissions={submissions} />
+              <InsightCards submissions={filteredAnalyticsSubmissions} />
             </Suspense>
 
             {/* Analytics Dashboard */}
             <Suspense fallback={<LoadingSpinner />}>
-              <AnalyticsDashboard submissions={submissions} cabangList={cabangList} />
+              <AnalyticsDashboard submissions={filteredAnalyticsSubmissions} cabangList={cabangList} />
             </Suspense>
           </div>
         )}
@@ -1303,6 +1776,8 @@ const scrollToTop = () => {
             onClose={() => setSelectedSubmission(null)}
             onApprove={() => handleApprove(selectedSubmission.id)}
             onReject={() => handleReject(selectedSubmission.id)}
+            isMarked={markedSubmissions.has(selectedSubmission.id)}
+            onToggleMark={selectedSubmission.status === 'pending' ? () => handleToggleMark(selectedSubmission.id) : undefined}
           />
         </Suspense>
       )}
@@ -1319,6 +1794,8 @@ const scrollToTop = () => {
           />
         </Suspense>
       )}
+
+
 
       <Toaster />
       {showScrollTop && (

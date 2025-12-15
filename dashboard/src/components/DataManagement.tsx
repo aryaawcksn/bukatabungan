@@ -219,7 +219,7 @@ export default function DataManagement({ onDataImported, cabangList = [], userRo
             setImportStatus(progressData.message || 'Memproses data...');
           }
         } catch (error) {
-          console.log('Progress polling error:', error);
+          // Progress polling error (silenced)
         }
       }, 500);
 

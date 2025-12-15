@@ -2,7 +2,6 @@ import pool from "../config/db.js";
 import { sendEmailNotification } from "../services/emailService.js";
 import { sendWhatsAppNotification } from "../services/whatsappService.js";
 import { logUserActivity } from "./userLogController.js";
-import fs from 'fs';
 
 // In-memory progress store (in production, use Redis or database)
 const importProgressStore = new Map();
@@ -16,7 +15,7 @@ const updateImportProgress = (sessionId, progress, message) => {
     message,
     timestamp: new Date()
   });
-  console.log(`📊 Progress [${sessionId}]: ${progress}% - ${message}`);
+  // Progress tracking (removed verbose logging)
 };
 
 /**
@@ -61,38 +60,11 @@ export const createPengajuan = async (req, res) => {
   const client = await pool.connect();
 
   try {
-    console.log("📥 Received request body:", JSON.stringify(req.body, null, 2));
-    console.log("🔍 Request received at:", new Date().toISOString());
+    // Request received (removed verbose logging)
 
-    // Log BO fields immediately
-    console.log("🎯 BO Fields from request:", {
-      bo_jenis_kelamin: req.body.bo_jenis_kelamin,
-      bo_kewarganegaraan: req.body.bo_kewarganegaraan,
-      bo_status_pernikahan: req.body.bo_status_pernikahan,
-      bo_sumber_dana: req.body.bo_sumber_dana,
-      bo_hubungan: req.body.bo_hubungan,
-      bo_nomor_hp: req.body.bo_nomor_hp
-    });
+    // Debug file creation removed
 
-    // Write to file for debugging
-    fs.writeFileSync('debug-bo.json', JSON.stringify({
-      timestamp: new Date().toISOString(),
-      bo_fields: {
-        bo_jenis_kelamin: req.body.bo_jenis_kelamin,
-        bo_kewarganegaraan: req.body.bo_kewarganegaraan,
-        bo_status_pernikahan: req.body.bo_status_pernikahan,
-        bo_sumber_dana: req.body.bo_sumber_dana,
-        bo_hubungan: req.body.bo_hubungan,
-        bo_nomor_hp: req.body.bo_nomor_hp
-      }
-    }, null, 2));
-
-    // Debug identity early
-    console.log("🆔 Identity debug (early):", {
-      jenis_id: req.body.jenis_id,
-      jenisIdCustom: req.body.jenisIdCustom,
-      alias: req.body.alias
-    });
+    // Identity processing
 
     const {
       // Data Diri (cdd_self)
@@ -204,36 +176,10 @@ export const createPengajuan = async (req, res) => {
     const finalCabangId = cabang_id || cabang_pengambilan;
     const finalJenisId = jenis_id === 'Lainnya' ? jenisIdCustom : jenis_id;
 
-    // Debug alamat
-    console.log("🏠 Address debug:", {
-      alamat_id: alamat_id,
-      alamat: alamat,
-      alamat_now: alamat_now,
-      alamat_domisili: alamat_domisili,
-      finalAlamatId: finalAlamatId,
-      finalAlamatNow: finalAlamatNow,
-      isDifferent: finalAlamatNow !== finalAlamatId
-    });
-
-    // Debug identity
-    console.log("🆔 Identity debug:", {
-      jenis_id: jenis_id,
-      jenisIdCustom: jenisIdCustom,
-      finalJenisId: finalJenisId,
-      alias: alias
-    });
+    // Data processing
 
     // Debug BO data
-    console.log("👤 BO Debug:", {
-      rekening_untuk_sendiri: rekening_untuk_sendiri,
-      bo_nama: bo_nama,
-      bo_jenis_kelamin: bo_jenis_kelamin,
-      bo_kewarganegaraan: bo_kewarganegaraan,
-      bo_status_pernikahan: bo_status_pernikahan,
-      bo_sumber_dana: bo_sumber_dana,
-      bo_hubungan: bo_hubungan,
-      bo_nomor_hp: bo_nomor_hp
-    });
+    // BO data processing
 
 
     // Validasi field required
@@ -264,7 +210,7 @@ export const createPengajuan = async (req, res) => {
     `;
     const pengajuanRes = await client.query(insertPengajuanQuery, [parseInt(finalCabangId)]);
     const pengajuanId = pengajuanRes.rows[0].id;
-    console.log(`✅ Created pengajuan_tabungan ID: ${pengajuanId}`);
+    // Pengajuan created successfully
 
     // 2. Insert cdd_self
     const insertCddSelfQuery = `
@@ -309,14 +255,6 @@ export const createPengajuan = async (req, res) => {
       finalTipeNasabah,
       emptyToNull(nomor_rekening_lama)
     ];
-
-
-    console.log("📝 CDD Self values being inserted:", {
-      finalNama,
-      alias,
-      finalJenisId,
-      finalNoId
-    });
 
     await client.query(insertCddSelfQuery, cddSelfValues);
 
@@ -670,12 +608,12 @@ export const getAllPengajuan = async (req, res) => {
 
     if (userRole === 'super') {
       // Super admin can see all pengajuan
-      console.log('📋 Super admin access - showing all pengajuan');
+      // Super admin access
     } else {
       // Admin cabang can only see pengajuan from their branch
       whereClause = 'WHERE p.cabang_id = $1';
       queryParams = [adminCabang];
-      console.log('📋 Branch admin access - filtering by cabang:', adminCabang);
+      // Branch admin access
     }
 
     // Query list usually needs fewer fields
@@ -797,8 +735,7 @@ export const updatePengajuanStatus = async (req, res) => {
  */
 export const getAnalyticsData = async (req, res) => {
   try {
-    console.log('📊 Analytics data request received');
-    console.log('📊 User:', req.user?.username, 'Role:', req.user?.role, 'Cabang:', req.user?.cabang_id);
+    // Analytics data request processing
 
     const userRole = req.user.role;
     const adminCabang = req.user.cabang_id;
@@ -810,17 +747,17 @@ export const getAnalyticsData = async (req, res) => {
     // Role-based access control
     if (userRole === 'super') {
       // Super admin bisa lihat semua cabang
-      console.log('📊 Super admin access - showing all branches');
+      // Super admin access
     } else if (userRole === 'employement' || userRole === 'admin') {
       // Admin cabang hanya lihat cabangnya sendiri
       whereClause = 'WHERE p.cabang_id = $1';
       queryParams = [adminCabang];
-      console.log('📊 Branch admin access - filtering by cabang:', adminCabang);
+      // Branch admin access
     } else {
       // Role tidak dikenal, default ke cabang sendiri
       whereClause = 'WHERE p.cabang_id = $1';
       queryParams = [adminCabang];
-      console.log('📊 Unknown role, defaulting to branch filter:', adminCabang);
+      // Unknown role, using branch filter
     }
 
     const query = `
@@ -1866,7 +1803,7 @@ export const importData = async (req, res) => {
 
             let updateQuery = `
               UPDATE pengajuan_tabungan 
-              SET status = $1, updated_at = NOW()
+              SET status = $1
             `;
             let updateParams = [newStatus, pengajuanId];
             let paramIndex = 2;

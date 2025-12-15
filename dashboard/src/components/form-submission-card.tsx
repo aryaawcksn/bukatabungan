@@ -129,10 +129,7 @@ export function FormSubmissionCard({
             <div className="min-w-0">
               <div className="text-gray-500 text-xs">Tipe Nasabah</div>
               <div className="text-gray-900 text-sm">
-                {(() => {
-                  console.log("SUBMISSION:", submission.personalData.tipeNasabah);
-                  return submission.personalData.tipeNasabah === 'lama' ? 'Nasabah Lama' : 'Nasabah Baru';
-                })()}
+                {submission.personalData.tipeNasabah === 'lama' ? 'Nasabah Lama' : 'Nasabah Baru'}
               </div>
             </div>
           </div>

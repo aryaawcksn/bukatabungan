@@ -414,12 +414,7 @@ export const SubmissionPdf = ({ submission }: { submission: FormSubmission }) =>
                <DataField label="NPWP" value={submission.personalData.npwp} />
             </RowTwoCol>
 
-            <RowTwoCol>
-               <DataField label="Tipe Nasabah" value={submission.personalData.tipeNasabah} />
-               {submission.personalData.tipeNasabah === 'lama' ? (
-                 <DataField label="Nomor Rekening Lama" value={submission.personalData.nomorRekeningLama} />
-               ) : null}
-            </RowTwoCol>
+            
 
             {/* ALAMAT */}
             <Text style={{ ...styles.label, marginTop: 4, marginBottom: 2, color: PRIMARY_COLOR }}>ALAMAT IDENTITAS (KTP)</Text>
@@ -496,6 +491,12 @@ export const SubmissionPdf = ({ submission }: { submission: FormSubmission }) =>
             <RowTwoCol>
                <DataField label="Jenis Tabungan" value={submission.savingsType} />
                <DataField label="Jenis Kartu ATM" value={submission.cardType} />
+            </RowTwoCol>
+            <RowTwoCol>
+               <DataField label="Tipe Nasabah" value={submission.personalData.tipeNasabah} />
+               {submission.personalData.tipeNasabah === 'lama' ? (
+                 <DataField label="Nomor Rekening Lama" value={submission.personalData.nomorRekeningLama} />
+               ) : null}
             </RowTwoCol>
             <RowTwoCol>
                <DataField 

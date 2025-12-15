@@ -26,7 +26,7 @@ import {
   AlertCircle,
   Target,
   Building2,
-  Clock
+  Clock,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { API_BASE_URL } from '../config/api';
@@ -37,6 +37,8 @@ interface FormDetailDialogProps {
   onClose: () => void;
   onApprove: () => void;
   onReject: () => void;
+  isMarked?: boolean;
+  onToggleMark?: () => void;
 }
 
 // Helper UI components ------------------------------------------------------
@@ -95,7 +97,7 @@ const Field = ({ label, value, icon, fullWidth = false }: FieldProps) => {
   );
 };
 
-export function FormDetailDialog({ submission, open, onClose, onApprove, onReject }: FormDetailDialogProps) {
+export function FormDetailDialog({ submission, open, onClose, onApprove, onReject}: FormDetailDialogProps) {
   const [loading, setLoading] = useState(false);
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
   const [detailSubmission, setDetailSubmission] = useState<FormSubmission>(submission);
@@ -252,12 +254,15 @@ export function FormDetailDialog({ submission, open, onClose, onApprove, onRejec
             <div className="bg-white p-6 rounded-xl border border-slate-200">
                 <GridContainer>
                 <Field label="Nama Lengkap" value={detailSubmission.personalData.fullName} />
+                <Field label="Alias" value={detailSubmission.personalData.alias} />
                 <Field label="Nama Ibu Kandung" value={detailSubmission.personalData.motherName} />
-                <Field label="NIK" value={detailSubmission.personalData.nik} />
+                <Field label="No Identitas" value={detailSubmission.personalData.nik} />
+                <Field label="Jenis Identitas" value={detailSubmission.personalData.identityType} />
                 <Field label="NPWP" value={detailSubmission.personalData.npwp} />
                 <Field label="Tempat, Tgl Lahir" icon={<Calendar className="w-3 h-3" />} value={`${detailSubmission.personalData.birthPlace || ''}, ${detailSubmission.personalData.birthDate}`} />
                 <Field label="Jenis Kelamin" value={detailSubmission.personalData.gender} />
                 <Field label="Status Pernikahan" value={detailSubmission.personalData.maritalStatus} />
+                <Field label="Nama Ibu Kandung" value={detailSubmission.personalData.motherName} />
                 <Field label="Agama" value={detailSubmission.personalData.religion} />
                 <Field label="Pendidikan" value={detailSubmission.personalData.education} />
                  <Field label="Kewarganegaraan" value={detailSubmission.personalData.citizenship} />
@@ -311,7 +316,7 @@ export function FormDetailDialog({ submission, open, onClose, onApprove, onRejec
           </Section>
 
           {/* EMERGENCY CONTACT & BENEFICIAL OWNER GRID */}
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 xl:grid-cols-1 gap-8">
                {/* EMERGENCY CONTACT */}
                {detailSubmission.emergencyContact && (
                  <Section title="Kontak Darurat" icon={<AlertCircle className="w-4 h-4" />} className="mb-0">
@@ -335,6 +340,15 @@ export function FormDetailDialog({ submission, open, onClose, onApprove, onRejec
                             <Field label="Hubungan" value={detailSubmission.beneficialOwner.relationship} />
                             <Field label="Kewarganegaraan" value={detailSubmission.beneficialOwner.citizenship} />
                             <Field label="Pendapatan" value={detailSubmission.beneficialOwner.annualIncome} />
+                            <Field label="Alamat" value={detailSubmission.beneficialOwner.address} />
+                            <Field label="Tempat, Tgl Lahir" icon={<Calendar className="w-3 h-3" />} value={`${detailSubmission.beneficialOwner.birthPlace || ''}, ${detailSubmission.beneficialOwner.birthDate}`} />
+                            <Field label="Jenis Kelamin" value={detailSubmission.beneficialOwner.gender} />
+                            <Field label="Status Pernikahan" value={detailSubmission.beneficialOwner.maritalStatus} />
+                            <Field label="Jenis ID" value={detailSubmission.beneficialOwner.identityType} />
+                            <Field label="Nomor ID" value={detailSubmission.beneficialOwner.identityNumber} />
+                            <Field label="Sumber Dana" value={detailSubmission.beneficialOwner.incomeSource} />
+                            <Field label="No Hp" value={detailSubmission.beneficialOwner.phone} />
+                            <Field label="Pekerjaan" value={detailSubmission.beneficialOwner.occupation} />
                         </GridContainer>
                     </div>
                     </Section>
@@ -409,6 +423,8 @@ export function FormDetailDialog({ submission, open, onClose, onApprove, onRejec
             <Button variant="outline" onClick={onClose} className="w-full sm:w-auto">
               Tutup
             </Button>
+
+           
 
             {/* Pending: Actions */}
             {detailSubmission.status === 'pending' && (

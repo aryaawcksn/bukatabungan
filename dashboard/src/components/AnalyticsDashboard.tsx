@@ -185,7 +185,7 @@ const AnalyticsDashboard = memo(({ submissions, cabangList = [] }: AnalyticsDash
           if (birthYear > 1900 && birthYear <= new Date().getFullYear()) {
             const age = new Date().getFullYear() - birthYear;
             
-            console.log(`Birth date: ${birthDateStr}, Birth year: ${birthYear}, Age: ${age}`); // Debug log
+            // Age calculation
             
             if (age >= 18 && age <= 25) ageGroups['18-25']++;
             else if (age >= 26 && age <= 35) ageGroups['26-35']++;
@@ -201,7 +201,7 @@ const AnalyticsDashboard = memo(({ submissions, cabangList = [] }: AnalyticsDash
       }
     });
 
-    console.log('Age groups:', ageGroups); // Debug log
+    // Age groups processed
     return Object.entries(ageGroups).map(([name, value]) => ({ name, value }));
   }, [submissions]);
 
@@ -224,12 +224,7 @@ const AnalyticsDashboard = memo(({ submissions, cabangList = [] }: AnalyticsDash
 
 
 
-    console.log('Salary raw data sample:', submissions.slice(0, 3).map(s => ({ 
-      id: s.id, 
-      salary: s.jobInfo?.salaryRange,
-      rawJobInfo: s.jobInfo 
-    })));
-    console.log('Salary counts:', counts); // Debug log
+    // Salary data processing
     
     return Object.entries(counts)
       .map(([name, value]) => ({ name, value }))
@@ -268,7 +263,7 @@ const AnalyticsDashboard = memo(({ submissions, cabangList = [] }: AnalyticsDash
           </div>
           
           <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" >
               <PieChart>
                 <Pie
                   data={statusData}
