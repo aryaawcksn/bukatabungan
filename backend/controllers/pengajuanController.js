@@ -2489,6 +2489,20 @@ export const editSubmission = async (req, res) => {
         return value && value.trim() !== '' ? value : null;
       }
       
+      // Fields with NOT NULL constraints - provide defaults
+      const requiredFields = {
+        'pekerjaan': 'Tidak Bekerja',
+        'bidang_usaha': 'Lainnya',
+        'nama': 'Unknown',
+        'no_id': 'UNKNOWN',
+        'email': 'unknown@example.com',
+        'no_hp': '08000000000'
+      };
+      
+      if (requiredFields[fieldName]) {
+        return value && value.trim() !== '' ? value : requiredFields[fieldName];
+      }
+      
       // Handle other empty strings
       return value && value.trim() !== '' ? value : null;
     };

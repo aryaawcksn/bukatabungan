@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { API_BASE_URL } from '../config/api';
-import { type FormSubmission } from '../DashboardPage';
+import { type FormSubmission, mapBackendDataToFormSubmission } from '../DashboardPage';
 
 interface EditSubmissionDialogProps {
   submission: FormSubmission;
@@ -128,6 +128,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
 
   // Update form data when submission changes
   useEffect(() => {
+    console.log('🔍 Updating form data with submission:', submission);
     setFormData({
       // Personal Data
       nama: submission.personalData.fullName || '',
@@ -174,14 +175,84 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
       kontak_darurat_alamat: submission.emergencyContact?.address || '',
       kontak_darurat_hubungan: submission.emergencyContact?.relationship || '',
     });
+    console.log('🔍 Form data updated:', formData);
   }, [submission]);
 
-  // Load edit history when dialog opens
+  // Load full submission data and edit history when dialog opens
   useEffect(() => {
     if (open && submission.id) {
+      loadFullSubmissionData();
       loadEditHistory();
     }
   }, [open, submission.id]);
+
+  const loadFullSubmissionData = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/pengajuan/${submission.id}`, {
+        credentials: 'include'
+      });
+      
+      if (!res.ok) throw new Error('Failed to fetch full submission data');
+      
+      const data = await res.json();
+      if (data.success) {
+        // Update submission data with full details
+        const fullSubmission = mapBackendDataToFormSubmission(data.data);
+        console.log('🔍 Full submission data loaded:', fullSubmission);
+        
+        // Update form data with full submission
+        setFormData({
+          // Personal Data
+          nama: fullSubmission.personalData.fullName || '',
+          alias: fullSubmission.personalData.alias || '',
+          jenis_id: fullSubmission.personalData.identityType || '',
+          no_id: fullSubmission.personalData.nik || '',
+          berlaku_id: '',
+          tempat_lahir: fullSubmission.personalData.birthPlace || '',
+          tanggal_lahir: formatDateForInput(fullSubmission.personalData.birthDate),
+          alamat_id: fullSubmission.personalData.address.street || '',
+          kode_pos_id: fullSubmission.personalData.address.postalCode || '',
+          alamat_now: fullSubmission.personalData.address.domicile || '',
+          jenis_kelamin: fullSubmission.personalData.gender || '',
+          status_kawin: fullSubmission.personalData.maritalStatus || '',
+          agama: fullSubmission.personalData.religion || '',
+          pendidikan: fullSubmission.personalData.education || '',
+          nama_ibu_kandung: fullSubmission.personalData.motherName || '',
+          npwp: fullSubmission.personalData.npwp || '',
+          email: fullSubmission.personalData.email || '',
+          no_hp: fullSubmission.personalData.phone || '',
+          kewarganegaraan: fullSubmission.personalData.citizenship || '',
+          status_rumah: fullSubmission.personalData.homeStatus || '',
+          
+          // Job Info
+          pekerjaan: fullSubmission.jobInfo.occupation || '',
+          gaji_per_bulan: fullSubmission.jobInfo.salaryRange || '',
+          sumber_dana: fullSubmission.jobInfo.incomeSource || '',
+          rata_transaksi_per_bulan: fullSubmission.jobInfo.averageTransaction || '',
+          nama_perusahaan: fullSubmission.jobInfo.workplace || '',
+          alamat_perusahaan: fullSubmission.jobInfo.officeAddress || '',
+          no_telepon: fullSubmission.jobInfo.officePhone || '',
+          jabatan: fullSubmission.jobInfo.position || '',
+          bidang_usaha: fullSubmission.jobInfo.businessField || '',
+          
+          // Account Info
+          tabungan_tipe: fullSubmission.savingsType || '',
+          atm_tipe: fullSubmission.cardType || '',
+          nominal_setoran: fullSubmission.accountInfo.initialDeposit || '',
+          tujuan_pembukaan: fullSubmission.jobInfo.accountPurpose || '',
+          
+          // Emergency Contact
+          kontak_darurat_nama: fullSubmission.emergencyContact?.name || '',
+          kontak_darurat_hp: fullSubmission.emergencyContact?.phone || '',
+          kontak_darurat_alamat: fullSubmission.emergencyContact?.address || '',
+          kontak_darurat_hubungan: fullSubmission.emergencyContact?.relationship || '',
+        });
+      }
+    } catch (err) {
+      console.error('Error loading full submission data:', err);
+      toast.error('Gagal memuat data lengkap submission');
+    }
+  };
 
   const loadEditHistory = async () => {
     setLoadingHistory(true);
