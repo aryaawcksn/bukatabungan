@@ -5,6 +5,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { Badge } from './ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { 
   Edit3, 
   Save, 
@@ -60,6 +61,106 @@ interface EditHistoryData {
   submission: SubmissionInfo;
   history: EditHistory[];
 }
+
+// Dropdown options based on FormSimpel.tsx and FormMutiara.tsx
+const DROPDOWN_OPTIONS = {
+  jenis_id: [
+    { value: 'KTP', label: '🪪 KTP / KIA' },
+    { value: 'Paspor', label: '📘 Paspor' },
+    { value: 'Lainnya', label: '📄 Lainnya' }
+  ],
+  jenis_kelamin: [
+    { value: 'Laki-laki', label: '👨 Laki-laki' },
+    { value: 'Perempuan', label: '👩 Perempuan' }
+  ],
+  status_kawin: [
+    { value: 'Belum Kawin', label: 'Belum Kawin' },
+    { value: 'Kawin', label: 'Kawin' },
+    { value: 'Cerai Hidup', label: 'Cerai Hidup' },
+    { value: 'Cerai Mati', label: 'Cerai Mati' }
+  ],
+  agama: [
+    { value: 'Islam', label: '☪️ Islam' },
+    { value: 'Kristen', label: '✝️ Kristen' },
+    { value: 'Katolik', label: '✝️ Katolik' },
+    { value: 'Hindu', label: '🕉️ Hindu' },
+    { value: 'Budha', label: '☸️ Budha' },
+    { value: 'Konghucu', label: '☯️ Konghucu' },
+    { value: 'Lainnya', label: 'Lainnya' }
+  ],
+  pendidikan: [
+    { value: 'SD', label: '🎒 SD' },
+    { value: 'SMP', label: '📚 SMP' },
+    { value: 'SMA', label: '🎓 SMA' },
+    { value: 'Diploma', label: '📜 Diploma (D3)' },
+    { value: 'Sarjana', label: '🎓 Sarjana (S1)' },
+    { value: 'Magister', label: '🎓 Magister (S2)' },
+    { value: 'Doktor', label: '🎓 Doktor (S3)' },
+    { value: 'Lainnya', label: 'Lainnya' }
+  ],
+  kewarganegaraan: [
+    { value: 'Indonesia', label: '🇮🇩 WNI (Warga Negara Indonesia)' },
+    { value: 'WNA', label: '🌍 WNA (Warga Negara Asing)' }
+  ],
+  status_rumah: [
+    { value: 'Milik Sendiri', label: '🏠 Milik Sendiri' },
+    { value: 'Milik Orang Tua', label: '👨‍👩‍👧 Milik Orang Tua' },
+    { value: 'Sewa/Kontrak', label: '🔑 Sewa/Kontrak' },
+    { value: 'Dinas', label: '🏢 Rumah Dinas' }
+  ],
+  pekerjaan: [
+    { value: 'pelajar-mahasiswa', label: '🎓 Pelajar / Mahasiswa' },
+    { value: 'karyawan-swasta', label: '💼 Karyawan Swasta' },
+    { value: 'pns', label: '🏛️ PNS / TNI / Polri' },
+    { value: 'wiraswasta', label: '🏪 Wiraswasta' },
+    { value: 'ibu-rumah-tangga', label: '🏠 Ibu Rumah Tangga' },
+    { value: 'lainnya', label: '📋 Lainnya' }
+  ],
+  gaji_per_bulan: [
+    { value: '< 3 Juta', label: '💰 < 3 Juta' },
+    { value: '3 - 5 Juta', label: '💰 3 - 5 Juta' },
+    { value: '5 - 10 Juta', label: '💰💰 5 - 10 Juta' },
+    { value: '> 10 Juta', label: '💰💰💰 > 10 Juta' }
+  ],
+  sumber_dana: [
+    { value: 'Gaji', label: 'Gaji' },
+    { value: 'Hasil Usaha', label: 'Hasil Usaha' },
+    { value: 'Orang Tua', label: 'Orang Tua' },
+    { value: 'Beasiswa', label: 'Beasiswa' },
+    { value: 'Warisan', label: 'Warisan' },
+    { value: 'Tabungan', label: 'Tabungan Pribadi' },
+    { value: 'Lainnya', label: 'Lainnya' }
+  ],
+  tabungan_tipe: [
+    { value: 'SimPel', label: 'SimPel' },
+    { value: 'Mutiara', label: 'Mutiara' },
+    { value: 'Reguler', label: 'Reguler' },
+    { value: 'TabunganKu', label: 'TabunganKu' },
+    { value: 'Arofah', label: 'Arofah' },
+    { value: 'Pensiun', label: 'Pensiun' },
+    { value: 'TamasyaPlus', label: 'TamasyaPlus' }
+  ],
+  atm_tipe: [
+    { value: 'Gold', label: 'Gold' },
+    { value: 'Silver', label: 'Silver' },
+    { value: 'Platinum', label: 'Platinum' }
+  ],
+  tujuan_pembukaan: [
+    { value: 'Menabung', label: 'Menabung' },
+    { value: 'Transaksi', label: 'Transaksi' },
+    { value: 'Investasi', label: 'Investasi' },
+    { value: 'Pendidikan', label: 'Pendidikan' },
+    { value: 'Lainnya', label: 'Lainnya' }
+  ],
+  kontak_darurat_hubungan: [
+    { value: 'Orang Tua', label: '👨‍👩‍👧 Orang Tua' },
+    { value: 'Suami/Istri', label: '💑 Suami/Istri' },
+    { value: 'Anak', label: '👶 Anak' },
+    { value: 'Saudara Kandung', label: '👫 Saudara Kandung' },
+    { value: 'Kerabat Lain', label: '👥 Kerabat Lain' },
+    { value: 'Lainnya', label: '✏️ Lainnya' }
+  ]
+};
 
 export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: EditSubmissionDialogProps) {
   const [editMode, setEditMode] = useState(false);
@@ -421,6 +522,57 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
     return labels[fieldName] || fieldName;
   };
 
+  // Helper function to render appropriate input component
+  const renderInputField = (fieldName: string, value: string, onChange: (value: string) => void) => {
+    const options = DROPDOWN_OPTIONS[fieldName as keyof typeof DROPDOWN_OPTIONS];
+    
+    if (options) {
+      return (
+        <Select value={value} onValueChange={onChange}>
+          <SelectTrigger>
+            <SelectValue placeholder={`Pilih ${getFieldLabel(fieldName)}`} />
+          </SelectTrigger>
+          <SelectContent>
+            {options.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      );
+    }
+
+    // Special cases for specific input types
+    if (fieldName === 'tanggal_lahir') {
+      return (
+        <Input
+          type="date"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      );
+    }
+
+    if (fieldName === 'email') {
+      return (
+        <Input
+          type="email"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      );
+    }
+
+    // Default text input
+    return (
+      <Input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      />
+    );
+  };
+
   // Only show edit button for approved submissions
   if (submission.status !== 'approved') {
     return null;
@@ -511,11 +663,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
                   </div>
                   <div>
                     <Label htmlFor="jenis_id">Jenis ID</Label>
-                    <Input
-                      id="jenis_id"
-                      value={formData.jenis_id}
-                      onChange={(e) => handleInputChange('jenis_id', e.target.value)}
-                    />
+                    {renderInputField('jenis_id', formData.jenis_id, (value) => handleInputChange('jenis_id', value))}
                   </div>
                   <div>
                     <Label htmlFor="no_id">Nomor ID</Label>
@@ -535,12 +683,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
                   </div>
                   <div>
                     <Label htmlFor="tanggal_lahir">Tanggal Lahir</Label>
-                    <Input
-                      id="tanggal_lahir"
-                      type="date"
-                      value={formData.tanggal_lahir}
-                      onChange={(e) => handleInputChange('tanggal_lahir', e.target.value)}
-                    />
+                    {renderInputField('tanggal_lahir', formData.tanggal_lahir, (value) => handleInputChange('tanggal_lahir', value))}
                   </div>
                   <div className="md:col-span-2">
                     <Label htmlFor="alamat_id">Alamat KTP</Label>
@@ -568,12 +711,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
                   </div>
                   <div>
                     <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => handleInputChange('email', e.target.value)}
-                    />
+                    {renderInputField('email', formData.email, (value) => handleInputChange('email', value))}
                   </div>
                   <div>
                     <Label htmlFor="no_hp">No HP</Label>
@@ -582,6 +720,38 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
                       value={formData.no_hp}
                       onChange={(e) => handleInputChange('no_hp', e.target.value)}
                     />
+                  </div>
+                  <div>
+                    <Label htmlFor="jenis_kelamin">Jenis Kelamin</Label>
+                    {renderInputField('jenis_kelamin', formData.jenis_kelamin, (value) => handleInputChange('jenis_kelamin', value))}
+                  </div>
+                  <div>
+                    <Label htmlFor="status_kawin">Status Pernikahan</Label>
+                    {renderInputField('status_kawin', formData.status_kawin, (value) => handleInputChange('status_kawin', value))}
+                  </div>
+                  <div>
+                    <Label htmlFor="agama">Agama</Label>
+                    {renderInputField('agama', formData.agama, (value) => handleInputChange('agama', value))}
+                  </div>
+                  <div>
+                    <Label htmlFor="pendidikan">Pendidikan</Label>
+                    {renderInputField('pendidikan', formData.pendidikan, (value) => handleInputChange('pendidikan', value))}
+                  </div>
+                  <div>
+                    <Label htmlFor="nama_ibu_kandung">Nama Ibu Kandung</Label>
+                    <Input
+                      id="nama_ibu_kandung"
+                      value={formData.nama_ibu_kandung}
+                      onChange={(e) => handleInputChange('nama_ibu_kandung', e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="kewarganegaraan">Kewarganegaraan</Label>
+                    {renderInputField('kewarganegaraan', formData.kewarganegaraan, (value) => handleInputChange('kewarganegaraan', value))}
+                  </div>
+                  <div>
+                    <Label htmlFor="status_rumah">Status Rumah</Label>
+                    {renderInputField('status_rumah', formData.status_rumah, (value) => handleInputChange('status_rumah', value))}
                   </div>
                 </div>
               </div>
@@ -595,11 +765,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   <div>
                     <Label htmlFor="pekerjaan">Pekerjaan</Label>
-                    <Input
-                      id="pekerjaan"
-                      value={formData.pekerjaan}
-                      onChange={(e) => handleInputChange('pekerjaan', e.target.value)}
-                    />
+                    {renderInputField('pekerjaan', formData.pekerjaan, (value) => handleInputChange('pekerjaan', value))}
                   </div>
                   <div>
                     <Label htmlFor="nama_perusahaan">Nama Perusahaan</Label>
@@ -619,19 +785,11 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
                   </div>
                   <div>
                     <Label htmlFor="gaji_per_bulan">Gaji per Bulan</Label>
-                    <Input
-                      id="gaji_per_bulan"
-                      value={formData.gaji_per_bulan}
-                      onChange={(e) => handleInputChange('gaji_per_bulan', e.target.value)}
-                    />
+                    {renderInputField('gaji_per_bulan', formData.gaji_per_bulan, (value) => handleInputChange('gaji_per_bulan', value))}
                   </div>
                   <div>
                     <Label htmlFor="sumber_dana">Sumber Dana</Label>
-                    <Input
-                      id="sumber_dana"
-                      value={formData.sumber_dana}
-                      onChange={(e) => handleInputChange('sumber_dana', e.target.value)}
-                    />
+                    {renderInputField('sumber_dana', formData.sumber_dana, (value) => handleInputChange('sumber_dana', value))}
                   </div>
                   <div>
                     <Label htmlFor="rata_transaksi_per_bulan">Rata-rata Transaksi</Label>
@@ -640,6 +798,38 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
                       value={formData.rata_transaksi_per_bulan}
                       onChange={(e) => handleInputChange('rata_transaksi_per_bulan', e.target.value)}
                     />
+                  </div>
+                </div>
+              </div>
+
+              {/* Account Info Section */}
+              <div className="bg-white p-6 rounded-xl border border-slate-200">
+                <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                  <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                  </svg>
+                  Informasi Rekening
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div>
+                    <Label htmlFor="tabungan_tipe">Jenis Rekening</Label>
+                    {renderInputField('tabungan_tipe', formData.tabungan_tipe, (value) => handleInputChange('tabungan_tipe', value))}
+                  </div>
+                  <div>
+                    <Label htmlFor="atm_tipe">Jenis Kartu ATM</Label>
+                    {renderInputField('atm_tipe', formData.atm_tipe, (value) => handleInputChange('atm_tipe', value))}
+                  </div>
+                  <div>
+                    <Label htmlFor="nominal_setoran">Nominal Setoran</Label>
+                    <Input
+                      id="nominal_setoran"
+                      value={formData.nominal_setoran}
+                      onChange={(e) => handleInputChange('nominal_setoran', e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="tujuan_pembukaan">Tujuan Pembukaan</Label>
+                    {renderInputField('tujuan_pembukaan', formData.tujuan_pembukaan, (value) => handleInputChange('tujuan_pembukaan', value))}
                   </div>
                 </div>
               </div>
@@ -669,11 +859,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
                   </div>
                   <div>
                     <Label htmlFor="kontak_darurat_hubungan">Hubungan</Label>
-                    <Input
-                      id="kontak_darurat_hubungan"
-                      value={formData.kontak_darurat_hubungan}
-                      onChange={(e) => handleInputChange('kontak_darurat_hubungan', e.target.value)}
-                    />
+                    {renderInputField('kontak_darurat_hubungan', formData.kontak_darurat_hubungan, (value) => handleInputChange('kontak_darurat_hubungan', value))}
                   </div>
                   <div>
                     <Label htmlFor="kontak_darurat_alamat">Alamat</Label>
