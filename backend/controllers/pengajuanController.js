@@ -2568,9 +2568,10 @@ export const editSubmission = async (req, res) => {
       }
       
       // Handle currency/numeric fields - remove formatting and validate
-      const currencyFields = ['gaji_per_bulan', 'rata_transaksi_per_bulan', 'nominal_setoran'];
+      const currencyFields = ['rata_transaksi_per_bulan', 'nominal_setoran']; // Removed gaji_per_bulan - it's a dropdown, not currency
       if (currencyFields.includes(fieldName)) {
         if (!stringValue || stringValue.trim() === '') return null;
+        
         // Remove "Rp", dots, commas, and spaces, keep only numbers
         const cleanValue = stringValue.replace(/[Rp\s\.,]/g, '');
         if (!cleanValue) return null;
@@ -2601,7 +2602,14 @@ export const editSubmission = async (req, res) => {
         'nama': 'Unknown',
         'no_id': 'UNKNOWN',
         'email': 'unknown@example.com',
-        'no_hp': '08000000000'
+        'no_hp': '08000000000',
+        'gaji_per_bulan': '< 3 Juta', // Default salary range for NOT NULL constraint
+        'sumber_dana': 'Lainnya', // Default income source
+        'jenis_kelamin': 'Laki-laki', // Default gender
+        'agama': 'Islam', // Default religion
+        'kewarganegaraan': 'Indonesia', // Default citizenship
+        'tempat_lahir': 'Unknown', // Default birth place
+        'alamat_id': 'Unknown' // Default address
       };
       
       if (requiredFields[fieldName]) {
@@ -2623,6 +2631,8 @@ export const editSubmission = async (req, res) => {
 
       const oldValue = fieldInfo.current;
       const newValue = processFieldValue(fieldName, rawValue);
+      
+      console.log(`🔍 Processing field ${fieldName}: "${rawValue}" -> "${newValue}" (was: "${oldValue}")`);
       
       // Only update if value actually changed
       if (String(oldValue || '') !== String(newValue || '')) {
