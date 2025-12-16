@@ -532,6 +532,27 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
         [field]: value
       };
       
+      // Special handling: Clear BO fields when rekening_untuk_sendiri is changed to true
+      if (field === 'rekening_untuk_sendiri' && value === true) {
+        console.log('🗑️ Clearing BO fields because rekening_untuk_sendiri changed to true');
+        
+        // Clear all BO fields
+        newData.bo_nama = '';
+        newData.bo_alamat = '';
+        newData.bo_tempat_lahir = '';
+        newData.bo_tanggal_lahir = '';
+        newData.bo_jenis_kelamin = '';
+        newData.bo_kewarganegaraan = '';
+        newData.bo_status_pernikahan = '';
+        newData.bo_jenis_id = '';
+        newData.bo_nomor_id = '';
+        newData.bo_sumber_dana = '';
+        newData.bo_hubungan = '';
+        newData.bo_nomor_hp = '';
+        newData.bo_pekerjaan = '';
+        newData.bo_pendapatan_tahun = '';
+      }
+      
       // Track changed fields
       if (originalFormData) {
         const newChangedFields = new Set(changedFields);
@@ -549,6 +570,20 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
           newChangedFields.delete(field);
         }
         
+        // If we're clearing BO fields, mark them as changed too
+        if (field === 'rekening_untuk_sendiri' && value === true) {
+          const boFields = ['bo_nama', 'bo_alamat', 'bo_tempat_lahir', 'bo_tanggal_lahir', 
+                           'bo_jenis_kelamin', 'bo_kewarganegaraan', 'bo_status_pernikahan', 
+                           'bo_jenis_id', 'bo_nomor_id', 'bo_sumber_dana', 'bo_hubungan', 
+                           'bo_nomor_hp', 'bo_pekerjaan', 'bo_pendapatan_tahun'];
+          
+          boFields.forEach(boField => {
+            if (originalFormData[boField] && originalFormData[boField] !== '') {
+              newChangedFields.add(boField);
+            }
+          });
+        }
+        
         setChangedFields(newChangedFields);
       }
       
@@ -564,23 +599,45 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
 
     setLoading(true);
     try {
+      // Prepare data to send
+      const dataToSend = {
+        ...formData,
+        // Add separated address components
+        alamat_jalan: addressComponents.alamatJalan,
+        provinsi: addressComponents.provinsi,
+        kota: addressComponents.kota,
+        kecamatan: addressComponents.kecamatan,
+        kelurahan: addressComponents.kelurahan,
+        editReason,
+        isEdit: true
+      };
+
+      // If rekening_untuk_sendiri is true, explicitly send empty BO fields to ensure they're cleared
+      if (formData.rekening_untuk_sendiri === true) {
+        console.log('🗑️ Sending empty BO fields to clear database');
+        dataToSend.bo_nama = '';
+        dataToSend.bo_alamat = '';
+        dataToSend.bo_tempat_lahir = '';
+        dataToSend.bo_tanggal_lahir = '';
+        dataToSend.bo_jenis_kelamin = '';
+        dataToSend.bo_kewarganegaraan = '';
+        dataToSend.bo_status_pernikahan = '';
+        dataToSend.bo_jenis_id = '';
+        dataToSend.bo_nomor_id = '';
+        dataToSend.bo_sumber_dana = '';
+        dataToSend.bo_hubungan = '';
+        dataToSend.bo_nomor_hp = '';
+        dataToSend.bo_pekerjaan = '';
+        dataToSend.bo_pendapatan_tahun = '';
+      }
+
       const res = await fetch(`${API_BASE_URL}/api/pengajuan/${submission.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({
-          ...formData,
-          // Add separated address components
-          alamat_jalan: addressComponents.alamatJalan,
-          provinsi: addressComponents.provinsi,
-          kota: addressComponents.kota,
-          kecamatan: addressComponents.kecamatan,
-          kelurahan: addressComponents.kelurahan,
-          editReason,
-          isEdit: true
-        })
+        body: JSON.stringify(dataToSend)
       });
 
       const data = await res.json();
