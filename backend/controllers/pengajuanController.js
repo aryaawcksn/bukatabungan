@@ -1704,33 +1704,39 @@ export const previewImportData = async (req, res) => {
             const isBlocked = ['pending', 'approved'].includes(existing.status);
 
             if (isBlocked) {
-              // Check for data conflicts
+              // Check for data conflicts (only if data is actually different)
               const conflicts = [];
               
-              if (submission.nama && existing.nama !== submission.nama) {
+              if (submission.nama && existing.nama && existing.nama.trim() !== submission.nama.trim()) {
                 conflicts.push({ field: 'nama', existing: existing.nama, new: submission.nama });
               }
               
-              if (submission.email && existing.email !== submission.email) {
+              if (submission.email && existing.email && existing.email.trim() !== submission.email.trim()) {
                 conflicts.push({ field: 'email', existing: existing.email, new: submission.email });
               }
               
-              if (submission.no_hp && existing.no_hp !== submission.no_hp) {
+              if (submission.no_hp && existing.no_hp && existing.no_hp.trim() !== submission.no_hp.trim()) {
                 conflicts.push({ field: 'no_hp', existing: existing.no_hp, new: submission.no_hp });
               }
+
+              // Only mark as conflict if there are actual data conflicts OR if it has been edited
+              const hasDataConflicts = conflicts.length > 0;
+              const hasBeenEdited = existing.edit_count > 0;
+              const isActualConflict = hasDataConflicts || hasBeenEdited;
 
               conflictResults.push({
                 index: i,
                 no_id: submission.no_id,
-                conflict: true,
+                conflict: isActualConflict,
                 status: existing.status,
-                hasBeenEdited: existing.edit_count > 0,
+                hasBeenEdited: hasBeenEdited,
                 editCount: existing.edit_count || 0,
                 lastEditedAt: existing.last_edited_at,
                 pengajuanId: existing.pengajuan_id,
                 kodeReferensi: existing.kode_referensi,
                 dataConflicts: conflicts,
-                severity: existing.edit_count > 0 ? 'high' : 'medium'
+                severity: hasBeenEdited ? 'high' : (hasDataConflicts ? 'medium' : 'none'),
+                isIdenticalData: !hasDataConflicts && !hasBeenEdited
               });
             } else {
               conflictResults.push({
@@ -1763,7 +1769,7 @@ export const previewImportData = async (req, res) => {
       importData.forEach((item, index) => {
         const conflictResult = conflictResults.find(r => r.index === index);
         
-        if (conflictResult && conflictResult.conflict) {
+        if (conflictResult && (conflictResult.conflict || conflictResult.isIdenticalData)) {
           analysis.existingRecords.push({
             kode_referensi: conflictResult.kodeReferensi || item.kode_referensi,
             nama_lengkap: item.nama_lengkap || item.nama,
@@ -1773,11 +1779,12 @@ export const previewImportData = async (req, res) => {
             hasBeenEdited: conflictResult.hasBeenEdited,
             editCount: conflictResult.editCount,
             dataConflicts: conflictResult.dataConflicts,
-            severity: conflictResult.severity
+            severity: conflictResult.severity,
+            isIdenticalData: conflictResult.isIdenticalData
           });
 
-          // Add to conflicts if there are data conflicts or if edited
-          if (conflictResult.dataConflicts.length > 0 || conflictResult.hasBeenEdited) {
+          // Only add to conflicts if there are actual conflicts (not identical data)
+          if (conflictResult.conflict && (conflictResult.dataConflicts.length > 0 || conflictResult.hasBeenEdited)) {
             analysis.conflicts.push({
               kode_referensi: conflictResult.kodeReferensi || item.kode_referensi,
               nama_lengkap: item.nama_lengkap || item.nama,

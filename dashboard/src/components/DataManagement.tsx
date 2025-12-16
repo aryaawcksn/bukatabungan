@@ -277,6 +277,10 @@ export default function DataManagement({ onDataImported, cabangList = [], userRo
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      // Reset previous preview data to force fresh analysis
+      setImportPreviewData(null);
+      setSelectedFile(null);
+      
       // Validasi tipe file
       const allowedTypes = [
         'application/json',
@@ -795,11 +799,18 @@ export default function DataManagement({ onDataImported, cabangList = [], userRo
               <div className="bg-amber-50 rounded-lg p-4 text-center">
                 <div className="text-2xl font-bold text-amber-600">{importPreviewData.existingRecords.length}</div>
                 <div className="text-xs text-amber-700">Sudah Ada</div>
-                {importPreviewData.existingRecords.filter((r: any) => r.hasBeenEdited).length > 0 && (
-                  <div className="text-xs text-red-600 mt-1">
-                    {importPreviewData.existingRecords.filter((r: any) => r.hasBeenEdited).length} Edited
-                  </div>
-                )}
+                <div className="text-xs text-slate-600 mt-1">
+                  {importPreviewData.existingRecords.filter((r: any) => r.isIdenticalData).length > 0 && (
+                    <div className="text-green-600">
+                      {importPreviewData.existingRecords.filter((r: any) => r.isIdenticalData).length} Identik
+                    </div>
+                  )}
+                  {importPreviewData.existingRecords.filter((r: any) => r.hasBeenEdited).length > 0 && (
+                    <div className="text-red-600">
+                      {importPreviewData.existingRecords.filter((r: any) => r.hasBeenEdited).length} Edited
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="bg-red-50 rounded-lg p-4 text-center">
                 <div className="text-2xl font-bold text-red-600">{importPreviewData.conflicts.length}</div>
@@ -913,6 +924,19 @@ export default function DataManagement({ onDataImported, cabangList = [], userRo
                     </span>
                   )}
                 </div>
+              </div>
+            )}
+
+            {/* Safe Import Info */}
+            {importPreviewData.conflicts.length === 0 && importPreviewData.existingRecords.length > 0 && (
+              <div className="mb-4 bg-green-50 border border-green-200 rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-green-800 mb-2">✅ Import Aman</h3>
+                <p className="text-green-700 text-sm">
+                  {importPreviewData.existingRecords.filter((r: any) => r.isIdenticalData).length > 0 
+                    ? `${importPreviewData.existingRecords.filter((r: any) => r.isIdenticalData).length} data identik dengan yang sudah ada (tidak akan berubah)`
+                    : 'Semua data dapat diimpor dengan aman'
+                  }
+                </p>
               </div>
             )}
 
