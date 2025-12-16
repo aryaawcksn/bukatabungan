@@ -41,6 +41,7 @@ interface FormDetailDialogProps {
   isMarked?: boolean;
   onToggleMark?: () => void;
   onEdit?: () => void;
+  onEditComplete?: () => void; // New callback for when edit is completed
 }
 
 // Helper UI components ------------------------------------------------------
@@ -99,11 +100,38 @@ const Field = ({ label, value, icon, fullWidth = false }: FieldProps) => {
   );
 };
 
-export function FormDetailDialog({ submission, open, onClose, onApprove, onReject, onEdit}: FormDetailDialogProps) {
+export function FormDetailDialog({ submission, open, onClose, onApprove, onReject, onEdit, onEditComplete}: FormDetailDialogProps) {
   const [loading, setLoading] = useState(false);
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
   const [detailSubmission, setDetailSubmission] = useState<FormSubmission>(submission);
   const [fetchingDetails, setFetchingDetails] = useState(false);
+
+  // Function to fetch full details
+  const fetchDetails = async () => {
+    if (!submission.id) return;
+    
+    setFetchingDetails(true);
+    try {
+      console.log('🔄 Fetching full details for submission:', submission.id);
+      const res = await fetch(`${API_BASE_URL}/api/pengajuan/${submission.id}`, {
+        credentials: 'include'
+      });
+      
+      if (!res.ok) throw new Error("Failed to fetch details");
+      
+      const data = await res.json();
+      if (data.success) {
+        const fullDetails = mapBackendDataToFormSubmission(data.data);
+        console.log('✅ Full details loaded:', fullDetails);
+        setDetailSubmission(fullDetails);
+      }
+    } catch (err) {
+      console.error("Error fetching detail:", err);
+      toast.error("Gagal memuat detail lengkap");
+    } finally {
+      setFetchingDetails(false);
+    }
+  };
 
   // Fetch full details when dialog opens
   useEffect(() => {
@@ -112,31 +140,18 @@ export function FormDetailDialog({ submission, open, onClose, onApprove, onRejec
        setDetailSubmission(submission);
        setPdfBlob(null);
        
-       const fetchDetails = async () => {
-         setFetchingDetails(true);
-         try {
-           const res = await fetch(`${API_BASE_URL}/api/pengajuan/${submission.id}`, {
-             credentials: 'include'
-           });
-           
-           if (!res.ok) throw new Error("Failed to fetch details");
-           
-           const data = await res.json();
-           if (data.success) {
-             const fullDetails = mapBackendDataToFormSubmission(data.data);
-             setDetailSubmission(fullDetails);
-           }
-         } catch (err) {
-           console.error("Error fetching detail:", err);
-           toast.error("Gagal memuat detail lengkap");
-         } finally {
-           setFetchingDetails(false);
-         }
-       };
-
        fetchDetails();
     }
-  }, [open, submission.id]); 
+  }, [open, submission.id]);
+
+  // Listen for changes in submission data to refresh
+  useEffect(() => {
+    if (open && submission.id) {
+      // If submission data has changed (like after edit), refresh details
+      console.log('🔄 Submission data may have changed, refreshing...');
+      fetchDetails();
+    }
+  }, [submission.submittedAt, submission.status]); // Listen to key fields that might change 
 
   const statusConfig = {
     pending: { label: 'Menunggu Review', variant: 'outline' as const, className: 'border-orange-500 text-orange-700 bg-orange-50' },
@@ -154,6 +169,14 @@ export function FormDetailDialog({ submission, open, onClose, onApprove, onRejec
 
   const handleDialogOpenChange = (isOpen: boolean) => {
     if (!isOpen) onClose();
+  };
+
+  const handleEditComplete = () => {
+    console.log('🎉 Edit completed, refreshing data...');
+    fetchDetails(); // Refresh the current dialog data
+    if (onEditComplete) {
+      onEditComplete(); // Notify parent to refresh its data too
+    }
   };
   
   return (

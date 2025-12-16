@@ -48,6 +48,7 @@ interface EditSubmissionDialogProps {
   open: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  onEditComplete?: () => void; // Optional callback for when edit is completed
 }
 
 interface EditHistory {
@@ -221,7 +222,7 @@ const DROPDOWN_OPTIONS = {
   ]
 };
 
-export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: EditSubmissionDialogProps) {
+export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onEditComplete }: EditSubmissionDialogProps) {
   const [editMode, setEditMode] = useState(false);
   const [loading, setLoading] = useState(false);
   const [editReason, setEditReason] = useState('');
@@ -667,6 +668,11 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
         
         // Refresh parent data
         onSuccess();
+        
+        // Notify that edit is completed (for detail dialog refresh)
+        if (onEditComplete) {
+          onEditComplete();
+        }
         
         console.log('✅ Form data reloaded successfully');
       }
@@ -1417,16 +1423,8 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
               ? (
                   <div className="flex items-center gap-2">
                     <span>
-                      {changedFields.size > 0 
-                        ? `${changedFields.size} field${changedFields.size > 1 ? 's' : ''} telah berubah`
-                        : 'Belum ada perubahan'
-                      }
+                      Pastikan data yang diubah sudah benar sebelum menyimpan.
                     </span>
-                    {changedFields.size > 0 && (
-                      <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-300">
-                        {changedFields.size} perubahan
-                      </Badge>
-                    )}
                   </div>
                 )
               : `Submission ini telah diedit ${editHistory?.submission.edit_count || 0} kali`

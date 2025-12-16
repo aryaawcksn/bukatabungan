@@ -316,6 +316,7 @@ export default function DashboardPage() {
   const [, setIsRefreshing] = useState(false);
   const [lastFetchTime, setLastFetchTime] = useState<Date | null>(null);
   const [selectedSubmission, setSelectedSubmission] = useState<FormSubmission | null>(null);
+  const [detailRefreshKey, setDetailRefreshKey] = useState(0);
   const [approvalDialog, setApprovalDialog] = useState<{ open: boolean; type: 'approve' | 'reject'; submission: FormSubmission | null }>({
     open: false,
     type: 'approve',
@@ -813,6 +814,12 @@ export default function DashboardPage() {
     setEditDialog({ open: false, submission: null });
     fetchSubmissions(); // Refresh data
     toast.success('Data berhasil diperbarui');
+  }, [fetchSubmissions]);
+
+  const handleEditComplete = useCallback(() => {
+    console.log('🎉 Edit completed, refreshing dashboard data...');
+    fetchSubmissions(); // Refresh data when edit is completed
+    setDetailRefreshKey(prev => prev + 1); // Force refresh detail dialog
   }, [fetchSubmissions]);
 
   const handleApprovalConfirm = useCallback(async (sendWhatsApp: boolean, message: string) => {
@@ -1789,12 +1796,14 @@ const handleToggleMark = useCallback((id: string) => {
       {selectedSubmission && (
         <Suspense fallback={null}>
           <FormDetailDialog
+            key={`${selectedSubmission.id}-${detailRefreshKey}`}
             submission={selectedSubmission}
             open={!!selectedSubmission}
             onClose={() => setSelectedSubmission(null)}
             onApprove={() => handleApprove(selectedSubmission.id)}
             onReject={() => handleReject(selectedSubmission.id)}
             onEdit={selectedSubmission.status === 'approved' ? () => handleEdit(selectedSubmission.id) : undefined}
+            onEditComplete={handleEditComplete}
             isMarked={markedSubmissions.has(selectedSubmission.id)}
             onToggleMark={selectedSubmission.status === 'pending' ? () => handleToggleMark(selectedSubmission.id) : undefined}
           />
@@ -1821,6 +1830,7 @@ const handleToggleMark = useCallback((id: string) => {
             open={editDialog.open}
             onClose={() => setEditDialog({ open: false, submission: null })}
             onSuccess={handleEditSuccess}
+            onEditComplete={handleEditComplete}
           />
         </Suspense>
       )}
