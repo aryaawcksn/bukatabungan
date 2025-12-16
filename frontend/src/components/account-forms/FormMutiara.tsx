@@ -45,6 +45,29 @@ export default function FormMutiara({
 }: FormMutiaraProps) {
   const [showTermsModal, setShowTermsModal] = useState(false);
 
+  // State for Indonesian address dropdowns
+  const [addressData, setAddressData] = useState({
+    provinces: [] as Array<{id: string, province: string}>,
+    cities: [] as Array<{id: string, name: string}>,
+    districts: [] as Array<{id: string, name: string}>,
+    villages: [] as Array<{id: string, name: string}>,
+    loadingProvinces: false,
+    loadingCities: false,
+    loadingDistricts: false,
+    loadingVillages: false,
+  });
+
+  // State for selected address IDs
+  const [selectedAddress, setSelectedAddress] = useState({
+    provinceId: '',
+    cityId: '',
+    districtId: '',
+    villageId: '',
+  });
+
+  // State to store the street address separately (not in formData)
+  const [streetAddress, setStreetAddress] = useState('');
+
   // Auto-set employment status and jenis_rekening for Mutiara
   React.useEffect(() => {
     setFormData(prev => ({ 
@@ -314,6 +337,155 @@ export default function FormMutiara({
       return next;
     });
   }, [formData.tipeNasabah, formData.nomorRekeningLama]);
+
+  // Load provinces when citizenship is WNI
+  React.useEffect(() => {
+    if (formData.citizenship === 'Indonesia') {
+      loadProvinces();
+    } else {
+      // Reset address data if not WNI
+      setAddressData(prev => ({
+        ...prev,
+        provinces: [],
+        cities: [],
+        districts: [],
+        villages: [],
+      }));
+      setSelectedAddress({
+        provinceId: '',
+        cityId: '',
+        districtId: '',
+        villageId: '',
+      });
+    }
+  }, [formData.citizenship]);
+
+  // API functions for Indonesian address
+  const loadProvinces = async () => {
+    setAddressData(prev => ({ ...prev, loadingProvinces: true }));
+    try {
+      const response = await fetch('https://cdn.jsdelivr.net/gh/rezzvy/geonesia-api/data/main.json');
+      const data = await response.json();
+      setAddressData(prev => ({ 
+        ...prev, 
+        provinces: data,
+        loadingProvinces: false 
+      }));
+    } catch (error) {
+      console.error('Error loading provinces:', error);
+      setAddressData(prev => ({ ...prev, loadingProvinces: false }));
+    }
+  };
+
+  const loadCities = async (provinceId: string) => {
+    setAddressData(prev => ({ ...prev, loadingCities: true, cities: [], districts: [], villages: [] }));
+    setSelectedAddress(prev => ({ ...prev, cityId: '', districtId: '', villageId: '' }));
+    
+    try {
+      const response = await fetch(`https://cdn.jsdelivr.net/gh/rezzvy/geonesia-api/data/cities/${provinceId}.json`);
+      const data = await response.json();
+      setAddressData(prev => ({ 
+        ...prev, 
+        cities: data.city || [],
+        loadingCities: false 
+      }));
+    } catch (error) {
+      console.error('Error loading cities:', error);
+      setAddressData(prev => ({ ...prev, loadingCities: false }));
+    }
+  };
+
+  const loadDistricts = async (cityId: string) => {
+    setAddressData(prev => ({ ...prev, loadingDistricts: true, districts: [], villages: [] }));
+    setSelectedAddress(prev => ({ ...prev, districtId: '', villageId: '' }));
+    
+    try {
+      const response = await fetch(`https://cdn.jsdelivr.net/gh/rezzvy/geonesia-api/data/districts/${cityId}.json`);
+      const data = await response.json();
+      setAddressData(prev => ({ 
+        ...prev, 
+        districts: data || [],
+        loadingDistricts: false 
+      }));
+    } catch (error) {
+      console.error('Error loading districts:', error);
+      setAddressData(prev => ({ ...prev, loadingDistricts: false }));
+    }
+  };
+
+  const loadVillages = async (districtId: string) => {
+    setAddressData(prev => ({ ...prev, loadingVillages: true, villages: [] }));
+    setSelectedAddress(prev => ({ ...prev, villageId: '' }));
+    
+    try {
+      const response = await fetch(`https://cdn.jsdelivr.net/gh/rezzvy/geonesia-api/data/villages/${districtId}.json`);
+      const data = await response.json();
+      setAddressData(prev => ({ 
+        ...prev, 
+        villages: data || [],
+        loadingVillages: false 
+      }));
+    } catch (error) {
+      console.error('Error loading villages:', error);
+      setAddressData(prev => ({ ...prev, loadingVillages: false }));
+    }
+  };
+
+  // Function to update address when dropdowns change
+  const updateFullAddress = (province: string, city: string, district: string, village: string) => {
+    const addressParts = [];
+    
+    // Always start with street address if available
+    if (streetAddress && streetAddress.trim()) {
+      addressParts.push(streetAddress.trim());
+    }
+    
+    // Add location hierarchy
+    if (village && village.trim()) addressParts.push(village.trim());
+    if (district && district.trim()) addressParts.push(district.trim());
+    if (city && city.trim()) addressParts.push(city.trim());
+    if (province && province.trim()) addressParts.push(province.trim());
+    
+    const fullAddress = addressParts.join(', ');
+    
+    setFormData(prev => ({
+      ...prev,
+      alamatJalan: streetAddress, // Store street address separately
+      province,
+      city,
+      kecamatan: district,
+      kelurahan: village,
+      address: fullAddress // Combined full address
+    }));
+  };
+
+  // Update full address when street address changes
+  React.useEffect(() => {
+    if (formData.citizenship === 'Indonesia' && selectedAddress.provinceId) {
+      const province = addressData.provinces.find(p => p.id === selectedAddress.provinceId);
+      const city = addressData.cities.find(c => c.id === selectedAddress.cityId);
+      const district = addressData.districts.find(d => d.id === selectedAddress.districtId);
+      const village = addressData.villages.find(v => v.id === selectedAddress.villageId);
+      
+      updateFullAddress(
+        province?.province || '',
+        city?.name || '',
+        district?.name || '',
+        village?.name || ''
+      );
+    } else if (formData.citizenship !== 'Indonesia') {
+      // For non-Indonesian, just use street address as full address
+      setFormData(prev => ({
+        ...prev,
+        alamatJalan: streetAddress,
+        address: streetAddress,
+        province: '',
+        city: '',
+        kecamatan: '',
+        kelurahan: ''
+      }));
+    }
+  }, [streetAddress, formData.citizenship, selectedAddress.provinceId, selectedAddress.cityId, selectedAddress.districtId, selectedAddress.villageId]);
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -940,65 +1112,270 @@ export default function FormMutiara({
             <div className="space-y-5">
 
               <div>
-                <Label htmlFor="address" className="text-gray-700 font-semibold">
-                  Alamat Lengkap (Jalan, RT/RW) <span className="text-red-500">*</span>
+                <Label htmlFor="streetAddress" className="text-gray-700 font-semibold">
+                  Alamat Jalan, RT/RW <span className="text-red-500">*</span>
                 </Label>
                 <Textarea
-                  id="address"
+                  id="streetAddress"
                   required
                   rows={3}
                   placeholder="Contoh: Jl. Magelang No. 123, RT 02/RW 05"
-                  value={formData.address}
-                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  value={streetAddress}
+                  onChange={(e) => setStreetAddress(e.target.value)}
                   className="mt-2 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
                 />
-                <p className="text-xs text-slate-500 mt-1">Alamat sesuai dengan KTP/identitas</p>
+                <p className="text-xs text-slate-500 mt-1">Masukkan alamat jalan, nomor rumah, RT/RW</p>
+                
+                {/* Address Preview for Indonesian Address */}
+                {formData.citizenship === 'Indonesia' && formData.address && (
+                  <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-xs text-green-700 font-medium mb-1">📍 Alamat Lengkap yang Terbentuk:</p>
+                    <p className="text-sm text-green-800 font-medium">{formData.address}</p>
+                    <p className="text-xs text-green-600 mt-1">Alamat ini akan tersimpan sebagai alamat lengkap Anda</p>
+                  </div>
+                )}
               </div>
 
-              <div className="grid md:grid-cols-3 gap-5">
-                <div>
-                  <Label htmlFor="province" className="text-gray-700 font-semibold">
-                    Provinsi <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="province"
-                    required
-                    placeholder="Contoh: DI Yogyakarta"
-                    value={formData.province}
-                    onChange={(e) => setFormData({ ...formData, province: e.target.value })}
-                    className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
-                  />
-                </div>
+              {/* Indonesian Address Dropdowns - Only show if WNI */}
+              {formData.citizenship === 'Indonesia' && (
+                <div className="space-y-5">
+                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <p className="text-sm text-blue-800 font-medium mb-2">📍 Alamat Indonesia</p>
+                    <p className="text-xs text-blue-600">
+                      Pilih alamat sesuai wilayah Indonesia. Alamat lengkap akan otomatis terbentuk dari pilihan Anda.
+                    </p>
+                  </div>
 
-                <div>
-                  <Label htmlFor="city" className="text-gray-700 font-semibold">
-                    Kota/Kabupaten <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="city"
-                    required
-                    placeholder="Contoh: Sleman"
-                    value={formData.city}
-                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                    className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
-                  />
-                </div>
+                  <div className="grid md:grid-cols-2 gap-5">
+                    {/* Province Dropdown */}
+                    <div>
+                      <Label className="text-gray-700 font-semibold">
+                        Provinsi <span className="text-red-500">*</span>
+                      </Label>
+                      <Select
+                        value={selectedAddress.provinceId}
+                        onValueChange={(value) => {
+                          const province = addressData.provinces.find(p => p.id === value);
+                          // Reset all dependent selections
+                          setSelectedAddress(prev => ({ 
+                            ...prev, 
+                            provinceId: value,
+                            cityId: '',
+                            districtId: '',
+                            villageId: ''
+                          }));
+                          if (province) {
+                            loadCities(value);
+                            updateFullAddress(province.province, '', '', '');
+                          }
+                        }}
+                        disabled={addressData.loadingProvinces}
+                      >
+                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
+                          <SelectValue placeholder={addressData.loadingProvinces ? "Memuat provinsi..." : "-- Pilih Provinsi --"} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {addressData.provinces.map((province) => (
+                            <SelectItem key={province.id} value={province.id}>
+                              {province.province}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                <div>
-                  <Label htmlFor="postalCode" className="text-gray-700 font-semibold">
-                    Kode Pos <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="postalCode"
-                    required
-                    maxLength={5}
-                    placeholder="55281"
-                    value={formData.postalCode}
-                    onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
-                    className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
-                  />
+                    {/* City Dropdown */}
+                    <div>
+                      <Label className="text-gray-700 font-semibold">
+                        Kota/Kabupaten <span className="text-red-500">*</span>
+                      </Label>
+                      <Select
+                        value={selectedAddress.cityId}
+                        onValueChange={(value) => {
+                          const city = addressData.cities.find(c => c.id === value);
+                          const province = addressData.provinces.find(p => p.id === selectedAddress.provinceId);
+                          // Reset dependent selections
+                          setSelectedAddress(prev => ({ 
+                            ...prev, 
+                            cityId: value,
+                            districtId: '',
+                            villageId: ''
+                          }));
+                          if (city && province) {
+                            loadDistricts(value);
+                            updateFullAddress(province.province, city.name, '', '');
+                          }
+                        }}
+                        disabled={!selectedAddress.provinceId || addressData.loadingCities}
+                      >
+                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
+                          <SelectValue placeholder={
+                            !selectedAddress.provinceId ? "Pilih provinsi dulu" :
+                            addressData.loadingCities ? "Memuat kota..." : 
+                            "-- Pilih Kota/Kabupaten --"
+                          } />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {addressData.cities.map((city) => (
+                            <SelectItem key={city.id} value={city.id}>
+                              {city.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-5">
+                    {/* District Dropdown */}
+                    <div>
+                      <Label className="text-gray-700 font-semibold flex items-center gap-2">
+                        Kecamatan
+                        <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-normal">Opsional</span>
+                      </Label>
+                      <Select
+                        value={selectedAddress.districtId}
+                        onValueChange={(value) => {
+                          const district = addressData.districts.find(d => d.id === value);
+                          const city = addressData.cities.find(c => c.id === selectedAddress.cityId);
+                          const province = addressData.provinces.find(p => p.id === selectedAddress.provinceId);
+                          // Reset dependent selections
+                          setSelectedAddress(prev => ({ 
+                            ...prev, 
+                            districtId: value,
+                            villageId: ''
+                          }));
+                          if (district && city && province) {
+                            loadVillages(value);
+                            updateFullAddress(province.province, city.name, district.name, '');
+                          }
+                        }}
+                        disabled={!selectedAddress.cityId || addressData.loadingDistricts}
+                      >
+                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
+                          <SelectValue placeholder={
+                            !selectedAddress.cityId ? "Pilih kota dulu" :
+                            addressData.loadingDistricts ? "Memuat kecamatan..." : 
+                            "-- Pilih Kecamatan --"
+                          } />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {addressData.districts.map((district) => (
+                            <SelectItem key={district.id} value={district.id}>
+                              {district.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Village Dropdown */}
+                    <div>
+                      <Label className="text-gray-700 font-semibold flex items-center gap-2">
+                        Kelurahan/Desa
+                        <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-normal">Opsional</span>
+                      </Label>
+                      <Select
+                        value={selectedAddress.villageId}
+                        onValueChange={(value) => {
+                          const village = addressData.villages.find(v => v.id === value);
+                          const district = addressData.districts.find(d => d.id === selectedAddress.districtId);
+                          const city = addressData.cities.find(c => c.id === selectedAddress.cityId);
+                          const province = addressData.provinces.find(p => p.id === selectedAddress.provinceId);
+                          setSelectedAddress(prev => ({ ...prev, villageId: value }));
+                          if (village && district && city && province) {
+                            updateFullAddress(province.province, city.name, district.name, village.name);
+                          }
+                        }}
+                        disabled={!selectedAddress.districtId || addressData.loadingVillages}
+                      >
+                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
+                          <SelectValue placeholder={
+                            !selectedAddress.districtId ? "Pilih kecamatan dulu" :
+                            addressData.loadingVillages ? "Memuat kelurahan..." : 
+                            "-- Pilih Kelurahan/Desa --"
+                          } />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {addressData.villages.map((village) => (
+                            <SelectItem key={village.id} value={village.id}>
+                              {village.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {/* Manual Address Input - Show if not WNI or as fallback */}
+              {formData.citizenship !== 'Indonesia' && (
+                <div className="grid md:grid-cols-3 gap-5">
+                  <div>
+                    <Label htmlFor="province" className="text-gray-700 font-semibold">
+                      Provinsi <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="province"
+                      required
+                      placeholder="Contoh: DI Yogyakarta"
+                      value={formData.province}
+                      onChange={(e) => setFormData({ ...formData, province: e.target.value })}
+                      className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="city" className="text-gray-700 font-semibold">
+                      Kota/Kabupaten <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="city"
+                      required
+                      placeholder="Contoh: Sleman"
+                      value={formData.city}
+                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                      className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="postalCode" className="text-gray-700 font-semibold">
+                      Kode Pos <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="postalCode"
+                      required
+                      maxLength={5}
+                      placeholder="55281"
+                      value={formData.postalCode}
+                      onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
+                      className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Postal Code for Indonesian Address */}
+              {formData.citizenship === 'Indonesia' && (
+                <div className="grid md:grid-cols-3 gap-5">
+                  <div>
+                    <Label htmlFor="postalCode" className="text-gray-700 font-semibold">
+                      Kode Pos <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="postalCode"
+                      required
+                      maxLength={5}
+                      placeholder="55281"
+                      value={formData.postalCode}
+                      onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
+                      className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
+                    />
+                  </div>
+                </div>
+              )}
               
               <div className="grid md:grid-cols-2 gap-5">
                  <div>

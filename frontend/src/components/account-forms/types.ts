@@ -8,10 +8,13 @@ export interface AccountFormData {
     birthDate: string;
     // Data Diri Tambahan
     tempatLahir: string;
-    address: string; // Alamat KTP
+    address: string; // Alamat KTP (combined full address)
+    alamatJalan: string; // Street address (Jl. Magelang No. 123, RT 02/RW 05)
     alamatDomisili: string; // Alamat Domisili
-    province: string;
-    city: string;
+    province: string; // Province name
+    city: string; // City/Regency name
+    kecamatan: string; // District name
+    kelurahan: string; // Village/Sub-district name
     postalCode: string;
     statusRumah: string;
     agama: string;

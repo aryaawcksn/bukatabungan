@@ -80,6 +80,11 @@ export const createPengajuan = async (req, res) => {
       tanggal_lahir,
       alamat_id,
       alamat, // fallback for alamat_id
+      alamat_jalan, // street address (RT/RW)
+      provinsi, // province from dropdown
+      kota, // city from dropdown  
+      kecamatan, // district from dropdown
+      kelurahan, // village from dropdown
       kode_pos_id,
       kode_pos, // fallback
       alamat_now,
@@ -216,16 +221,16 @@ export const createPengajuan = async (req, res) => {
     const insertCddSelfQuery = `
       INSERT INTO cdd_self (
         pengajuan_id, kode_referensi, nama, alias, jenis_id, no_id, berlaku_id,
-        tempat_lahir, tanggal_lahir, alamat_id, kode_pos_id, alamat_now,
+        tempat_lahir, tanggal_lahir, alamat_id, alamat_jalan, provinsi, kota, kecamatan, kelurahan, kode_pos_id, alamat_now,
         jenis_kelamin, status_kawin, agama, pendidikan, nama_ibu_kandung,
         npwp, email, no_hp, kewarganegaraan, status_rumah, rekening_untuk_sendiri,
         tipe_nasabah, nomor_rekening_lama, created_at
       ) VALUES (
         $1, $2, $3, $4, $5, $6, $7,
-        $8, $9, $10, $11, $12,
-        $13, $14, $15, $16, $17,
-        $18, $19, $20, $21, $22, $23,
-        $24, $25, NOW()
+        $8, $9, $10, $11, $12, $13, $14, $15, $16, $17,
+        $18, $19, $20, $21, $22,
+        $23, $24, $25, $26, $27, $28,
+        $29, $30, NOW()
       )
     `;
     const cddSelfValues = [
@@ -239,6 +244,11 @@ export const createPengajuan = async (req, res) => {
       tempat_lahir,
       tanggal_lahir,
       finalAlamatId,
+      emptyToNull(alamat_jalan),
+      emptyToNull(provinsi),
+      emptyToNull(kota),
+      emptyToNull(kecamatan),
+      emptyToNull(kelurahan),
       finalKodePosId,
       finalAlamatNow,
       jenis_kelamin,

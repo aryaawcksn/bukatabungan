@@ -12,32 +12,22 @@ async function runMigration() {
     const client = await pool.connect();
     
     console.log('📄 Reading migration file...');
-    const migrationSQL = fs.readFileSync('./migrations/007_add_edit_audit_trail.sql', 'utf8');
+    const migrationSQL = fs.readFileSync('./migrations/008_add_address_breakdown_fields.sql', 'utf8');
     
     console.log('🚀 Running migration...');
     await client.query(migrationSQL);
     
     console.log('✅ Migration completed successfully!');
     
-    // Verify tables were created
-    const result = await client.query(`
-      SELECT table_name 
-      FROM information_schema.tables 
-      WHERE table_schema = 'public' 
-      AND table_name IN ('submission_edit_history')
-    `);
-    
-    console.log('📋 Created tables:', result.rows.map(r => r.table_name));
-    
-    // Check new columns
+    // Check new address columns in cdd_self table
     const columns = await client.query(`
       SELECT column_name 
       FROM information_schema.columns 
-      WHERE table_name = 'pengajuan_tabungan' 
-      AND column_name IN ('last_edited_at', 'last_edited_by', 'edit_count', 'original_approved_by', 'original_approved_at')
+      WHERE table_name = 'cdd_self' 
+      AND column_name IN ('alamat_jalan', 'provinsi', 'kota', 'kecamatan', 'kelurahan')
     `);
     
-    console.log('📋 Added columns to pengajuan_tabungan:', columns.rows.map(r => r.column_name));
+    console.log('📋 Added address columns to cdd_self:', columns.rows.map(r => r.column_name));
     
     client.release();
     process.exit(0);

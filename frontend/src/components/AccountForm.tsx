@@ -114,9 +114,12 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
   // New Fields
   tempatLahir: '',
   address: '',
+  alamatJalan: '',
   alamatDomisili: '',
   province: '',
   city: '',
+  kecamatan: '',
+  kelurahan: '',
   postalCode: '',
   statusRumah: '',
   agama: '',
@@ -624,11 +627,14 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       
       alamat_id: data.address,
       alamat: data.address,
+      alamat_jalan: data.alamatJalan,
       alamat_now: data.alamatDomisili || data.address,
       kode_pos_id: data.postalCode,
       
       provinsi: data.province,
       kota: data.city,
+      kecamatan: data.kecamatan,
+      kelurahan: data.kelurahan,
       kode_pos: data.postalCode,
       
       jenis_kelamin: data.gender,
