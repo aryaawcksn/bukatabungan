@@ -2543,18 +2543,36 @@ export const editSubmission = async (req, res) => {
 
     // Helper function to process field values
     const processFieldValue = (fieldName, value) => {
+      // Handle null, undefined, or non-string values
+      if (value === null || value === undefined) {
+        return null;
+      }
+      
+      // Handle boolean values (like rekening_untuk_sendiri)
+      if (typeof value === 'boolean') {
+        return value;
+      }
+      
+      // Handle number values
+      if (typeof value === 'number') {
+        return value;
+      }
+      
+      // Convert to string for processing
+      const stringValue = String(value);
+      
       // Handle date fields - convert empty string to null
-      const dateFields = ['tanggal_lahir', 'berlaku_id'];
+      const dateFields = ['tanggal_lahir', 'berlaku_id', 'bo_tanggal_lahir'];
       if (dateFields.includes(fieldName)) {
-        return value && value.trim() !== '' ? value : null;
+        return stringValue && stringValue.trim() !== '' ? stringValue : null;
       }
       
       // Handle currency/numeric fields - remove formatting
-      const currencyFields = ['gaji_per_bulan', 'rata_transaksi_per_bulan', 'nominal_setoran'];
+      const currencyFields = ['gaji_per_bulan', 'rata_transaksi_per_bulan', 'nominal_setoran', 'bo_pendapatan_tahun'];
       if (currencyFields.includes(fieldName)) {
-        if (!value || value.trim() === '') return null;
+        if (!stringValue || stringValue.trim() === '') return null;
         // Remove "Rp", dots, commas, and spaces, keep only numbers
-        const numericValue = value.toString().replace(/[Rp\s\.,]/g, '');
+        const numericValue = stringValue.replace(/[Rp\s\.,]/g, '');
         return numericValue || null;
       }
       
@@ -2569,11 +2587,11 @@ export const editSubmission = async (req, res) => {
       };
       
       if (requiredFields[fieldName]) {
-        return value && value.trim() !== '' ? value : requiredFields[fieldName];
+        return stringValue && stringValue.trim() !== '' ? stringValue : requiredFields[fieldName];
       }
       
       // Handle other empty strings
-      return value && value.trim() !== '' ? value : null;
+      return stringValue && stringValue.trim() !== '' ? stringValue : null;
     };
 
     // Process each field to edit
