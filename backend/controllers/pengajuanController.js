@@ -2567,13 +2567,31 @@ export const editSubmission = async (req, res) => {
         return stringValue && stringValue.trim() !== '' ? stringValue : null;
       }
       
-      // Handle currency/numeric fields - remove formatting
-      const currencyFields = ['gaji_per_bulan', 'rata_transaksi_per_bulan', 'nominal_setoran', 'bo_pendapatan_tahun'];
+      // Handle currency/numeric fields - remove formatting and validate
+      const currencyFields = ['gaji_per_bulan', 'rata_transaksi_per_bulan', 'nominal_setoran'];
       if (currencyFields.includes(fieldName)) {
         if (!stringValue || stringValue.trim() === '') return null;
         // Remove "Rp", dots, commas, and spaces, keep only numbers
-        const numericValue = stringValue.replace(/[Rp\s\.,]/g, '');
-        return numericValue || null;
+        const cleanValue = stringValue.replace(/[Rp\s\.,]/g, '');
+        if (!cleanValue) return null;
+        
+        // Convert to number and validate range for NUMERIC(18,2)
+        const numericValue = parseFloat(cleanValue);
+        if (isNaN(numericValue)) return null;
+        
+        // Maximum value for NUMERIC(18,2) is 9999999999999999.99 (16 digits before decimal)
+        const maxValue = 9999999999999999.99;
+        if (numericValue > maxValue) {
+          console.warn(`⚠️ Value ${numericValue} exceeds maximum for ${fieldName}, capping at ${maxValue}`);
+          return maxValue.toString();
+        }
+        
+        return cleanValue;
+      }
+      
+      // Handle BO pendapatan_tahun separately (it's a string field, not numeric)
+      if (fieldName === 'bo_pendapatan_tahun') {
+        return stringValue && stringValue.trim() !== '' ? stringValue : null;
       }
       
       // Fields with NOT NULL constraints - provide defaults
@@ -2633,6 +2651,9 @@ export const editSubmission = async (req, res) => {
 
     // Execute table updates
     for (const [tableName, updates] of Object.entries(tableUpdates)) {
+      // Skip BO table here - it will be handled separately with UPSERT
+      if (tableName === 'bo') continue;
+      
       const setClause = Object.keys(updates).map((col, idx) => `${col} = $${idx + 2}`).join(', ');
       const values = [id, ...Object.values(updates)];
       
@@ -2640,14 +2661,16 @@ export const editSubmission = async (req, res) => {
       await client.query(updateQuery, values);
     }
 
-    // Special handling for BO table - use UPSERT to handle INSERT or UPDATE
+    // Special handling for BO table - use UPSERT now that unique constraint exists
     if (tableUpdates.bo) {
       const updates = tableUpdates.bo;
       const columns = Object.keys(updates);
       const placeholders = columns.map((_, idx) => `$${idx + 2}`).join(', ');
       const updateClause = columns.map(col => `${col} = EXCLUDED.${col}`).join(', ');
       
-      // Use INSERT ... ON CONFLICT to handle both INSERT and UPDATE cases
+      console.log('🔍 BO Updates:', updates);
+      
+      // Use INSERT ... ON CONFLICT now that unique constraint exists
       const upsertQuery = `
         INSERT INTO bo (pengajuan_id, ${columns.join(', ')}) 
         VALUES ($1, ${placeholders})
@@ -2655,6 +2678,10 @@ export const editSubmission = async (req, res) => {
         DO UPDATE SET ${updateClause}
       `;
       const values = [id, ...Object.values(updates)];
+      
+      console.log('🔍 BO UPSERT Query:', upsertQuery);
+      console.log('🔍 BO UPSERT Values:', values);
+      
       await client.query(upsertQuery, values);
     }
 
