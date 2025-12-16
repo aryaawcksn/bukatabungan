@@ -412,6 +412,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
 
   const loadFullSubmissionData = async () => {
     try {
+      console.log('🔄 Loading full submission data for ID:', submission.id);
       const res = await fetch(`${API_BASE_URL}/api/pengajuan/${submission.id}`, {
         credentials: 'include'
       });
@@ -597,6 +598,12 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
       return;
     }
 
+    // Prevent double submission
+    if (loading) {
+      console.log('⚠️ Save already in progress, ignoring duplicate call');
+      return;
+    }
+
     setLoading(true);
     try {
       // Prepare data to send
@@ -650,8 +657,18 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
         toast.success(`Berhasil mengedit ${data.changedFields} field`);
         setEditMode(false);
         setEditReason('');
-        loadEditHistory(); // Reload history
-        onSuccess(); // Refresh parent data
+        
+        // Reload form data to reflect changes immediately
+        console.log('🔄 Reloading form data after successful save...');
+        await loadFullSubmissionData();
+        
+        // Reload history
+        await loadEditHistory();
+        
+        // Refresh parent data
+        onSuccess();
+        
+        console.log('✅ Form data reloaded successfully');
       }
     } catch (err: any) {
       console.error('Error editing submission:', err);
@@ -835,7 +852,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
   }
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={loading ? undefined : onClose}>
       <DialogContent className="max-w-[95vw] sm:max-w-6xl h-[90vh] p-0 gap-0 overflow-hidden flex flex-col bg-slate-50">
         
         {/* Header */}
@@ -1428,8 +1445,8 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
                   disabled={loading || !editReason.trim() || changedFields.size === 0}
                   className={changedFields.size > 0 ? 'bg-orange-600 hover:bg-orange-700' : ''}
                 >
-                  <Save className="w-4 h-4 mr-2" />
-                  {loading ? 'Menyimpan...' : `Simpan ${changedFields.size} Perubahan`}
+                  <Save className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                  {loading ? 'Menyimpan & Memuat Ulang...' : `Simpan ${changedFields.size} Perubahan`}
                 </Button>
               </>
             ) : (
