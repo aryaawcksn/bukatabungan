@@ -225,11 +225,46 @@ const checkBulkConflicts = async (submissions) => {
 };
 ```
 
-## Status
-✅ **COMPLETED** - Enhanced conflict detection system ready for integration with import functionality.
+## UI Integration Completed
 
-## Next Steps (Optional)
-1. Integrate with existing import UI
-2. Add conflict resolution interface
-3. Implement override permissions for admin users
-4. Add email notifications for conflict resolution
+### Enhanced Import Preview
+The import preview UI now shows:
+
+1. **Enhanced Conflict Detection**
+   - High Risk (Red): Submissions that have been edited after approval
+   - Medium Risk (Amber): Submissions with data conflicts but not edited
+   - Clear visual indicators for edit history
+
+2. **Detailed Conflict Information**
+   - NIK/ID information
+   - Edit count and history
+   - Specific field conflicts (nama, email, no_hp)
+   - Severity-based color coding
+
+3. **Smart Statistics**
+   - Total existing records with edit count
+   - Breakdown by risk severity
+   - Clear warnings for high-risk conflicts
+
+### Files Modified
+1. `backend/routes/check-nik.js` - Enhanced conflict detection APIs
+2. `backend/controllers/pengajuanController.js` - Updated previewImportData function
+3. `dashboard/src/components/DataManagement.tsx` - Enhanced UI with edit history display
+4. `IMPORT_CONFLICT_DETECTION.md` - Documentation
+
+## Status
+✅ **FULLY COMPLETED** - Enhanced conflict detection system integrated with import UI.
+
+### What Works Now:
+- ✅ Detects submissions that have been edited after approval
+- ✅ Shows detailed conflict information in import preview
+- ✅ Visual indicators for high-risk vs medium-risk conflicts
+- ✅ Field-level conflict detection (nama, email, no_hp)
+- ✅ Edit history tracking and display
+- ✅ Smart categorization of import data
+
+### User Experience:
+- Users can see which submissions have been manually edited
+- Clear warnings for high-risk conflicts that need manual review
+- Detailed information about what data conflicts exist
+- Informed decision making before import execution

@@ -795,6 +795,11 @@ export default function DataManagement({ onDataImported, cabangList = [], userRo
               <div className="bg-amber-50 rounded-lg p-4 text-center">
                 <div className="text-2xl font-bold text-amber-600">{importPreviewData.existingRecords.length}</div>
                 <div className="text-xs text-amber-700">Sudah Ada</div>
+                {importPreviewData.existingRecords.filter((r: any) => r.hasBeenEdited).length > 0 && (
+                  <div className="text-xs text-red-600 mt-1">
+                    {importPreviewData.existingRecords.filter((r: any) => r.hasBeenEdited).length} Edited
+                  </div>
+                )}
               </div>
               <div className="bg-red-50 rounded-lg p-4 text-center">
                 <div className="text-2xl font-bold text-red-600">{importPreviewData.conflicts.length}</div>
@@ -856,23 +861,56 @@ export default function DataManagement({ onDataImported, cabangList = [], userRo
             {/* Conflicts Warning */}
             {importPreviewData.conflicts.length > 0 && (
               <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-red-800 mb-2">⚠️ Konflik Status Terdeteksi</h3>
+                <h3 className="text-lg font-semibold text-red-800 mb-2">⚠️ Konflik Data Terdeteksi</h3>
                 <p className="text-red-700 text-sm mb-3">
-                  Data berikut memiliki status berbeda dengan yang ada di database:
+                  Data berikut memiliki konflik dengan submission yang sudah ada. Beberapa mungkin sudah diedit setelah approval.
                 </p>
-                <div className="max-h-32 overflow-y-auto space-y-2">
+                <div className="max-h-40 overflow-y-auto space-y-2">
                   {importPreviewData.conflicts.slice(0, 5).map((conflict: any, index: number) => (
-                    <div key={index} className="bg-white rounded p-2 text-xs">
-                      <div className="font-medium">{conflict.nama_lengkap} ({conflict.kode_referensi})</div>
-                      <div className="text-slate-600">
-                        {conflict.currentStatus} → {conflict.newStatus}
+                    <div key={index} className={`bg-white rounded p-3 text-xs border-l-4 ${
+                      conflict.severity === 'high' ? 'border-red-500' : 'border-amber-500'
+                    }`}>
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="font-medium">{conflict.nama_lengkap}</div>
+                        {conflict.severity === 'high' && (
+                          <span className="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-medium">
+                            EDITED
+                          </span>
+                        )}
                       </div>
+                      <div className="text-slate-600 mb-1">
+                        NIK: {conflict.no_id} | Status: {conflict.currentStatus} → {conflict.newStatus}
+                      </div>
+                      {conflict.hasBeenEdited && (
+                        <div className="text-red-600 text-xs mb-1">
+                          ⚠️ Sudah diedit {conflict.editCount} kali setelah approval
+                        </div>
+                      )}
+                      {conflict.dataConflicts && conflict.dataConflicts.length > 0 && (
+                        <div className="text-amber-600 text-xs">
+                          📝 Konflik data: {conflict.dataConflicts.map((dc: any) => dc.field).join(', ')}
+                        </div>
+                      )}
                     </div>
                   ))}
                   {importPreviewData.conflicts.length > 5 && (
                     <div className="text-xs text-red-600">
                       +{importPreviewData.conflicts.length - 5} konflik lainnya
                     </div>
+                  )}
+                </div>
+                
+                {/* Severity Summary */}
+                <div className="mt-3 flex gap-2 text-xs">
+                  {importPreviewData.conflicts.filter((c: any) => c.severity === 'high').length > 0 && (
+                    <span className="bg-red-100 text-red-700 px-2 py-1 rounded">
+                      {importPreviewData.conflicts.filter((c: any) => c.severity === 'high').length} High Risk (Edited)
+                    </span>
+                  )}
+                  {importPreviewData.conflicts.filter((c: any) => c.severity === 'medium').length > 0 && (
+                    <span className="bg-amber-100 text-amber-700 px-2 py-1 rounded">
+                      {importPreviewData.conflicts.filter((c: any) => c.severity === 'medium').length} Medium Risk
+                    </span>
                   )}
                 </div>
               </div>

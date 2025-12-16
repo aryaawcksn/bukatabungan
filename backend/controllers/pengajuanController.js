@@ -1661,68 +1661,153 @@ export const previewImportData = async (req, res) => {
       analysis.cabangBreakdown[cabangId] = (analysis.cabangBreakdown[cabangId] || 0) + 1;
     });
 
-    // Cek data yang sudah ada berdasarkan kode_referensi
-    const referensiCodes = importData.map(item => item.kode_referensi).filter(Boolean);
+    // Enhanced conflict detection using NIK/no_id and data comparison
+    console.log('🔍 Starting enhanced conflict detection...');
+    
+    // Prepare submissions for bulk conflict check
+    const submissionsForCheck = importData.map(item => ({
+      no_id: item.no_id || item.nik,
+      nama: item.nama_lengkap || item.nama,
+      email: item.email,
+      no_hp: item.no_hp
+    })).filter(item => item.no_id); // Only check items with NIK
 
-    console.log('🔍 Debug preview - referensiCodes:', referensiCodes.length, 'dari', importData.length, 'total');
-    console.log('🔍 Sample referensi codes:', referensiCodes.slice(0, 3));
+    console.log('🔍 Checking conflicts for', submissionsForCheck.length, 'submissions with NIK');
 
-    if (referensiCodes.length > 0) {
-      const placeholders = referensiCodes.map((_, index) => `$${index + 1}`).join(',');
-      const existingQuery = `
-        SELECT cs.kode_referensi, p.status, p.cabang_id 
-        FROM pengajuan_tabungan p
-        LEFT JOIN cdd_self cs ON p.id = cs.pengajuan_id
-        WHERE cs.kode_referensi IN (${placeholders})
-      `;
+    if (submissionsForCheck.length > 0) {
+      // Use enhanced conflict detection
+      const conflictResults = [];
+      
+      for (let i = 0; i < submissionsForCheck.length; i++) {
+        const submission = submissionsForCheck[i];
+        
+        try {
+          const existingQuery = await pool.query(
+            `SELECT 
+               p.id as pengajuan_id,
+               p.status, 
+               p.edit_count,
+               p.last_edited_at,
+               cs.kode_referensi,
+               cs.nama,
+               cs.email,
+               cs.no_hp
+             FROM cdd_self cs
+             JOIN pengajuan_tabungan p ON cs.pengajuan_id = p.id
+             WHERE cs.no_id = $1 
+             LIMIT 1`,
+            [submission.no_id]
+          );
 
-      const existingResult = await pool.query(existingQuery, referensiCodes);
-      const existingMap = new Map();
+          if (existingQuery.rows.length > 0) {
+            const existing = existingQuery.rows[0];
+            const isBlocked = ['pending', 'approved'].includes(existing.status);
 
-      existingResult.rows.forEach(row => {
-        existingMap.set(row.kode_referensi, row);
-      });
+            if (isBlocked) {
+              // Check for data conflicts
+              const conflicts = [];
+              
+              if (submission.nama && existing.nama !== submission.nama) {
+                conflicts.push({ field: 'nama', existing: existing.nama, new: submission.nama });
+              }
+              
+              if (submission.email && existing.email !== submission.email) {
+                conflicts.push({ field: 'email', existing: existing.email, new: submission.email });
+              }
+              
+              if (submission.no_hp && existing.no_hp !== submission.no_hp) {
+                conflicts.push({ field: 'no_hp', existing: existing.no_hp, new: submission.no_hp });
+              }
 
-      // Kategorikan data
-      console.log('🔍 Existing map size:', existingMap.size);
-      console.log('🔍 Sample existing keys:', Array.from(existingMap.keys()).slice(0, 3));
+              conflictResults.push({
+                index: i,
+                no_id: submission.no_id,
+                conflict: true,
+                status: existing.status,
+                hasBeenEdited: existing.edit_count > 0,
+                editCount: existing.edit_count || 0,
+                lastEditedAt: existing.last_edited_at,
+                pengajuanId: existing.pengajuan_id,
+                kodeReferensi: existing.kode_referensi,
+                dataConflicts: conflicts,
+                severity: existing.edit_count > 0 ? 'high' : 'medium'
+              });
+            } else {
+              conflictResults.push({
+                index: i,
+                no_id: submission.no_id,
+                conflict: false,
+                canReplace: true,
+                status: existing.status
+              });
+            }
+          } else {
+            conflictResults.push({
+              index: i,
+              no_id: submission.no_id,
+              conflict: false
+            });
+          }
+        } catch (err) {
+          console.error(`Error checking conflict for NIK ${submission.no_id}:`, err);
+          conflictResults.push({
+            index: i,
+            no_id: submission.no_id,
+            conflict: false,
+            error: "Database error"
+          });
+        }
+      }
 
-      importData.forEach(item => {
-        const existing = existingMap.get(item.kode_referensi);
-        console.log('🔍 Checking item:', item.kode_referensi, 'existing:', !!existing);
-
-        if (existing) {
+      // Process results and categorize data
+      importData.forEach((item, index) => {
+        const conflictResult = conflictResults.find(r => r.index === index);
+        
+        if (conflictResult && conflictResult.conflict) {
           analysis.existingRecords.push({
-            kode_referensi: item.kode_referensi,
-            nama_lengkap: item.nama_lengkap,
-            currentStatus: existing.status,
+            kode_referensi: conflictResult.kodeReferensi || item.kode_referensi,
+            nama_lengkap: item.nama_lengkap || item.nama,
+            no_id: item.no_id || item.nik,
+            currentStatus: conflictResult.status,
             newStatus: item.status || 'pending',
-            willOverwrite: existing.status !== (item.status || 'pending')
+            hasBeenEdited: conflictResult.hasBeenEdited,
+            editCount: conflictResult.editCount,
+            dataConflicts: conflictResult.dataConflicts,
+            severity: conflictResult.severity
           });
 
-          // Cek konflik status
-          if (existing.status !== (item.status || 'pending')) {
+          // Add to conflicts if there are data conflicts or if edited
+          if (conflictResult.dataConflicts.length > 0 || conflictResult.hasBeenEdited) {
             analysis.conflicts.push({
-              kode_referensi: item.kode_referensi,
-              nama_lengkap: item.nama_lengkap,
-              currentStatus: existing.status,
-              newStatus: item.status || 'pending'
+              kode_referensi: conflictResult.kodeReferensi || item.kode_referensi,
+              nama_lengkap: item.nama_lengkap || item.nama,
+              no_id: item.no_id || item.nik,
+              currentStatus: conflictResult.status,
+              newStatus: item.status || 'pending',
+              hasBeenEdited: conflictResult.hasBeenEdited,
+              editCount: conflictResult.editCount,
+              dataConflicts: conflictResult.dataConflicts,
+              severity: conflictResult.severity,
+              message: conflictResult.hasBeenEdited 
+                ? `Submission has been edited ${conflictResult.editCount} times`
+                : `Data conflicts in ${conflictResult.dataConflicts.length} field(s)`
             });
           }
         } else {
           analysis.newRecords.push({
-            kode_referensi: item.kode_referensi,
-            nama_lengkap: item.nama_lengkap,
+            kode_referensi: item.kode_referensi || `NEW-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            nama_lengkap: item.nama_lengkap || item.nama,
+            no_id: item.no_id || item.nik,
             status: item.status || 'pending'
           });
         }
       });
     } else {
-      // Semua data baru (tidak ada kode referensi)
+      // No NIK data to check, treat all as new
       importData.forEach(item => {
         analysis.newRecords.push({
           kode_referensi: item.kode_referensi || `NEW-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-          nama_lengkap: item.nama_lengkap,
+          nama_lengkap: item.nama_lengkap || item.nama,
           status: item.status || 'pending'
         });
       });
