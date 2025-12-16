@@ -20,15 +20,17 @@ import {
 import { toast } from 'sonner';
 import { API_BASE_URL } from '../config/api';
 import { type FormSubmission, mapBackendDataToFormSubmission } from '../DashboardPage';
+import { parseAddress, combineAddress, type AddressComponents } from '../utils/addressParser';
+import IndonesianAddressDropdown from './IndonesianAddressDropdown';
 
 // Helper to format number string to IDR currency format
-const formatRupiah = (angka: string) => {
+const formatRupiah = (angka: string | number) => {
   if (!angka) return '';
-  const numberString = angka.replace(/[^,\d]/g, '').toString();
+  const numberString = angka.toString().replace(/[^,\d]/g, '');
   const split = numberString.split(',');
   const sisa = split[0].length % 3;
-  let rupiah = split[0].substr(0, sisa);
-  const ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+  let rupiah = split[0].substring(0, sisa);
+  const ribuan = split[0].substring(sisa).match(/\d{3}/gi);
 
   if (ribuan) {
     const separator = sisa ? '.' : '';
@@ -38,6 +40,8 @@ const formatRupiah = (angka: string) => {
   rupiah = split[1] !== undefined ? rupiah + ',' + split[1] : rupiah;
   return 'Rp. ' + rupiah;
 };
+
+
 
 interface EditSubmissionDialogProps {
   submission: FormSubmission;
@@ -230,7 +234,12 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
   const formatDateForInput = (dateString: string | undefined) => {
     if (!dateString) return '';
     try {
-      return new Date(dateString).toISOString().split('T')[0];
+      // Parse date and format to YYYY-MM-DD without timezone conversion
+      const date = new Date(dateString);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
     } catch {
       return '';
     }
@@ -299,6 +308,11 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
     bo_nomor_hp: '',
     bo_pekerjaan: '',
     bo_pendapatan_tahun: '',
+  });
+
+  // Address components state for better editing experience
+  const [addressComponents, setAddressComponents] = useState<AddressComponents>(() => {
+    return parseAddress(submission.personalData.address.street || '');
   });
 
   // Update form data when submission changes
@@ -538,6 +552,12 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
         credentials: 'include',
         body: JSON.stringify({
           ...formData,
+          // Add separated address components
+          alamat_jalan: addressComponents.alamatJalan,
+          provinsi: addressComponents.provinsi,
+          kota: addressComponents.kota,
+          kecamatan: addressComponents.kecamatan,
+          kelurahan: addressComponents.kelurahan,
           editReason,
           isEdit: true
         })
@@ -812,19 +832,11 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   <div>
                     <Label htmlFor="nama">Nama Lengkap</Label>
-                    <Input
-                      id="nama"
-                      value={formData.nama}
-                      onChange={(e) => handleInputChange('nama', e.target.value)}
-                    />
+                    {renderInputField('nama', formData.nama, (value) => handleInputChange('nama', value))}
                   </div>
                   <div>
                     <Label htmlFor="alias">Alias</Label>
-                    <Input
-                      id="alias"
-                      value={formData.alias}
-                      onChange={(e) => handleInputChange('alias', e.target.value)}
-                    />
+                    {renderInputField('alias', formData.alias, (value) => handleInputChange('alias', value))}
                   </div>
                   <div>
                     <Label htmlFor="jenis_id">Jenis ID</Label>
@@ -832,47 +844,44 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
                   </div>
                   <div>
                     <Label htmlFor="no_id">Nomor ID</Label>
-                    <Input
-                      id="no_id"
-                      value={formData.no_id}
-                      onChange={(e) => handleInputChange('no_id', e.target.value)}
-                    />
+                    {renderInputField('no_id', formData.no_id, (value) => handleInputChange('no_id', value))}
                   </div>
                   <div>
                     <Label htmlFor="tempat_lahir">Tempat Lahir</Label>
-                    <Input
-                      id="tempat_lahir"
-                      value={formData.tempat_lahir}
-                      onChange={(e) => handleInputChange('tempat_lahir', e.target.value)}
-                    />
+                    {renderInputField('tempat_lahir', formData.tempat_lahir, (value) => handleInputChange('tempat_lahir', value))}
                   </div>
                   <div>
                     <Label htmlFor="tanggal_lahir">Tanggal Lahir</Label>
                     {renderInputField('tanggal_lahir', formData.tanggal_lahir, (value) => handleInputChange('tanggal_lahir', value))}
                   </div>
                   <div className="md:col-span-2">
-                    <Label htmlFor="alamat_id">Alamat KTP</Label>
-                    <Input
-                      id="alamat_id"
-                      value={formData.alamat_id}
-                      onChange={(e) => handleInputChange('alamat_id', e.target.value)}
+                    <Label className="text-sm font-medium text-gray-700 mb-3 block">
+                      📍 Alamat KTP (Dropdown Indonesia)
+                    </Label>
+                    <IndonesianAddressDropdown
+                      addressComponents={addressComponents}
+                      onAddressChange={(components) => {
+                        setAddressComponents(components);
+                        // Update the combined address in formData
+                        const combinedAddress = combineAddress(components);
+                        handleInputChange('alamat_id', combinedAddress);
+                      }}
+                      citizenship={formData.kewarganegaraan}
                     />
+                    {formData.alamat_id && (
+                      <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded">
+                        <p className="text-xs text-green-700 font-medium">📍 Alamat Lengkap:</p>
+                        <p className="text-sm text-green-800 mt-1">{formData.alamat_id}</p>
+                      </div>
+                    )}
                   </div>
                   <div>
                     <Label htmlFor="kode_pos_id">Kode Pos</Label>
-                    <Input
-                      id="kode_pos_id"
-                      value={formData.kode_pos_id}
-                      onChange={(e) => handleInputChange('kode_pos_id', e.target.value)}
-                    />
+                    {renderInputField('kode_pos_id', formData.kode_pos_id, (value) => handleInputChange('kode_pos_id', value))}
                   </div>
                   <div className="md:col-span-2">
                     <Label htmlFor="alamat_now">Alamat Domisili</Label>
-                    <Input
-                      id="alamat_now"
-                      value={formData.alamat_now}
-                      onChange={(e) => handleInputChange('alamat_now', e.target.value)}
-                    />
+                    {renderInputField('alamat_now', formData.alamat_now, (value) => handleInputChange('alamat_now', value))}
                   </div>
                   <div>
                     <Label htmlFor="email">Email</Label>
@@ -880,11 +889,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
                   </div>
                   <div>
                     <Label htmlFor="no_hp">No HP</Label>
-                    <Input
-                      id="no_hp"
-                      value={formData.no_hp}
-                      onChange={(e) => handleInputChange('no_hp', e.target.value)}
-                    />
+                    {renderInputField('no_hp', formData.no_hp, (value) => handleInputChange('no_hp', value))}
                   </div>
                   <div>
                     <Label htmlFor="jenis_kelamin">Jenis Kelamin</Label>
@@ -904,11 +909,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
                   </div>
                   <div>
                     <Label htmlFor="nama_ibu_kandung">Nama Ibu Kandung</Label>
-                    <Input
-                      id="nama_ibu_kandung"
-                      value={formData.nama_ibu_kandung}
-                      onChange={(e) => handleInputChange('nama_ibu_kandung', e.target.value)}
-                    />
+                    {renderInputField('nama_ibu_kandung', formData.nama_ibu_kandung, (value) => handleInputChange('nama_ibu_kandung', value))}
                   </div>
                   <div>
                     <Label htmlFor="kewarganegaraan">Kewarganegaraan</Label>
@@ -934,19 +935,11 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
                   </div>
                   <div>
                     <Label htmlFor="nama_perusahaan">Nama Perusahaan</Label>
-                    <Input
-                      id="nama_perusahaan"
-                      value={formData.nama_perusahaan}
-                      onChange={(e) => handleInputChange('nama_perusahaan', e.target.value)}
-                    />
+                    {renderInputField('nama_perusahaan', formData.nama_perusahaan, (value) => handleInputChange('nama_perusahaan', value))}
                   </div>
                   <div>
                     <Label htmlFor="jabatan">Jabatan</Label>
-                    <Input
-                      id="jabatan"
-                      value={formData.jabatan}
-                      onChange={(e) => handleInputChange('jabatan', e.target.value)}
-                    />
+                    {renderInputField('jabatan', formData.jabatan, (value) => handleInputChange('jabatan', value))}
                   </div>
                   <div>
                     <Label htmlFor="gaji_per_bulan">Gaji per Bulan</Label>
@@ -958,11 +951,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
                   </div>
                   <div>
                     <Label htmlFor="rata_transaksi_per_bulan">Rata-rata Transaksi</Label>
-                    <Input
-                      id="rata_transaksi_per_bulan"
-                      value={formData.rata_transaksi_per_bulan}
-                      onChange={(e) => handleInputChange('rata_transaksi_per_bulan', e.target.value)}
-                    />
+                    {renderInputField('rata_transaksi_per_bulan', formData.rata_transaksi_per_bulan, (value) => handleInputChange('rata_transaksi_per_bulan', value))}
                   </div>
                 </div>
               </div>
@@ -980,17 +969,16 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
                     <Label htmlFor="tabungan_tipe">Jenis Rekening</Label>
                     {renderInputField('tabungan_tipe', formData.tabungan_tipe, (value) => handleInputChange('tabungan_tipe', value))}
                   </div>
-                  <div>
-                    <Label htmlFor="atm_tipe">Jenis Kartu ATM</Label>
-                    {renderInputField('atm_tipe', formData.atm_tipe, (value) => handleInputChange('atm_tipe', value))}
-                  </div>
+                  {/* ATM Type - Only for Mutiara */}
+                  {formData.tabungan_tipe === 'Mutiara' && (
+                    <div>
+                      <Label htmlFor="atm_tipe">Jenis Kartu ATM</Label>
+                      {renderInputField('atm_tipe', formData.atm_tipe, (value) => handleInputChange('atm_tipe', value))}
+                    </div>
+                  )}
                   <div>
                     <Label htmlFor="nominal_setoran">Nominal Setoran</Label>
-                    <Input
-                      id="nominal_setoran"
-                      value={formData.nominal_setoran}
-                      onChange={(e) => handleInputChange('nominal_setoran', e.target.value)}
-                    />
+                    {renderInputField('nominal_setoran', formData.nominal_setoran, (value) => handleInputChange('nominal_setoran', value))}
                   </div>
                   <div>
                     <Label htmlFor="tujuan_pembukaan">Tujuan Pembukaan</Label>

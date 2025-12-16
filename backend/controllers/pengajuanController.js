@@ -493,7 +493,12 @@ export const getPengajuanById = async (req, res) => {
           cs.no_hp,
           cs.tempat_lahir,
           cs.tanggal_lahir,
-          cs.alamat_id AS alamat, --KTP address
+          cs.alamat_id AS alamat, --KTP address (combined)
+          cs.alamat_jalan, --Street address
+          cs.provinsi, --Province
+          cs.kota, --City
+          cs.kecamatan, --District
+          cs.kelurahan, --Village
     cs.alamat_now AS alamat_domisili,
       cs.kode_pos_id AS kode_pos,
         cs.jenis_kelamin,
@@ -857,6 +862,11 @@ export const getAnalyticsData = async (req, res) => {
         cs.tipe_nasabah,
         cs.nomor_rekening_lama,
         cs.alamat_id AS alamat,
+        cs.alamat_jalan,
+        cs.provinsi,
+        cs.kota,
+        cs.kecamatan,
+        cs.kelurahan,
         cs.alamat_now AS alamat_domisili,
         cs.kode_pos_id AS kode_pos,
         cs.rekening_untuk_sendiri,
@@ -1065,6 +1075,11 @@ export const exportToExcel = async (req, res) => {
         cs.nama_ibu_kandung,
         cs.npwp,
         cs.alamat_id AS alamat,
+        cs.alamat_jalan,
+        cs.provinsi,
+        cs.kota,
+        cs.kecamatan,
+        cs.kelurahan,
         cs.alamat_now AS alamat_domisili,
         cs.kode_pos_id AS kode_pos,
         cs.status_rumah,
@@ -1395,6 +1410,11 @@ export const exportBackup = async (req, res) => {
         cs.tipe_nasabah,
         cs.nomor_rekening_lama,
         cs.alamat_id AS alamat,
+        cs.alamat_jalan,
+        cs.provinsi,
+        cs.kota,
+        cs.kecamatan,
+        cs.kelurahan,
         cs.alamat_now AS alamat_domisili,
         cs.kode_pos_id AS kode_pos,
         cs.rekening_untuk_sendiri,
@@ -2457,6 +2477,11 @@ export const editSubmission = async (req, res) => {
       tempat_lahir: { table: 'cdd_self', column: 'tempat_lahir', current: current.tempat_lahir },
       tanggal_lahir: { table: 'cdd_self', column: 'tanggal_lahir', current: current.tanggal_lahir },
       alamat_id: { table: 'cdd_self', column: 'alamat_id', current: current.alamat_id },
+      alamat_jalan: { table: 'cdd_self', column: 'alamat_jalan', current: current.alamat_jalan },
+      provinsi: { table: 'cdd_self', column: 'provinsi', current: current.provinsi },
+      kota: { table: 'cdd_self', column: 'kota', current: current.kota },
+      kecamatan: { table: 'cdd_self', column: 'kecamatan', current: current.kecamatan },
+      kelurahan: { table: 'cdd_self', column: 'kelurahan', current: current.kelurahan },
       kode_pos_id: { table: 'cdd_self', column: 'kode_pos_id', current: current.kode_pos_id },
       alamat_now: { table: 'cdd_self', column: 'alamat_now', current: current.alamat_now },
       jenis_kelamin: { table: 'cdd_self', column: 'jenis_kelamin', current: current.jenis_kelamin },
@@ -2491,7 +2516,26 @@ export const editSubmission = async (req, res) => {
       kontak_darurat_nama: { table: 'cdd_reference', column: 'nama', current: current.ref_nama },
       kontak_darurat_hp: { table: 'cdd_reference', column: 'no_hp', current: current.ref_no_hp },
       kontak_darurat_alamat: { table: 'cdd_reference', column: 'alamat', current: current.ref_alamat },
-      kontak_darurat_hubungan: { table: 'cdd_reference', column: 'hubungan', current: current.ref_hubungan }
+      kontak_darurat_hubungan: { table: 'cdd_reference', column: 'hubungan', current: current.ref_hubungan },
+      
+      // cdd_self BO-related fields
+      rekening_untuk_sendiri: { table: 'cdd_self', column: 'rekening_untuk_sendiri', current: current.rekening_untuk_sendiri },
+      
+      // bo fields
+      bo_nama: { table: 'bo', column: 'nama', current: current.bo_nama },
+      bo_alamat: { table: 'bo', column: 'alamat', current: current.bo_alamat },
+      bo_tempat_lahir: { table: 'bo', column: 'tempat_lahir', current: current.bo_tempat_lahir },
+      bo_tanggal_lahir: { table: 'bo', column: 'tanggal_lahir', current: current.bo_tanggal_lahir },
+      bo_jenis_kelamin: { table: 'bo', column: 'jenis_kelamin', current: current.bo_jenis_kelamin },
+      bo_kewarganegaraan: { table: 'bo', column: 'kewarganegaraan', current: current.bo_kewarganegaraan },
+      bo_status_pernikahan: { table: 'bo', column: 'status_pernikahan', current: current.bo_status_pernikahan },
+      bo_jenis_id: { table: 'bo', column: 'jenis_id', current: current.bo_jenis_id },
+      bo_nomor_id: { table: 'bo', column: 'nomor_id', current: current.bo_nomor_id },
+      bo_sumber_dana: { table: 'bo', column: 'sumber_dana', current: current.bo_sumber_dana },
+      bo_hubungan: { table: 'bo', column: 'hubungan', current: current.bo_hubungan },
+      bo_nomor_hp: { table: 'bo', column: 'nomor_hp', current: current.bo_nomor_hp },
+      bo_pekerjaan: { table: 'bo', column: 'pekerjaan', current: current.bo_pekerjaan },
+      bo_pendapatan_tahun: { table: 'bo', column: 'pendapatan_tahun', current: current.bo_pendapatan_tahun }
     };
 
     const editHistory = [];
