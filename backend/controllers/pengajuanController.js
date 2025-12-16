@@ -1389,6 +1389,8 @@ export const exportBackup = async (req, res) => {
         p.approved_at,
         p.rejected_at,
         p.cabang_id,
+        p.edit_count,
+        p.last_edited_at,
         cs.kode_referensi,
         cs.nama AS nama_lengkap,
         cs.alias,
@@ -1707,15 +1709,41 @@ export const previewImportData = async (req, res) => {
               // Check for data conflicts (only if data is actually different)
               const conflicts = [];
               
-              if (submission.nama && existing.nama && existing.nama.trim() !== submission.nama.trim()) {
+              // Enhanced data comparison with null/undefined handling
+              const compareField = (field, existingVal, newVal) => {
+                // Normalize values - convert null/undefined to empty string, then trim
+                const normalizeValue = (val) => {
+                  if (val === null || val === undefined) return '';
+                  return String(val).trim();
+                };
+                
+                const normalizedExisting = normalizeValue(existingVal);
+                const normalizedNew = normalizeValue(newVal);
+                
+                const isDifferent = normalizedExisting !== normalizedNew;
+                
+                // Debug logging for troubleshooting
+                if (isDifferent) {
+                  console.log(`🔍 Field conflict detected in ${field}:`, {
+                    existing: `"${normalizedExisting}"`,
+                    new: `"${normalizedNew}"`,
+                    originalExisting: existingVal,
+                    originalNew: newVal
+                  });
+                }
+                
+                return isDifferent;
+              };
+              
+              if (compareField('nama', existing.nama, submission.nama)) {
                 conflicts.push({ field: 'nama', existing: existing.nama, new: submission.nama });
               }
               
-              if (submission.email && existing.email && existing.email.trim() !== submission.email.trim()) {
+              if (compareField('email', existing.email, submission.email)) {
                 conflicts.push({ field: 'email', existing: existing.email, new: submission.email });
               }
               
-              if (submission.no_hp && existing.no_hp && existing.no_hp.trim() !== submission.no_hp.trim()) {
+              if (compareField('no_hp', existing.no_hp, submission.no_hp)) {
                 conflicts.push({ field: 'no_hp', existing: existing.no_hp, new: submission.no_hp });
               }
 
@@ -1743,6 +1771,18 @@ export const previewImportData = async (req, res) => {
                 conflictReason = 'identical_original';
                 severity = 'none';
               }
+
+              // Enhanced logging for debugging
+              console.log(`🔍 Conflict analysis for NIK ${submission.no_id}:`, {
+                hasDataConflicts,
+                hasBeenEdited,
+                editCount: existing.edit_count || 0,
+                conflictReason,
+                severity,
+                isActualConflict,
+                conflictsFound: conflicts.length,
+                conflictDetails: conflicts
+              });
 
               conflictResults.push({
                 index: i,
