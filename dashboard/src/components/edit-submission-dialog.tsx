@@ -21,6 +21,24 @@ import { toast } from 'sonner';
 import { API_BASE_URL } from '../config/api';
 import { type FormSubmission, mapBackendDataToFormSubmission } from '../DashboardPage';
 
+// Helper to format number string to IDR currency format
+const formatRupiah = (angka: string) => {
+  if (!angka) return '';
+  const numberString = angka.replace(/[^,\d]/g, '').toString();
+  const split = numberString.split(',');
+  const sisa = split[0].length % 3;
+  let rupiah = split[0].substr(0, sisa);
+  const ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+
+  if (ribuan) {
+    const separator = sisa ? '.' : '';
+    rupiah += separator + ribuan.join('.');
+  }
+
+  rupiah = split[1] !== undefined ? rupiah + ',' + split[1] : rupiah;
+  return 'Rp. ' + rupiah;
+};
+
 interface EditSubmissionDialogProps {
   submission: FormSubmission;
   open: boolean;
@@ -159,6 +177,43 @@ const DROPDOWN_OPTIONS = {
     { value: 'Saudara Kandung', label: '👫 Saudara Kandung' },
     { value: 'Kerabat Lain', label: '👥 Kerabat Lain' },
     { value: 'Lainnya', label: '✏️ Lainnya' }
+  ],
+  // BO Fields
+  bo_jenis_kelamin: [
+    { value: 'Laki-laki', label: '👨 Laki-laki' },
+    { value: 'Perempuan', label: '👩 Perempuan' }
+  ],
+  bo_kewarganegaraan: [
+    { value: 'Indonesia', label: '🇮🇩 WNI (Warga Negara Indonesia)' },
+    { value: 'WNA', label: '🌍 WNA (Warga Negara Asing)' }
+  ],
+  bo_status_pernikahan: [
+    { value: 'Belum Kawin', label: 'Belum Kawin' },
+    { value: 'Kawin', label: 'Kawin' },
+    { value: 'Cerai Hidup', label: 'Cerai Hidup' },
+    { value: 'Cerai Mati', label: 'Cerai Mati' }
+  ],
+  bo_jenis_id: [
+    { value: 'KTP', label: '🪪 KTP / KIA' },
+    { value: 'Paspor', label: '📘 Paspor' },
+    { value: 'Lainnya', label: '📄 Lainnya' }
+  ],
+  bo_sumber_dana: [
+    { value: 'Gaji', label: 'Gaji' },
+    { value: 'Hasil Usaha', label: 'Hasil Usaha' },
+    { value: 'Investasi', label: 'Investasi' },
+    { value: 'Warisan', label: 'Warisan' },
+    { value: 'Hibah', label: 'Hibah' },
+    { value: 'Lainnya', label: 'Lainnya' }
+  ],
+  bo_hubungan: [
+    { value: 'Orang Tua', label: '👨‍👩‍👧 Orang Tua' },
+    { value: 'Anak', label: '👶 Anak' },
+    { value: 'Suami/Istri', label: '💑 Suami/Istri' },
+    { value: 'Saudara Kandung', label: '👫 Saudara Kandung' },
+    { value: 'Kerabat', label: '👥 Kerabat' },
+    { value: 'Teman', label: '🤝 Teman' },
+    { value: 'Lainnya', label: '📋 Lainnya' }
   ]
 };
 
@@ -168,6 +223,8 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
   const [editReason, setEditReason] = useState('');
   const [editHistory, setEditHistory] = useState<EditHistoryData | null>(null);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [originalFormData, setOriginalFormData] = useState<any>(null);
+  const [changedFields, setChangedFields] = useState<Set<string>>(new Set());
 
   // Helper function to format date for input
   const formatDateForInput = (dateString: string | undefined) => {
@@ -225,12 +282,29 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
     kontak_darurat_hp: submission.emergencyContact?.phone || '',
     kontak_darurat_alamat: submission.emergencyContact?.address || '',
     kontak_darurat_hubungan: submission.emergencyContact?.relationship || '',
+    
+    // Beneficial Owner (BO) fields
+    rekening_untuk_sendiri: true as boolean, // Default to true
+    bo_nama: '',
+    bo_alamat: '',
+    bo_tempat_lahir: '',
+    bo_tanggal_lahir: '',
+    bo_jenis_kelamin: '',
+    bo_kewarganegaraan: '',
+    bo_status_pernikahan: '',
+    bo_jenis_id: '',
+    bo_nomor_id: '',
+    bo_sumber_dana: '',
+    bo_hubungan: '',
+    bo_nomor_hp: '',
+    bo_pekerjaan: '',
+    bo_pendapatan_tahun: '',
   });
 
   // Update form data when submission changes
   useEffect(() => {
     console.log('🔍 Updating form data with submission:', submission);
-    setFormData({
+    const newFormData = {
       // Personal Data
       nama: submission.personalData.fullName || '',
       alias: submission.personalData.alias || '',
@@ -275,8 +349,29 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
       kontak_darurat_hp: submission.emergencyContact?.phone || '',
       kontak_darurat_alamat: submission.emergencyContact?.address || '',
       kontak_darurat_hubungan: submission.emergencyContact?.relationship || '',
-    });
-    console.log('🔍 Form data updated:', formData);
+      
+      // Beneficial Owner (BO) fields - Add these from submission data if available
+      rekening_untuk_sendiri: true as boolean, // Default to true, will be updated from backend if available
+      bo_nama: '',
+      bo_alamat: '',
+      bo_tempat_lahir: '',
+      bo_tanggal_lahir: '',
+      bo_jenis_kelamin: '',
+      bo_kewarganegaraan: '',
+      bo_status_pernikahan: '',
+      bo_jenis_id: '',
+      bo_nomor_id: '',
+      bo_sumber_dana: '',
+      bo_hubungan: '',
+      bo_nomor_hp: '',
+      bo_pekerjaan: '',
+      bo_pendapatan_tahun: '',
+    };
+    
+    setFormData(newFormData);
+    setOriginalFormData(newFormData); // Store original data for comparison
+    setChangedFields(new Set()); // Reset changed fields
+    console.log('🔍 Form data updated:', newFormData);
   }, [submission]);
 
   // Load full submission data and edit history when dialog opens
@@ -302,7 +397,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
         console.log('🔍 Full submission data loaded:', fullSubmission);
         
         // Update form data with full submission
-        setFormData({
+        const fullFormData = {
           // Personal Data
           nama: fullSubmission.personalData.fullName || '',
           alias: fullSubmission.personalData.alias || '',
@@ -347,7 +442,27 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
           kontak_darurat_hp: fullSubmission.emergencyContact?.phone || '',
           kontak_darurat_alamat: fullSubmission.emergencyContact?.address || '',
           kontak_darurat_hubungan: fullSubmission.emergencyContact?.relationship || '',
-        });
+          
+          // Beneficial Owner (BO) fields - Add from backend data if available
+          rekening_untuk_sendiri: data.data.rekening_untuk_sendiri !== undefined ? Boolean(data.data.rekening_untuk_sendiri) : true,
+          bo_nama: data.data.bo_nama || '',
+          bo_alamat: data.data.bo_alamat || '',
+          bo_tempat_lahir: data.data.bo_tempat_lahir || '',
+          bo_tanggal_lahir: data.data.bo_tanggal_lahir ? formatDateForInput(data.data.bo_tanggal_lahir) : '',
+          bo_jenis_kelamin: data.data.bo_jenis_kelamin || '',
+          bo_kewarganegaraan: data.data.bo_kewarganegaraan || '',
+          bo_status_pernikahan: data.data.bo_status_pernikahan || '',
+          bo_jenis_id: data.data.bo_jenis_id || '',
+          bo_nomor_id: data.data.bo_nomor_id || '',
+          bo_sumber_dana: data.data.bo_sumber_dana || '',
+          bo_hubungan: data.data.bo_hubungan || '',
+          bo_nomor_hp: data.data.bo_nomor_hp || '',
+          bo_pekerjaan: data.data.bo_pekerjaan || '',
+          bo_pendapatan_tahun: data.data.bo_pendapatan_tahun || '',
+        };
+        
+        setFormData(fullFormData);
+        setOriginalFormData(fullFormData); // Update original data reference
       }
     } catch (err) {
       console.error('Error loading full submission data:', err);
@@ -376,11 +491,35 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
     }
   };
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+  const handleInputChange = (field: string, value: string | boolean) => {
+    setFormData(prev => {
+      const newData = {
+        ...prev,
+        [field]: value
+      };
+      
+      // Track changed fields
+      if (originalFormData) {
+        const newChangedFields = new Set(changedFields);
+        
+        // Check if field has actually changed from original
+        if (originalFormData[field] !== value) {
+          // Skip empty optional fields unless they had content before
+          if ((value === '' || value === null || value === undefined) && 
+              (originalFormData[field] === '' || originalFormData[field] === null || originalFormData[field] === undefined)) {
+            newChangedFields.delete(field);
+          } else {
+            newChangedFields.add(field);
+          }
+        } else {
+          newChangedFields.delete(field);
+        }
+        
+        setChangedFields(newChangedFields);
+      }
+      
+      return newData;
+    });
   };
 
   const handleSave = async () => {
@@ -429,45 +568,10 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
     setEditMode(false);
     setEditReason('');
     // Reset form data to original values
-    setFormData({
-      nama: submission.personalData.fullName || '',
-      alias: submission.personalData.alias || '',
-      jenis_id: submission.personalData.identityType || '',
-      no_id: submission.personalData.nik || '',
-      berlaku_id: '',
-      tempat_lahir: submission.personalData.birthPlace || '',
-      tanggal_lahir: formatDateForInput(submission.personalData.birthDate),
-      alamat_id: submission.personalData.address.street || '',
-      kode_pos_id: submission.personalData.address.postalCode || '',
-      alamat_now: submission.personalData.address.domicile || '',
-      jenis_kelamin: submission.personalData.gender || '',
-      status_kawin: submission.personalData.maritalStatus || '',
-      agama: submission.personalData.religion || '',
-      pendidikan: submission.personalData.education || '',
-      nama_ibu_kandung: submission.personalData.motherName || '',
-      npwp: submission.personalData.npwp || '',
-      email: submission.personalData.email || '',
-      no_hp: submission.personalData.phone || '',
-      kewarganegaraan: submission.personalData.citizenship || '',
-      status_rumah: submission.personalData.homeStatus || '',
-      pekerjaan: submission.jobInfo.occupation || '',
-      gaji_per_bulan: submission.jobInfo.salaryRange || '',
-      sumber_dana: submission.jobInfo.incomeSource || '',
-      rata_transaksi_per_bulan: submission.jobInfo.averageTransaction || '',
-      nama_perusahaan: submission.jobInfo.workplace || '',
-      alamat_perusahaan: submission.jobInfo.officeAddress || '',
-      no_telepon: submission.jobInfo.officePhone || '',
-      jabatan: submission.jobInfo.position || '',
-      bidang_usaha: submission.jobInfo.businessField || '',
-      tabungan_tipe: submission.savingsType || '',
-      atm_tipe: submission.cardType || '',
-      nominal_setoran: submission.accountInfo.initialDeposit || '',
-      tujuan_pembukaan: submission.jobInfo.accountPurpose || '',
-      kontak_darurat_nama: submission.emergencyContact?.name || '',
-      kontak_darurat_hp: submission.emergencyContact?.phone || '',
-      kontak_darurat_alamat: submission.emergencyContact?.address || '',
-      kontak_darurat_hubungan: submission.emergencyContact?.relationship || '',
-    });
+    if (originalFormData) {
+      setFormData({ ...originalFormData });
+      setChangedFields(new Set());
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -518,6 +622,22 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
       kontak_darurat_hp: 'HP Kontak Darurat',
       kontak_darurat_alamat: 'Alamat Kontak Darurat',
       kontak_darurat_hubungan: 'Hubungan Kontak Darurat',
+      // BO Fields
+      rekening_untuk_sendiri: 'Rekening untuk Sendiri',
+      bo_nama: 'Nama Lengkap BO',
+      bo_alamat: 'Alamat BO',
+      bo_tempat_lahir: 'Tempat Lahir BO',
+      bo_tanggal_lahir: 'Tanggal Lahir BO',
+      bo_jenis_kelamin: 'Jenis Kelamin BO',
+      bo_kewarganegaraan: 'Kewarganegaraan BO',
+      bo_status_pernikahan: 'Status Pernikahan BO',
+      bo_jenis_id: 'Jenis Identitas BO',
+      bo_nomor_id: 'Nomor Identitas BO',
+      bo_sumber_dana: 'Sumber Dana BO',
+      bo_hubungan: 'Hubungan dengan Nasabah',
+      bo_nomor_hp: 'Nomor HP BO',
+      bo_pekerjaan: 'Pekerjaan BO',
+      bo_pendapatan_tahun: 'Pendapatan Tahunan BO',
     };
     return labels[fieldName] || fieldName;
   };
@@ -525,11 +645,13 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
   // Helper function to render appropriate input component
   const renderInputField = (fieldName: string, value: string, onChange: (value: string) => void) => {
     const options = DROPDOWN_OPTIONS[fieldName as keyof typeof DROPDOWN_OPTIONS];
+    const isChanged = changedFields.has(fieldName);
+    const baseClassName = isChanged ? 'border-2 border-orange-400 bg-orange-50' : '';
     
     if (options) {
       return (
         <Select value={value} onValueChange={onChange}>
-          <SelectTrigger>
+          <SelectTrigger className={baseClassName}>
             <SelectValue placeholder={`Pilih ${getFieldLabel(fieldName)}`} />
           </SelectTrigger>
           <SelectContent>
@@ -544,12 +666,13 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
     }
 
     // Special cases for specific input types
-    if (fieldName === 'tanggal_lahir') {
+    if (fieldName === 'tanggal_lahir' || fieldName === 'bo_tanggal_lahir') {
       return (
         <Input
           type="date"
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          className={baseClassName}
         />
       );
     }
@@ -560,6 +683,35 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
           type="email"
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          className={baseClassName}
+        />
+      );
+    }
+
+    // Currency fields
+    if (fieldName === 'nominal_setoran' || fieldName === 'rata_transaksi_per_bulan') {
+      return (
+        <Input
+          type="text"
+          value={formatRupiah(value)}
+          onChange={(e) => {
+            const cleanValue = e.target.value.replace(/\D/g, '');
+            onChange(cleanValue);
+          }}
+          className={baseClassName}
+          placeholder="Rp. 0"
+        />
+      );
+    }
+
+    // Textarea for address fields
+    if (fieldName === 'alamat_id' || fieldName === 'alamat_now' || fieldName === 'alamat_perusahaan' || fieldName === 'bo_alamat' || fieldName === 'kontak_darurat_alamat') {
+      return (
+        <Textarea
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className={baseClassName}
+          rows={2}
         />
       );
     }
@@ -569,6 +721,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
       <Input
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        className={baseClassName}
       />
     );
   };
@@ -624,18 +777,30 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
             // Edit Mode
             <div className="space-y-8">
               {/* Edit Reason */}
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <Label htmlFor="editReason" className="text-sm font-semibold text-yellow-800 mb-2 block">
-                  Alasan Edit *
-                </Label>
+              <div className={`border rounded-lg p-4 ${changedFields.size > 0 ? 'bg-orange-50 border-orange-200' : 'bg-yellow-50 border-yellow-200'}`}>
+                <div className="flex items-center justify-between mb-2">
+                  <Label htmlFor="editReason" className={`text-sm font-semibold mb-0 block ${changedFields.size > 0 ? 'text-orange-800' : 'text-yellow-800'}`}>
+                    Alasan Edit *
+                  </Label>
+                  {changedFields.size > 0 && (
+                    <Badge variant="outline" className="bg-orange-100 text-orange-700 border-orange-300 text-xs">
+                      {changedFields.size} field berubah
+                    </Badge>
+                  )}
+                </div>
                 <Textarea
                   id="editReason"
                   value={editReason}
                   onChange={(e) => setEditReason(e.target.value)}
                   placeholder="Jelaskan alasan mengapa data perlu diedit..."
-                  className="bg-white border-yellow-300 focus:border-yellow-500"
+                  className={`bg-white focus:border-yellow-500 ${changedFields.size > 0 ? 'border-orange-300' : 'border-yellow-300'}`}
                   rows={3}
                 />
+                {changedFields.size > 0 && (
+                  <p className="text-xs text-orange-700 mt-2">
+                    Field yang berubah: {Array.from(changedFields).map(field => getFieldLabel(field)).join(', ')}
+                  </p>
+                )}
               </div>
 
               {/* Personal Data Section */}
@@ -843,19 +1008,11 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <Label htmlFor="kontak_darurat_nama">Nama</Label>
-                    <Input
-                      id="kontak_darurat_nama"
-                      value={formData.kontak_darurat_nama}
-                      onChange={(e) => handleInputChange('kontak_darurat_nama', e.target.value)}
-                    />
+                    {renderInputField('kontak_darurat_nama', formData.kontak_darurat_nama, (value) => handleInputChange('kontak_darurat_nama', value))}
                   </div>
                   <div>
                     <Label htmlFor="kontak_darurat_hp">No HP</Label>
-                    <Input
-                      id="kontak_darurat_hp"
-                      value={formData.kontak_darurat_hp}
-                      onChange={(e) => handleInputChange('kontak_darurat_hp', e.target.value)}
-                    />
+                    {renderInputField('kontak_darurat_hp', formData.kontak_darurat_hp, (value) => handleInputChange('kontak_darurat_hp', value))}
                   </div>
                   <div>
                     <Label htmlFor="kontak_darurat_hubungan">Hubungan</Label>
@@ -863,11 +1020,171 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
                   </div>
                   <div>
                     <Label htmlFor="kontak_darurat_alamat">Alamat</Label>
-                    <Input
-                      id="kontak_darurat_alamat"
-                      value={formData.kontak_darurat_alamat}
-                      onChange={(e) => handleInputChange('kontak_darurat_alamat', e.target.value)}
-                    />
+                    {renderInputField('kontak_darurat_alamat', formData.kontak_darurat_alamat, (value) => handleInputChange('kontak_darurat_alamat', value))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Beneficial Owner Section */}
+              <div className="bg-white p-6 rounded-xl border border-slate-200">
+                <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                  <User className="w-5 h-5 text-purple-600" />
+                  Beneficial Owner
+                </h3>
+                
+                {/* Rekening untuk sendiri */}
+                <div className="mb-6">
+                  <Label className="text-gray-700 font-semibold mb-4 block">Apakah rekening ini untuk Anda sendiri?</Label>
+                  <div className="flex items-center gap-6">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input 
+                        type="radio" 
+                        name="rekening_untuk_sendiri" 
+                        value="true" 
+                        checked={formData.rekening_untuk_sendiri === true} 
+                        onChange={() => handleInputChange('rekening_untuk_sendiri', true)} 
+                        className="hidden" 
+                      />
+                      <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition ${formData.rekening_untuk_sendiri === true ? "border-blue-500" : "border-gray-300"} ${changedFields.has('rekening_untuk_sendiri') ? 'border-orange-400 bg-orange-50' : ''}`}>
+                        {formData.rekening_untuk_sendiri === true && <span className="w-2.5 h-2.5 bg-blue-500 rounded-full" />}
+                      </span>
+                      <span className="text-sm text-gray-700">Ya, untuk saya sendiri</span>
+                    </label>
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input 
+                        type="radio" 
+                        name="rekening_untuk_sendiri" 
+                        value="false" 
+                        checked={formData.rekening_untuk_sendiri === false} 
+                        onChange={() => handleInputChange('rekening_untuk_sendiri', false)} 
+                        className="hidden" 
+                      />
+                      <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition ${formData.rekening_untuk_sendiri === false ? "border-blue-500" : "border-gray-300"} ${changedFields.has('rekening_untuk_sendiri') ? 'border-orange-400 bg-orange-50' : ''}`}>
+                        {formData.rekening_untuk_sendiri === false && <span className="w-2.5 h-2.5 bg-blue-500 rounded-full" />}
+                      </span>
+                      <span className="text-sm text-gray-700">Tidak, untuk orang lain</span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* BO Fields - Show always, but indicate when required */}
+                <div className={`space-y-6 ${formData.rekening_untuk_sendiri === true ? 'opacity-75' : ''}`}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <Label htmlFor="bo_nama">
+                        Nama Lengkap BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
+                      </Label>
+                      {renderInputField('bo_nama', formData.bo_nama, (value) => handleInputChange('bo_nama', value))}
+                    </div>
+                    <div>
+                      <Label htmlFor="bo_tempat_lahir">
+                        Tempat Lahir BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
+                      </Label>
+                      {renderInputField('bo_tempat_lahir', formData.bo_tempat_lahir, (value) => handleInputChange('bo_tempat_lahir', value))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <Label htmlFor="bo_tanggal_lahir">
+                        Tanggal Lahir BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
+                      </Label>
+                      {renderInputField('bo_tanggal_lahir', formData.bo_tanggal_lahir, (value) => handleInputChange('bo_tanggal_lahir', value))}
+                    </div>
+                    <div>
+                      <Label htmlFor="bo_jenis_kelamin">
+                        Jenis Kelamin BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
+                      </Label>
+                      {renderInputField('bo_jenis_kelamin', formData.bo_jenis_kelamin, (value) => handleInputChange('bo_jenis_kelamin', value))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="bo_alamat">
+                      Alamat BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
+                    </Label>
+                    {renderInputField('bo_alamat', formData.bo_alamat, (value) => handleInputChange('bo_alamat', value))}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <Label htmlFor="bo_kewarganegaraan">
+                        Kewarganegaraan BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
+                      </Label>
+                      {renderInputField('bo_kewarganegaraan', formData.bo_kewarganegaraan, (value) => handleInputChange('bo_kewarganegaraan', value))}
+                    </div>
+                    <div>
+                      <Label htmlFor="bo_status_pernikahan">
+                        Status Pernikahan BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
+                      </Label>
+                      {renderInputField('bo_status_pernikahan', formData.bo_status_pernikahan, (value) => handleInputChange('bo_status_pernikahan', value))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <Label htmlFor="bo_jenis_id">
+                        Jenis Identitas BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
+                      </Label>
+                      {renderInputField('bo_jenis_id', formData.bo_jenis_id, (value) => handleInputChange('bo_jenis_id', value))}
+                    </div>
+                    <div>
+                      <Label htmlFor="bo_nomor_id">
+                        Nomor Identitas BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
+                      </Label>
+                      {renderInputField('bo_nomor_id', formData.bo_nomor_id, (value) => handleInputChange('bo_nomor_id', value))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <Label htmlFor="bo_pekerjaan">
+                        Pekerjaan BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
+                      </Label>
+                      {renderInputField('bo_pekerjaan', formData.bo_pekerjaan, (value) => handleInputChange('bo_pekerjaan', value))}
+                    </div>
+                    <div>
+                      <Label htmlFor="bo_sumber_dana">
+                        Sumber Dana BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
+                      </Label>
+                      {renderInputField('bo_sumber_dana', formData.bo_sumber_dana, (value) => handleInputChange('bo_sumber_dana', value))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <Label htmlFor="bo_hubungan">
+                        Hubungan dengan Nasabah {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
+                      </Label>
+                      {renderInputField('bo_hubungan', formData.bo_hubungan, (value) => handleInputChange('bo_hubungan', value))}
+                    </div>
+                    <div>
+                      <Label htmlFor="bo_nomor_hp">
+                        Nomor HP BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
+                      </Label>
+                      {renderInputField('bo_nomor_hp', formData.bo_nomor_hp, (value) => handleInputChange('bo_nomor_hp', value))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="bo_pendapatan_tahun">
+                      Pendapatan Tahunan BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
+                    </Label>
+                    <Select
+                      value={formData.bo_pendapatan_tahun}
+                      onValueChange={(value) => handleInputChange('bo_pendapatan_tahun', value)}
+                    >
+                      <SelectTrigger className={changedFields.has('bo_pendapatan_tahun') ? 'border-2 border-orange-400 bg-orange-50' : ''}>
+                        <SelectValue placeholder="Pilih range pendapatan tahunan" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="sd-5jt">Sampai dengan 5 Juta</SelectItem>
+                        <SelectItem value="5-10jt">5 - 10 Juta</SelectItem>
+                        <SelectItem value="10-25jt">10 - 25 Juta</SelectItem>
+                        <SelectItem value="25-100jt">25 - 100 Juta</SelectItem>
+                        <SelectItem value=">100jt">Lebih dari 100 Juta</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               </div>
@@ -1001,7 +1318,21 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
         <div className="p-5 border-t border-slate-200 bg-white flex justify-between items-center shrink-0">
           <div className="text-sm text-slate-500">
             {editMode 
-              ? 'Pastikan data yang diubah sudah benar sebelum menyimpan'
+              ? (
+                  <div className="flex items-center gap-2">
+                    <span>
+                      {changedFields.size > 0 
+                        ? `${changedFields.size} field${changedFields.size > 1 ? 's' : ''} telah berubah`
+                        : 'Belum ada perubahan'
+                      }
+                    </span>
+                    {changedFields.size > 0 && (
+                      <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-300">
+                        {changedFields.size} perubahan
+                      </Badge>
+                    )}
+                  </div>
+                )
               : `Submission ini telah diedit ${editHistory?.submission.edit_count || 0} kali`
             }
           </div>
@@ -1013,9 +1344,13 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
                   <X className="w-4 h-4 mr-2" />
                   Batal
                 </Button>
-                <Button onClick={handleSave} disabled={loading || !editReason.trim()}>
+                <Button 
+                  onClick={handleSave} 
+                  disabled={loading || !editReason.trim() || changedFields.size === 0}
+                  className={changedFields.size > 0 ? 'bg-orange-600 hover:bg-orange-700' : ''}
+                >
                   <Save className="w-4 h-4 mr-2" />
-                  {loading ? 'Menyimpan...' : 'Simpan Perubahan'}
+                  {loading ? 'Menyimpan...' : `Simpan ${changedFields.size} Perubahan`}
                 </Button>
               </>
             ) : (

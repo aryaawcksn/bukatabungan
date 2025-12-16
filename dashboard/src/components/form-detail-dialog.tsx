@@ -257,7 +257,6 @@ export function FormDetailDialog({ submission, open, onClose, onApprove, onRejec
                 <GridContainer>
                 <Field label="Nama Lengkap" value={detailSubmission.personalData.fullName} />
                 <Field label="Alias" value={detailSubmission.personalData.alias} />
-                <Field label="Nama Ibu Kandung" value={detailSubmission.personalData.motherName} />
                 <Field label="No Identitas" value={detailSubmission.personalData.nik} />
                 <Field label="Jenis Identitas" value={detailSubmission.personalData.identityType} />
                 <Field label="NPWP" value={detailSubmission.personalData.npwp} />

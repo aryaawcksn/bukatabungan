@@ -475,13 +475,11 @@ export default function FormSimpel({
                   <SelectContent>
                     <SelectItem value="baru">
                       <div className="flex items-center gap-2">
-                        <span>👤</span>
                         <span>Nasabah Baru</span>
                       </div>
                     </SelectItem>
                     <SelectItem value="lama">
                       <div className="flex items-center gap-2">
-                        <span>🏦</span>
                         <span>Nasabah Lama</span>
                       </div>
                     </SelectItem>
@@ -552,20 +550,7 @@ export default function FormSimpel({
                     <SelectContent>
                       <SelectItem value="KTP">
                         <div className="flex items-center gap-2">
-                          <span>🪪</span>
                           <span>KTP / KIA</span>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="Paspor">
-                        <div className="flex items-center gap-2">
-                          <span>📘</span>
-                          <span>Paspor</span>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="Lainnya">
-                        <div className="flex items-center gap-2">
-                          <span>📄</span>
-                          <span>Lainnya</span>
                         </div>
                       </SelectItem>
                     </SelectContent>
