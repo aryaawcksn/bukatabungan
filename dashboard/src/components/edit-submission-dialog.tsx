@@ -234,8 +234,22 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
   const formatDateForInput = (dateString: string | undefined) => {
     if (!dateString) return '';
     try {
-      // Parse date and format to YYYY-MM-DD without timezone conversion
-      const date = new Date(dateString);
+      // Handle different date formats
+      let date: Date;
+      
+      // If it's already in YYYY-MM-DD format, return as is
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+        return dateString;
+      }
+      
+      // If it's in DD/MM/YYYY format (from mapping function), convert it
+      if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) {
+        const [day, month, year] = dateString.split('/');
+        return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+      }
+      
+      // Otherwise, parse as regular date and format to YYYY-MM-DD
+      date = new Date(dateString);
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const day = String(date.getDate()).padStart(2, '0');
@@ -409,6 +423,12 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
         // Update submission data with full details
         const fullSubmission = mapBackendDataToFormSubmission(data.data);
         console.log('🔍 Full submission data loaded:', fullSubmission);
+        console.log('🔍 BO data from backend:', {
+          rekening_untuk_sendiri: data.data.rekening_untuk_sendiri,
+          bo_nama: data.data.bo_nama,
+          bo_alamat: data.data.bo_alamat,
+          beneficialOwner: fullSubmission.beneficialOwner
+        });
         
         // Update form data with full submission
         const fullFormData = {
@@ -457,22 +477,22 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
           kontak_darurat_alamat: fullSubmission.emergencyContact?.address || '',
           kontak_darurat_hubungan: fullSubmission.emergencyContact?.relationship || '',
           
-          // Beneficial Owner (BO) fields - Add from backend data if available
-          rekening_untuk_sendiri: data.data.rekening_untuk_sendiri !== undefined ? Boolean(data.data.rekening_untuk_sendiri) : true,
-          bo_nama: data.data.bo_nama || '',
-          bo_alamat: data.data.bo_alamat || '',
-          bo_tempat_lahir: data.data.bo_tempat_lahir || '',
-          bo_tanggal_lahir: data.data.bo_tanggal_lahir ? formatDateForInput(data.data.bo_tanggal_lahir) : '',
-          bo_jenis_kelamin: data.data.bo_jenis_kelamin || '',
-          bo_kewarganegaraan: data.data.bo_kewarganegaraan || '',
-          bo_status_pernikahan: data.data.bo_status_pernikahan || '',
-          bo_jenis_id: data.data.bo_jenis_id || '',
-          bo_nomor_id: data.data.bo_nomor_id || '',
-          bo_sumber_dana: data.data.bo_sumber_dana || '',
-          bo_hubungan: data.data.bo_hubungan || '',
-          bo_nomor_hp: data.data.bo_nomor_hp || '',
-          bo_pekerjaan: data.data.bo_pekerjaan || '',
-          bo_pendapatan_tahun: data.data.bo_pendapatan_tahun || '',
+          // Beneficial Owner (BO) fields - Use mapped data from fullSubmission
+          rekening_untuk_sendiri: fullSubmission.accountInfo.isForSelf !== undefined ? Boolean(fullSubmission.accountInfo.isForSelf) : true,
+          bo_nama: fullSubmission.beneficialOwner?.name || '',
+          bo_alamat: fullSubmission.beneficialOwner?.address || '',
+          bo_tempat_lahir: fullSubmission.beneficialOwner?.birthPlace || '',
+          bo_tanggal_lahir: fullSubmission.beneficialOwner?.birthDate ? formatDateForInput(fullSubmission.beneficialOwner.birthDate) : '',
+          bo_jenis_kelamin: fullSubmission.beneficialOwner?.gender || '',
+          bo_kewarganegaraan: fullSubmission.beneficialOwner?.citizenship || '',
+          bo_status_pernikahan: fullSubmission.beneficialOwner?.maritalStatus || '',
+          bo_jenis_id: fullSubmission.beneficialOwner?.identityType || '',
+          bo_nomor_id: fullSubmission.beneficialOwner?.identityNumber || '',
+          bo_sumber_dana: fullSubmission.beneficialOwner?.incomeSource || '',
+          bo_hubungan: fullSubmission.beneficialOwner?.relationship || '',
+          bo_nomor_hp: fullSubmission.beneficialOwner?.phone || '',
+          bo_pekerjaan: fullSubmission.beneficialOwner?.occupation || '',
+          bo_pendapatan_tahun: fullSubmission.beneficialOwner?.annualIncome || '',
         };
         
         setFormData(fullFormData);
@@ -716,10 +736,16 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
           value={formatRupiah(value)}
           onChange={(e) => {
             const cleanValue = e.target.value.replace(/\D/g, '');
-            onChange(cleanValue);
+            // Limit to maximum safe value for NUMERIC(18,2) - 16 digits before decimal
+            const maxValue = 9999999999999999;
+            const numericValue = parseInt(cleanValue) || 0;
+            if (numericValue <= maxValue) {
+              onChange(cleanValue);
+            }
           }}
           className={baseClassName}
           placeholder="Rp. 0"
+          title="Maksimal Rp. 9.999.999.999.999.999"
         />
       );
     }
