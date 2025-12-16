@@ -100,7 +100,7 @@ const Field = ({ label, value, icon, fullWidth = false }: FieldProps) => {
   );
 };
 
-export function FormDetailDialog({ submission, open, onClose, onApprove, onReject, onEdit, onEditComplete}: FormDetailDialogProps) {
+export function FormDetailDialog({ submission, open, onClose, onApprove, onReject, onEdit}: FormDetailDialogProps) {
   const [loading, setLoading] = useState(false);
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
   const [detailSubmission, setDetailSubmission] = useState<FormSubmission>(submission);
@@ -171,13 +171,6 @@ export function FormDetailDialog({ submission, open, onClose, onApprove, onRejec
     if (!isOpen) onClose();
   };
 
-  const handleEditComplete = () => {
-    console.log('🎉 Edit completed, refreshing data...');
-    fetchDetails(); // Refresh the current dialog data
-    if (onEditComplete) {
-      onEditComplete(); // Notify parent to refresh its data too
-    }
-  };
   
   return (
     <Dialog open={open} onOpenChange={handleDialogOpenChange}>
