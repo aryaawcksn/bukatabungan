@@ -1057,126 +1057,125 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
 
                 {/* BO Fields - Only show when account is for others */}
                 {formData.rekening_untuk_sendiri === false ? (
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <Label htmlFor="bo_nama">
-                        Nama Lengkap BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
-                      </Label>
-                      {renderInputField('bo_nama', formData.bo_nama, (value) => handleInputChange('bo_nama', value))}
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <Label htmlFor="bo_nama">
+                          Nama Lengkap BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
+                        </Label>
+                        {renderInputField('bo_nama', formData.bo_nama, (value) => handleInputChange('bo_nama', value))}
+                      </div>
+                      <div>
+                        <Label htmlFor="bo_tempat_lahir">
+                          Tempat Lahir BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
+                        </Label>
+                        {renderInputField('bo_tempat_lahir', formData.bo_tempat_lahir, (value) => handleInputChange('bo_tempat_lahir', value))}
+                      </div>
                     </div>
-                    <div>
-                      <Label htmlFor="bo_tempat_lahir">
-                        Tempat Lahir BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
-                      </Label>
-                      {renderInputField('bo_tempat_lahir', formData.bo_tempat_lahir, (value) => handleInputChange('bo_tempat_lahir', value))}
-                    </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <Label htmlFor="bo_tanggal_lahir">
-                        Tanggal Lahir BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
-                      </Label>
-                      {renderInputField('bo_tanggal_lahir', formData.bo_tanggal_lahir, (value) => handleInputChange('bo_tanggal_lahir', value))}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <Label htmlFor="bo_tanggal_lahir">
+                          Tanggal Lahir BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
+                        </Label>
+                        {renderInputField('bo_tanggal_lahir', formData.bo_tanggal_lahir, (value) => handleInputChange('bo_tanggal_lahir', value))}
+                      </div>
+                      <div>
+                        <Label htmlFor="bo_jenis_kelamin">
+                          Jenis Kelamin BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
+                        </Label>
+                        {renderInputField('bo_jenis_kelamin', formData.bo_jenis_kelamin, (value) => handleInputChange('bo_jenis_kelamin', value))}
+                      </div>
                     </div>
-                    <div>
-                      <Label htmlFor="bo_jenis_kelamin">
-                        Jenis Kelamin BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
-                      </Label>
-                      {renderInputField('bo_jenis_kelamin', formData.bo_jenis_kelamin, (value) => handleInputChange('bo_jenis_kelamin', value))}
-                    </div>
-                  </div>
 
-                  <div>
-                    <Label htmlFor="bo_alamat">
-                      Alamat BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
-                    </Label>
-                    {renderInputField('bo_alamat', formData.bo_alamat, (value) => handleInputChange('bo_alamat', value))}
-                  </div>
+                    <div>
+                      <Label htmlFor="bo_alamat">
+                        Alamat BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
+                      </Label>
+                      {renderInputField('bo_alamat', formData.bo_alamat, (value) => handleInputChange('bo_alamat', value))}
+                    </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <Label htmlFor="bo_kewarganegaraan">
-                        Kewarganegaraan BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
-                      </Label>
-                      {renderInputField('bo_kewarganegaraan', formData.bo_kewarganegaraan, (value) => handleInputChange('bo_kewarganegaraan', value))}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <Label htmlFor="bo_kewarganegaraan">
+                          Kewarganegaraan BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
+                        </Label>
+                        {renderInputField('bo_kewarganegaraan', formData.bo_kewarganegaraan, (value) => handleInputChange('bo_kewarganegaraan', value))}
+                      </div>
+                      <div>
+                        <Label htmlFor="bo_status_pernikahan">
+                          Status Pernikahan BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
+                        </Label>
+                        {renderInputField('bo_status_pernikahan', formData.bo_status_pernikahan, (value) => handleInputChange('bo_status_pernikahan', value))}
+                      </div>
                     </div>
-                    <div>
-                      <Label htmlFor="bo_status_pernikahan">
-                        Status Pernikahan BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
-                      </Label>
-                      {renderInputField('bo_status_pernikahan', formData.bo_status_pernikahan, (value) => handleInputChange('bo_status_pernikahan', value))}
-                    </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <Label htmlFor="bo_jenis_id">
-                        Jenis Identitas BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
-                      </Label>
-                      {renderInputField('bo_jenis_id', formData.bo_jenis_id, (value) => handleInputChange('bo_jenis_id', value))}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <Label htmlFor="bo_jenis_id">
+                          Jenis Identitas BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
+                        </Label>
+                        {renderInputField('bo_jenis_id', formData.bo_jenis_id, (value) => handleInputChange('bo_jenis_id', value))}
+                      </div>
+                      <div>
+                        <Label htmlFor="bo_nomor_id">
+                          Nomor Identitas BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
+                        </Label>
+                        {renderInputField('bo_nomor_id', formData.bo_nomor_id, (value) => handleInputChange('bo_nomor_id', value))}
+                      </div>
                     </div>
-                    <div>
-                      <Label htmlFor="bo_nomor_id">
-                        Nomor Identitas BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
-                      </Label>
-                      {renderInputField('bo_nomor_id', formData.bo_nomor_id, (value) => handleInputChange('bo_nomor_id', value))}
-                    </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <Label htmlFor="bo_pekerjaan">
-                        Pekerjaan BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
-                      </Label>
-                      {renderInputField('bo_pekerjaan', formData.bo_pekerjaan, (value) => handleInputChange('bo_pekerjaan', value))}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <Label htmlFor="bo_pekerjaan">
+                          Pekerjaan BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
+                        </Label>
+                        {renderInputField('bo_pekerjaan', formData.bo_pekerjaan, (value) => handleInputChange('bo_pekerjaan', value))}
+                      </div>
+                      <div>
+                        <Label htmlFor="bo_sumber_dana">
+                          Sumber Dana BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
+                        </Label>
+                        {renderInputField('bo_sumber_dana', formData.bo_sumber_dana, (value) => handleInputChange('bo_sumber_dana', value))}
+                      </div>
                     </div>
-                    <div>
-                      <Label htmlFor="bo_sumber_dana">
-                        Sumber Dana BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
-                      </Label>
-                      {renderInputField('bo_sumber_dana', formData.bo_sumber_dana, (value) => handleInputChange('bo_sumber_dana', value))}
-                    </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <Label htmlFor="bo_hubungan">
-                        Hubungan dengan Nasabah {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
-                      </Label>
-                      {renderInputField('bo_hubungan', formData.bo_hubungan, (value) => handleInputChange('bo_hubungan', value))}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <Label htmlFor="bo_hubungan">
+                          Hubungan dengan Nasabah {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
+                        </Label>
+                        {renderInputField('bo_hubungan', formData.bo_hubungan, (value) => handleInputChange('bo_hubungan', value))}
+                      </div>
+                      <div>
+                        <Label htmlFor="bo_nomor_hp">
+                          Nomor HP BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
+                        </Label>
+                        {renderInputField('bo_nomor_hp', formData.bo_nomor_hp, (value) => handleInputChange('bo_nomor_hp', value))}
+                      </div>
                     </div>
-                    <div>
-                      <Label htmlFor="bo_nomor_hp">
-                        Nomor HP BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
-                      </Label>
-                      {renderInputField('bo_nomor_hp', formData.bo_nomor_hp, (value) => handleInputChange('bo_nomor_hp', value))}
-                    </div>
-                  </div>
 
-                  <div>
-                    <Label htmlFor="bo_pendapatan_tahun">
-                      Pendapatan Tahunan BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
-                    </Label>
-                    <Select
-                      value={formData.bo_pendapatan_tahun}
-                      onValueChange={(value) => handleInputChange('bo_pendapatan_tahun', value)}
-                    >
-                      <SelectTrigger className={changedFields.has('bo_pendapatan_tahun') ? 'border-2 border-orange-400 bg-orange-50' : ''}>
-                        <SelectValue placeholder="Pilih range pendapatan tahunan" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="sd-5jt">Sampai dengan 5 Juta</SelectItem>
-                        <SelectItem value="5-10jt">5 - 10 Juta</SelectItem>
-                        <SelectItem value="10-25jt">10 - 25 Juta</SelectItem>
-                        <SelectItem value="25-100jt">25 - 100 Juta</SelectItem>
-                        <SelectItem value=">100jt">Lebih dari 100 Juta</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <div>
+                      <Label htmlFor="bo_pendapatan_tahun">
+                        Pendapatan Tahunan BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
+                      </Label>
+                      <Select
+                        value={formData.bo_pendapatan_tahun}
+                        onValueChange={(value) => handleInputChange('bo_pendapatan_tahun', value)}
+                      >
+                        <SelectTrigger className={changedFields.has('bo_pendapatan_tahun') ? 'border-2 border-orange-400 bg-orange-50' : ''}>
+                          <SelectValue placeholder="Pilih range pendapatan tahunan" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="sd-5jt">Sampai dengan 5 Juta</SelectItem>
+                          <SelectItem value="5-10jt">5 - 10 Juta</SelectItem>
+                          <SelectItem value="10-25jt">10 - 25 Juta</SelectItem>
+                          <SelectItem value="25-100jt">25 - 100 Juta</SelectItem>
+                          <SelectItem value=">100jt">Lebih dari 100 Juta</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                </div>
-                )
                 ) : (
                   <div className="text-center py-8 text-slate-500 bg-slate-50 rounded-lg border-2 border-dashed border-slate-200">
                     <User className="w-12 h-12 mx-auto mb-3 opacity-50" />
