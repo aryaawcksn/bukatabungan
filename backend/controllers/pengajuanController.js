@@ -2535,7 +2535,7 @@ export const editSubmission = async (req, res) => {
       bo_hubungan: { table: 'bo', column: 'hubungan', current: current.bo_hubungan },
       bo_nomor_hp: { table: 'bo', column: 'nomor_hp', current: current.bo_nomor_hp },
       bo_pekerjaan: { table: 'bo', column: 'pekerjaan', current: current.bo_pekerjaan },
-      bo_pendapatan_tahun: { table: 'bo', column: 'pendapatan_tahun', current: current.bo_pendapatan_tahun }
+      bo_pendapatan_tahun: { table: 'bo', column: 'pendapatan_tahunan', current: current.bo_pendapatan_tahun }
     };
 
     const editHistory = [];
@@ -2638,6 +2638,24 @@ export const editSubmission = async (req, res) => {
       
       const updateQuery = `UPDATE ${tableName} SET ${setClause} WHERE pengajuan_id = $1`;
       await client.query(updateQuery, values);
+    }
+
+    // Special handling for BO table - use UPSERT to handle INSERT or UPDATE
+    if (tableUpdates.bo) {
+      const updates = tableUpdates.bo;
+      const columns = Object.keys(updates);
+      const placeholders = columns.map((_, idx) => `$${idx + 2}`).join(', ');
+      const updateClause = columns.map(col => `${col} = EXCLUDED.${col}`).join(', ');
+      
+      // Use INSERT ... ON CONFLICT to handle both INSERT and UPDATE cases
+      const upsertQuery = `
+        INSERT INTO bo (pengajuan_id, ${columns.join(', ')}) 
+        VALUES ($1, ${placeholders})
+        ON CONFLICT (pengajuan_id) 
+        DO UPDATE SET ${updateClause}
+      `;
+      const values = [id, ...Object.values(updates)];
+      await client.query(upsertQuery, values);
     }
 
     // Insert audit trail records

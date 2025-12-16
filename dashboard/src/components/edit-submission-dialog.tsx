@@ -1055,8 +1055,9 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
                   </div>
                 </div>
 
-                {/* BO Fields - Show always, but indicate when required */}
-                <div className={`space-y-6 ${formData.rekening_untuk_sendiri === true ? 'opacity-75' : ''}`}>
+                {/* BO Fields - Only show when account is for others */}
+                {formData.rekening_untuk_sendiri === false ? (
+                <div className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <Label htmlFor="bo_nama">
@@ -1175,6 +1176,14 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess }: E
                     </Select>
                   </div>
                 </div>
+                )
+                ) : (
+                  <div className="text-center py-8 text-slate-500 bg-slate-50 rounded-lg border-2 border-dashed border-slate-200">
+                    <User className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                    <p className="text-lg font-medium mb-2">Rekening untuk Diri Sendiri</p>
+                    <p className="text-sm">Data Beneficial Owner tidak diperlukan karena rekening ini untuk Anda sendiri.</p>
+                  </div>
+                )}
               </div>
             </div>
           ) : (
