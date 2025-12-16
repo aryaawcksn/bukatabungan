@@ -289,12 +289,27 @@ The import preview UI now shows:
 **Root Cause**: The conflict detection logic was adding records to both `existingRecords` and `conflicts` arrays when they should only be in `conflicts` if there are actual data differences.
 
 **Solution Applied**:
-1. **Fixed Conflict Classification**: Updated logic to only mark submissions as conflicts when data fields actually differ
-2. **Improved isIdenticalData Logic**: Now correctly identifies identical data regardless of edit history
+1. **Enhanced Conflict Classification**: Updated logic to differentiate between:
+   - **Data yang sudah diedit** (edit_count > 0) vs **Data yang tidak pernah diedit** (edit_count = 0)
+   - Only mark as conflicts when data fields actually differ
+2. **Improved Conflict Reasons**: Added specific conflict categorization:
+   - `data_conflict_edited`: High priority - conflicts in edited submissions
+   - `data_conflict_original`: Medium priority - conflicts in never-edited submissions  
+   - `identical_but_edited`: Low priority - identical data but submission was edited (informational)
+   - `identical_original`: No conflict - identical data, never edited
 3. **Enhanced Severity Levels**: 
-   - Medium: Actual data conflicts
-   - Low: Edited but identical data (informational only)
-   - None: Truly identical data
-4. **Better Logging**: Added detailed breakdown showing identical vs conflicted data counts
+   - **High**: Data conflicts in edited submissions (requires careful review)
+   - **Medium**: Data conflicts in original submissions (can be overwritten)
+   - **Low**: Identical data but edited (informational only)
+   - **None**: Truly identical original data
+4. **Better UI Indicators**: 
+   - 🔴 Red for conflicts in edited data
+   - 🟡 Amber for conflicts in original data
+   - 📝 Blue for identical but edited data
+   - ✅ Green for identical original data
+5. **Detailed Logging**: Added comprehensive breakdown showing:
+   - Identical data counts (edited vs never-edited)
+   - Conflict counts (edited vs original submissions)
+   - Clear reasoning for each categorization
 
-**Result**: Import preview now correctly shows "Safe Import" for identical data, even if the submission was previously edited.
+**Result**: Import preview now provides clear distinction between different types of data states, helping users make informed decisions about imports.

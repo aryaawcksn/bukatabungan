@@ -1729,16 +1729,43 @@ export const previewImportData = async (req, res) => {
               
               console.log(`  📊 Total conflicts: ${conflicts.length}, Edit count: ${existing.edit_count}`);
 
-              // Only mark as conflict if there are actual data conflicts
-              // Being edited is just informational, not necessarily a conflict
+              // Improved conflict detection logic:
+              // 1. Check if data has actual conflicts
+              // 2. Differentiate between edited vs never-edited submissions
               const hasDataConflicts = conflicts.length > 0;
               const hasBeenEdited = existing.edit_count > 0;
-              const isActualConflict = hasDataConflicts; // Only data conflicts matter
+              const neverEdited = existing.edit_count === 0;
               
-              // Data is identical if there are no conflicts, regardless of edit history
+              // Conflict determination based on edit history and data differences
+              let isActualConflict = false;
+              let conflictReason = '';
+              let severity = 'none';
+              
+              if (hasDataConflicts && hasBeenEdited) {
+                // High priority: Data conflicts in edited submission
+                isActualConflict = true;
+                conflictReason = 'data_conflict_edited';
+                severity = 'high';
+              } else if (hasDataConflicts && neverEdited) {
+                // Medium priority: Data conflicts in never-edited submission
+                isActualConflict = true;
+                conflictReason = 'data_conflict_original';
+                severity = 'medium';
+              } else if (!hasDataConflicts && hasBeenEdited) {
+                // Low priority: Identical data but submission was edited (informational)
+                isActualConflict = false;
+                conflictReason = 'identical_but_edited';
+                severity = 'low';
+              } else {
+                // No conflict: Identical data, never edited
+                isActualConflict = false;
+                conflictReason = 'identical_original';
+                severity = 'none';
+              }
+              
               const isIdenticalData = !hasDataConflicts;
               
-              console.log(`  🔍 Analysis: hasDataConflicts=${hasDataConflicts}, hasBeenEdited=${hasBeenEdited}, isActualConflict=${isActualConflict}, isIdenticalData=${isIdenticalData}`);
+              console.log(`  🔍 Analysis: conflicts=${conflicts.length}, edited=${hasBeenEdited} (${existing.edit_count}x), conflict=${isActualConflict}, reason=${conflictReason}, severity=${severity}`);
 
               conflictResults.push({
                 index: i,
@@ -1746,12 +1773,14 @@ export const previewImportData = async (req, res) => {
                 conflict: isActualConflict,
                 status: existing.status,
                 hasBeenEdited: hasBeenEdited,
+                neverEdited: neverEdited,
                 editCount: existing.edit_count || 0,
                 lastEditedAt: existing.last_edited_at,
                 pengajuanId: existing.pengajuan_id,
                 kodeReferensi: existing.kode_referensi,
                 dataConflicts: conflicts,
-                severity: hasDataConflicts ? 'medium' : (hasBeenEdited ? 'low' : 'none'),
+                conflictReason: conflictReason,
+                severity: severity,
                 isIdenticalData: isIdenticalData
               });
             } else {
@@ -1794,14 +1823,28 @@ export const previewImportData = async (req, res) => {
             currentStatus: conflictResult.status,
             newStatus: item.status || 'pending',
             hasBeenEdited: conflictResult.hasBeenEdited,
+            neverEdited: conflictResult.neverEdited,
             editCount: conflictResult.editCount,
             dataConflicts: conflictResult.dataConflicts || [],
+            conflictReason: conflictResult.conflictReason,
             severity: conflictResult.severity,
             isIdenticalData: conflictResult.isIdenticalData
           });
 
-          // Only add to conflicts if there are actual data conflicts (not just identical data)
+          // Only add to conflicts if there are actual data conflicts
           if (conflictResult.conflict && conflictResult.dataConflicts && conflictResult.dataConflicts.length > 0) {
+            let message = '';
+            switch (conflictResult.conflictReason) {
+              case 'data_conflict_edited':
+                message = `Data conflicts in edited submission (${conflictResult.editCount}x edited)`;
+                break;
+              case 'data_conflict_original':
+                message = `Data conflicts in original submission (never edited)`;
+                break;
+              default:
+                message = `Data conflicts in ${conflictResult.dataConflicts.length} field(s)`;
+            }
+            
             analysis.conflicts.push({
               kode_referensi: conflictResult.kodeReferensi || item.kode_referensi,
               nama_lengkap: item.nama_lengkap || item.nama,
@@ -1809,12 +1852,12 @@ export const previewImportData = async (req, res) => {
               currentStatus: conflictResult.status,
               newStatus: item.status || 'pending',
               hasBeenEdited: conflictResult.hasBeenEdited,
+              neverEdited: conflictResult.neverEdited,
               editCount: conflictResult.editCount,
               dataConflicts: conflictResult.dataConflicts,
+              conflictReason: conflictResult.conflictReason,
               severity: conflictResult.severity,
-              message: conflictResult.hasBeenEdited 
-                ? `Submission has been edited ${conflictResult.editCount} times`
-                : `Data conflicts in ${conflictResult.dataConflicts.length} field(s)`
+              message: message
             });
           }
         } else {
@@ -1857,18 +1900,28 @@ export const previewImportData = async (req, res) => {
       analysis.cabangBreakdown = namedCabangBreakdown;
     }
 
-    // Calculate identical data count for better logging
+    // Calculate detailed breakdown for better logging
     const identicalDataCount = analysis.existingRecords.filter(r => r.isIdenticalData).length;
     const editedButIdenticalCount = analysis.existingRecords.filter(r => r.isIdenticalData && r.hasBeenEdited).length;
+    const neverEditedIdenticalCount = analysis.existingRecords.filter(r => r.isIdenticalData && r.neverEdited).length;
+    const editedConflictsCount = analysis.conflicts.filter(c => c.conflictReason === 'data_conflict_edited').length;
+    const originalConflictsCount = analysis.conflicts.filter(c => c.conflictReason === 'data_conflict_original').length;
     
-    console.log(`✅ Preview completed: ${analysis.totalRecords} total, ${analysis.newRecords.length} new, ${analysis.existingRecords.length} existing (${identicalDataCount} identical), ${analysis.conflicts.length} actual conflicts`);
-    console.log('🔍 Analysis breakdown:', {
+    console.log(`✅ Preview completed: ${analysis.totalRecords} total, ${analysis.newRecords.length} new, ${analysis.existingRecords.length} existing, ${analysis.conflicts.length} conflicts`);
+    console.log('🔍 Detailed Analysis:', {
       totalRecords: analysis.totalRecords,
       newRecords: analysis.newRecords.length,
       existingRecords: analysis.existingRecords.length,
-      identicalData: identicalDataCount,
-      editedButIdentical: editedButIdenticalCount,
-      actualConflicts: analysis.conflicts.length,
+      identicalData: {
+        total: identicalDataCount,
+        editedButIdentical: editedButIdenticalCount,
+        neverEditedIdentical: neverEditedIdenticalCount
+      },
+      conflicts: {
+        total: analysis.conflicts.length,
+        editedSubmissions: editedConflictsCount,
+        originalSubmissions: originalConflictsCount
+      },
       crossCabangWarnings: analysis.crossCabangWarnings?.length || 0
     });
 

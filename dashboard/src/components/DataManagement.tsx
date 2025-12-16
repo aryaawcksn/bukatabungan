@@ -799,15 +799,20 @@ export default function DataManagement({ onDataImported, cabangList = [], userRo
               <div className="bg-amber-50 rounded-lg p-4 text-center">
                 <div className="text-2xl font-bold text-amber-600">{importPreviewData.existingRecords.length}</div>
                 <div className="text-xs text-amber-700">Sudah Ada</div>
-                <div className="text-xs text-slate-600 mt-1">
-                  {importPreviewData.existingRecords.filter((r: any) => r.isIdenticalData).length > 0 && (
+                <div className="text-xs text-slate-600 mt-1 space-y-1">
+                  {importPreviewData.existingRecords.filter((r: any) => r.isIdenticalData && r.neverEdited).length > 0 && (
                     <div className="text-green-600">
-                      {importPreviewData.existingRecords.filter((r: any) => r.isIdenticalData).length} Identik
+                      ✅ {importPreviewData.existingRecords.filter((r: any) => r.isIdenticalData && r.neverEdited).length} Identik (Original)
                     </div>
                   )}
-                  {importPreviewData.existingRecords.filter((r: any) => r.hasBeenEdited).length > 0 && (
+                  {importPreviewData.existingRecords.filter((r: any) => r.isIdenticalData && r.hasBeenEdited).length > 0 && (
+                    <div className="text-blue-600">
+                      📝 {importPreviewData.existingRecords.filter((r: any) => r.isIdenticalData && r.hasBeenEdited).length} Identik (Sudah Diedit)
+                    </div>
+                  )}
+                  {importPreviewData.existingRecords.filter((r: any) => !r.isIdenticalData).length > 0 && (
                     <div className="text-red-600">
-                      {importPreviewData.existingRecords.filter((r: any) => r.hasBeenEdited).length} Edited
+                      ⚠️ {importPreviewData.existingRecords.filter((r: any) => !r.isIdenticalData).length} Konflik Data
                     </div>
                   )}
                 </div>
@@ -874,32 +879,57 @@ export default function DataManagement({ onDataImported, cabangList = [], userRo
               <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
                 <h3 className="text-lg font-semibold text-red-800 mb-2">⚠️ Konflik Data Terdeteksi</h3>
                 <p className="text-red-700 text-sm mb-3">
-                  Data berikut memiliki konflik dengan submission yang sudah ada. Beberapa mungkin sudah diedit setelah approval.
+                  Data berikut memiliki konflik dengan submission yang sudah ada:
                 </p>
+                
+                {/* Conflict Type Summary */}
+                <div className="mb-3 flex gap-2 text-xs">
+                  {importPreviewData.conflicts.filter((c: any) => c.conflictReason === 'data_conflict_edited').length > 0 && (
+                    <span className="bg-red-100 text-red-700 px-2 py-1 rounded">
+                      🔴 {importPreviewData.conflicts.filter((c: any) => c.conflictReason === 'data_conflict_edited').length} Konflik pada Data Sudah Diedit
+                    </span>
+                  )}
+                  {importPreviewData.conflicts.filter((c: any) => c.conflictReason === 'data_conflict_original').length > 0 && (
+                    <span className="bg-amber-100 text-amber-700 px-2 py-1 rounded">
+                      🟡 {importPreviewData.conflicts.filter((c: any) => c.conflictReason === 'data_conflict_original').length} Konflik pada Data Original
+                    </span>
+                  )}
+                </div>
                 <div className="max-h-40 overflow-y-auto space-y-2">
                   {importPreviewData.conflicts.slice(0, 5).map((conflict: any, index: number) => (
                     <div key={index} className={`bg-white rounded p-3 text-xs border-l-4 ${
-                      conflict.severity === 'high' ? 'border-red-500' : 'border-amber-500'
+                      conflict.conflictReason === 'data_conflict_edited' ? 'border-red-500' : 'border-amber-500'
                     }`}>
                       <div className="flex items-center justify-between mb-1">
                         <div className="font-medium">{conflict.nama_lengkap}</div>
-                        {conflict.severity === 'high' && (
-                          <span className="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-medium">
-                            EDITED
-                          </span>
-                        )}
+                        <div className="flex gap-1">
+                          {conflict.conflictReason === 'data_conflict_edited' && (
+                            <span className="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-medium">
+                              🔴 SUDAH DIEDIT
+                            </span>
+                          )}
+                          {conflict.conflictReason === 'data_conflict_original' && (
+                            <span className="bg-amber-100 text-amber-700 px-2 py-1 rounded text-xs font-medium">
+                              🟡 DATA ORIGINAL
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <div className="text-slate-600 mb-1">
                         NIK: {conflict.no_id} | Status: {conflict.currentStatus} → {conflict.newStatus}
                       </div>
-                      {conflict.hasBeenEdited && (
+                      {conflict.hasBeenEdited ? (
                         <div className="text-red-600 text-xs mb-1">
-                          ⚠️ Sudah diedit {conflict.editCount} kali setelah approval
+                          📝 Sudah diedit {conflict.editCount} kali - Data berbeda dengan import
+                        </div>
+                      ) : (
+                        <div className="text-amber-600 text-xs mb-1">
+                          📄 Data original - Belum pernah diedit, tapi berbeda dengan import
                         </div>
                       )}
                       {conflict.dataConflicts && conflict.dataConflicts.length > 0 && (
-                        <div className="text-amber-600 text-xs">
-                          📝 Konflik data: {conflict.dataConflicts.map((dc: any) => dc.field).join(', ')}
+                        <div className="text-slate-700 text-xs">
+                          ⚠️ Konflik pada: {conflict.dataConflicts.map((dc: any) => dc.field).join(', ')}
                         </div>
                       )}
                     </div>
@@ -931,12 +961,21 @@ export default function DataManagement({ onDataImported, cabangList = [], userRo
             {importPreviewData.conflicts.length === 0 && importPreviewData.existingRecords.length > 0 && (
               <div className="mb-4 bg-green-50 border border-green-200 rounded-lg p-4">
                 <h3 className="text-lg font-semibold text-green-800 mb-2">✅ Import Aman</h3>
-                <p className="text-green-700 text-sm">
-                  {importPreviewData.existingRecords.filter((r: any) => r.isIdenticalData).length > 0 
-                    ? `${importPreviewData.existingRecords.filter((r: any) => r.isIdenticalData).length} data identik dengan yang sudah ada (tidak akan berubah)`
-                    : 'Semua data dapat diimpor dengan aman'
-                  }
-                </p>
+                <div className="text-green-700 text-sm space-y-1">
+                  {importPreviewData.existingRecords.filter((r: any) => r.isIdenticalData && r.neverEdited).length > 0 && (
+                    <p>
+                      📄 {importPreviewData.existingRecords.filter((r: any) => r.isIdenticalData && r.neverEdited).length} data identik dengan data original (tidak akan berubah)
+                    </p>
+                  )}
+                  {importPreviewData.existingRecords.filter((r: any) => r.isIdenticalData && r.hasBeenEdited).length > 0 && (
+                    <p>
+                      📝 {importPreviewData.existingRecords.filter((r: any) => r.isIdenticalData && r.hasBeenEdited).length} data identik dengan data yang sudah diedit (tidak akan berubah)
+                    </p>
+                  )}
+                  {importPreviewData.existingRecords.filter((r: any) => r.isIdenticalData).length === 0 && (
+                    <p>Semua data dapat diimpor dengan aman</p>
+                  )}
+                </div>
               </div>
             )}
 
