@@ -512,7 +512,7 @@ export default function FormSimpel({
           <div className="max-w-2xl mx-auto">
             <div className="bg-white p-8 rounded-2xl border-2 border-slate-200 shadow-sm">
               <Label htmlFor="cabang_pengambilan" className="text-gray-800 font-semibold text-lg mb-3 block">
-                Kantor Cabang <span className="text-red-500">*</span>
+                Kantor Cabangg <span className="text-red-500">*</span>
               </Label>
               {errors.cabang_pengambilan && (
                 <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg">
