@@ -1707,22 +1707,38 @@ export const previewImportData = async (req, res) => {
               // Check for data conflicts (only if data is actually different)
               const conflicts = [];
               
+              console.log(`🔍 Comparing data for NIK ${submission.no_id}:`);
+              console.log(`  - Nama: "${existing.nama}" vs "${submission.nama}"`);
+              console.log(`  - Email: "${existing.email}" vs "${submission.email}"`);
+              console.log(`  - No HP: "${existing.no_hp}" vs "${submission.no_hp}"`);
+              
               if (submission.nama && existing.nama && existing.nama.trim() !== submission.nama.trim()) {
                 conflicts.push({ field: 'nama', existing: existing.nama, new: submission.nama });
+                console.log(`  ❌ Nama conflict detected`);
               }
               
               if (submission.email && existing.email && existing.email.trim() !== submission.email.trim()) {
                 conflicts.push({ field: 'email', existing: existing.email, new: submission.email });
+                console.log(`  ❌ Email conflict detected`);
               }
               
               if (submission.no_hp && existing.no_hp && existing.no_hp.trim() !== submission.no_hp.trim()) {
                 conflicts.push({ field: 'no_hp', existing: existing.no_hp, new: submission.no_hp });
+                console.log(`  ❌ No HP conflict detected`);
               }
+              
+              console.log(`  📊 Total conflicts: ${conflicts.length}, Edit count: ${existing.edit_count}`);
 
-              // Only mark as conflict if there are actual data conflicts OR if it has been edited
+              // Only mark as conflict if there are actual data conflicts
+              // Being edited is just informational, not necessarily a conflict
               const hasDataConflicts = conflicts.length > 0;
               const hasBeenEdited = existing.edit_count > 0;
-              const isActualConflict = hasDataConflicts || hasBeenEdited;
+              const isActualConflict = hasDataConflicts; // Only data conflicts matter
+              
+              // Data is identical if there are no conflicts, regardless of edit history
+              const isIdenticalData = !hasDataConflicts;
+              
+              console.log(`  🔍 Analysis: hasDataConflicts=${hasDataConflicts}, hasBeenEdited=${hasBeenEdited}, isActualConflict=${isActualConflict}, isIdenticalData=${isIdenticalData}`);
 
               conflictResults.push({
                 index: i,
@@ -1735,8 +1751,8 @@ export const previewImportData = async (req, res) => {
                 pengajuanId: existing.pengajuan_id,
                 kodeReferensi: existing.kode_referensi,
                 dataConflicts: conflicts,
-                severity: hasBeenEdited ? 'high' : (hasDataConflicts ? 'medium' : 'none'),
-                isIdenticalData: !hasDataConflicts && !hasBeenEdited
+                severity: hasDataConflicts ? 'medium' : (hasBeenEdited ? 'low' : 'none'),
+                isIdenticalData: isIdenticalData
               });
             } else {
               conflictResults.push({
@@ -1770,6 +1786,7 @@ export const previewImportData = async (req, res) => {
         const conflictResult = conflictResults.find(r => r.index === index);
         
         if (conflictResult && (conflictResult.conflict || conflictResult.isIdenticalData)) {
+          // Add to existing records (for informational purposes)
           analysis.existingRecords.push({
             kode_referensi: conflictResult.kodeReferensi || item.kode_referensi,
             nama_lengkap: item.nama_lengkap || item.nama,
@@ -1778,13 +1795,13 @@ export const previewImportData = async (req, res) => {
             newStatus: item.status || 'pending',
             hasBeenEdited: conflictResult.hasBeenEdited,
             editCount: conflictResult.editCount,
-            dataConflicts: conflictResult.dataConflicts,
+            dataConflicts: conflictResult.dataConflicts || [],
             severity: conflictResult.severity,
             isIdenticalData: conflictResult.isIdenticalData
           });
 
-          // Only add to conflicts if there are actual conflicts (not identical data)
-          if (conflictResult.conflict && (conflictResult.dataConflicts.length > 0 || conflictResult.hasBeenEdited)) {
+          // Only add to conflicts if there are actual data conflicts (not just identical data)
+          if (conflictResult.conflict && conflictResult.dataConflicts && conflictResult.dataConflicts.length > 0) {
             analysis.conflicts.push({
               kode_referensi: conflictResult.kodeReferensi || item.kode_referensi,
               nama_lengkap: item.nama_lengkap || item.nama,
@@ -1840,12 +1857,18 @@ export const previewImportData = async (req, res) => {
       analysis.cabangBreakdown = namedCabangBreakdown;
     }
 
-    console.log(`✅ Preview completed: ${analysis.totalRecords} total, ${analysis.newRecords.length} new, ${analysis.existingRecords.length} existing, ${analysis.conflicts.length} conflicts`);
+    // Calculate identical data count for better logging
+    const identicalDataCount = analysis.existingRecords.filter(r => r.isIdenticalData).length;
+    const editedButIdenticalCount = analysis.existingRecords.filter(r => r.isIdenticalData && r.hasBeenEdited).length;
+    
+    console.log(`✅ Preview completed: ${analysis.totalRecords} total, ${analysis.newRecords.length} new, ${analysis.existingRecords.length} existing (${identicalDataCount} identical), ${analysis.conflicts.length} actual conflicts`);
     console.log('🔍 Analysis breakdown:', {
       totalRecords: analysis.totalRecords,
       newRecords: analysis.newRecords.length,
       existingRecords: analysis.existingRecords.length,
-      conflicts: analysis.conflicts.length,
+      identicalData: identicalDataCount,
+      editedButIdentical: editedButIdenticalCount,
+      actualConflicts: analysis.conflicts.length,
       crossCabangWarnings: analysis.crossCabangWarnings?.length || 0
     });
 
