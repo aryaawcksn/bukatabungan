@@ -2695,6 +2695,24 @@ export const editSubmission = async (req, res) => {
       await client.query(upsertQuery, values);
     }
 
+    // Special handling: Delete BO record if rekening_untuk_sendiri is changed to true
+    if (tableUpdates.cdd_self && tableUpdates.cdd_self.rekening_untuk_sendiri === true) {
+      console.log('🗑️ Deleting BO record because rekening_untuk_sendiri is now true');
+      
+      // Delete the BO record for this pengajuan_id
+      const deleteBoQuery = 'DELETE FROM bo WHERE pengajuan_id = $1';
+      const deleteResult = await client.query(deleteBoQuery, [id]);
+      
+      console.log('🗑️ BO deletion result:', deleteResult.rowCount, 'rows deleted');
+      
+      // Also add to edit history that BO data was cleared
+      editHistory.push({
+        field_name: 'bo_data_cleared',
+        old_value: 'BO data existed',
+        new_value: 'BO data cleared (account for self)'
+      });
+    }
+
     // Insert audit trail records
     for (const edit of editHistory) {
       await client.query(`
