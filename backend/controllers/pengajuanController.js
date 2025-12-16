@@ -1707,81 +1707,57 @@ export const previewImportData = async (req, res) => {
               // Check for data conflicts (only if data is actually different)
               const conflicts = [];
               
-              console.log(`🔍 Comparing data for NIK ${submission.no_id}:`);
-              console.log(`  - Nama: "${existing.nama}" vs "${submission.nama}"`);
-              console.log(`  - Email: "${existing.email}" vs "${submission.email}"`);
-              console.log(`  - No HP: "${existing.no_hp}" vs "${submission.no_hp}"`);
-              
               if (submission.nama && existing.nama && existing.nama.trim() !== submission.nama.trim()) {
                 conflicts.push({ field: 'nama', existing: existing.nama, new: submission.nama });
-                console.log(`  ❌ Nama conflict detected`);
               }
               
               if (submission.email && existing.email && existing.email.trim() !== submission.email.trim()) {
                 conflicts.push({ field: 'email', existing: existing.email, new: submission.email });
-                console.log(`  ❌ Email conflict detected`);
               }
               
               if (submission.no_hp && existing.no_hp && existing.no_hp.trim() !== submission.no_hp.trim()) {
                 conflicts.push({ field: 'no_hp', existing: existing.no_hp, new: submission.no_hp });
-                console.log(`  ❌ No HP conflict detected`);
               }
-              
-              console.log(`  📊 Total conflicts: ${conflicts.length}, Edit count: ${existing.edit_count}`);
 
-              // Improved conflict detection logic:
-              // 1. Check if data has actual conflicts
-              // 2. Differentiate between edited vs never-edited submissions
+              // Enhanced conflict detection logic
               const hasDataConflicts = conflicts.length > 0;
               const hasBeenEdited = existing.edit_count > 0;
-              const neverEdited = existing.edit_count === 0;
               
-              // Conflict determination based on edit history and data differences
-              let isActualConflict = false;
-              let conflictReason = '';
+              // Only mark as conflict if there are actual data differences
+              const isActualConflict = hasDataConflicts;
+              
+              // Determine conflict reason for better categorization
+              let conflictReason = null;
               let severity = 'none';
               
               if (hasDataConflicts && hasBeenEdited) {
-                // High priority: Data conflicts in edited submission
-                isActualConflict = true;
                 conflictReason = 'data_conflict_edited';
                 severity = 'high';
-              } else if (hasDataConflicts && neverEdited) {
-                // Medium priority: Data conflicts in never-edited submission
-                isActualConflict = true;
+              } else if (hasDataConflicts && !hasBeenEdited) {
                 conflictReason = 'data_conflict_original';
                 severity = 'medium';
               } else if (!hasDataConflicts && hasBeenEdited) {
-                // Low priority: Identical data but submission was edited (informational)
-                isActualConflict = false;
                 conflictReason = 'identical_but_edited';
                 severity = 'low';
               } else {
-                // No conflict: Identical data, never edited
-                isActualConflict = false;
                 conflictReason = 'identical_original';
                 severity = 'none';
               }
-              
-              const isIdenticalData = !hasDataConflicts;
-              
-              console.log(`  🔍 Analysis: conflicts=${conflicts.length}, edited=${hasBeenEdited} (${existing.edit_count}x), conflict=${isActualConflict}, reason=${conflictReason}, severity=${severity}`);
 
               conflictResults.push({
                 index: i,
                 no_id: submission.no_id,
-                conflict: isActualConflict,
+                conflict: isActualConflict, // Only true if data actually differs
                 status: existing.status,
                 hasBeenEdited: hasBeenEdited,
-                neverEdited: neverEdited,
                 editCount: existing.edit_count || 0,
                 lastEditedAt: existing.last_edited_at,
                 pengajuanId: existing.pengajuan_id,
                 kodeReferensi: existing.kode_referensi,
                 dataConflicts: conflicts,
-                conflictReason: conflictReason,
                 severity: severity,
-                isIdenticalData: isIdenticalData
+                conflictReason: conflictReason,
+                isIdenticalData: !hasDataConflicts
               });
             } else {
               conflictResults.push({
@@ -1810,57 +1786,40 @@ export const previewImportData = async (req, res) => {
         }
       }
 
-      // Process results and categorize data
+      // Process results and categorize data with enhanced logic
       importData.forEach((item, index) => {
         const conflictResult = conflictResults.find(r => r.index === index);
         
-        if (conflictResult && (conflictResult.conflict || conflictResult.isIdenticalData)) {
-          // Add to existing records (for informational purposes)
-          analysis.existingRecords.push({
+        if (conflictResult) {
+          // Record exists in database
+          const recordInfo = {
             kode_referensi: conflictResult.kodeReferensi || item.kode_referensi,
             nama_lengkap: item.nama_lengkap || item.nama,
             no_id: item.no_id || item.nik,
             currentStatus: conflictResult.status,
             newStatus: item.status || 'pending',
             hasBeenEdited: conflictResult.hasBeenEdited,
-            neverEdited: conflictResult.neverEdited,
             editCount: conflictResult.editCount,
             dataConflicts: conflictResult.dataConflicts || [],
-            conflictReason: conflictResult.conflictReason,
             severity: conflictResult.severity,
+            conflictReason: conflictResult.conflictReason,
             isIdenticalData: conflictResult.isIdenticalData
-          });
+          };
 
-          // Only add to conflicts if there are actual data conflicts
-          if (conflictResult.conflict && conflictResult.dataConflicts && conflictResult.dataConflicts.length > 0) {
-            let message = '';
-            switch (conflictResult.conflictReason) {
-              case 'data_conflict_edited':
-                message = `Data conflicts in edited submission (${conflictResult.editCount}x edited)`;
-                break;
-              case 'data_conflict_original':
-                message = `Data conflicts in original submission (never edited)`;
-                break;
-              default:
-                message = `Data conflicts in ${conflictResult.dataConflicts.length} field(s)`;
-            }
-            
+          // Always add to existingRecords for tracking
+          analysis.existingRecords.push(recordInfo);
+
+          // Only add to conflicts if there are actual data differences
+          if (conflictResult.conflict && conflictResult.dataConflicts.length > 0) {
             analysis.conflicts.push({
-              kode_referensi: conflictResult.kodeReferensi || item.kode_referensi,
-              nama_lengkap: item.nama_lengkap || item.nama,
-              no_id: item.no_id || item.nik,
-              currentStatus: conflictResult.status,
-              newStatus: item.status || 'pending',
-              hasBeenEdited: conflictResult.hasBeenEdited,
-              neverEdited: conflictResult.neverEdited,
-              editCount: conflictResult.editCount,
-              dataConflicts: conflictResult.dataConflicts,
-              conflictReason: conflictResult.conflictReason,
-              severity: conflictResult.severity,
-              message: message
+              ...recordInfo,
+              message: conflictResult.hasBeenEdited 
+                ? `Data conflicts in edited submission (${conflictResult.dataConflicts.length} field(s))`
+                : `Data conflicts in ${conflictResult.dataConflicts.length} field(s)`
             });
           }
         } else {
+          // New record
           analysis.newRecords.push({
             kode_referensi: item.kode_referensi || `NEW-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             nama_lengkap: item.nama_lengkap || item.nama,
@@ -1900,30 +1859,40 @@ export const previewImportData = async (req, res) => {
       analysis.cabangBreakdown = namedCabangBreakdown;
     }
 
-    // Calculate detailed breakdown for better logging
-    const identicalDataCount = analysis.existingRecords.filter(r => r.isIdenticalData).length;
-    const editedButIdenticalCount = analysis.existingRecords.filter(r => r.isIdenticalData && r.hasBeenEdited).length;
-    const neverEditedIdenticalCount = analysis.existingRecords.filter(r => r.isIdenticalData && r.neverEdited).length;
-    const editedConflictsCount = analysis.conflicts.filter(c => c.conflictReason === 'data_conflict_edited').length;
-    const originalConflictsCount = analysis.conflicts.filter(c => c.conflictReason === 'data_conflict_original').length;
-    
-    console.log(`✅ Preview completed: ${analysis.totalRecords} total, ${analysis.newRecords.length} new, ${analysis.existingRecords.length} existing, ${analysis.conflicts.length} conflicts`);
-    console.log('🔍 Detailed Analysis:', {
+    // Enhanced logging for debugging
+    const conflictBreakdown = {
+      data_conflict_edited: 0,
+      data_conflict_original: 0,
+      identical_but_edited: 0,
+      identical_original: 0
+    };
+
+    analysis.existingRecords.forEach(record => {
+      if (record.conflictReason) {
+        conflictBreakdown[record.conflictReason]++;
+      }
+    });
+
+    console.log(`✅ Preview completed: ${analysis.totalRecords} total, ${analysis.newRecords.length} new, ${analysis.existingRecords.length} existing, ${analysis.conflicts.length} actual conflicts`);
+    console.log('🔍 Enhanced analysis breakdown:', {
       totalRecords: analysis.totalRecords,
       newRecords: analysis.newRecords.length,
       existingRecords: analysis.existingRecords.length,
-      identicalData: {
-        total: identicalDataCount,
-        editedButIdentical: editedButIdenticalCount,
-        neverEditedIdentical: neverEditedIdenticalCount
-      },
-      conflicts: {
-        total: analysis.conflicts.length,
-        editedSubmissions: editedConflictsCount,
-        originalSubmissions: originalConflictsCount
-      },
+      actualConflicts: analysis.conflicts.length,
+      conflictBreakdown: conflictBreakdown,
       crossCabangWarnings: analysis.crossCabangWarnings?.length || 0
     });
+
+    // Log specific examples for debugging
+    if (analysis.existingRecords.length > 0) {
+      console.log('📋 Sample existing records:', analysis.existingRecords.slice(0, 3).map(r => ({
+        nama: r.nama_lengkap,
+        conflictReason: r.conflictReason,
+        hasDataConflicts: r.dataConflicts?.length > 0,
+        hasBeenEdited: r.hasBeenEdited,
+        severity: r.severity
+      })));
+    }
 
     res.json({
       success: true,

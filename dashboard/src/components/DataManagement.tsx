@@ -800,19 +800,19 @@ export default function DataManagement({ onDataImported, cabangList = [], userRo
                 <div className="text-2xl font-bold text-amber-600">{importPreviewData.existingRecords.length}</div>
                 <div className="text-xs text-amber-700">Sudah Ada</div>
                 <div className="text-xs text-slate-600 mt-1 space-y-1">
-                  {importPreviewData.existingRecords.filter((r: any) => r.isIdenticalData && r.neverEdited).length > 0 && (
+                  {importPreviewData.existingRecords.filter((r: any) => r.conflictReason === 'identical_original').length > 0 && (
                     <div className="text-green-600">
-                      ✅ {importPreviewData.existingRecords.filter((r: any) => r.isIdenticalData && r.neverEdited).length} Identik (Original)
+                      ✅ {importPreviewData.existingRecords.filter((r: any) => r.conflictReason === 'identical_original').length} Identik (Original)
                     </div>
                   )}
-                  {importPreviewData.existingRecords.filter((r: any) => r.isIdenticalData && r.hasBeenEdited).length > 0 && (
+                  {importPreviewData.existingRecords.filter((r: any) => r.conflictReason === 'identical_but_edited').length > 0 && (
                     <div className="text-blue-600">
-                      📝 {importPreviewData.existingRecords.filter((r: any) => r.isIdenticalData && r.hasBeenEdited).length} Identik (Sudah Diedit)
+                      📝 {importPreviewData.existingRecords.filter((r: any) => r.conflictReason === 'identical_but_edited').length} Identik (Sudah Diedit)
                     </div>
                   )}
-                  {importPreviewData.existingRecords.filter((r: any) => !r.isIdenticalData).length > 0 && (
+                  {importPreviewData.existingRecords.filter((r: any) => r.conflictReason?.startsWith('data_conflict')).length > 0 && (
                     <div className="text-red-600">
-                      ⚠️ {importPreviewData.existingRecords.filter((r: any) => !r.isIdenticalData).length} Konflik Data
+                      ⚠️ {importPreviewData.existingRecords.filter((r: any) => r.conflictReason?.startsWith('data_conflict')).length} Konflik Data
                     </div>
                   )}
                 </div>
@@ -962,14 +962,14 @@ export default function DataManagement({ onDataImported, cabangList = [], userRo
               <div className="mb-4 bg-green-50 border border-green-200 rounded-lg p-4">
                 <h3 className="text-lg font-semibold text-green-800 mb-2">✅ Import Aman</h3>
                 <div className="text-green-700 text-sm space-y-1">
-                  {importPreviewData.existingRecords.filter((r: any) => r.isIdenticalData && r.neverEdited).length > 0 && (
+                  {importPreviewData.existingRecords.filter((r: any) => r.conflictReason === 'identical_original').length > 0 && (
                     <p>
-                      📄 {importPreviewData.existingRecords.filter((r: any) => r.isIdenticalData && r.neverEdited).length} data identik dengan data original (tidak akan berubah)
+                      📄 {importPreviewData.existingRecords.filter((r: any) => r.conflictReason === 'identical_original').length} data identik dengan data original (tidak akan berubah)
                     </p>
                   )}
-                  {importPreviewData.existingRecords.filter((r: any) => r.isIdenticalData && r.hasBeenEdited).length > 0 && (
+                  {importPreviewData.existingRecords.filter((r: any) => r.conflictReason === 'identical_but_edited').length > 0 && (
                     <p>
-                      📝 {importPreviewData.existingRecords.filter((r: any) => r.isIdenticalData && r.hasBeenEdited).length} data identik dengan data yang sudah diedit (tidak akan berubah)
+                      📝 {importPreviewData.existingRecords.filter((r: any) => r.conflictReason === 'identical_but_edited').length} data identik dengan data yang sudah diedit (tidak akan berubah)
                     </p>
                   )}
                   {importPreviewData.existingRecords.filter((r: any) => r.isIdenticalData).length === 0 && (
