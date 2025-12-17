@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { Button } from './ui/button';
-import { ArrowLeft, CheckCircle, ArrowRight } from 'lucide-react';
+import { ArrowLeft, CheckCircle, ArrowRight, Sparkles, Shield, TrendingUp } from 'lucide-react';
 
 interface SavingsTypeSelectionProps {
   onSelectType: (type: string) => void;
@@ -14,170 +14,117 @@ export default function SavingsTypeSelection({
   onBack,
 }: SavingsTypeSelectionProps) {
 
-  const [index, setIndex] = useState(0);
-  const [itemsPerView, setItemsPerView] = useState(3);
-
-  const startX = useRef(0);
-  const isDragging = useRef(false);
-
-  useEffect(() => {
-    const updateView = () => {
-      if (window.innerWidth < 640) setItemsPerView(1);
-      else if (window.innerWidth < 1024) setItemsPerView(2);
-      else setItemsPerView(3);
-    };
-
-    updateView();
-    window.addEventListener('resize', updateView);
-    return () => window.removeEventListener('resize', updateView);
-  }, []);
-
-  const maxIndex = Math.max(savingsTypes.length - itemsPerView, 0);
-
-  const next = () => {
-    setIndex(prev => (prev >= maxIndex ? 0 : prev + 1));
-  };
-
-  const prev = () => {
-    setIndex(prev => (prev <= 0 ? maxIndex : prev - 1));
-  };
-
-  // ✅ DRAG / SWIPE HANDLER
-  const handleStart = (x: number) => {
-    startX.current = x;
-    isDragging.current = true;
-  };
-
-  const handleEnd = (x: number) => {
-    if (!isDragging.current) return;
-    const diff = startX.current - x;
-
-    if (diff > 50) next();
-    if (diff < -50) prev();
-
-    isDragging.current = false;
-  };
-
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'auto' });
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 animate-page-enter">
-      <div className="max-w-7xl mx-auto px-6 animate-content-enter">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-emerald-50 animate-page-enter">
+      <div className="max-w-4xl mx-auto px-6 py-8 animate-content-enter">
 
-        {/* BACK */}
-        <Button
-          variant="ghost"
-          onClick={onBack}
-          className="pl-0 mb-12 text-slate-600 hover:text-emerald-700 hover:bg-transparent"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" /> Kembali
-        </Button>
+        {/* HEADER SECTION */}
+        <div className="mb-12">
+          <Button
+            variant="ghost"
+            onClick={onBack}
+            className="pl-0 mb-8 text-slate-600 hover:text-emerald-700 hover:bg-transparent animate-stagger-1"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" /> Kembali ke Beranda
+          </Button>
 
-        {/* HEADER */}
-        <div className="text-center mb-16">
-          <h1 className="text-4xl font-bold text-slate-900 mb-4">
-            Pilih Jenis Tabungan
-          </h1>
-          <div className="w-20 h-1 mx-auto bg-emerald-700 rounded-full mb-4" />
-          <p className="text-slate-600 max-w-xl mx-auto">
-            Pilih produk tabungan yang cocok untuk kebutuhan.
-          </p>
+          <div className="text-center animate-stagger-2">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 mb-6">
+              <Sparkles className="w-8 h-8 text-emerald-600" />
+            </div>
+            <h1 className="text-4xl font-bold text-slate-900 mb-4">
+              Pilih Produk Tabungan
+            </h1>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+              Temukan produk tabungan yang sesuai dengan kebutuhan dan gaya hidup Anda
+            </p>
+          </div>
         </div>
 
-        {/* ✅ CAROUSEL */}
-        <div className="relative flex items-center">
+        {/* BENEFITS BAR */}
+        
 
-          <button
-            onClick={prev}
-            className="absolute left-0 z-20 -translate-x-6 bg-white p-3 shadow-lg rounded-full"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-
-          <div
-            className="overflow-hidden w-full px-2 sm:px-8 lg:px-12"
-            onMouseDown={(e) => handleStart(e.clientX)}
-            onMouseUp={(e) => handleEnd(e.clientX)}
-            onTouchStart={(e) => handleStart(e.touches[0].clientX)}
-            onTouchEnd={(e) => handleEnd(e.changedTouches[0].clientX)}
-          >
+        {/* VERTICAL PRODUCT CARDS */}
+        <div className="space-y-6">
+          {savingsTypes.map((type, index) => (
             <div
-              className="flex transition-transform duration-500"
-              style={{ transform: `translateX(-${index * (100 / itemsPerView)}%)` }}
+              key={type.id}
+              className={`group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer overflow-hidden hover:border-emerald-300 animate-stagger-${Math.min(index + 4, 4)}`}
+              onClick={() => onSelectType(type.id)}
             >
-              {savingsTypes.map((type) => (
-                <div
-                  key={type.id}
-                  className="min-w-full sm:min-w-[50%] lg:min-w-[33.3333%] px-4 select-none"
-                >
+              <div className="flex flex-col md:flex-row">
+                {/* LEFT: Image/Card Preview */}
+                <div className="md:w-80 h-48 md:h-auto relative overflow-hidden">
                   <div
-                    onClick={() => onSelectType(type.id)}
-                    className="group bg-white rounded-xl border border-slate-200 shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden hover:-translate-y-1"
+                    className="absolute inset-0 bg-cover bg-center"
+                    style={{ backgroundImage: `url(${type.bgImage})` }}
                   >
-                    <div
-                      className="relative h-44 p-6 text-white bg-cover bg-center"
-                      style={{ backgroundImage: `url(${type.bgImage})` }}
-                    >
-                      <div className="absolute inset-0 bg-black/40" />
-                      <div className="relative z-10 flex justify-between items-end">
+                    <div className="absolute inset-0 bg-gradient-to-br from-black/30 to-black/60" />
+                    <div className="absolute inset-0 p-6 flex flex-col justify-between text-white">
+                      <div className="flex justify-between items-start">
                         <img src="/banksleman.png" alt="Logo" className="h-6 brightness-0 invert" />
-                        <span className="text-xs opacity-80">VISA / GPN</span>
+                        <span className="text-xs opacity-80 bg-white/20 px-2 py-1 rounded">VISA</span>
                       </div>
-                    </div>
-
-                    <div className="p-7 flex flex-col h-full">
-                      <h3 className="text-xl font-bold text-slate-900 mb-1">
-                        {type.title}
-                      </h3>
-                      <p className="text-sm text-slate-600 mb-6">
-                        {type.description}
-                      </p>
-
-                      <div className="space-y-3 mb-8">
-                        {type.features.map((feature, idx) => (
-                          <div key={idx} className="flex items-center gap-3 text-sm">
-                            <CheckCircle className="w-5 h-5 text-emerald-700" />
-                            <span className="text-slate-700">{feature}</span>
-                          </div>
-                        ))}
+                      <div>
+                        <p className="text-sm opacity-90">Bank Sleman</p>
+                        <p className="text-lg font-bold">{type.title}</p>
                       </div>
-
-                      <Button className="mt-auto w-full bg-emerald-800 hover:bg-emerald-900">
-                        Lihat Detail
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                      </Button>
                     </div>
                   </div>
                 </div>
-              ))}
+
+                {/* RIGHT: Content */}
+                <div className="flex-1 p-6 md:p-8">
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <h3 className="text-2xl font-bold text-slate-900 mb-2">
+                        {type.title}
+                      </h3>
+                      <p className="text-slate-600 leading-relaxed">
+                        {type.description}
+                      </p>
+                    </div>
+                    <div className="ml-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <ArrowRight className="w-6 h-6 text-emerald-600" />
+                    </div>
+                  </div>
+
+                  {/* Features */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+                    {type.features.slice(0, 4).map((feature, idx) => (
+                      <div key={idx} className="flex items-center gap-3">
+                        <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                          <CheckCircle className="w-3 h-3 text-emerald-600" />
+                        </div>
+                        <span className="text-sm text-slate-700">{feature}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* CTA */}
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-slate-500">
+                      Klik untuk melihat detail lengkap
+                    </div>
+                    <Button 
+                      size="sm" 
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 transition-gentle"
+                    >
+                      Pilih Produk
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-
-          <button
-            onClick={next}
-            className="absolute right-0 z-20 translate-x-6 bg-white p-3 shadow-lg rounded-full"
-          >
-            <ArrowRight className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* DOT */}
-        <div className="flex justify-center gap-2 mt-6">
-          {Array.from({ length: maxIndex + 1 }).map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setIndex(i)}
-              className={`w-3 h-3 rounded-full ${
-                index === i ? 'bg-emerald-700' : 'bg-slate-300'
-              }`}
-            />
           ))}
         </div>
 
         {/* FOOTER */}
-        <div className="mt-24 pt-8 border-t border-slate-200 text-center">
+        <div className="mt-16 pt-8 border-t border-slate-200 text-center animate-stagger-4">
           <p className="text-slate-500 text-sm">
             &copy; {new Date().getFullYear()} PT BPR Bank Sleman (Perseroda). Seluruh Hak Cipta Dilindungi.
           </p>

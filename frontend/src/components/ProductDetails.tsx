@@ -326,12 +326,7 @@ function ProductDetails({
   return (
   <div
     className="min-h-screen relative font-sans text-slate-800 pb-24 lg:pb-0 animate-page-enter"
-    style={{
-      backgroundImage: `url('/Gunung-Merapi.jpg')`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundAttachment: 'fixed',
-    }}
+    
   >
     {/* Overlay */}
     <div className="absolute inset-0 bg-white/75 backdrop-blur-sm"></div>
