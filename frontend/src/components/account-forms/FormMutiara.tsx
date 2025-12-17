@@ -210,22 +210,22 @@ export default function FormMutiara({
   };
 
   // Validation function for minimum deposit
-  const validateMinimumDeposit = (accountType: string, depositAmount: string): string => {
-    if (!depositAmount) return '';
+  // const validateMinimumDeposit = (accountType: string, depositAmount: string): string => {
+  //   if (!depositAmount) return '';
     
-    const amount = parseFloat(depositAmount);
-    if (isNaN(amount)) {
-      return 'Nominal setoran harus berupa angka';
-    }
+  //   const amount = parseFloat(depositAmount);
+  //   if (isNaN(amount)) {
+  //     return 'Nominal setoran harus berupa angka';
+  //   }
     
-    const minimumDeposit = MINIMUM_DEPOSITS[accountType] || 0;
+  //   const minimumDeposit = MINIMUM_DEPOSITS[accountType] || 0;
     
-    if (amount < minimumDeposit) {
-      return `Nominal setoran minimal untuk rekening ${accountType} adalah Rp ${minimumDeposit.toLocaleString('id-ID')}`;
-    }
+  //   if (amount < minimumDeposit) {
+  //     return `Nominal setoran minimal untuk rekening ${accountType} adalah Rp ${minimumDeposit.toLocaleString('id-ID')}`;
+  //   }
     
-    return '';
-  };
+  //   return '';
+  // };
 
 
 
@@ -1899,7 +1899,7 @@ export default function FormMutiara({
                 </p>
               </div>
 
-              {/* Initial Deposit Amount */}
+              {/* Initial Deposit Amount
               <div>
                 <Label htmlFor="nominalSetoran" className="text-gray-700">Nominal Setoran Awal</Label>
                 <Input
@@ -1930,7 +1930,7 @@ export default function FormMutiara({
                 />
                 {errors.nominalSetoran && <p className="text-sm text-red-600 mt-1">{errors.nominalSetoran}</p>}
                 <p className="text-xs text-gray-500 mt-1">Minimal setoran awal untuk rekening Mutiara adalah Rp 20.000</p>
-              </div>
+              </div> */}
 
               {/* ATM Preference */}
               {/* <div>
@@ -2396,7 +2396,7 @@ export default function FormMutiara({
                 </div>
                 <div className="md:col-span-2">
                   <p className="text-gray-500">Alamat</p>
-                  <p className="font-medium text-gray-800">{formData.address}, {formData.city}, {formData.province} {formData.postalCode}</p>
+                  <p className="font-medium text-gray-800">{formData.address},{formData.postalCode}</p>
                 </div>
               </div>
             </div>
