@@ -62,7 +62,7 @@ export default function FormSimpel({
     villageId: '',
   });
 
-  // Auto-set employment status and jenis_rekening for Simpel
+  // Auto-set employment status and jenis_rekening for Simpell
   React.useEffect(() => {
     setFormData(prev => ({ 
       ...prev, 
