@@ -50,8 +50,8 @@ function ProductDetails({
             "Saldo minimal Rp20.000 (dua puluh ribu rupiah",
           ],
           fees: [
-            "Biaya Administrasi Rp8.000",
-            "Biaya Tarik Tunai di ATM Bank Sleman Gratis",
+            "Biaya Administrasi: Rp8.000",
+            "Biaya Tarik Tunai di ATM Bank Sleman: Gratis",
             "Biaya Tarik Tunai/Transfer di Jaringan ALTO/PRIMA: Sesuai Ketentuan",
           ],
           interest: "3.5% p.a",
@@ -347,20 +347,20 @@ function ProductDetails({
             <div className="sticky top-20">
               <div className="bg-white p-7 rounded-2xl border border-slate-200 text-center">
                <div className="bg-slate-50 rounded-xl p-8 mb-6 flex items-center justify-center">
-  {product.img ? (
-    <img
-      src={product.img}
-      alt={product.title}
-      className="w-72 mx-auto select-none"
-      loading="lazy"
-      draggable={false}
-    />
-  ) : (
-    <div
-      className={`w-64 h-32 rounded-lg bg-gradient-to-br ${product.cardBg}`}
-    />
-  )}
-</div>
+              {product.img ? (
+                <img
+                  src={product.img}
+                  alt={product.title}
+                  className="w-72 mx-auto select-none"
+                  loading="lazy"
+                  draggable={false}
+                />
+              ) : (
+                <div
+                  className={`w-64 h-32 rounded-lg bg-gradient-to-br ${product.cardBg}`}
+                />
+              )}
+            </div>
 
 
                 <h1 className="text-2xl font-bold text-slate-900">
