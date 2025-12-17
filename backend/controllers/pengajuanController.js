@@ -434,13 +434,18 @@ export const createPengajuan = async (req, res) => {
 
     await client.query('COMMIT');
 
+    // Get branch name for response
+    const branchQuery = await client.query('SELECT nama_cabang FROM cabang WHERE id = $1', [parseInt(finalCabangId)]);
+    const namaCabang = branchQuery.rows[0]?.nama_cabang || 'Cabang tidak ditemukan';
+
     res.status(201).json({
       success: true,
       message: "Pengajuan berhasil disimpan",
       kode_referensi,
       data: {
         id: pengajuanId,
-        kode_referensi
+        kode_referensi,
+        nama_cabang: namaCabang
       }
     });
 
@@ -459,6 +464,97 @@ export const createPengajuan = async (req, res) => {
     });
   } finally {
     client.release();
+  }
+};
+
+/**
+ * Mengambil status pengajuan berdasarkan kode referensi (public route)
+ */
+export const getStatusByReferenceCode = async (req, res) => {
+  try {
+    const { referenceCode } = req.params;
+
+    const query = `
+      SELECT
+        p.id,
+        p.status,
+        p.created_at,
+        p.approved_at,
+        p.rejected_at,
+        cs.kode_referensi,
+        cs.nama AS nama_lengkap,
+        cs.email,
+        cs.no_hp,
+        acc.tabungan_tipe AS jenis_rekening,
+        c.nama_cabang,
+        c.alamat AS alamat_cabang,
+        c.telepon AS telepon_cabang
+      FROM pengajuan_tabungan p
+      LEFT JOIN cdd_self cs ON p.id = cs.pengajuan_id
+      LEFT JOIN account acc ON p.id = acc.pengajuan_id
+      LEFT JOIN cabang c ON p.cabang_id = c.id
+      WHERE cs.kode_referensi = $1
+    `;
+
+    const result = await pool.query(query, [referenceCode]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "Nomor registrasi tidak ditemukan" 
+      });
+    }
+
+    const data = result.rows[0];
+    
+    // Format status message
+    let statusMessage = '';
+    let statusColor = '';
+    
+    switch (data.status) {
+      case 'pending':
+        statusMessage = 'Pengajuan sedang dalam proses verifikasi';
+        statusColor = 'yellow';
+        break;
+      case 'approved':
+        statusMessage = 'Pengajuan telah disetujui. Silakan datang ke cabang untuk pengambilan buku tabungan.';
+        statusColor = 'green';
+        break;
+      case 'rejected':
+        statusMessage = 'Pengajuan ditolak. Silakan hubungi cabang untuk informasi lebih lanjut.';
+        statusColor = 'red';
+        break;
+      default:
+        statusMessage = 'Status tidak diketahui';
+        statusColor = 'gray';
+    }
+
+    res.json({
+      success: true,
+      data: {
+        kode_referensi: data.kode_referensi,
+        nama_lengkap: data.nama_lengkap,
+        jenis_rekening: data.jenis_rekening,
+        status: data.status,
+        statusMessage,
+        statusColor,
+        created_at: data.created_at,
+        approved_at: data.approved_at,
+        rejected_at: data.rejected_at,
+        cabang: {
+          nama_cabang: data.nama_cabang,
+          alamat_cabang: data.alamat_cabang,
+          telepon_cabang: data.telepon_cabang
+        }
+      }
+    });
+
+  } catch (err) {
+    console.error("❌ Error getting status by reference code:", err);
+    res.status(500).json({ 
+      success: false, 
+      message: "Terjadi kesalahan saat mengambil status pengajuan" 
+    });
   }
 };
 

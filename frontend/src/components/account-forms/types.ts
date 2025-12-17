@@ -107,9 +107,6 @@ export interface AccountFormProps {
     setFormData: Dispatch<SetStateAction<AccountFormData>>;
     errors: Record<string, string>;
     setErrors: Dispatch<SetStateAction<Record<string, string>>>;
-    validateNikAsync: (nik: string) => Promise<string>;
-    validateEmailAsync: (email: string) => Promise<string>;
-    validatePhoneAsync: (phone: string) => Promise<string>;
     getFieldClass: (name: string) => string;
 
     ktpFile: File | null;

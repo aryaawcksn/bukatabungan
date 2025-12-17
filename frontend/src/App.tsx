@@ -14,6 +14,7 @@ import AccountForm from "./components/AccountForm";
 import ProductDetails from "./components/ProductDetails";
 import HeroLanding from "./pages/HeroLanding";
 import InvalidRequestPage from "./pages/InvalidRequestPage";
+import StatusCheck from "./components/StatusCheck";
 import { VALID_SAVING_TYPES } from "./data/savingsTypes";
 
 function AppWrapper() {
@@ -133,6 +134,9 @@ function AppWrapper() {
         <Route path="/product/:type" element={<ProductDetailsRoute />} />
         <Route path="/procedure/:type" element={<ProcedureRoute />} />
         <Route path="/form/:type" element={<FormRoute />} />
+        
+        {/* Status Check Route */}
+        <Route path="/status/:referenceCode" element={<StatusCheck />} />
 
         {/* ✅ INI ROUTE INVALID / 404 */}
         <Route path="*" element={<InvalidRequestPage />} />

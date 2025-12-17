@@ -17,9 +17,6 @@ export default function FormReguler({
   setFormData,
   errors,
   setErrors,
-  validateNikAsync,
-  validateEmailAsync,
-  validatePhoneAsync,
   getFieldClass,
   ktpFile,
   setKtpFile,
@@ -241,7 +238,11 @@ export default function FormReguler({
                     onBlur={async (e) => {
                       if (!formData.jenisId || formData.jenisId === 'KTP') {
                         const val = (e.currentTarget as HTMLInputElement).value;
-                        const err = await validateNikAsync(val);
+                        // Basic validation only
+                        let err = '';
+                        if (!val) err = 'NIK wajib diisi';
+                        else if (!/^\d{16}$/.test(val)) err = 'NIK harus 16 digit';
+                        
                         setErrors(prev => {
                           const next = { ...prev };
                           if (err) next.nik = err;
@@ -352,9 +353,13 @@ export default function FormReguler({
                       placeholder="email@example.com"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      onBlur={async (e) => {
+                      onBlur={(e) => {
                         const val = (e.currentTarget as HTMLInputElement).value;
-                        const err = await validateEmailAsync(val);
+                        // Basic validation only
+                        let err = '';
+                        if (!val) err = 'Email wajib diisi';
+                        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) err = 'Format email tidak valid';
+                        
                         setErrors(prev => {
                           const next = { ...prev };
                           if (err) next.email = err;
@@ -376,9 +381,13 @@ export default function FormReguler({
                       placeholder="08xxxxxxxxxx"
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      onBlur={async (e) => {
+                      onBlur={(e) => {
                         const val = (e.currentTarget as HTMLInputElement).value;
-                        const err = await validatePhoneAsync(val);
+                        // Basic validation only
+                        let err = '';
+                        if (!val) err = 'Nomor telepon wajib diisi';
+                        else if (!/^08\d{8,11}$/.test(val)) err = 'Nomor HP harus dimulai dengan 08 dan 10-13 digit';
+                        
                         setErrors(prev => {
                           const next = { ...prev };
                           if (err) next.phone = err;

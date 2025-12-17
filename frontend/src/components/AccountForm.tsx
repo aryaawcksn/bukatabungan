@@ -24,6 +24,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
   const navigate = useNavigate();
   const [submitted, setSubmitted] = useState(false);
   const [referenceCode, setReferenceCode] = useState<string | null>(null);
+  const [submitResponse, setSubmitResponse] = useState<any>(null);
   const [ktpFile, setKtpFile] = useState<File | null>(null);
   const [ktpPreview, setKtpPreview] = useState<string | null>(null);
   const [ktpUrl, setKtpUrl] = useState<string | null>(null);
@@ -42,57 +43,26 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
 
   const apiBase = API_BASE_URL;
 
-  const validateNikAsync = async (nik: string) => {
+  // Removed async validation functions for NIK, email, and phone
+  // Basic client-side validation only
+  const validateNikBasic = (nik: string) => {
     if (!nik) return 'NIK wajib diisi';
-    // basic client-side checks
     if (!/^\d{16}$/.test(nik)) return 'NIK harus 16 digit';
-    try {
-      const res = await fetch(`${apiBase}/api/check-nik?nik=${encodeURIComponent(nik)}`, {
-        credentials: "include", // ✅ di sini
-      });
-      if (!res.ok) return 'Gagal memeriksa NIK';
-      const data = await res.json();
-      if (data.exists) {
-        const s = data.status;
-        if (s === 'approved') return 'NIK Sudah Digunakan';
-        if (s === 'pending') return 'NIK sudah memiliki pengajuan pending (hanya 1 pengajuan pending per NIK)';
-        return 'NIK tidak tersedia';
-      }
-      return '';
-    } catch (err) {
-      return 'Gagal memeriksa NIK';
-    }
-  };
-
-  const validateEmailAsync = async (email: string) => {
-    if (!email) return 'Email wajib diisi';
-    try {
-      const res = await fetch(`${apiBase}/api/check-nik?email=${encodeURIComponent(email)}`, {
-        credentials: "include", // ✅ di sini
-      });
-      if (!res.ok) return 'Gagal memeriksa Email';
-      const data = await res.json();
-      if (data.exists) return 'Email Sudah Digunakan';
-      return '';
-    } catch (err) {
-      return 'Gagal memeriksa Email';
-    }
-  };
-
- const validatePhoneAsync = async (phone: string) => {
-  if (!phone) return 'Nomor telepon wajib diisi';
-  try {
-    const res = await fetch(`${apiBase}/api/check-nik?phone=${encodeURIComponent(phone)}`, {
-      credentials: "include", // ✅ di sini
-    });
-    if (!res.ok) return 'Gagal memeriksa No HP';
-    const data = await res.json();
-    if (data.exists) return 'No HP Sudah Digunakan';
     return '';
-  } catch (err) {
-    return 'Gagal memeriksa No HP';
-  }
-};
+  };
+
+  const validateEmailBasic = (email: string) => {
+    if (!email) return 'Email wajib diisi';
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) return 'Format email tidak valid';
+    return '';
+  };
+
+  const validatePhoneBasic = (phone: string) => {
+    if (!phone) return 'Nomor telepon wajib diisi';
+    if (!/^08\d{8,11}$/.test(phone)) return 'Nomor HP harus dimulai dengan 08 dan 10-13 digit';
+    return '';
+  };
 
   const getFieldClass = (name: string) => {
     return errors[name]
@@ -316,17 +286,17 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
               newErrors.jenisIdCustom = "Sebutkan jenis identitas Anda";
            }
            
-           // Async validations
+           // Basic client-side validations only
            if (!newErrors.nik && (!formData.jenisId || formData.jenisId === 'KTP')) {
-             const nikErr = await validateNikAsync(formData.nik);
+             const nikErr = validateNikBasic(formData.nik);
              if (nikErr) newErrors.nik = nikErr;
            }
            if (!newErrors.email) {
-             const emailErr = await validateEmailAsync(formData.email);
+             const emailErr = validateEmailBasic(formData.email);
              if (emailErr) newErrors.email = emailErr;
            }
            if (!newErrors.phone) {
-             const phoneErr = await validatePhoneAsync(formData.phone);
+             const phoneErr = validatePhoneBasic(formData.phone);
              if (phoneErr) newErrors.phone = phoneErr;
            }
         } else if (currentStep === 3) {
@@ -460,17 +430,17 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     // Terms and Conditions
     if (!formData.agreeTerms) newErrors.agreeTerms = "Anda harus menyetujui syarat dan ketentuan";
 
-    // Async validations for unique fields (only if basic validation passed)
+    // Basic client-side validations only (no async duplicate checks)
     if (!newErrors.nik && (!formData.jenisId || formData.jenisId === 'KTP')) {
-      const nikErr = await validateNikAsync(formData.nik);
+      const nikErr = validateNikBasic(formData.nik);
       if (nikErr) newErrors.nik = nikErr;
     }
     if (!newErrors.email) {
-      const emailErr = await validateEmailAsync(formData.email);
+      const emailErr = validateEmailBasic(formData.email);
       if (emailErr) newErrors.email = emailErr;
     }
     if (!newErrors.phone) {
-      const phoneErr = await validatePhoneAsync(formData.phone);
+      const phoneErr = validatePhoneBasic(formData.phone);
       if (phoneErr) newErrors.phone = phoneErr;
     }
 
@@ -749,6 +719,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
   
       if (response.ok && result.success) {
         setReferenceCode(result.kode_referensi ?? null);
+        setSubmitResponse(result);
         setSubmitted(true);
         setCurrentStep(6); // Move to success step (step 6)
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -767,6 +738,10 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
   };
 
   const renderSuccess = () => {
+    // Get selected branch name
+    const selectedBranch = branches.find(b => b.id.toString() === formData.cabang_pengambilan);
+    const branchName = selectedBranch?.nama_cabang || submitResponse?.data?.nama_cabang || 'cabang yang dipilih';
+    
     return (
       <div className="text-center py-8">
         <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-emerald-100 to-emerald-200 rounded-3xl mb-8 shadow-lg">
@@ -794,7 +769,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
             </li>
             <li className="flex items-start gap-3">
               <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-              <span>Setelah disetujui mohon datang pada cabang yang telah anda</span>
+              <span>Setelah disetujui mohon datang pada <strong>{branchName}</strong></span>
             </li>
           </ul>
         </div>
@@ -808,6 +783,15 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
           <p className="text-sm text-gray-600">
             Simpan nomor ini untuk keperluan tracking pengajuan anda
           </p>
+          <div className="mt-4">
+            <Button 
+              onClick={() => navigate(`/status/${referenceCode}`)}
+              variant="outline"
+              className="text-emerald-600 border-emerald-600 hover:bg-emerald-50 px-4 py-2 text-sm"
+            >
+              Cek Status Pengajuan
+            </Button>
+          </div>
         </div>
         
         <Button 
@@ -826,9 +810,6 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       setFormData,
       errors,
       setErrors,
-      validateNikAsync,
-      validateEmailAsync,
-      validatePhoneAsync,
       getFieldClass,
       ktpFile,
       setKtpFile,

@@ -35,10 +35,7 @@ export default function FormSimpel({
   setFormData,
   errors,
   setErrors,
-  validateNikAsync,
-  validateEmailAsync,
-  validatePhoneAsync,
-  getFieldClass,
+
 
   branches = [],
   currentStep = 1,
@@ -71,28 +68,12 @@ export default function FormSimpel({
       ...prev, 
       employmentStatus: prev.employmentStatus !== 'pelajar-mahasiswa' ? 'pelajar-mahasiswa' : prev.employmentStatus,
       jenis_rekening: 'SimPel',
-      tipeNasabah: prev.tipeNasabah || 'baru'
+      tipeNasabah: prev.tipeNasabah || 'baru',
+      jenisId: 'KIA'
     }));
   }, []);
 
-  // Validation function for identity number format
-  const validateIdentityNumber = (idType: string, idNumber: string): string => {
-    if (!idNumber) return '';
-    
-    if (idType === 'KTP') {
-      // KTP must be exactly 16 digits
-      if (!/^\d{16}$/.test(idNumber)) {
-        return 'Nomor KTP harus 16 digit angka';
-      }
-    } else if (idType === 'Paspor') {
-      // Passport should be alphanumeric, typically 6-9 characters
-      if (!/^[A-Z0-9]{6,9}$/i.test(idNumber)) {
-        return 'Nomor Paspor harus 6-9 karakter alfanumerik';
-      }
-    }
-    // For 'Lainnya', we don't enforce specific format
-    return '';
-  };
+
 
   // Validation function for age requirement
   const validateAge = (birthDate: string): string => {
@@ -167,12 +148,6 @@ export default function FormSimpel({
     }
     if (!boNomorId) {
       errors.boNomorId = 'Nomor identitas beneficial owner harus diisi';
-    } else if (boJenisId) {
-      // Validate BO ID format based on ID type
-      const formatError = validateIdentityNumber(boJenisId, boNomorId);
-      if (formatError) {
-        errors.boNomorId = formatError;
-      }
     }
     if (!boSumberDana) {
       errors.boSumberDana = 'Sumber dana beneficial owner harus dipilih';
@@ -182,12 +157,6 @@ export default function FormSimpel({
     }
     if (!boNomorHp) {
       errors.boNomorHp = 'Nomor HP beneficial owner harus diisi';
-    } else {
-      // Validate phone number format for Indonesian numbers
-      const phoneRegex = /^(\+62|62|0)8[1-9][0-9]{6,10}$/;
-      if (!phoneRegex.test(boNomorHp)) {
-        errors.boNomorHp = 'Format nomor HP tidak valid (contoh: 08123456789)';
-      }
     }
     if (!boPekerjaan) {
       errors.boPekerjaan = 'Pekerjaan beneficial owner harus diisi';
@@ -217,12 +186,6 @@ export default function FormSimpel({
       }
       if (!kontakDaruratHp) {
         errors.kontakDaruratHp = 'Nomor HP kontak darurat harus diisi jika mengisi kontak darurat';
-      } else {
-        // Validate phone number format for Indonesian numbers
-        const phoneRegex = /^(\+62|62|0)8[1-9][0-9]{6,10}$/;
-        if (!phoneRegex.test(kontakDaruratHp)) {
-          errors.kontakDaruratHp = 'Format nomor HP tidak valid (contoh: 08123456789)';
-        }
       }
       if (!kontakDaruratHubungan) {
         errors.kontakDaruratHubungan = 'Hubungan kontak darurat harus diisi jika mengisi kontak darurat';
@@ -334,12 +297,12 @@ export default function FormSimpel({
     });
   }, [formData.tipeNasabah, formData.nomorRekeningLama]);
 
-  // Load provinces when citizenship is WNI
+  // Load provinces for both WNI and WNA
   React.useEffect(() => {
-    if (formData.citizenship === 'Indonesia') {
+    if (formData.citizenship === 'Indonesia' || formData.citizenship === 'WNA') {
       loadProvinces();
     } else {
-      // Reset address data if not WNI
+      // Reset address data if citizenship not selected
       setAddressData(prev => ({
         ...prev,
         provinces: [],
@@ -460,7 +423,7 @@ export default function FormSimpel({
 
   // Update full address when street address changes
   React.useEffect(() => {
-    if (formData.citizenship === 'Indonesia' && selectedAddress.provinceId) {
+    if ((formData.citizenship === 'Indonesia' || formData.citizenship === 'WNA') && selectedAddress.provinceId) {
       const province = addressData.provinces.find(p => p.id === selectedAddress.provinceId);
       const city = addressData.cities.find(c => c.id === selectedAddress.cityId);
       const district = addressData.districts.find(d => d.id === selectedAddress.districtId);
@@ -472,8 +435,8 @@ export default function FormSimpel({
         district?.name || '',
         village?.name || ''
       );
-    } else if (formData.citizenship !== 'Indonesia') {
-      // For non-Indonesian, just use street address as full address
+    } else if (!formData.citizenship || (formData.citizenship !== 'Indonesia' && formData.citizenship !== 'WNA')) {
+      // For cases where citizenship is not selected or other values
       setFormData(prev => ({
         ...prev,
         alamatJalan: streetAddress,
@@ -512,7 +475,7 @@ export default function FormSimpel({
           <div className="max-w-2xl mx-auto">
             <div className="bg-white p-8 rounded-2xl border-2 border-slate-200 shadow-sm">
               <Label htmlFor="cabang_pengambilan" className="text-gray-800 font-semibold text-lg mb-3 block">
-                Kantor Cabangg <span className="text-red-500">*</span>
+                Kantor Cabang <span className="text-red-500">*</span>
               </Label>
               {errors.cabang_pengambilan && (
                 <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -598,12 +561,12 @@ export default function FormSimpel({
               {/* Nama Lengkap */}
               <div>
                 <Label htmlFor="fullName" className="text-gray-700 font-semibold">
-                  Nama Lengkap (Sesuai KTP) <span className="text-red-500">*</span>
+                  Nama Lengkap (Sesuai KIA) <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="fullName"
                   required
-                  placeholder="Masukkan nama lengkap sesuai KTP"
+                  placeholder="Masukkan nama lengkap sesuai KIA"
                   value={formData.fullName}
                   onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                   className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
@@ -699,105 +662,40 @@ export default function FormSimpel({
                 </div>
               )}
 
-              {/* Identity Type & Number */}
-              <div className="grid md:grid-cols-2 gap-5">
-                <div>
-                  <Label className="text-gray-700 font-semibold">
-                    Jenis Identitas <span className="text-red-500">*</span>
-                  </Label>
-                  <Select
-                    value={formData.jenisId}
-                    onValueChange={(value) => {
-                      setFormData({ ...formData, jenisId: value, nik: '' });
-                      setErrors(prev => {
-                        const next = { ...prev };
-                        delete next.nik;
-                        return next;
-                      });
-                    }}
-                  >
-                    <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
-                      <SelectValue placeholder="-- Pilih Jenis Identitas --" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="KTP">
-                        <div className="flex items-center gap-2">
-                          <span>KTP / KIA</span>
-                        </div>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {formData.jenisId === 'Lainnya' && (
-                    <Input
-                      placeholder="Sebutkan jenis identitas"
-                      value={formData.jenisIdCustom || ''}
-                      onChange={(e) => setFormData({ ...formData, jenisIdCustom: e.target.value })}
-                      className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
-                    />
-                  )}
-                </div>
-                <div>
-                  <Label htmlFor="nik" className="text-gray-700 font-semibold">
-                    {formData.jenisId === 'KTP' ? 'NIK / KIA' : formData.jenisId === 'Paspor' ? 'Nomor Paspor' : 'Nomor Identitas'} <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="nik"
-                    required
-                    placeholder={formData.jenisId === 'KTP' ? 'Masukkan 16 digit NIK' : formData.jenisId === 'Paspor' ? 'Masukkan 6-9 karakter' : 'Masukkan nomor identitas'}
-                    maxLength={formData.jenisId === 'KTP' ? 16 : undefined}
-                    value={formData.nik}
-                    onChange={(e) => {
-                      setFormData({ ...formData, nik: e.target.value });
-                      setErrors(prev => {
-                        const next = { ...prev };
-                        delete next.nik;
-                        return next;
-                      });
-                    }}
-                    onBlur={async (e) => {
-                      const val = (e.currentTarget as HTMLInputElement).value;
-                      
-                      const formatError = validateIdentityNumber(formData.jenisId, val);
-                      if (formatError) {
-                        setErrors(prev => ({...prev, nik: formatError}));
-                        return;
-                      }
-                      
-                      if (formData.jenisId === 'KTP') {
-                        const err = await validateNikAsync(val);
-                        if(err) {
-                          setErrors(prev => ({...prev, nik: err}));
-                        } else {
-                          setErrors(prev => {
-                            const next = { ...prev };
-                            delete next.nik;
-                            return next;
-                          });
-                        }
-                      }
-                    }}
-                    className={`mt-2 h-12 rounded-lg border-2 ${errors.nik ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
-                  />
-                  {errors.nik && (
-                    <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
-                      {errors.nik}
-                    </p>
-                  )}
-                </div>
-              </div>
+              <div>
+  <Label htmlFor="nik" className="text-gray-700 font-semibold">
+    Nomor KIA <span className="text-red-500">*</span>
+  </Label>
+
+  <Input
+    id="nik"
+    required
+    placeholder="Masukkan 16 digit Nomor KIA"
+    maxLength={16}
+    value={formData.nik}
+    onChange={(e) =>
+      setFormData({ ...formData, nik: e.target.value })
+    }
+    className={`mt-2 h-12 rounded-lg border-2 ${
+      errors.nik ? 'border-red-500' : 'border-slate-300'
+    } focus:border-emerald-500`}
+  />
+
+  {errors.nik && (
+    <p className="text-sm text-red-600 mt-1">{errors.nik}</p>
+  )}
+</div>
+
 
               {/* Validity Date */}
               <div>
                 <Label htmlFor="berlakuId" className="text-gray-700 font-semibold flex items-center gap-2">
                   Masa Berlaku Identitas
-                  <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-normal">Opsional</span>
                 </Label>
                 <Input
                   id="berlakuId"
                   type="date"
+                  required={true}
                   value={formData.berlakuId}
                   onChange={(e) => setFormData({ ...formData, berlakuId: e.target.value })}
                   className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
@@ -806,7 +704,7 @@ export default function FormSimpel({
                   <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                   </svg>
-                  Kosongkan jika berlaku seumur hidup
+                  Masukan tanggal masa berlaku KIA
                 </p>
               </div>
 
@@ -876,8 +774,8 @@ export default function FormSimpel({
                       <SelectValue placeholder="-- Pilih --" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Laki-laki">👨 Laki-laki</SelectItem>
-                      <SelectItem value="Perempuan">👩 Perempuan</SelectItem>
+                      <SelectItem value="Laki-laki">Laki-laki</SelectItem>
+                      <SelectItem value="Perempuan">Perempuan</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -912,13 +810,12 @@ export default function FormSimpel({
                       <SelectValue placeholder="-- Pilih --" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Islam">☪️ Islam</SelectItem>
-                      <SelectItem value="Kristen">✝️ Kristen</SelectItem>
-                      <SelectItem value="Katolik">✝️ Katolik</SelectItem>
-                      <SelectItem value="Hindu">🕉️ Hindu</SelectItem>
-                      <SelectItem value="Budha">☸️ Budha</SelectItem>
-                      <SelectItem value="Konghucu">☯️ Konghucu</SelectItem>
-                      <SelectItem value="Lainnya">Lainnya</SelectItem>
+                      <SelectItem value="Islam">Islam</SelectItem>
+                      <SelectItem value="Kristen">Kristen</SelectItem>
+                      <SelectItem value="Katolik">Katolik</SelectItem>
+                      <SelectItem value="Hindu">Hindu</SelectItem>
+                      <SelectItem value="Budha">Budha</SelectItem>
+                      <SelectItem value="Konghucu">Konghucu</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -938,14 +835,12 @@ export default function FormSimpel({
                       <SelectValue placeholder="-- Pilih Pendidikan --" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="SD">🎒 SD</SelectItem>
-                      <SelectItem value="SMP">📚 SMP</SelectItem>
-                      <SelectItem value="SMA">🎓 SMA</SelectItem>
-                      <SelectItem value="Diploma">📜 Diploma (D3)</SelectItem>
-                      <SelectItem value="Sarjana">🎓 Sarjana (S1)</SelectItem>
-                      <SelectItem value="Magister">🎓 Magister (S2)</SelectItem>
-                      <SelectItem value="Doktor">🎓 Doktor (S3)</SelectItem>
-                      <SelectItem value="Lainnya">Lainnya</SelectItem>
+                      <SelectItem value="SD">SD</SelectItem>
+                      <SelectItem value="SMP">SMP</SelectItem>
+                      <SelectItem value="SMA/SMK">SMA/SMK</SelectItem>
+                      <SelectItem value="Diploma">Diploma</SelectItem>
+                      <SelectItem value="S-1">S-1</SelectItem>
+                      <SelectItem value="S-2/S3">S-2/S3</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -995,19 +890,7 @@ export default function FormSimpel({
                         return next;
                       });
                     }}
-                     onBlur={async (e) => {
-                      const val = (e.currentTarget as HTMLInputElement).value;
-                      const err = await validateEmailAsync(val);
-                      if(err) {
-                        setErrors(prev => ({...prev, email: err}));
-                      } else {
-                        setErrors(prev => {
-                          const next = { ...prev };
-                          delete next.email;
-                          return next;
-                        });
-                      }
-                    }}
+
                     className={`mt-2 h-12 rounded-lg border-2 ${errors.email ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
                   />
                    {errors.email && (
@@ -1038,19 +921,7 @@ export default function FormSimpel({
                         return next;
                       });
                     }}
-                    onBlur={async (e) => {
-                      const val = (e.currentTarget as HTMLInputElement).value;
-                      const err = await validatePhoneAsync(val);
-                      if(err) {
-                        setErrors(prev => ({...prev, phone: err}));
-                      } else {
-                        setErrors(prev => {
-                          const next = { ...prev };
-                          delete next.phone;
-                          return next;
-                        });
-                      }
-                    }}
+
                     className={`mt-2 h-12 rounded-lg border-2 ${errors.phone ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
                   />
                   {errors.phone && (
@@ -1078,8 +949,8 @@ export default function FormSimpel({
                      <SelectValue placeholder="Pilih kewarganegaraan" />
                    </SelectTrigger>
                    <SelectContent>
-                     <SelectItem value="Indonesia">🇮🇩 WNI (Warga Negara Indonesia)</SelectItem>
-                     <SelectItem value="WNA">🌍 WNA (Warga Negara Asing)</SelectItem>
+                     <SelectItem value="WNI">WNI (Warga Negara Indonesia)</SelectItem>
+                     <SelectItem value="WNA">WNA (Warga Negara Asing)</SelectItem>
                    </SelectContent>
                  </Select>
               </div>
@@ -1097,7 +968,7 @@ export default function FormSimpel({
 
               <div>
                 <Label htmlFor="streetAddress" className="text-gray-700 font-semibold">
-                  Alamat Jalan, RT/RW <span className="text-red-500">*</span>
+                  Jalan, RT/RW <span className="text-red-500">*</span>
                 </Label>
                 <Textarea
                   id="streetAddress"
@@ -1288,107 +1159,232 @@ export default function FormSimpel({
                 </div>
               )}
 
-              {/* Manual Address Input - Show if not WNI or as fallback */}
+              {/* Address Dropdowns for WNA - Same as WNI */}
               {formData.citizenship !== 'Indonesia' && (
-                <div className="grid md:grid-cols-3 gap-5">
-                  <div>
-                    <Label htmlFor="province" className="text-gray-700 font-semibold">
-                      Provinsi <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      id="province"
-                      required
-                      placeholder="Contoh: DI Yogyakarta"
-                      value={formData.province}
-                      onChange={(e) => setFormData({ ...formData, province: e.target.value })}
-                      className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
-                    />
+                <div className="space-y-5">
+                  <div className="grid md:grid-cols-2 gap-5">
+                    {/* Province Dropdown */}
+                    <div>
+                      <Label className="text-gray-700 font-semibold">
+                        Provinsi <span className="text-red-500">*</span>
+                      </Label>
+                      <Select
+                        value={selectedAddress.provinceId}
+                        onValueChange={(value) => {
+                          const province = addressData.provinces.find(p => p.id === value);
+                          // Reset all dependent selections
+                          setSelectedAddress(prev => ({ 
+                            ...prev, 
+                            provinceId: value,
+                            cityId: '',
+                            districtId: '',
+                            villageId: ''
+                          }));
+                          if (province) {
+                            loadCities(value);
+                            updateFullAddress(province.province, '', '', '');
+                          }
+                        }}
+                        disabled={addressData.loadingProvinces}
+                      >
+                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
+                          <SelectValue placeholder={addressData.loadingProvinces ? "Memuat provinsi..." : "-- Pilih Provinsi --"} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {addressData.provinces.map((province) => (
+                            <SelectItem key={province.id} value={province.id}>
+                              {province.province}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* City Dropdown */}
+                    <div>
+                      <Label className="text-gray-700 font-semibold">
+                        Kota/Kabupaten <span className="text-red-500">*</span>
+                      </Label>
+                      <Select
+                        value={selectedAddress.cityId}
+                        onValueChange={(value) => {
+                          const city = addressData.cities.find(c => c.id === value);
+                          const province = addressData.provinces.find(p => p.id === selectedAddress.provinceId);
+                          // Reset dependent selections
+                          setSelectedAddress(prev => ({ 
+                            ...prev, 
+                            cityId: value,
+                            districtId: '',
+                            villageId: ''
+                          }));
+                          if (city && province) {
+                            loadDistricts(value);
+                            updateFullAddress(province.province, city.name, '', '');
+                          }
+                        }}
+                        disabled={!selectedAddress.provinceId || addressData.loadingCities}
+                      >
+                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
+                          <SelectValue placeholder={
+                            !selectedAddress.provinceId ? "Pilih provinsi dulu" :
+                            addressData.loadingCities ? "Memuat kota..." : 
+                            "-- Pilih Kota/Kabupaten --"
+                          } />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {addressData.cities.map((city) => (
+                            <SelectItem key={city.id} value={city.id}>
+                              {city.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
 
-                  <div>
-                    <Label htmlFor="city" className="text-gray-700 font-semibold">
-                      Kota/Kabupaten <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      id="city"
-                      required
-                      placeholder="Contoh: Sleman"
-                      value={formData.city}
-                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                      className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
-                    />
-                  </div>
+                  <div className="grid md:grid-cols-2 gap-5">
+                    {/* District Dropdown */}
+                    <div>
+                      <Label className="text-gray-700 font-semibold flex items-center gap-2">
+                        Kecamatan
+                        <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-normal">Opsional</span>
+                      </Label>
+                      <Select
+                        value={selectedAddress.districtId}
+                        onValueChange={(value) => {
+                          const district = addressData.districts.find(d => d.id === value);
+                          const city = addressData.cities.find(c => c.id === selectedAddress.cityId);
+                          const province = addressData.provinces.find(p => p.id === selectedAddress.provinceId);
+                          // Reset dependent selections
+                          setSelectedAddress(prev => ({ 
+                            ...prev, 
+                            districtId: value,
+                            villageId: ''
+                          }));
+                          if (district && city && province) {
+                            loadVillages(value);
+                            updateFullAddress(province.province, city.name, district.name, '');
+                          }
+                        }}
+                        disabled={!selectedAddress.cityId || addressData.loadingDistricts}
+                      >
+                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
+                          <SelectValue placeholder={
+                            !selectedAddress.cityId ? "Pilih kota dulu" :
+                            addressData.loadingDistricts ? "Memuat kecamatan..." : 
+                            "-- Pilih Kecamatan --"
+                          } />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {addressData.districts.map((district) => (
+                            <SelectItem key={district.id} value={district.id}>
+                              {district.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                  <div>
-                    <Label htmlFor="postalCode" className="text-gray-700 font-semibold">
-                      Kode Pos <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      id="postalCode"
-                      required
-                      maxLength={5}
-                      placeholder="55281"
-                      value={formData.postalCode}
-                      onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
-                      className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
-                    />
+                    {/* Village Dropdown */}
+                    <div>
+                      <Label className="text-gray-700 font-semibold flex items-center gap-2">
+                        Kelurahan/Desa
+                        <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-normal">Opsional</span>
+                      </Label>
+                      <Select
+                        value={selectedAddress.villageId}
+                        onValueChange={(value) => {
+                          const village = addressData.villages.find(v => v.id === value);
+                          const district = addressData.districts.find(d => d.id === selectedAddress.districtId);
+                          const city = addressData.cities.find(c => c.id === selectedAddress.cityId);
+                          const province = addressData.provinces.find(p => p.id === selectedAddress.provinceId);
+                          setSelectedAddress(prev => ({ ...prev, villageId: value }));
+                          if (village && district && city && province) {
+                            updateFullAddress(province.province, city.name, district.name, village.name);
+                          }
+                        }}
+                        disabled={!selectedAddress.districtId || addressData.loadingVillages}
+                      >
+                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
+                          <SelectValue placeholder={
+                            !selectedAddress.districtId ? "Pilih kecamatan dulu" :
+                            addressData.loadingVillages ? "Memuat kelurahan..." : 
+                            "-- Pilih Kelurahan/Desa --"
+                          } />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {addressData.villages.map((village) => (
+                            <SelectItem key={village.id} value={village.id}>
+                              {village.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 </div>
               )}
 
-              {/* Postal Code for Indonesian Address */}
-              {formData.citizenship === 'Indonesia' && (
-                <div className="grid md:grid-cols-3 gap-5">
-                  <div>
-                    <Label htmlFor="postalCode" className="text-gray-700 font-semibold">
-                      Kode Pos <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      id="postalCode"
-                      required
-                      maxLength={5}
-                      placeholder="55281"
-                      value={formData.postalCode}
-                      onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
-                      className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
-                    />
-                  </div>
+              {/* Postal Code and Status - For both WNI and WNA */}
+              <div className="grid md:grid-cols-2 gap-5">
+                <div>
+                  <Label htmlFor="postalCode" className="text-gray-700 font-semibold">
+                    Kode Pos <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="postalCode"
+                    required
+                    maxLength={5}
+                    placeholder="55281"
+                    value={formData.postalCode}
+                    onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
+                    className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
+                  />
+                </div>
+                
+                <div>
+                  <Label className="text-gray-700 font-semibold">
+                    Status Tempat Tinggal <span className="text-red-500">*</span>
+                  </Label>
+                   <Select
+                      value={formData.statusRumah}
+                      onValueChange={(value) => setFormData({ ...formData, statusRumah: value })}
+                    >
+                      <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
+                        <SelectValue placeholder="-- Pilih Status --" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Milik Sendiri">🏠 Milik Sendiri</SelectItem>
+                        <SelectItem value="Milik Orang Tua">👨‍👩‍👧 Milik Orang Tua</SelectItem>
+                        <SelectItem value="Sewa/Kontrak">🔑 Sewa/Kontrak</SelectItem>
+                        <SelectItem value="Dinas">🏢 Rumah Dinas</SelectItem>
+                      </SelectContent>
+                    </Select>
+               </div>
+              </div>
+              
+              {/* Address Preview - For both WNI and WNA */}
+              {formData.address && (
+                <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-xs text-green-700 font-medium mb-1">Alamat Lengkap</p>
+                  <p className="text-sm text-green-800 font-medium">{formData.address}</p>
+                  <p className="text-xs text-green-600 mt-1">Alamat ini akan tersimpan sebagai alamat lengkap Anda</p>
                 </div>
               )}
               
-              <div className="grid md:grid-cols-2 gap-5">
-                 <div>
-                    <Label className="text-gray-700 font-semibold">
-                      Status Tempat Tinggal <span className="text-red-500">*</span>
-                    </Label>
-                     <Select
-                        value={formData.statusRumah}
-                        onValueChange={(value) => setFormData({ ...formData, statusRumah: value })}
-                      >
-                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
-                          <SelectValue placeholder="-- Pilih Status --" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Milik Sendiri">🏠 Milik Sendiri</SelectItem>
-                          <SelectItem value="Milik Orang Tua">👨‍👩‍👧 Milik Orang Tua</SelectItem>
-                          <SelectItem value="Sewa/Kontrak">🔑 Sewa/Kontrak</SelectItem>
-                          <SelectItem value="Dinas">🏢 Rumah Dinas</SelectItem>
-                        </SelectContent>
-                      </Select>
-                 </div>
-                 
+              <div className="grid md:grid-cols-1 gap-5">
                  <div>
                     <Label className="text-gray-700 font-semibold flex items-center gap-2">
                       Alamat Domisili
                       <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-normal">Opsional</span>
                     </Label>
                     <Input
-                       placeholder="Kosongkan jika sama dengan alamat KTP"
+                       placeholder="Kosongkan jika sama dengan alamat KIA"
                        value={formData.alamatDomisili}
                        onChange={(e) => setFormData({...formData, alamatDomisili: e.target.value})}
                        className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
                     />
-                    <p className="text-xs text-slate-500 mt-1">Isi jika berbeda dengan alamat KTP</p>
+                    <p className="text-xs text-slate-500 mt-1">Isi jika berbeda dengan alamat KIA</p>
                  </div>
               </div>
 
@@ -2129,7 +2125,7 @@ export default function FormSimpel({
                       <SelectValue placeholder="Pilih jenis identitas" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="KTP">KTP</SelectItem>
+                      <SelectItem value="KIA">KIA</SelectItem>
                       <SelectItem value="Paspor">Paspor</SelectItem>
                       <SelectItem value="Lainnya">Lainnya</SelectItem>
                     </SelectContent>
@@ -2141,22 +2137,10 @@ export default function FormSimpel({
                   <Input
                     id="boNomorId"
                     required
-                    placeholder={formData.boJenisId === 'KTP' ? '16 digit' : 'Nomor identitas'}
+                    placeholder={formData.boJenisId === 'KIA' ? '16 digit' : 'Nomor identitas'}
                     value={formData.boNomorId}
                     onChange={(e) => setFormData({ ...formData, boNomorId: e.target.value })}
-                    onBlur={(e) => {
-                      const val = e.target.value;
-                      const err = validateIdentityNumber(formData.boJenisId, val);
-                      if (err) {
-                        setErrors(prev => ({ ...prev, boNomorId: err }));
-                      } else {
-                        setErrors(prev => {
-                          const next = { ...prev };
-                          delete next.boNomorId;
-                          return next;
-                        });
-                      }
-                    }}
+
                     className={`mt-2 h-12 rounded-md ${errors.boNomorId ? 'border-red-500' : ''}`}
                   />
                   {errors.boNomorId && <p className="text-sm text-red-600 mt-1">{errors.boNomorId}</p>}

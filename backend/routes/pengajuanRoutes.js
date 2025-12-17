@@ -16,6 +16,7 @@ import {
   deleteDataByStatus,
   editSubmission,
   getEditHistory,
+  getStatusByReferenceCode,
 } from "../controllers/pengajuanController.js";
 
 // Konfigurasi multer untuk import file
@@ -45,6 +46,9 @@ const router = express.Router();
 
 // Route kirim form pengajuan (public)
 router.post("/", createPengajuan);
+
+// Route cek status berdasarkan kode referensi (public)
+router.get("/status/:referenceCode", getStatusByReferenceCode);
 
 // Route ambil semua pengajuan (protected)
 router.get("/", verifyToken, getAllPengajuan);

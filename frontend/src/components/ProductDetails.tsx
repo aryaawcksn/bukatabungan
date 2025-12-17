@@ -36,28 +36,22 @@ function ProductDetails({
         return {
           title: "Tabungan Mutiara",
           subtitle: "Tingkatkan saldo, menangkan hadiahnya",
-          description: "Tabungan Mutiara adalah produk tabungan berhadiah yang memberikan kesempatan untuk memenangkan hadiah menarik setiap bulannya.",
+          description: "Tabungan Mutiara adalah Salah satu produk tabungan di PT BPR Bank Sleman (Perseroda) yang memberikan peluang mendapatkan hadiah fantastis, berupa mobil, motor, batangan emas, tabungan dan berbagai peralatan elektronik yang diundi setiap tahun",
           features: [
-            "Bunga kompetitif untuk setiap saldo",
-            "Berhadiah bulanan dengan sistem undian",
-            "Tanpa biaya administrasi bulanan",
-            "Kartu debit gratis",
-            "Akses mobile banking dan internet banking",
+            "Diundi setiap tahun dengan hadiah utama mobil",
+            "Terrelasi dengan Kartu ATM Bank Sleman",
+            "Akses Mobile Banking (dalam proses pengembangan)",
           ],
           terms: [
-            "Tabungan Mutiara adalah tabungan untuk perorangan dengan sistem undian berhadiah.",
-            "Setoran awal minimal Rp100.000",
-            "Saldo minimum yang harus dipertahankan adalah Rp50.000",
-            "Setiap saldo tertentu berhak mendapatkan kupon undian",
-            "Undian dilakukan setiap bulan dengan hadiah menarik",
-            "Bunga dihitung harian dan dibayarkan bulanan",
+            "Perorangan dan Non Perorangan",
+            "Setoran awal minimal Rp20.000 (dua puluh ribu rupiah)",
+            "Setoran selanjutnya minimal Rp20.000 (dua puluh ribu rupiah)",
+            "Saldo minimal Rp20.000 (dua puluh ribu rupiah",
           ],
           fees: [
-            "Biaya administrasi: Gratis",
-            "Biaya kartu debit: Gratis",
-            "Biaya tarik tunai di ATM Bank Sleman: Gratis",
-            "Biaya tarik tunai di ATM lain: Sesuai ketentuan",
-            "Biaya transfer: Sesuai ketentuan",
+            "Biaya Administrasi Rp8.000",
+            "Biaya Tarik Tunai di ATM Bank Sleman Gratis",
+            "Biaya Tarik Tunai/Transfer di Jaringan ALTO/PRIMA: Sesuai Ketentuan",
           ],
           interest: "3.5% p.a",
           interestDesc: "Suku bunga kompetitif yang dapat berubah sewaktu-waktu",
@@ -66,9 +60,9 @@ function ProductDetails({
           img: "/mutiara1.png",
           notes: [
             {
-              jenis: "Perorangan (> 18 tahun)",
+              jenis: "Perorangan",
               dokumen: [
-                "Kartu identitas orang tua",
+                "KTP Asli",
               ]
             },
             
@@ -384,7 +378,7 @@ function ProductDetails({
                 <div className="mt-8 pt-6 border-t border-slate-200 hidden lg:block">
                   <Button
                     onClick={onNext}
-                    className="w-full bg-blue-700 hover:bg-blue-800 h-11 text-sm font-semibold rounded-xl shadow"
+                    className="w-full bg-blue-700 hover:bg-blue-800  h-11 text-sm font-semibold rounded-xl shadow"
                   >
                     Buka Tabungan
                   </Button>
@@ -556,7 +550,7 @@ function ProductDetails({
               onClick={onNext}
               className="bg-blue-700 hover:bg-blue-800 text-white font-bold px-6 rounded-xl"
             >
-              Buka
+              Buka Tabungan
             </Button>
           </div>
         </div>
