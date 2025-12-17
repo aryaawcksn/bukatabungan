@@ -1582,10 +1582,10 @@ export default function FormMutiara({
                       <SelectValue placeholder="-- Pilih Range Penghasilan --" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="< 3 Juta">💰 &lt; 3 Juta</SelectItem>
-                      <SelectItem value="3 - 5 Juta">💰 3 - 5 Juta</SelectItem>
-                      <SelectItem value="5 - 10 Juta">💰💰 5 - 10 Juta</SelectItem>
-                      <SelectItem value="> 10 Juta">💰💰💰 &gt; 10 Juta</SelectItem>
+                      <SelectItem value="< 3 Juta">3 Juta</SelectItem>
+                      <SelectItem value="3 - 5 Juta">3 - 5 Juta</SelectItem>
+                      <SelectItem value="5 - 10 Juta">5 - 10 Juta</SelectItem>
+                      <SelectItem value="> 10 Juta">10 Juta</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -1599,7 +1599,7 @@ export default function FormMutiara({
                     <Input
                       value={formData.tempatBekerja}
                       onChange={(e) => setFormData({ ...formData, tempatBekerja: e.target.value })}
-                      className="mt-2 h-12 rounded-md"
+                      className="mt-2 h-12 rounded-md border-slate-300 focus:border-blue-500"
                     />
                  </div>
                  <div>
@@ -1609,7 +1609,7 @@ export default function FormMutiara({
                     <Input
                       value={formData.jabatan}
                       onChange={(e) => setFormData({ ...formData, jabatan: e.target.value })}
-                      className="mt-2 h-12 rounded-md"
+                      className="mt-2 h-12 rounded-md border-slate-300 focus:border-blue-500"
                     />
                  </div>
               </div>
@@ -1622,7 +1622,7 @@ export default function FormMutiara({
                     <Input
                       value={formData.alamatKantor}
                       onChange={(e) => setFormData({ ...formData, alamatKantor: e.target.value })}
-                      className="mt-2 h-12 rounded-md"
+                      className="mt-2 h-12 rounded-md border-slate-300 focus:border-blue-500"
                     />
                  </div>
                  <div>
@@ -1633,7 +1633,7 @@ export default function FormMutiara({
                       placeholder="021-12345678"
                       value={formData.teleponKantor}
                       onChange={(e) => setFormData({ ...formData, teleponKantor: e.target.value })}
-                      className="mt-2 h-12 rounded-md"
+                      className="mt-2 h-12 rounded-md border-slate-300 focus:border-blue-500"
                     />
                  </div>
 
@@ -1646,7 +1646,7 @@ export default function FormMutiara({
                       placeholder="Contoh: Perdagangan, Jasa..."
                       value={formData.bidangUsaha}
                       onChange={(e) => setFormData({ ...formData, bidangUsaha: e.target.value })}
-                      className="mt-2 h-12 rounded-md"
+                      className="mt-2 h-12 rounded-md border-slate-300 focus:border-blue-500"
                     />
                  </div>
                  <div>
@@ -1659,7 +1659,7 @@ export default function FormMutiara({
                         const cleanValue = e.target.value.replace(/\D/g, '');
                         setFormData({ ...formData, rataRataTransaksi: cleanValue });
                       }}
-                      className="mt-2 h-12 rounded-md"
+                      className="mt-2 h-12 rounded-md border-slate-300 focus:border-blue-500"
                     />
                  </div>
               </div>
