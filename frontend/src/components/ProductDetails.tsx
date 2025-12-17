@@ -15,6 +15,7 @@ import {
   File,
   Video
 } from "lucide-react";
+import ScrollToTop from "./ScrollToTop";
 
 interface ProductDetailsProps {
   savingsType: string;
@@ -324,13 +325,7 @@ function ProductDetails({
      }, []);
 
   return (
-  <div
-    className="min-h-screen relative font-sans text-slate-800 pb-24 lg:pb-0 animate-page-enter"
-    
-  >
-    {/* Overlay */}
-    <div className="absolute inset-0 bg-white/75 backdrop-blur-sm"></div>
-
+  <div className="min-h-screen font-sans text-slate-800 pb-24 lg:pb-0 animate-page-enter">
     <div className="relative z-10">
       <div className="max-w-7xl mx-auto px-6 py-10 animate-content-enter">
 
@@ -350,18 +345,23 @@ function ProductDetails({
           {/* LEFT SIDEBAR */}
           <div className="lg:col-span-4">
             <div className="sticky top-20">
-              <div className="bg-white p-7 rounded-2xl border border-slate-200 shadow-md text-center">
-                <div className="bg-slate-50 rounded-xl p-8 mb-6 flex items-center justify-center">
-                  {product.img ? (
-                    <img
-                      src={product.img}
-                      alt={product.title}
-                      className="w-72 mx-auto"
-                    />
-                  ) : (
-                    <div className={`w-64 h-32 rounded-lg bg-gradient-to-br ${product.cardBg}`}></div>
-                  )}
-                </div>
+              <div className="bg-white p-7 rounded-2xl border border-slate-200 text-center">
+               <div className="bg-slate-50 rounded-xl p-8 mb-6 flex items-center justify-center">
+  {product.img ? (
+    <img
+      src={product.img}
+      alt={product.title}
+      className="w-72 mx-auto select-none"
+      loading="lazy"
+      draggable={false}
+    />
+  ) : (
+    <div
+      className={`w-64 h-32 rounded-lg bg-gradient-to-br ${product.cardBg}`}
+    />
+  )}
+</div>
+
 
                 <h1 className="text-2xl font-bold text-slate-900">
                   {product.title}
@@ -373,7 +373,7 @@ function ProductDetails({
                 <div className="mt-8 pt-6 border-t border-slate-200 hidden lg:block">
                   <Button
                     onClick={onNext}
-                    className="w-full bg-blue-700 hover:bg-blue-800  h-11 text-sm font-semibold rounded-xl shadow"
+                    className="w-full bg-blue-700 hover:bg-blue-800 h-11 text-sm font-semibold rounded-xl mobile-button-press"
                   >
                     Buka Tabungan
                   </Button>
@@ -542,10 +542,10 @@ function ProductDetails({
       </div>
     </div>
 
-    {/* MOBILE ACTION BAR - Outside relative container */}
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 lg:hidden z-50 shadow-lg backdrop-blur-sm animate-slide-up">
+    {/* MOBILE ACTION BAR - Simplified */}
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 lg:hidden z-50 shadow-lg">
       <div className="flex items-center gap-4 max-w-lg mx-auto">
-        <div className="flex-1 animate-stagger-1">
+        <div className="flex-1">
           <p className="text-xs text-slate-500">Produk Pilihan</p>
           <p className="font-bold text-slate-900 truncate">
             {product.title}
@@ -553,12 +553,15 @@ function ProductDetails({
         </div>
         <Button
           onClick={onNext}
-          className="bg-blue-700 hover:bg-blue-800 text-white font-bold px-6 rounded-xl transition-gentle animate-stagger-2"
+          className="bg-blue-700 hover:bg-blue-800 text-white font-bold px-6 rounded-xl mobile-button-press"
         >
           Buka Tabungan
         </Button>
       </div>
     </div>
+    
+    {/* Scroll to Top Button - Higher position to avoid mobile sticky button */}
+    <ScrollToTop bottomOffset="bottom-24" />
   </div>
 );
 

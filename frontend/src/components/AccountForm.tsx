@@ -3,6 +3,7 @@ import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { ArrowLeft, CheckCircle, Sparkles, ChevronRight, User, Building2, FileText, Check, CircleCheckBig, Loader2 } from 'lucide-react';
 import OtpModal from './OtpModal';
+import ScrollToTop from './ScrollToTop';
 import FormSimpel from './account-forms/FormSimpel';
 import FormBusiness from './account-forms/FormReguler';
 import type { AccountFormData } from './account-forms/types';
@@ -1075,6 +1076,9 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
           </Card>
         </div>
       </section>
+      
+      {/* Scroll to Top Button */}
+      <ScrollToTop />
     </div>
   );
 }

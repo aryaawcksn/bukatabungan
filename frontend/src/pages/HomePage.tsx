@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import ScrollToTop from "../components/ScrollToTop";
 
 
 
@@ -42,38 +43,7 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col font-sans text-slate-800 bg-slate-50 animate-page-enter">
-      {/* Optimized CSS Animations */}
-      <style>{`
-        @keyframes float-slow {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-10px) rotate(1deg); }
-        }
-        @keyframes float-slower {
-          0%, 100% { transform: translateY(0px) scale(1); }
-          50% { transform: translateY(-5px) scale(1.02); }
-        }
-        .animate-float-slow {
-          animation: float-slow 6s ease-in-out infinite;
-        }
-        .animate-float-slower {
-          animation: float-slower 8s ease-in-out infinite;
-        }
-        /* Disable animations on mobile for performance */
-        @media (max-width: 768px) {
-          .animate-float-slow,
-          .animate-float-slower {
-            animation: none;
-          }
-        }
-        /* Optimize backdrop-blur for mobile */
-        @media (max-width: 768px) {
-          .backdrop-blur-sm {
-            backdrop-filter: none;
-            background: rgba(255, 255, 255, 0.05);
-          }
-        }
-      `}</style>
+    <div className="min-h-screen flex flex-col font-sans text-slate-800 bg-slate-50 animate-page-enter">{/* Mobile optimizations handled by CSS */}
 
       {/* --- NAVBAR --- */}
       <nav 
@@ -136,21 +106,21 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
             <div className="max-w-2xl text-center lg:text-left mx-auto lg:mx-0 order-2 lg:order-1 animate-content-enter">
             
 
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white mb-6 leading-tight animate-stagger-1">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white mb-6 leading-tight">
                 Tabungan <br/>
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-200 to-teal-100">
+                <span className="gradient-text-safe">
                   Aman & Terpercaya
                 </span>
               </h1>
 
-              <p className="text-lg text-slate-300 mb-10 leading-relaxed max-w-lg mx-auto lg:mx-0 animate-stagger-2">
+              <p className="text-lg text-slate-300 mb-10 leading-relaxed max-w-lg mx-auto lg:mx-0">
                 Buka rekening Bank Sleman secara online dengan proses verifikasi yang cepat. Solusi keuangan resmi untuk masyarakat Sleman dan sekitarnya.
               </p>
 
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 animate-stagger-3">
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
                 <button
                   onClick={() => navigate('/selection')}
-                  className="w-full sm:w-auto px-18 py-3.5 bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold text-sm uppercase tracking-wide rounded-lg shadow-lg shadow-amber-500/20 transition-transform transform hover:-translate-y-0.5"
+                  className="w-full sm:w-auto px-18 py-3.5 bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold text-sm uppercase tracking-wide rounded-lg shadow-lg shadow-amber-500/20 mobile-button-press md:transition-transform md:transform md:hover:-translate-y-0.5"
                 >
                   Buka Rekening
                 </button>
@@ -158,7 +128,7 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
               </div>
 
               {/* Trust Indicators - Optimized */}
-              <div className="mt-8 md:mt-12 pt-6 md:pt-8 border-t border-slate-700/50 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-6 md:gap-8 text-sm text-slate-400 animate-stagger-4">
+              <div className="mt-8 md:mt-12 pt-6 md:pt-8 border-t border-slate-700/50 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-6 md:gap-8 text-sm text-slate-400">
                 <div className="flex items-center gap-3">
                   <div className="bg-white rounded px-2 py-1 flex items-center justify-center shadow-sm">
                     <img
@@ -201,26 +171,21 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
               </div>
             </div>
 
-            {/* Illustration Area - Optimized for Mobile */}
-            <div className="relative flex justify-center lg:justify-end order-1 lg:order-2 -mt-12 lg:-mt-24 animate-slide-up">
+            {/* Illustration Area - Mobile Optimized */}
+            <div className="relative flex justify-center lg:justify-end order-1 lg:order-2 -mt-12 lg:-mt-24">
                 <div className="relative w-full max-w-md lg:max-w-lg">
                   
-                  {/* Decorative backdrop - Conditional animations */}
-                  <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-emerald-500/10 rounded-full blur-3xl -z-10 ${
-                    isMobile ? '' : 'animate-float-slower'
-                  }`}></div>
+                  {/* Decorative backdrop - Desktop only for performance */}
+                  <div className="hidden md:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-emerald-500/10 rounded-full blur-3xl -z-10 animate-float-slower"></div>
                   
-                  {/* Main Image Container - Lightweight on mobile */}
-                  <div className={`relative z-10 p-2 rounded-2xl shadow-2xl ${
-                    isMobile 
-                      ? 'bg-emerald-500/5 border border-emerald-500/20' 
-                      : 'backdrop-blur-sm animate-float-slow'
-                  }`}>
+                  {/* Main Image Container - Simplified for mobile */}
+                  <div className="relative z-10 p-2 rounded-2xl md:backdrop-blur-sm md:animate-float-slow bg-emerald-500/5 border border-emerald-500/20 md:shadow-2xl shadow-lg">
                      <img
                         src="/3dimage.png"
                         alt="Mobile Banking Illustration"
                         className="w-full h-auto rounded-xl"
                         loading="lazy"
+                        decoding="async"
                       />
                   </div>
                 </div>
@@ -321,6 +286,9 @@ PT BPR Bank Sleman (Perseroda) atau dikenal dengan Bank Sleman merupakan BUMD mi
           </div>
         </div>
       </footer>
+      
+      {/* Scroll to Top Button */}
+      <ScrollToTop />
     </div>
   );
 }

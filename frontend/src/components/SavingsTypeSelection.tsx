@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Button } from './ui/button';
 import { ArrowLeft, CheckCircle, ArrowRight, Sparkles, Shield, TrendingUp } from 'lucide-react';
+import ScrollToTop from './ScrollToTop';
 
 interface SavingsTypeSelectionProps {
   onSelectType: (type: string) => void;
@@ -27,15 +28,12 @@ export default function SavingsTypeSelection({
           <Button
             variant="ghost"
             onClick={onBack}
-            className="pl-0 mb-8 text-slate-600 hover:text-emerald-700 hover:bg-transparent animate-stagger-1"
+            className="pl-0 mb-8 text-slate-600 hover:text-emerald-700 hover:bg-transparent"
           >
             <ArrowLeft className="w-4 h-4 mr-2" /> Kembali ke Beranda
           </Button>
 
-          <div className="text-center animate-stagger-2">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 mb-6">
-              <Sparkles className="w-8 h-8 text-emerald-600" />
-            </div>
+          <div className="text-center">
             <h1 className="text-4xl font-bold text-slate-900 mb-4">
               Pilih Produk Tabungan
             </h1>
@@ -45,15 +43,12 @@ export default function SavingsTypeSelection({
           </div>
         </div>
 
-        {/* BENEFITS BAR */}
-        
-
         {/* VERTICAL PRODUCT CARDS */}
         <div className="space-y-6">
           {savingsTypes.map((type, index) => (
             <div
               key={type.id}
-              className={`group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer overflow-hidden hover:border-emerald-300 animate-stagger-${Math.min(index + 4, 4)}`}
+              className="group bg-white rounded-2xl border border-slate-200 shadow-sm md:hover:shadow-lg md:transition-all md:duration-300 cursor-pointer overflow-hidden md:hover:border-emerald-300 mobile-button-press"
               onClick={() => onSelectType(type.id)}
             >
               <div className="flex flex-col md:flex-row">
@@ -88,7 +83,7 @@ export default function SavingsTypeSelection({
                         {type.description}
                       </p>
                     </div>
-                    <div className="ml-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="ml-4 opacity-0 md:group-hover:opacity-100 md:transition-opacity">
                       <ArrowRight className="w-6 h-6 text-emerald-600" />
                     </div>
                   </div>
@@ -108,13 +103,13 @@ export default function SavingsTypeSelection({
                   {/* CTA */}
                   <div className="flex items-center justify-between">
                     <div className="text-sm text-slate-500">
-                      Klik untuk melihat detail lengkap
+                      
                     </div>
                     <Button 
                       size="sm" 
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 transition-gentle"
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 mobile-button-press"
                     >
-                      Pilih Produk
+                      Detail Produk
                     </Button>
                   </div>
                 </div>
@@ -124,13 +119,16 @@ export default function SavingsTypeSelection({
         </div>
 
         {/* FOOTER */}
-        <div className="mt-16 pt-8 border-t border-slate-200 text-center animate-stagger-4">
+        <div className="mt-16 pt-8 border-t border-slate-200 text-center">
           <p className="text-slate-500 text-sm">
             &copy; {new Date().getFullYear()} PT BPR Bank Sleman (Perseroda). Seluruh Hak Cipta Dilindungi.
           </p>
         </div>
 
       </div>
+      
+      {/* Scroll to Top Button */}
+      <ScrollToTop />
     </div>
   );
 }

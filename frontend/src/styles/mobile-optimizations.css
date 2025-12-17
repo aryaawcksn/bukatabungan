@@ -1,0 +1,171 @@
+/* Mobile Performance Optimizations */
+
+/* Fix gradient text issues on mobile */
+@media (max-width: 768px) {
+  /* Fallback for gradient text that doesn't work on some mobile browsers */
+  .text-transparent.bg-clip-text {
+    color: #a7f3d0 !important; /* emerald-200 fallback */
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    background-clip: unset !important;
+  }
+}
+
+/* Disable heavy animations on mobile devices */
+@media (max-width: 768px) {
+  /* Disable complex animations */
+  .animate-float-slow,
+  .animate-float-fast,
+  .animate-sway,
+  .animate-glass,
+  .animate-image,
+  .animate-float-slower {
+    animation: none !important;
+  }
+
+  /* Reduce backdrop blur for better performance */
+  .backdrop-blur-sm,
+  .backdrop-blur-md,
+  .backdrop-blur-lg {
+    backdrop-filter: none !important;
+    background: rgba(255, 255, 255, 0.85) !important;
+  }
+
+  /* Simplify gradients on mobile */
+  .bg-gradient-to-br,
+  .bg-gradient-to-r,
+  .bg-gradient-to-l {
+    background: linear-gradient(135deg, var(--tw-gradient-from), var(--tw-gradient-to)) !important;
+  }
+
+  /* Reduce shadow complexity */
+  .shadow-2xl {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+  }
+  
+  .shadow-xl {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  }
+
+  /* Optimize transforms */
+  .transform {
+    will-change: auto !important;
+  }
+
+  /* Disable hover effects on mobile */
+  .hover\:scale-105:hover,
+  .hover\:scale-110:hover,
+  .group-hover\:scale-105,
+  .group-hover\:scale-110 {
+    transform: none !important;
+  }
+}
+
+/* Lightweight mobile animations */
+@media (max-width: 768px) {
+  /* Simple fade in for page transitions */
+  .animate-page-enter {
+    animation: mobile-fade-in 0.3s ease-out;
+  }
+
+  .animate-content-enter {
+    animation: mobile-slide-up 0.4s ease-out 0.1s both;
+  }
+
+  /* Essential button feedback */
+  .mobile-button-press {
+    transition: transform 0.1s ease-out, background-color 0.15s ease-out;
+  }
+
+  .mobile-button-press:active {
+    transform: scale(0.98);
+  }
+}
+
+@keyframes mobile-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes mobile-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Optimize scroll performance */
+@media (max-width: 768px) {
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Reduce repaints during scroll */
+  .fixed,
+  .sticky {
+    will-change: transform;
+  }
+}
+
+/* Safe gradient text utility */
+.gradient-text-safe {
+  color: #a7f3d0; /* emerald-200 fallback */
+}
+
+@media (min-width: 768px) {
+  .gradient-text-safe {
+    color: transparent;
+    background: linear-gradient(to right, #a7f3d0, #ccfbf1);
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+}
+
+/* Touch-friendly interactions */
+@media (max-width: 768px) {
+  /* Larger touch targets */
+  button,
+  .cursor-pointer {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Improve tap highlighting */
+  button,
+  a,
+  .cursor-pointer {
+    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.1);
+  }
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Battery optimization */
+@media (max-width: 768px) {
+  /* Reduce GPU usage */
+  .transform-gpu {
+    transform: none !important;
+  }
+
+  /* Optimize image rendering */
+  img {
+    image-rendering: optimizeSpeed;
+  }
+}

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { CheckCircle, Clock, XCircle, AlertCircle, ArrowLeft, MapPin, Phone } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
+import ScrollToTop from './ScrollToTop';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 
@@ -232,7 +233,7 @@ export default function StatusCheck() {
               <Button
                 onClick={fetchStatus}
                 variant="outline"
-                className="text-emerald-600 border-emerald-600 hover:bg-emerald-50"
+                className="text-emerald-600 border-emerald-600 hover:bg-emerald-50 mobile-button-press"
               >
                 Refresh Status
               </Button>
@@ -240,6 +241,9 @@ export default function StatusCheck() {
           </div>
         ) : null}
       </div>
+      
+      {/* Scroll to Top Button */}
+      <ScrollToTop />
     </div>
   );
 }

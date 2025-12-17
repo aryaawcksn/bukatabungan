@@ -25,12 +25,15 @@ function AppWrapper() {
   const [selectedType, setSelectedType] = React.useState<string>("");
   const [isLoading, setIsLoading] = React.useState(false);
 
-  // Show loading when route changes
+  // Show loading when route changes - reduced delay for mobile
   React.useEffect(() => {
     setIsLoading(true);
+    const isMobile = window.innerWidth < 768;
+    const delay = isMobile ? 150 : 300; // Shorter delay on mobile
+    
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 300); // Short delay to show loading spinner
+    }, delay);
 
     return () => clearTimeout(timer);
   }, [location.pathname]);

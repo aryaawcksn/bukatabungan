@@ -2,6 +2,7 @@
 @import "tailwindcss/preflight";
 @import "tailwindcss/utilities";
 @import "tailwindcss";
+@import "./styles/mobile-optimizations.css";
 @custom-variant dark (&:is(.dark *));
 
 :root {
@@ -139,16 +140,17 @@
 @keyframes pageEnter {
   from {
     opacity: 0;
-    filter: blur(6px);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
-    filter: blur(0);
+    transform: translateY(0);
   }
 }
 
 .animate-pageEnter {
-  animation: pageEnter 0.8s ease-out;
+  animation: pageEnter 0.35s ease-out both;
+  will-change: opacity, transform
 }
 
 /* ✅ ISI KONTEN NAIK HALUS */
