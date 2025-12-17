@@ -487,8 +487,7 @@ export const getStatusByReferenceCode = async (req, res) => {
         cs.no_hp,
         acc.tabungan_tipe AS jenis_rekening,
         c.nama_cabang,
-        c.alamat AS alamat_cabang,
-        c.telepon AS telepon_cabang
+        c.alamat AS alamat_cabang
       FROM pengajuan_tabungan p
       LEFT JOIN cdd_self cs ON p.id = cs.pengajuan_id
       LEFT JOIN account acc ON p.id = acc.pengajuan_id
@@ -544,7 +543,7 @@ export const getStatusByReferenceCode = async (req, res) => {
         cabang: {
           nama_cabang: data.nama_cabang,
           alamat_cabang: data.alamat_cabang,
-          telepon_cabang: data.telepon_cabang
+          telepon_cabang: null // Kolom telepon tidak tersedia di tabel cabang
         }
       }
     });

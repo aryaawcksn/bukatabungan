@@ -224,6 +224,12 @@ export default function StatusCheck() {
                     </p>
                   </div>
                 )}
+                {!statusData.cabang.telepon_cabang && (
+                  <div>
+                    <p className="text-sm text-gray-600">Telepon</p>
+                    <p className="font-medium text-gray-500 italic">Informasi telepon tidak tersedia</p>
+                  </div>
+                )}
               </div>
               
               {statusData.status === 'approved' && (
