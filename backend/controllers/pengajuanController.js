@@ -1663,42 +1663,19 @@ export const previewImportData = async (req, res) => {
       analysis.cabangBreakdown[cabangId] = (analysis.cabangBreakdown[cabangId] || 0) + 1;
     });
 
-    // Enhanced conflict detection using NIK/no_id and data comparison
-    console.log('🔍 Starting enhanced conflict detection...');
-    
-    // Prepare submissions for bulk conflict check
-    const submissionsForCheck = importData.map(item => ({
-      no_id: item.no_id || item.nik,
-      nama: item.nama_lengkap || item.nama,
-      email: item.email,
-      no_hp: item.no_hp
-    })).filter(item => item.no_id); // Only check items with NIK
-
-    console.log('🔍 Checking conflicts for', submissionsForCheck.length, 'submissions with NIK');
-
-    if (submissionsForCheck.length > 0) {
-      // Use enhanced conflict detection
-      const conflictResults = [];
+    // Simple conflict detection - check for existing NIK/no_id with pending/approved status
+    for (const item of importData) {
+      const nikToCheck = item.no_id || item.nik;
       
-      for (let i = 0; i < submissionsForCheck.length; i++) {
-        const submission = submissionsForCheck[i];
-        
+      if (nikToCheck) {
         try {
           const existingQuery = await pool.query(
-            `SELECT 
-               p.id as pengajuan_id,
-               p.status, 
-               p.edit_count,
-               p.last_edited_at,
-               cs.kode_referensi,
-               cs.nama,
-               cs.email,
-               cs.no_hp
+            `SELECT p.status, cs.kode_referensi
              FROM cdd_self cs
              JOIN pengajuan_tabungan p ON cs.pengajuan_id = p.id
              WHERE cs.no_id = $1 
              LIMIT 1`,
-            [submission.no_id]
+            [nikToCheck]
           );
 
           if (existingQuery.rows.length > 0) {
@@ -1706,177 +1683,52 @@ export const previewImportData = async (req, res) => {
             const isBlocked = ['pending', 'approved'].includes(existing.status);
 
             if (isBlocked) {
-              // Check for data conflicts (only if data is actually different)
-              const conflicts = [];
-              
-              // Enhanced data comparison with null/undefined handling
-              const compareField = (field, existingVal, newVal) => {
-                // Normalize values - convert null/undefined to empty string, then trim
-                const normalizeValue = (val) => {
-                  if (val === null || val === undefined) return '';
-                  return String(val).trim();
-                };
-                
-                const normalizedExisting = normalizeValue(existingVal);
-                const normalizedNew = normalizeValue(newVal);
-                
-                const isDifferent = normalizedExisting !== normalizedNew;
-                
-                // Debug logging for troubleshooting
-                if (isDifferent) {
-                  console.log(`🔍 Field conflict detected in ${field}:`, {
-                    existing: `"${normalizedExisting}"`,
-                    new: `"${normalizedNew}"`,
-                    originalExisting: existingVal,
-                    originalNew: newVal
-                  });
-                }
-                
-                return isDifferent;
-              };
-              
-              if (compareField('nama', existing.nama, submission.nama)) {
-                conflicts.push({ field: 'nama', existing: existing.nama, new: submission.nama });
-              }
-              
-              if (compareField('email', existing.email, submission.email)) {
-                conflicts.push({ field: 'email', existing: existing.email, new: submission.email });
-              }
-              
-              if (compareField('no_hp', existing.no_hp, submission.no_hp)) {
-                conflicts.push({ field: 'no_hp', existing: existing.no_hp, new: submission.no_hp });
-              }
-
-              // Enhanced conflict detection logic
-              const hasDataConflicts = conflicts.length > 0;
-              const hasBeenEdited = existing.edit_count > 0;
-              
-              // Only mark as conflict if there are actual data differences
-              const isActualConflict = hasDataConflicts;
-              
-              // Determine conflict reason for better categorization
-              let conflictReason = null;
-              let severity = 'none';
-              
-              if (hasDataConflicts && hasBeenEdited) {
-                conflictReason = 'data_conflict_edited';
-                severity = 'high';
-              } else if (hasDataConflicts && !hasBeenEdited) {
-                conflictReason = 'data_conflict_original';
-                severity = 'medium';
-              } else if (!hasDataConflicts && hasBeenEdited) {
-                conflictReason = 'identical_but_edited';
-                severity = 'low';
-              } else {
-                conflictReason = 'identical_original';
-                severity = 'none';
-              }
-
-              // Enhanced logging for debugging
-              console.log(`🔍 Conflict analysis for NIK ${submission.no_id}:`, {
-                hasDataConflicts,
-                hasBeenEdited,
-                editCount: existing.edit_count || 0,
-                conflictReason,
-                severity,
-                isActualConflict,
-                conflictsFound: conflicts.length,
-                conflictDetails: conflicts
-              });
-
-              conflictResults.push({
-                index: i,
-                no_id: submission.no_id,
-                conflict: isActualConflict, // Only true if data actually differs
-                status: existing.status,
-                hasBeenEdited: hasBeenEdited,
-                editCount: existing.edit_count || 0,
-                lastEditedAt: existing.last_edited_at,
-                pengajuanId: existing.pengajuan_id,
-                kodeReferensi: existing.kode_referensi,
-                dataConflicts: conflicts,
-                severity: severity,
-                conflictReason: conflictReason,
-                isIdenticalData: !hasDataConflicts
+              // Status conflict - existing submission blocks import
+              analysis.conflicts.push({
+                kode_referensi: existing.kode_referensi || item.kode_referensi,
+                nama_lengkap: item.nama_lengkap || item.nama,
+                no_id: nikToCheck,
+                currentStatus: existing.status,
+                newStatus: item.status || 'pending',
+                message: `NIK sudah ada dengan status ${existing.status}`
               });
             } else {
-              conflictResults.push({
-                index: i,
-                no_id: submission.no_id,
-                conflict: false,
-                canReplace: true,
-                status: existing.status
+              // Can replace rejected submission
+              analysis.existingRecords.push({
+                kode_referensi: existing.kode_referensi || item.kode_referensi,
+                nama_lengkap: item.nama_lengkap || item.nama,
+                no_id: nikToCheck,
+                currentStatus: existing.status,
+                newStatus: item.status || 'pending'
               });
             }
           } else {
-            conflictResults.push({
-              index: i,
-              no_id: submission.no_id,
-              conflict: false
+            // New record
+            analysis.newRecords.push({
+              kode_referensi: item.kode_referensi || `NEW-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+              nama_lengkap: item.nama_lengkap || item.nama,
+              no_id: nikToCheck,
+              status: item.status || 'pending'
             });
           }
         } catch (err) {
-          console.error(`Error checking conflict for NIK ${submission.no_id}:`, err);
-          conflictResults.push({
-            index: i,
-            no_id: submission.no_id,
-            conflict: false,
-            error: "Database error"
-          });
-        }
-      }
-
-      // Process results and categorize data with enhanced logic
-      importData.forEach((item, index) => {
-        const conflictResult = conflictResults.find(r => r.index === index);
-        
-        if (conflictResult) {
-          // Record exists in database
-          const recordInfo = {
-            kode_referensi: conflictResult.kodeReferensi || item.kode_referensi,
-            nama_lengkap: item.nama_lengkap || item.nama,
-            no_id: item.no_id || item.nik,
-            currentStatus: conflictResult.status,
-            newStatus: item.status || 'pending',
-            hasBeenEdited: conflictResult.hasBeenEdited,
-            editCount: conflictResult.editCount,
-            dataConflicts: conflictResult.dataConflicts || [],
-            severity: conflictResult.severity,
-            conflictReason: conflictResult.conflictReason,
-            isIdenticalData: conflictResult.isIdenticalData
-          };
-
-          // Always add to existingRecords for tracking
-          analysis.existingRecords.push(recordInfo);
-
-          // Only add to conflicts if there are actual data differences
-          if (conflictResult.conflict && conflictResult.dataConflicts.length > 0) {
-            analysis.conflicts.push({
-              ...recordInfo,
-              message: conflictResult.hasBeenEdited 
-                ? `Data conflicts in edited submission (${conflictResult.dataConflicts.length} field(s))`
-                : `Data conflicts in ${conflictResult.dataConflicts.length} field(s)`
-            });
-          }
-        } else {
-          // New record
+          console.error(`Error checking NIK ${nikToCheck}:`, err);
+          // Treat as new record if error
           analysis.newRecords.push({
             kode_referensi: item.kode_referensi || `NEW-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             nama_lengkap: item.nama_lengkap || item.nama,
-            no_id: item.no_id || item.nik,
+            no_id: nikToCheck,
             status: item.status || 'pending'
           });
         }
-      });
-    } else {
-      // No NIK data to check, treat all as new
-      importData.forEach(item => {
+      } else {
+        // No NIK, treat as new record
         analysis.newRecords.push({
           kode_referensi: item.kode_referensi || `NEW-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           nama_lengkap: item.nama_lengkap || item.nama,
           status: item.status || 'pending'
         });
-      });
+      }
     }
 
     // Get cabang names untuk breakdown
@@ -1899,40 +1751,7 @@ export const previewImportData = async (req, res) => {
       analysis.cabangBreakdown = namedCabangBreakdown;
     }
 
-    // Enhanced logging for debugging
-    const conflictBreakdown = {
-      data_conflict_edited: 0,
-      data_conflict_original: 0,
-      identical_but_edited: 0,
-      identical_original: 0
-    };
-
-    analysis.existingRecords.forEach(record => {
-      if (record.conflictReason) {
-        conflictBreakdown[record.conflictReason]++;
-      }
-    });
-
-    console.log(`✅ Preview completed: ${analysis.totalRecords} total, ${analysis.newRecords.length} new, ${analysis.existingRecords.length} existing, ${analysis.conflicts.length} actual conflicts`);
-    console.log('🔍 Enhanced analysis breakdown:', {
-      totalRecords: analysis.totalRecords,
-      newRecords: analysis.newRecords.length,
-      existingRecords: analysis.existingRecords.length,
-      actualConflicts: analysis.conflicts.length,
-      conflictBreakdown: conflictBreakdown,
-      crossCabangWarnings: analysis.crossCabangWarnings?.length || 0
-    });
-
-    // Log specific examples for debugging
-    if (analysis.existingRecords.length > 0) {
-      console.log('📋 Sample existing records:', analysis.existingRecords.slice(0, 3).map(r => ({
-        nama: r.nama_lengkap,
-        conflictReason: r.conflictReason,
-        hasDataConflicts: r.dataConflicts?.length > 0,
-        hasBeenEdited: r.hasBeenEdited,
-        severity: r.severity
-      })));
-    }
+    console.log(`✅ Preview completed: ${analysis.totalRecords} total, ${analysis.newRecords.length} new, ${analysis.existingRecords.length} existing, ${analysis.conflicts.length} conflicts`);
 
     res.json({
       success: true,
