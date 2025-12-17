@@ -1,9 +1,10 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import LoginPage from "./LoginPage";
 import DashboardPage from "./DashboardPage";
-import { useEffect, type JSX } from "react";
+import { useEffect, useState, type JSX } from "react";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import NotFoundPage from "./components/notFoundPage";
+import RouteLoader from "./components/RouteLoader";
 
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
@@ -47,6 +48,24 @@ function PublicRoute({ children }: { children: JSX.Element }) {
 }
 
 function AppRoutes() {
+  const location = useLocation();
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Show loading when route changes
+  useEffect(() => {
+    setIsLoading(true);
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 300); // Short delay to show loading spinner
+
+    return () => clearTimeout(timer);
+  }, [location.pathname]);
+
+  // Show loading spinner during route transitions
+  if (isLoading) {
+    return <RouteLoader />;
+  }
+
   return (
     <Routes>
       <Route

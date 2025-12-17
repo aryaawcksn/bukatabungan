@@ -1136,7 +1136,7 @@ const handleToggleMark = useCallback((id: string) => {
 
 
   return (
-    <div className="flex min-h-screen bg-slate-50/50 font-sans text-slate-900 selection:bg-blue-100 selection:text-blue-900">
+    <div className="flex min-h-screen bg-slate-50/50 font-sans text-slate-900 selection:bg-blue-100 selection:text-blue-900 animate-page-enter">
       <Sidebar 
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 

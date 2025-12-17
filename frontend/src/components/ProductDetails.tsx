@@ -325,7 +325,7 @@ function ProductDetails({
 
   return (
   <div
-    className="min-h-screen relative font-sans text-slate-800 pb-20 lg:pb-0"
+    className="min-h-screen relative font-sans text-slate-800 pb-24 lg:pb-0 animate-page-enter"
     style={{
       backgroundImage: `url('/Gunung-Merapi.jpg')`,
       backgroundSize: 'cover',
@@ -337,7 +337,7 @@ function ProductDetails({
     <div className="absolute inset-0 bg-white/75 backdrop-blur-sm"></div>
 
     <div className="relative z-10">
-      <div className="max-w-7xl mx-auto px-6 py-10">
+      <div className="max-w-7xl mx-auto px-6 py-10 animate-content-enter">
 
         {/* Breadcrumb */}
         <div className="mb-10">
@@ -537,31 +537,31 @@ function ProductDetails({
           </div>
         </div>
 
-        {/* MOBILE ACTION BAR */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 lg:hidden z-40 shadow">
-          <div className="flex items-center gap-4 max-w-lg mx-auto">
-            <div className="flex-1">
-              <p className="text-xs text-slate-500">Produk Pilihan</p>
-              <p className="font-bold text-slate-900 truncate">
-                {product.title}
-              </p>
-            </div>
-            <Button
-              onClick={onNext}
-              className="bg-blue-700 hover:bg-blue-800 text-white font-bold px-6 rounded-xl"
-            >
-              Buka Tabungan
-            </Button>
-          </div>
-        </div>
-
         {/* FOOTER */}
-        <div className="mt-24 pt-6 border-t border-slate-200 text-center">
+        <div className="mt-24 pt-6 border-t border-slate-200 text-center mb-6 lg:mb-0">
           <p className="text-slate-500 text-sm">
             &copy; {new Date().getFullYear()} PT BPR Bank Sleman (Perseroda)
           </p>
         </div>
 
+      </div>
+    </div>
+
+    {/* MOBILE ACTION BAR - Outside relative container */}
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 lg:hidden z-50 shadow-lg backdrop-blur-sm animate-slide-up">
+      <div className="flex items-center gap-4 max-w-lg mx-auto">
+        <div className="flex-1 animate-stagger-1">
+          <p className="text-xs text-slate-500">Produk Pilihan</p>
+          <p className="font-bold text-slate-900 truncate">
+            {product.title}
+          </p>
+        </div>
+        <Button
+          onClick={onNext}
+          className="bg-blue-700 hover:bg-blue-800 text-white font-bold px-6 rounded-xl transition-gentle animate-stagger-2"
+        >
+          Buka Tabungan
+        </Button>
       </div>
     </div>
   </div>

@@ -6,6 +6,7 @@ import {
   useNavigate,
   useParams,
   Navigate,
+  useLocation,
 } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import SavingsTypeSelection from "./components/SavingsTypeSelection";
@@ -15,11 +16,24 @@ import ProductDetails from "./components/ProductDetails";
 import HeroLanding from "./pages/HeroLanding";
 import InvalidRequestPage from "./pages/InvalidRequestPage";
 import StatusCheck from "./components/StatusCheck";
+import RouteLoader from "./components/RouteLoader";
 import { VALID_SAVING_TYPES } from "./data/savingsTypes";
 
 function AppWrapper() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [selectedType, setSelectedType] = React.useState<string>("");
+  const [isLoading, setIsLoading] = React.useState(false);
+
+  // Show loading when route changes
+  React.useEffect(() => {
+    setIsLoading(true);
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 300); // Short delay to show loading spinner
+
+    return () => clearTimeout(timer);
+  }, [location.pathname]);
 
   const handleOpenSavings = (type: string) => {
     setSelectedType(type);
@@ -109,6 +123,11 @@ function AppWrapper() {
         onBack={() => handleBack(`/product/${type}`)}
       />
     );
+  }
+
+  // Show loading spinner during route transitions
+  if (isLoading) {
+    return <RouteLoader />;
   }
 
   return (

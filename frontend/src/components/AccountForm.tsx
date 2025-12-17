@@ -30,6 +30,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
   const [ktpUrl, setKtpUrl] = useState<string | null>(null);
   const [loadingSubmit, setLoadingSubmit] = useState(false);
   const [loadingNext, setLoadingNext] = useState(false);
+  const [loadingPrev, setLoadingPrev] = useState(false);
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [currentPhone, setCurrentPhone] = useState("");
   const [pendingSubmitData, setPendingSubmitData] = useState<any>(null); // simpan data sebelum OTP
@@ -354,6 +355,10 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     
         // Clear errors for current step and proceed
         setErrors({});
+        
+        // Show loading briefly for step transition
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
         setCurrentStep(prev => prev + 1);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
@@ -361,13 +366,20 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     }
   };
 
-  const handlePrevStep = () => {
+  const handlePrevStep = async () => {
+    setLoadingPrev(true);
+    
+    // Show loading briefly for step transition
+    await new Promise(resolve => setTimeout(resolve, 200));
+    
     if (currentStep > 1) {
       setCurrentStep(prev => prev - 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       onBack();
     }
+    
+    setLoadingPrev(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -860,7 +872,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
 
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans">
+    <div className="min-h-screen bg-slate-50 font-sans animate-page-enter">
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -971,10 +983,20 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
                <Button
                 variant="ghost"
                 onClick={handlePrevStep}
-                className="pl-0 text-slate-500 hover:text-blue-700 hover:bg-transparent"
+                disabled={loadingPrev}
+                className="pl-0 text-slate-500 hover:text-blue-700 hover:bg-transparent disabled:opacity-50"
               >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                {currentStep === 1 ? "Kembali" : "Sebelumnya"}
+                {loadingPrev ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Memuat...
+                  </>
+                ) : (
+                  <>
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    {currentStep === 1 ? "Kembali" : "Sebelumnya"}
+                  </>
+                )}
               </Button>
              )}
             <div className="text-right ml-auto">
@@ -983,7 +1005,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
             </div>
           </div>
 
-          <Card className="bg-white p-8 md:p-10 border-0 shadow-sm rounded-md w-full">
+          <Card className="bg-white p-8 md:p-10 border-0 shadow-sm rounded-md w-full animate-scale-in">
             {currentStep === 6 ? renderSuccess() : renderForm()}
             
             {/* Navigation Buttons */}
@@ -994,10 +1016,17 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
                 <Button
                   type="button"
                   onClick={handlePrevStep}
-                  disabled={currentStep === 1}
+                  disabled={currentStep === 1 || loadingPrev}
                   className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-6 py-2 rounded-sm text-lg shadow-sm transition-all disabled:opacity-50"
                 >
-                  Kembali
+                  {loadingPrev ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Memuat...
+                    </>
+                  ) : (
+                    'Kembali'
+                  )}
                 </Button>
 
                 {/* ✅ NEXT / SUBMIT BUTTON (KANAN) */}

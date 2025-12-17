@@ -53,9 +53,9 @@ export default function LoginPage() {
 
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
-        <h2 className="text-2xl font-semibold text-emerald-800 mb-6 text-center">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 animate-page-enter">
+      <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md animate-scale-in">
+        <h2 className="text-2xl font-semibold text-emerald-800 mb-6 text-center animate-stagger-1">
           Login Admin Cabang
         </h2>
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}

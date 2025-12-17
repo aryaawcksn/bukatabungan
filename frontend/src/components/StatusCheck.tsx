@@ -106,8 +106,8 @@ export default function StatusCheck() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50 py-8 px-4">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50 py-8 px-4 animate-page-enter">
+      <div className="max-w-2xl mx-auto animate-content-enter">
         {/* Header */}
         <div className="mb-8">
           <Button
@@ -213,21 +213,6 @@ export default function StatusCheck() {
                   <div>
                     <p className="text-sm text-gray-600">Alamat</p>
                     <p className="font-medium text-gray-800">{statusData.cabang.alamat_cabang}</p>
-                  </div>
-                )}
-                {statusData.cabang.telepon_cabang && (
-                  <div>
-                    <p className="text-sm text-gray-600">Telepon</p>
-                    <p className="font-medium text-gray-800 flex items-center gap-2">
-                      <Phone className="h-4 w-4 text-emerald-600" />
-                      {statusData.cabang.telepon_cabang}
-                    </p>
-                  </div>
-                )}
-                {!statusData.cabang.telepon_cabang && (
-                  <div>
-                    <p className="text-sm text-gray-600">Telepon</p>
-                    <p className="font-medium text-gray-500 italic">Informasi telepon tidak tersedia</p>
                   </div>
                 )}
               </div>

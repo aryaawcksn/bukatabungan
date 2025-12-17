@@ -10,24 +10,76 @@ interface HomePageProps {
 export default function HomePage({ onOpenSavings }: HomePageProps) {
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = React.useState(false);
+  const [isMobile, setIsMobile] = React.useState(false);
 
+  // Detect mobile and optimize accordingly
   React.useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
     };
-    window.addEventListener("scroll", handleScroll);
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Throttled scroll handler for better performance
+  React.useEffect(() => {
+    let ticking = false;
+    
+    const handleScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          setIsScrolled(window.scrollY > 20);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col font-sans text-slate-800 bg-slate-50">
-      {/* Inject Custom CSS */}
+    <div className="min-h-screen flex flex-col font-sans text-slate-800 bg-slate-50 animate-page-enter">
+      {/* Optimized CSS Animations */}
+      <style>{`
+        @keyframes float-slow {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-10px) rotate(1deg); }
+        }
+        @keyframes float-slower {
+          0%, 100% { transform: translateY(0px) scale(1); }
+          50% { transform: translateY(-5px) scale(1.02); }
+        }
+        .animate-float-slow {
+          animation: float-slow 6s ease-in-out infinite;
+        }
+        .animate-float-slower {
+          animation: float-slower 8s ease-in-out infinite;
+        }
+        /* Disable animations on mobile for performance */
+        @media (max-width: 768px) {
+          .animate-float-slow,
+          .animate-float-slower {
+            animation: none;
+          }
+        }
+        /* Optimize backdrop-blur for mobile */
+        @media (max-width: 768px) {
+          .backdrop-blur-sm {
+            backdrop-filter: none;
+            background: rgba(255, 255, 255, 0.05);
+          }
+        }
+      `}</style>
 
       {/* --- NAVBAR --- */}
       <nav 
         className={`fixed top-0 w-full z-50 transition-all duration-300 border-b ${
           isScrolled 
-            ? "bg-white/95 backdrop-blur-sm py-3 shadow-md border-slate-200" 
+            ? "bg-white py-3 shadow-md border-slate-200" 
             : "bg-transparent py-5 border-transparent"
         }`}
       >
@@ -67,33 +119,35 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
       {/* --- HERO SECTION --- */}
       <main className="relative bg-slate-900 overflow-hidden">
         
-        {/* Background Gradient & Pattern (Formal Style) */}
+        {/* Background Gradient & Pattern (Optimized) */}
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-[#0f392b] to-emerald-900 z-0"></div>
         
-        {/* Subtle Grid Pattern for Texture */}
-        <div className="absolute inset-0 z-0 opacity-10" 
-             style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
-        </div>
+        {/* Subtle Grid Pattern for Texture - Hidden on mobile for performance */}
+        {!isMobile && (
+          <div className="absolute inset-0 z-0 opacity-10" 
+               style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
+          </div>
+        )}
 
         <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 pt-32 pb-24 lg:pt-48 lg:pb-40">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             
             {/* Text Content */}
-            <div className="max-w-2xl text-center lg:text-left mx-auto lg:mx-0 order-2 lg:order-1">
+            <div className="max-w-2xl text-center lg:text-left mx-auto lg:mx-0 order-2 lg:order-1 animate-content-enter">
             
 
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white mb-6 leading-tight">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white mb-6 leading-tight animate-stagger-1">
                 Tabungan <br/>
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-200 to-teal-100">
                   Aman & Terpercaya
                 </span>
               </h1>
 
-              <p className="text-lg text-slate-300 mb-10 leading-relaxed max-w-lg mx-auto lg:mx-0">
+              <p className="text-lg text-slate-300 mb-10 leading-relaxed max-w-lg mx-auto lg:mx-0 animate-stagger-2">
                 Buka rekening Bank Sleman secara online dengan proses verifikasi yang cepat. Solusi keuangan resmi untuk masyarakat Sleman dan sekitarnya.
               </p>
 
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 animate-stagger-3">
                 <button
                   onClick={() => navigate('/selection')}
                   className="w-full sm:w-auto px-18 py-3.5 bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold text-sm uppercase tracking-wide rounded-lg shadow-lg shadow-amber-500/20 transition-transform transform hover:-translate-y-0.5"
@@ -103,82 +157,83 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
                 
               </div>
 
-              {/* Trust Indicators */}
-              <div className="mt-12 pt-8 border-t border-slate-700/50 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-8 text-sm text-slate-400">
+              {/* Trust Indicators - Optimized */}
+              <div className="mt-8 md:mt-12 pt-6 md:pt-8 border-t border-slate-700/50 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-6 md:gap-8 text-sm text-slate-400 animate-stagger-4">
                 <div className="flex items-center gap-3">
-  <div className="bg-white rounded px-2 py-1 flex items-center justify-center shadow-sm">
-    <img
-      src="/ojk.png"
-      alt="OJK"
-      className="h-5 object-contain"
-    />
-  </div>
+                  <div className="bg-white rounded px-2 py-1 flex items-center justify-center shadow-sm">
+                    <img
+                      src="/ojk.png"
+                      alt="OJK"
+                      className="h-4 md:h-5 object-contain"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className="flex flex-col text-left">
+                    <span className="text-xs uppercase tracking-wider opacity-70 text-white">
+                      Diawasi Oleh
+                    </span>
+                    <strong className="text-white text-xs md:text-sm">
+                      Otoritas Jasa Keuangan
+                    </strong>
+                  </div>
+                </div>
 
-  <div className="flex flex-col text-left">
-    <span className="text-xs uppercase tracking-wider opacity-70 text-white">
-      Diawasi Oleh
-    </span>
-    <strong className="text-white text-sm">
-      Otoritas Jasa Keuangan
-    </strong>
-  </div>
-</div>
+                <div className="hidden sm:block w-px h-8 bg-slate-700"></div>
 
-<div className="hidden sm:block w-px h-8 bg-slate-700"></div>
-
-<div className="flex items-center gap-3">
-  <div className="bg-white rounded px-2 py-1 flex items-center justify-center shadow-sm">
-    <img
-      src="/lps.png"
-      alt="LPS"
-      className="h-5 object-contain"
-    />
-  </div>
-
-  <div className="flex flex-col text-left">
-    <span className="text-xs uppercase tracking-wider opacity-70 text-white">
-      Dijamin Oleh
-    </span>
-    <strong className="text-white text-sm">
-      Lembaga Penjamin Simpanan
-    </strong>
-  </div>
-
-
+                <div className="flex items-center gap-3">
+                  <div className="bg-white rounded px-2 py-1 flex items-center justify-center shadow-sm">
+                    <img
+                      src="/lps.png"
+                      alt="LPS"
+                      className="h-4 md:h-5 object-contain"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className="flex flex-col text-left">
+                    <span className="text-xs uppercase tracking-wider opacity-70 text-white">
+                      Dijamin Oleh
+                    </span>
+                    <strong className="text-white text-xs md:text-sm">
+                      Lembaga Penjamin Simpanan
+                    </strong>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Illustration Area - UPDATED */}
-            {/* Added negative margin top (-mt-...) to move the whole image area up */}
-            <div className="relative flex justify-center lg:justify-end order-1 lg:order-2 -mt-12 lg:-mt-24">
+            {/* Illustration Area - Optimized for Mobile */}
+            <div className="relative flex justify-center lg:justify-end order-1 lg:order-2 -mt-12 lg:-mt-24 animate-slide-up">
                 <div className="relative w-full max-w-md lg:max-w-lg">
                   
-                  {/* Formal decorative backdrop (The "Glass" glow behind) */}
-                  {/* Added animate-float-slower class */}
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-emerald-500/10 rounded-full blur-3xl -z-10 animate-float-slower"></div>
+                  {/* Decorative backdrop - Conditional animations */}
+                  <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-emerald-500/10 rounded-full blur-3xl -z-10 ${
+                    isMobile ? '' : 'animate-float-slower'
+                  }`}></div>
                   
-                  {/* Main Image Container (The actual glass card frame) */}
-                  {/* Added animate-float-slow class and removed group-hover effects */}
-                  <div className="relative z-10 p-2 rounded-2xl backdrop-blur-sm shadow-2xl animate-float-slow">
+                  {/* Main Image Container - Lightweight on mobile */}
+                  <div className={`relative z-10 p-2 rounded-2xl shadow-2xl ${
+                    isMobile 
+                      ? 'bg-emerald-500/5 border border-emerald-500/20' 
+                      : 'backdrop-blur-sm animate-float-slow'
+                  }`}>
                      <img
                         src="/3dimage.png"
                         alt="Mobile Banking Illustration"
-                        className="w-full h-auto rounded-xl "
+                        className="w-full h-auto rounded-xl"
+                        loading="lazy"
                       />
-                      
-                      {/* Floating Badge REMOVED from here */}
                   </div>
                 </div>
             </div>
           </div>
         </div>
       </main>
+      
 
-      {/* --- CORPORATE FOOTER --- */}
-      <footer className="bg-slate-950 text-slate-400 pt-20 pb-10 border-t border-slate-900">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-12 gap-y-10 mb-16">
+      {/* --- CORPORATE FOOTER (Optimized) --- */}
+      <footer className="bg-slate-950 text-slate-400 pt-12 md:pt-20 pb-8 md:pb-10 border-t border-slate-900">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 md:gap-x-12 gap-y-8 md:gap-y-10 mb-12 md:mb-16">
             
             {/* Identity */}
             <div className="space-y-6">
@@ -213,6 +268,22 @@ PT BPR Bank Sleman (Perseroda) atau dikenal dengan Bank Sleman merupakan BUMD mi
                 {['Tabungan', 'Deposito', 'Kredit', 'ATM', 'Digital Solution'].map(item => (
                     <li key={item}><a href="#" className="hover:text-emerald-400 transition-colors">{item}</a></li>
                 ))}
+                <li className="pt-2 border-t border-slate-800">
+                  <button
+                    onClick={() => {
+                      const kodeRef = prompt("Masukkan nomor registrasi Anda:");
+                      if (kodeRef) {
+                        navigate(`/status/${kodeRef}`);
+                      }
+                    }}
+                    className="text-emerald-400 hover:text-emerald-300 transition-colors text-sm flex items-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Cek Status Pengajuan
+                  </button>
+                </li>
               </ul>
             </div>
 
@@ -254,18 +325,7 @@ PT BPR Bank Sleman (Perseroda) atau dikenal dengan Bank Sleman merupakan BUMD mi
   );
 }
 
-// --- Icons (Tetap sama) ---
-const CheckShieldIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" /><path d="m9 12 2 2 4-4" />
-  </svg>
-)
-
-const UmbrellaIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="M12 2v20" /><path d="m17 5 3 2.8c.8.8 1.2 2 .5 3.5S17 15 12 15s-9.3-3.2-8.5-4.5S6 5.8 9 5" />
-  </svg>
-)
+// --- Icons (Optimized) ---
 
 const MapPinIcon = ({ className }: { className?: string }) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
