@@ -11,9 +11,9 @@
   }
 }
 
-/* Disable heavy animations on mobile devices */
-@media (max-width: 768px) {
-  /* Disable complex animations */
+/* Disable heavy animations on mobile devices ONLY */
+@media (max-width: 767px) {
+  /* Disable complex animations on mobile only */
   .animate-float-slow,
   .animate-float-fast,
   .animate-sway,
@@ -22,7 +22,10 @@
   .animate-float-slower {
     animation: none !important;
   }
+}
 
+/* Mobile-specific optimizations */
+@media (max-width: 767px) {
   /* Reduce backdrop blur for better performance */
   .backdrop-blur-sm,
   .backdrop-blur-md,
@@ -146,14 +149,15 @@
   }
 }
 
-/* Reduce motion for users who prefer it */
+/* Reduce motion for users who prefer it - but don't override desktop animations */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+  .animate-float-slow,
+  .animate-float-slower,
+  .animate-float-fast,
+  .animate-sway,
+  .animate-glass,
+  .animate-image {
+    animation: none !important;
   }
 }
 

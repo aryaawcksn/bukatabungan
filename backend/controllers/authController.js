@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import pool from "../config/db.js";
 import { logUserActivity } from "../utils/userLogger.js";
+import { checkRateLimit, detectSuspiciousActivity, verifyCaptcha } from "../utils/captcha.js";
 
 /* =========================
    LOGIN
@@ -12,9 +13,54 @@ import crypto from "crypto";
    LOGIN
 ========================= */
 export const login = async (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, captchaToken, captchaAnswer } = req.body;
+  const ip = req.ip || req.connection.remoteAddress;
+  const userAgent = req.headers['user-agent'];
 
   try {
+    // Check for suspicious activity
+    const suspiciousCheck = detectSuspiciousActivity(ip, userAgent);
+    if (suspiciousCheck.suspicious) {
+      return res.status(429).json({
+        success: false,
+        message: 'Aktivitas mencurigakan terdeteksi',
+        requireCaptcha: true
+      });
+    }
+
+    // Check rate limit for login attempts
+    const rateLimit = checkRateLimit(`login_${ip}`, 5, 15 * 60 * 1000); // 5 attempts per 15 minutes
+    if (!rateLimit.allowed) {
+      return res.status(429).json({
+        success: false,
+        message: `Terlalu banyak percobaan login. Coba lagi dalam ${rateLimit.resetTime} menit.`,
+        requireCaptcha: true
+      });
+    }
+
+    // Require captcha after 2 failed attempts or if suspicious
+    const shouldRequireCaptcha = rateLimit.remaining <= 2 || suspiciousCheck.suspicious;
+    
+    if (shouldRequireCaptcha) {
+      if (!captchaToken || !captchaAnswer) {
+        return res.status(400).json({
+          success: false,
+          message: 'Captcha diperlukan untuk melanjutkan',
+          requireCaptcha: true
+        });
+      }
+
+      const captchaVerification = verifyCaptcha(captchaToken, captchaAnswer);
+      if (!captchaVerification.valid) {
+        return res.status(400).json({
+          success: false,
+          message: captchaVerification.error === 'Incorrect answer' 
+            ? 'Jawaban captcha salah' 
+            : 'Captcha tidak valid atau sudah kedaluwarsa',
+          requireCaptcha: true
+        });
+      }
+    }
     const result = await pool.query(`
       SELECT 
         u.id,

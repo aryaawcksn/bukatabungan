@@ -139,6 +139,14 @@
 - Gradient hanya aktif di desktop (min-width: 768px)
 - Kompatibel dengan semua browser mobile
 
+### 🔧 **FIXED: Desktop Animation Issue**
+**Problem**: 3D image tidak bergerak di desktop setelah optimasi mobile
+**Solution**: 
+- Mengubah media query dari `max-width: 768px` ke `max-width: 767px`
+- Menambahkan explicit desktop animations dengan `min-width: 768px`
+- Menambahkan keyframe `floatSlower` yang hilang
+- Memastikan `animate-float-slow` dan `animate-float-slower` bekerja di desktop
+
 ## 🔧 Cara Penggunaan
 
 ### Untuk Developer

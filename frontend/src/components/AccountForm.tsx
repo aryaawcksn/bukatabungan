@@ -4,6 +4,7 @@ import { Card } from './ui/card';
 import { ArrowLeft, CheckCircle, Sparkles, ChevronRight, User, Building2, FileText, Check, CircleCheckBig, Loader2 } from 'lucide-react';
 import OtpModal from './OtpModal';
 import ScrollToTop from './ScrollToTop';
+import Captcha from './Captcha';
 import FormSimpel from './account-forms/FormSimpel';
 import FormBusiness from './account-forms/FormReguler';
 import type { AccountFormData } from './account-forms/types';
@@ -35,6 +36,13 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [currentPhone, setCurrentPhone] = useState("");
   const [pendingSubmitData, setPendingSubmitData] = useState<any>(null); // simpan data sebelum OTP
+
+  // Captcha state
+  const [requireCaptcha, setRequireCaptcha] = useState(false);
+  const [captchaData, setCaptchaData] = useState({
+    token: '',
+    answer: ''
+  });
 
   // Stepper State
   const [currentStep, setCurrentStep] = useState(1);
@@ -70,6 +78,14 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     return errors[name]
       ? 'mt-2 border-red-500 focus:border-red-500 focus:ring-red-500 rounded'
       : 'mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded';
+  };
+
+  const handleCaptchaVerify = (token: string, answer: string) => {
+    setCaptchaData({ token, answer });
+  };
+
+  const handleCaptchaError = (error: string) => {
+    console.error('Captcha error:', error);
   };
 
   // Ensure page starts at the top when entering this screen
@@ -443,6 +459,11 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     // Terms and Conditions
     if (!formData.agreeTerms) newErrors.agreeTerms = "Anda harus menyetujui syarat dan ketentuan";
 
+    // Captcha validation
+    if (requireCaptcha && (!captchaData.token || !captchaData.answer)) {
+      newErrors.captcha = "Silakan selesaikan captcha terlebih dahulu";
+    }
+
     // Basic client-side validations only (no async duplicate checks)
     if (!newErrors.nik && (!formData.jenisId || formData.jenisId === 'KTP')) {
       const nikErr = validateNikBasic(formData.nik);
@@ -701,6 +722,11 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       cabang_pengambilan: data.cabang_pengambilan, 
       cabang_id: data.cabang_pengambilan,
 
+      // Captcha data (if required)
+      ...(requireCaptcha && {
+        captchaToken: captchaData.token,
+        captchaAnswer: captchaData.answer
+      })
     };
   
 
@@ -837,6 +863,13 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       getSavingsTypeName,
       branches,
       currentStep, // Pass current step
+      
+      // Captcha props
+      requireCaptcha,
+      setRequireCaptcha,
+      captchaData,
+      handleCaptchaVerify,
+      handleCaptchaError,
     };
 
     if (savingsType === 'simpel') {

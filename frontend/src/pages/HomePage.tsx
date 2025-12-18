@@ -43,7 +43,26 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col font-sans text-slate-800 bg-slate-50 animate-page-enter">{/* Mobile optimizations handled by CSS */}
+    <div className="min-h-screen flex flex-col font-sans text-slate-800 bg-slate-50 animate-page-enter">
+      {/* Ensure desktop animations work */}
+      <style>{`
+        @keyframes floatSlow {
+          0%, 100% { transform: translateY(0px) rotate(3deg); }
+          50% { transform: translateY(-12px) rotate(4deg); }
+        }
+        @keyframes floatSlower {
+          0%, 100% { transform: translateY(0px) scale(1); }
+          50% { transform: translateY(-5px) scale(1.02); }
+        }
+        @media (min-width: 768px) {
+          .animate-float-slow {
+            animation: floatSlow 6s ease-in-out infinite !important;
+          }
+          .animate-float-slower {
+            animation: floatSlower 8s ease-in-out infinite !important;
+          }
+        }
+      `}</style>
 
       {/* --- NAVBAR --- */}
       <nav 
@@ -58,7 +77,7 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
             {/* Logo Area */}
             <div className="flex-shrink-0 flex items-center gap-3">
               <img
-                src="/banksleman.png"
+                src="/banksleman.webp"
                 alt="Bank Sleman"
                 className={`h-10 w-auto object-contain transition-all duration-300 ${
                   isScrolled ? "" : "brightness-0 invert" 
@@ -120,7 +139,7 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
                 <button
                   onClick={() => navigate('/selection')}
-                  className="w-full sm:w-auto px-18 py-3.5 bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold text-sm uppercase tracking-wide rounded-lg shadow-lg shadow-amber-500/20 mobile-button-press md:transition-transform md:transform md:hover:-translate-y-0.5"
+                  className="w-full sm:w-auto px-18 py-3.5 bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold text-sm uppercase tracking-wide rounded-lg shadow-amber-500/20 mobile-button-press md:transition-transform md:transform md:hover:-translate-y-0.5"
                 >
                   Buka Rekening
                 </button>
@@ -132,7 +151,7 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
                 <div className="flex items-center gap-3">
                   <div className="bg-white rounded px-2 py-1 flex items-center justify-center shadow-sm">
                     <img
-                      src="/ojk.png"
+                      src="/ojk.webp"
                       alt="OJK"
                       className="h-4 md:h-5 object-contain"
                       loading="lazy"
@@ -153,7 +172,7 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
                 <div className="flex items-center gap-3">
                   <div className="bg-white rounded px-2 py-1 flex items-center justify-center shadow-sm">
                     <img
-                      src="/lps.png"
+                      src="/lps.webp"
                       alt="LPS"
                       className="h-4 md:h-5 object-contain"
                       loading="lazy"
@@ -179,9 +198,9 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
                   <div className="hidden md:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-emerald-500/10 rounded-full blur-3xl -z-10 animate-float-slower"></div>
                   
                   {/* Main Image Container - Simplified for mobile */}
-                  <div className="relative z-10 p-2 rounded-2xl md:backdrop-blur-sm md:animate-float-slow bg-emerald-500/5 border border-emerald-500/20 md:shadow-2xl shadow-lg">
+                  <div className="relative z-10 p-2 rounded-2xl md:backdrop-blur-sm animate-float-slow bg-emerald-500/5 border border-emerald-500/20 md:shadow-2xl shadow-lg">
                      <img
-                        src="/3dimage.png"
+                        src="/3dimage.webp"
                         alt="Mobile Banking Illustration"
                         className="w-full h-auto rounded-xl"
                         loading="lazy"

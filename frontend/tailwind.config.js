@@ -19,6 +19,10 @@ export default {
           "0%, 100%": { transform: "translateX(0px)" },
           "50%": { transform: "translateX(10px)" },
         },
+        floatSlower: {
+          "0%, 100%": { transform: "translateY(0px) scale(1)" },
+          "50%": { transform: "translateY(-5px) scale(1.02)" },
+        },
         // Mobile-optimized animations
         mobileFadeIn: {
           "from": { opacity: "0" },
@@ -31,6 +35,7 @@ export default {
       },
       animation: {
         "float-slow": "floatSlow 6s ease-in-out infinite",
+        "float-slower": "floatSlower 8s ease-in-out infinite",
         "float-fast": "floatFast 4s ease-in-out infinite",
         "sway": "sway 5s ease-in-out infinite",
         "mobile-fade-in": "mobileFadeIn 0.3s ease-out",

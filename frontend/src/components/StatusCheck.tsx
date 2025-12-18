@@ -4,6 +4,7 @@ import { CheckCircle, Clock, XCircle, AlertCircle, ArrowLeft, MapPin, Phone } fr
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import ScrollToTop from './ScrollToTop';
+import Captcha from './Captcha';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 
@@ -30,12 +31,25 @@ export default function StatusCheck() {
   const [statusData, setStatusData] = useState<StatusData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [requireCaptcha, setRequireCaptcha] = useState(false);
+  const [captchaData, setCaptchaData] = useState({
+    token: '',
+    answer: ''
+  });
 
   useEffect(() => {
     if (referenceCode) {
       fetchStatus();
     }
   }, [referenceCode]);
+
+  const handleCaptchaVerify = (token: string, answer: string) => {
+    setCaptchaData({ token, answer });
+  };
+
+  const handleCaptchaError = (error: string) => {
+    console.error('Captcha error:', error);
+  };
 
   const fetchStatus = async () => {
     try {
@@ -46,8 +60,15 @@ export default function StatusCheck() {
       if (result.success) {
         setStatusData(result.data);
         setError(null);
+        setRequireCaptcha(false);
       } else {
-        setError(result.message || 'Nomor registrasi tidak ditemukan');
+        // Check if rate limited or captcha required
+        if (response.status === 429) {
+          setRequireCaptcha(true);
+          setError(result.message || 'Terlalu banyak permintaan. Silakan selesaikan captcha.');
+        } else {
+          setError(result.message || 'Nomor registrasi tidak ditemukan');
+        }
         setStatusData(null);
       }
     } catch (err) {
@@ -228,12 +249,30 @@ export default function StatusCheck() {
               )}
             </Card>
 
+            {/* Captcha Section */}
+            {requireCaptcha && (
+              <Card className="p-6">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                  Verifikasi Keamanan
+                </h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  Untuk melindungi sistem dari akses otomatis, silakan selesaikan verifikasi berikut:
+                </p>
+                <Captcha
+                  required={requireCaptcha}
+                  onVerify={handleCaptchaVerify}
+                  onError={handleCaptchaError}
+                />
+              </Card>
+            )}
+
             {/* Refresh Button */}
             <div className="text-center">
               <Button
                 onClick={fetchStatus}
                 variant="outline"
                 className="text-emerald-600 border-emerald-600 hover:bg-emerald-50 mobile-button-press"
+                disabled={requireCaptcha && (!captchaData.token || !captchaData.answer)}
               >
                 Refresh Status
               </Button>
