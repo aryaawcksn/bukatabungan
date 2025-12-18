@@ -6,7 +6,6 @@ import { Textarea } from '../ui/textarea';
 import { Checkbox } from '../ui/checkbox';
 import type { AccountFormProps } from './types';
 import TermsModal from '../TermsModal';
-import Captcha from '../Captcha';
 
 
 // Helper to format number string to IDR currency format
@@ -29,11 +28,6 @@ const formatRupiah = (angka: string) => {
 
 interface FormSimpelProps extends AccountFormProps {
   currentStep?: number;
-  requireCaptcha?: boolean;
-  setRequireCaptcha?: (require: boolean) => void;
-  captchaData?: { token: string; answer: string };
-  handleCaptchaVerify?: (token: string, answer: string) => void;
-  handleCaptchaError?: (error: string) => void;
 }
 
 export default function FormSimpel({
@@ -45,11 +39,6 @@ export default function FormSimpel({
 
   branches = [],
   currentStep = 1,
-  requireCaptcha = false,
-  setRequireCaptcha,
-  captchaData,
-  handleCaptchaVerify,
-  handleCaptchaError,
 }: FormSimpelProps) {
   const [showTermsModal, setShowTermsModal] = useState(false);
 
@@ -83,14 +72,6 @@ export default function FormSimpel({
       jenisId: 'KIA'
     }));
   }, []);
-
-  // Check if captcha is required when reaching step 5
-  React.useEffect(() => {
-    if (currentStep === 5 && setRequireCaptcha) {
-      // Always require captcha for form submission to prevent automation
-      setRequireCaptcha(true);
-    }
-  }, [currentStep, setRequireCaptcha]);
 
 
 
@@ -2489,18 +2470,6 @@ export default function FormSimpel({
                     Saya menyatakan bahwa informasi beneficial owner yang saya berikan adalah benar dan akurat.
                   </p>
                 </div>
-              </div>
-            )}
-
-            {/* Captcha Section - Only show in step 5 (Review) */}
-            {currentStep === 5 && (
-              <div className="mt-6">
-                <Captcha
-                  required={requireCaptcha}
-                  onVerify={handleCaptchaVerify || (() => {})}
-                  onError={handleCaptchaError || (() => {})}
-                  className="bg-white p-6 rounded-lg border border-gray-200"
-                />
               </div>
             )}
           </div>

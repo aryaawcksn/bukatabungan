@@ -13,7 +13,6 @@ import checkNikRoute from "./routes/check-nik.js";
 import otpRoutes from "./routes/otpRoutes.js";
 import cabangRoutes from "./routes/cabangRoutes.js";
 import userLogRoutes from "./routes/userLogRoutes.js";
-import captchaRoutes from "./routes/captchaRoutes.js";
 
 dotenv.config();
 
@@ -58,12 +57,7 @@ app.use("/api", testRoutes);
 app.use("/otp", otpRoutes);
 app.use("/api/cabang", cabangRoutes);
 app.use("/api", userLogRoutes);
-app.use("/api/captcha", captchaRoutes);
 
-// ===== CEK KONEKSI =====
-app.get("/api/cek-koneksi", (req, res) => {
-  res.json({ success: true, message: "Backend connected" });
-});
 
 // ===== 404 =====
 app.use((req, res) => {

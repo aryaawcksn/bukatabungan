@@ -1,7 +1,6 @@
 import express from "express";
 import multer from "multer";
 import { verifyToken } from "../middleware/auth.js";
-import { requireCaptcha, checkCaptchaRequired, enhancedRateLimit } from "../middleware/captchaMiddleware.js";
 import {
   createPengajuan,
   getAllPengajuan,
@@ -45,11 +44,11 @@ const upload = multer({
 
 const router = express.Router();
 
-// Route kirim form pengajuan (public) - dengan captcha protection
-router.post("/", enhancedRateLimit(3, 10 * 60 * 1000), requireCaptcha, createPengajuan);
+// Route kirim form pengajuan (public)
+router.post("/", createPengajuan);
 
-// Route cek status berdasarkan kode referensi (public) - dengan rate limiting
-router.get("/status/:referenceCode", enhancedRateLimit(10, 5 * 60 * 1000), getStatusByReferenceCode);
+// Route cek status berdasarkan kode referensi (public)
+router.get("/status/:referenceCode", getStatusByReferenceCode);
 
 // Route ambil semua pengajuan (protected)
 router.get("/", verifyToken, getAllPengajuan);
