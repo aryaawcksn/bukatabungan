@@ -18,7 +18,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [currentBg, setCurrentBg] = useState(0);
   const [captchaInput, setCaptchaInput] = useState("");
-  const [captchaImage, setCaptchaImage] = useState("");
+  const [captchaQuestion, setCaptchaQuestion] = useState("");
   const [captchaSessionId, setCaptchaSessionId] = useState("");
 
   // Background images array with captions
@@ -35,7 +35,7 @@ export default function LoginPage() {
     try {
       const response = await axios.get(`${API_BASE_URL}/api/captcha/generate`);
       if (response.data.success) {
-        setCaptchaImage(response.data.image || response.data.code);
+        setCaptchaQuestion(response.data.question);
         setCaptchaSessionId(response.data.sessionId);
         setCaptchaInput("");
       }
@@ -241,20 +241,20 @@ export default function LoginPage() {
           {/* CAPTCHA */}
           <div className="relative group">
   <label className="block text-sm font-medium mb-2 text-white/90">
-    Kode Captcha
+    Verifikasi Keamanan
   </label>
 
   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
     {/* LEFT — CAPTCHA */}
     <div className="relative">
       <Icon
-        icon="mdi:shield-check-outline"
+        icon="mdi:calculator"
         className="absolute left-4 top-1/2 -translate-y-1/2
                    text-cyan-400/70 w-5 h-5"
       />
       <input
-        type="text"
-        placeholder="Masukkan kode captcha"
+        type="number"
+        placeholder="Masukkan jawaban"
         value={captchaInput}
         onChange={(e) => setCaptchaInput(e.target.value)}
         className="w-full pl-12 pr-4 py-3.5 rounded-xl
@@ -268,21 +268,15 @@ export default function LoginPage() {
 
     {/* RIGHT — INPUT */}
     <div className="flex items-center gap-3">
-      {captchaImage ? (
-        captchaImage.startsWith('data:image') ? (
-          <img
-            src={captchaImage}
-            alt="Captcha"
-            className="border border-white/20 rounded-lg bg-white/10 backdrop-blur-sm"
-            style={{ width: '140px', height: '50px' }}
-          />
-        ) : (
-          <div className="w-[140px] h-[50px] border border-white/20 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center">
-            <span className="text-white font-mono text-lg tracking-wider">{captchaImage}</span>
+      {captchaQuestion ? (
+        <div className="flex-1 p-3 border border-white/20 rounded-lg bg-white/10 backdrop-blur-sm">
+          <div className="text-center">
+            <p className="text-white/80 text-xs mb-1">Berapa hasil dari:</p>
+            <p className="text-white font-mono text-lg tracking-wider">{captchaQuestion} = ?</p>
           </div>
-        )
+        </div>
       ) : (
-        <div className="w-[140px] h-[50px] border border-white/20 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center">
+        <div className="flex-1 p-3 border border-white/20 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center">
           <Icon icon="mdi:loading" className="w-5 h-5 animate-spin text-white/50" />
         </div>
       )}

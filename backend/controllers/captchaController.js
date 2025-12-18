@@ -1,15 +1,5 @@
 import crypto from 'crypto';
 
-// Try to import canvas, fallback if not available
-let createCanvas;
-try {
-  const canvasModule = await import('canvas');
-  createCanvas = canvasModule.createCanvas;
-} catch (error) {
-  console.warn('Canvas module not available, using fallback captcha');
-  createCanvas = null;
-}
-
 // Store captcha sessions in memory (in production, use Redis)
 const captchaSessions = new Map();
 
@@ -23,91 +13,54 @@ setInterval(() => {
   }
 }, 5 * 60 * 1000);
 
-// Generate captcha
+// Generate simple math captcha
 export const generateCaptcha = async (req, res) => {
   try {
-    // Generate random code
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
-    let code = '';
-    for (let i = 0; i < 5; i++) {
-      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    // Generate simple math problem
+    const num1 = Math.floor(Math.random() * 10) + 1;
+    const num2 = Math.floor(Math.random() * 10) + 1;
+    const operators = ['+', '-', '*'];
+    const operator = operators[Math.floor(Math.random() * operators.length)];
+    
+    let answer;
+    let question;
+    
+    switch (operator) {
+      case '+':
+        answer = num1 + num2;
+        question = `${num1} + ${num2}`;
+        break;
+      case '-':
+        // Ensure positive result
+        const larger = Math.max(num1, num2);
+        const smaller = Math.min(num1, num2);
+        answer = larger - smaller;
+        question = `${larger} - ${smaller}`;
+        break;
+      case '*':
+        // Use smaller numbers for multiplication
+        const smallNum1 = Math.floor(Math.random() * 5) + 1;
+        const smallNum2 = Math.floor(Math.random() * 5) + 1;
+        answer = smallNum1 * smallNum2;
+        question = `${smallNum1} × ${smallNum2}`;
+        break;
     }
 
     // Generate session ID
     const sessionId = crypto.randomBytes(32).toString('hex');
 
-    // Store captcha code with session ID
+    // Store captcha answer with session ID
     captchaSessions.set(sessionId, {
-      code: code.toLowerCase(),
+      code: answer.toString(),
       timestamp: Date.now()
     });
 
-    if (createCanvas) {
-      // Create canvas-based captcha
-      const canvas = createCanvas(140, 50);
-      const ctx = canvas.getContext('2d');
-
-      // Background
-      ctx.fillStyle = '#f0f9ff';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Add noise lines
-      ctx.strokeStyle = '#cbd5e1';
-      ctx.lineWidth = 1;
-      for (let i = 0; i < 5; i++) {
-        ctx.beginPath();
-        ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height);
-        ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height);
-        ctx.stroke();
-      }
-
-      // Draw text with rotation
-      ctx.font = 'bold 24px Arial';
-      ctx.fillStyle = '#1e40af';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-
-      for (let i = 0; i < code.length; i++) {
-        ctx.save();
-        const x = 25 + i * 25;
-        const y = canvas.height / 2;
-        const rotation = (Math.random() - 0.5) * 0.4;
-
-        ctx.translate(x, y);
-        ctx.rotate(rotation);
-        ctx.fillText(code[i], 0, 0);
-        ctx.restore();
-      }
-
-      // Add noise dots
-      ctx.fillStyle = '#64748b';
-      for (let i = 0; i < 50; i++) {
-        ctx.fillRect(
-          Math.random() * canvas.width,
-          Math.random() * canvas.height,
-          1,
-          1
-        );
-      }
-
-      // Convert to base64
-      const imageBuffer = canvas.toBuffer('image/png');
-      const base64Image = imageBuffer.toString('base64');
-
-      res.json({
-        success: true,
-        sessionId,
-        image: `data:image/png;base64,${base64Image}`
-      });
-    } else {
-      // Fallback: return text-based captcha
-      res.json({
-        success: true,
-        sessionId,
-        code: code, // For development only
-        message: 'Canvas not available, showing code directly'
-      });
-    }
+    res.json({
+      success: true,
+      sessionId,
+      question: question,
+      message: 'Selesaikan perhitungan berikut'
+    });
   } catch (error) {
     console.error('Generate captcha error:', error);
     res.status(500).json({
