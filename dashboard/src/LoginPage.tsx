@@ -17,6 +17,9 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [currentBg, setCurrentBg] = useState(0);
+  const [captchaInput, setCaptchaInput] = useState("");
+  const [captchaImage, setCaptchaImage] = useState("");
+  const [captchaSessionId, setCaptchaSessionId] = useState("");
 
   // Background images array with captions
   const backgrounds = [
@@ -27,13 +30,38 @@ export default function LoginPage() {
     { image: 'https://res.cloudinary.com/dyeiuprwm/image/upload/v1766041912/trk8qvv9daus8cnen8bk.jpg', caption: 'Keindahan alam Indonesia yang memukau mata dan menyejukkan hati.' },
   ];
 
-  // Auto-rotate background images
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentBg((prev) => (prev + 1) % backgrounds.length);
-    }, 5000); // Change every 5 seconds
+  // Fetch captcha from backend
+  const fetchCaptcha = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/captcha/generate`);
+      if (response.data.success) {
+        setCaptchaImage(response.data.image);
+        setCaptchaSessionId(response.data.sessionId);
+        setCaptchaInput("");
+      }
+    } catch (error) {
+      console.error('Error fetching captcha:', error);
+      setError("Gagal memuat captcha");
+    }
+  };
 
-    return () => clearInterval(interval);
+  // Refresh captcha
+  const refreshCaptcha = () => {
+    fetchCaptcha();
+  };
+
+  // Auto-rotate background images
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     setCurrentBg((prev) => (prev + 1) % backgrounds.length);
+  //   }, 5000); // Change every 5 seconds
+
+  //   return () => clearInterval(interval);
+  // }, []);
+
+  // Initialize captcha on component mount
+  useEffect(() => {
+    fetchCaptcha();
   }, []);
 
 
@@ -47,8 +75,21 @@ export default function LoginPage() {
     return setError("Harap isi semua field");
   }
 
+  // Validate required fields including captcha
+  if (!captchaSessionId || !captchaInput) {
+    setLoading(false);
+    setError("Harap isi kode captcha");
+    return;
+  }
+
   try {
-    const res = await axios.post(`${API_BASE_URL}/api/auth/login`, { username, password, credentials: 'include'});
+    const res = await axios.post(`${API_BASE_URL}/api/auth/login`, { 
+      username, 
+      password, 
+      captchaSessionId,
+      captchaInput,
+      credentials: 'include'
+    });
     if (res.data.success) {
       const { user: admin } = res.data;
 
@@ -62,6 +103,10 @@ export default function LoginPage() {
   } catch (err) {
     const error = err as any;
     setError(error.response?.data?.message || "Login gagal");
+    // Refresh captcha on error
+    if (error.response?.data?.message?.includes("captcha")) {
+      refreshCaptcha();
+    }
   } finally {
     setLoading(false);
   }
@@ -178,11 +223,7 @@ export default function LoginPage() {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className={`w-full pl-12 pr-12 py-3.5 rounded-xl bg-white/10 border transition-all duration-300 backdrop-blur-sm placeholder-white/50 text-white focus:outline-none ${
-                  password.length >= 6
-                    ? "border-emerald-400/40 focus:border-emerald-400/60 focus:bg-white/15"
-                    : "border-white/20 focus:border-cyan-400/60 focus:bg-white/15"
-                }`}
+                className="w-full pl-12 pr-12 py-3.5 rounded-xl bg-white/10 border border-white/20 placeholder-white/50 text-white focus:outline-none focus:border-cyan-400/60 focus:bg-white/15 transition-all duration-300"
               />
               <button
                 type="button"
@@ -197,16 +238,77 @@ export default function LoginPage() {
             </div>
           </div>
 
+          {/* CAPTCHA */}
+          <div className="relative group">
+  <label className="block text-sm font-medium mb-2 text-white/90">
+    Kode Captcha
+  </label>
+
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    {/* LEFT — CAPTCHA */}
+    <div className="relative">
+      <Icon
+        icon="mdi:shield-check-outline"
+        className="absolute left-4 top-1/2 -translate-y-1/2
+                   text-cyan-400/70 w-5 h-5"
+      />
+      <input
+        type="text"
+        placeholder="Masukkan kode captcha"
+        value={captchaInput}
+        onChange={(e) => setCaptchaInput(e.target.value)}
+        className="w-full pl-12 pr-4 py-3.5 rounded-xl
+                   bg-white/10 border border-white/20
+                   placeholder-white/50 text-white
+                   focus:outline-none focus:border-cyan-400/60
+                   focus:bg-white/15 transition"
+      />
+    </div>
+    
+
+    {/* RIGHT — INPUT */}
+    <div className="flex items-center gap-3">
+      {captchaImage ? (
+        <img
+          src={captchaImage}
+          alt="Captcha"
+          className="border border-white/20 rounded-lg bg-white/10 backdrop-blur-sm"
+          style={{ width: '140px', height: '50px' }}
+        />
+      ) : (
+        <div className="w-[140px] h-[50px] border border-white/20 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center">
+          <Icon icon="mdi:loading" className="w-5 h-5 animate-spin text-white/50" />
+        </div>
+      )}
+
+      <button
+        type="button"
+        onClick={refreshCaptcha}
+        className="p-2 rounded-lg bg-white/10 border border-white/20
+                   text-white/70 hover:text-cyan-300
+                   hover:border-cyan-400/60 transition"
+        title="Refresh Captcha"
+      >
+        <Icon icon="mdi:refresh" className="w-5 h-5" />
+      </button>
+    </div>
+  </div>
+  </div>
+
           {/* SUBMIT BUTTON */}
           <button
             type="submit"
             disabled={loading || !username || !password}
-            className={`w-full py-4 rounded-xl text-white font-semibold transition-all duration-300 shadow-lg ${
-              loading || !username || !password
-                ? "bg-gray-600/50 cursor-not-allowed"
-                : "bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 hover:shadow-xl transform hover:scale-[1.010] active:scale-[0.98]"
-            }`}
+            className={`w-full py-3.5 rounded-xl text-white font-medium
+              transition-colors duration-200
+              ${
+                loading || !username || !password
+                  ? "bg-slate-600/40 cursor-not-allowed"
+                  : "bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500"
+              }
+            `}
           >
+
             {loading ? (
               <div className="flex items-center justify-center space-x-2">
                 <Icon icon="mdi:loading" className="w-5 h-5 animate-spin" />
