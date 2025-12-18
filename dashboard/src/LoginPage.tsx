@@ -17,9 +17,9 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [currentBg, setCurrentBg] = useState(0);
+  const [captchaCode, setCaptchaCode] = useState("");
   const [captchaInput, setCaptchaInput] = useState("");
-  const [captchaQuestion, setCaptchaQuestion] = useState("");
-  const [captchaSessionId, setCaptchaSessionId] = useState("");
+  const [captchaCanvas, setCaptchaCanvas] = useState<HTMLCanvasElement | null>(null);
 
   // Background images array with captions
   const backgrounds = [
@@ -30,24 +30,77 @@ export default function LoginPage() {
     { image: 'https://res.cloudinary.com/dyeiuprwm/image/upload/v1766041912/trk8qvv9daus8cnen8bk.jpg', caption: 'Keindahan alam Indonesia yang memukau mata dan menyejukkan hati.' },
   ];
 
-  // Fetch captcha from backend
-  const fetchCaptcha = async () => {
-    try {
-      const response = await axios.get(`${API_BASE_URL}/api/captcha/generate`);
-      if (response.data.success) {
-        setCaptchaQuestion(response.data.question);
-        setCaptchaSessionId(response.data.sessionId);
-        setCaptchaInput("");
-      }
-    } catch (error) {
-      console.error('Error fetching captcha:', error);
-      setError("Gagal memuat captcha");
+  // Generate captcha
+  const generateCaptcha = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+    let result = '';
+    for (let i = 0; i < 5; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setCaptchaCode(result);
+    return result;
+  };
+
+  // Draw captcha on canvas
+  const drawCaptcha = (canvas: HTMLCanvasElement, code: string) => {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Background
+    ctx.fillStyle = '#f0f9ff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Add noise lines
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 5; i++) {
+      ctx.beginPath();
+      ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height);
+      ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height);
+      ctx.stroke();
+    }
+
+    // Draw text
+    ctx.font = '24px Arial';
+    ctx.fillStyle = '#959494ff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    // Add slight rotation and positioning variation
+    for (let i = 0; i < code.length; i++) {
+      ctx.save();
+      const x = 25 + i * 25;
+      const y = canvas.height / 2;
+      const rotation = (Math.random() - 0.2) * 0.9;
+      
+      ctx.translate(x, y);
+      ctx.rotate(rotation);
+      ctx.fillText(code[i], 0, 0);
+      ctx.restore();
+    }
+
+    // Add noise dots
+    ctx.fillStyle = '#64748b';
+    for (let i = 0; i < 550; i++) {
+      ctx.fillRect(
+        Math.random() * canvas.width,
+        Math.random() * canvas.height,
+        1,
+        1
+      );
     }
   };
 
   // Refresh captcha
   const refreshCaptcha = () => {
-    fetchCaptcha();
+    const code = generateCaptcha();
+    setCaptchaInput("");
+    if (captchaCanvas) {
+      drawCaptcha(captchaCanvas, code);
+    }
   };
 
   // Auto-rotate background images
@@ -59,10 +112,13 @@ export default function LoginPage() {
   //   return () => clearInterval(interval);
   // }, []);
 
-  // Initialize captcha on component mount
+  // Initialize captcha
   useEffect(() => {
-    fetchCaptcha();
-  }, []);
+    const code = generateCaptcha();
+    if (captchaCanvas) {
+      drawCaptcha(captchaCanvas, code);
+    }
+  }, [captchaCanvas]);
 
 
   const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
@@ -75,21 +131,16 @@ export default function LoginPage() {
     return setError("Harap isi semua field");
   }
 
-  // Validate required fields including captcha
-  if (!captchaSessionId || !captchaInput) {
+  // Validate captcha
+  if (captchaInput.toLowerCase() !== captchaCode.toLowerCase()) {
     setLoading(false);
-    setError("Harap isi kode captcha");
+    setError("Kode captcha tidak sesuai");
+    refreshCaptcha();
     return;
   }
 
   try {
-    const res = await axios.post(`${API_BASE_URL}/api/auth/login`, { 
-      username, 
-      password, 
-      captchaSessionId,
-      captchaInput,
-      credentials: 'include'
-    });
+    const res = await axios.post(`${API_BASE_URL}/api/auth/login`, { username, password, credentials: 'include'});
     if (res.data.success) {
       const { user: admin } = res.data;
 
@@ -103,10 +154,6 @@ export default function LoginPage() {
   } catch (err) {
     const error = err as any;
     setError(error.response?.data?.message || "Login gagal");
-    // Refresh captcha on error
-    if (error.response?.data?.message?.includes("captcha")) {
-      refreshCaptcha();
-    }
   } finally {
     setLoading(false);
   }
@@ -241,20 +288,20 @@ export default function LoginPage() {
           {/* CAPTCHA */}
           <div className="relative group">
   <label className="block text-sm font-medium mb-2 text-white/90">
-    Verifikasi Keamanan
+    Kode Captcha
   </label>
 
   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
     {/* LEFT — CAPTCHA */}
     <div className="relative">
       <Icon
-        icon="mdi:calculator"
+        icon="mdi:shield-check-outline"
         className="absolute left-4 top-1/2 -translate-y-1/2
                    text-cyan-400/70 w-5 h-5"
       />
       <input
-        type="number"
-        placeholder="Masukkan jawaban"
+        type="text"
+        placeholder="Masukkan kode captcha"
         value={captchaInput}
         onChange={(e) => setCaptchaInput(e.target.value)}
         className="w-full pl-12 pr-4 py-3.5 rounded-xl
@@ -268,18 +315,16 @@ export default function LoginPage() {
 
     {/* RIGHT — INPUT */}
     <div className="flex items-center gap-3">
-      {captchaQuestion ? (
-        <div className="flex-1 p-3 border border-white/20 rounded-lg bg-white/10 backdrop-blur-sm">
-          <div className="text-center">
-            <p className="text-white/80 text-xs mb-1">Berapa hasil dari:</p>
-            <p className="text-white font-mono text-lg tracking-wider">{captchaQuestion} = ?</p>
-          </div>
-        </div>
-      ) : (
-        <div className="flex-1 p-3 border border-white/20 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center">
-          <Icon icon="mdi:loading" className="w-5 h-5 animate-spin text-white/50" />
-        </div>
-      )}
+      <canvas
+        ref={(canvas) => {
+          if (canvas && canvas !== captchaCanvas) {
+            setCaptchaCanvas(canvas);
+          }
+        }}
+        width="140"
+        height="50"
+        className="border border-white/20 rounded-lg bg-white/10 backdrop-blur-sm"
+      />
 
       <button
         type="button"

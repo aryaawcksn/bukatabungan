@@ -13,7 +13,6 @@ import checkNikRoute from "./routes/check-nik.js";
 import otpRoutes from "./routes/otpRoutes.js";
 import cabangRoutes from "./routes/cabangRoutes.js";
 import userLogRoutes from "./routes/userLogRoutes.js";
-import captchaRoutes from "./routes/captchaRoutes.js";
 
 dotenv.config();
 
@@ -28,7 +27,6 @@ const allowedOrigins = [
   "https://dashboard-bs.vercel.app",
   "http://localhost:5173",
   "http://localhost:5174",
-  "http://localhost:5175",
   "http://localhost:8080"
 ];
 
@@ -59,7 +57,6 @@ app.use("/api", testRoutes);
 app.use("/otp", otpRoutes);
 app.use("/api/cabang", cabangRoutes);
 app.use("/api", userLogRoutes);
-app.use("/api/captcha", captchaRoutes);
 
 
 // ===== 404 =====

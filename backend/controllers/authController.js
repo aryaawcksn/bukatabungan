@@ -2,7 +2,6 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import pool from "../config/db.js";
 import { logUserActivity } from "../utils/userLogger.js";
-import { validateCaptcha } from "./captchaController.js";
 
 /* =========================
    LOGIN
@@ -13,22 +12,7 @@ import crypto from "crypto";
    LOGIN
 ========================= */
 export const login = async (req, res) => {
-  const { username, password, captchaSessionId, captchaInput } = req.body;
-
-  // Validate captcha first
-  if (!captchaSessionId || !captchaInput) {
-    return res.status(400).json({
-      success: false,
-      message: "Captcha diperlukan"
-    });
-  }
-
-  if (!validateCaptcha(captchaSessionId, captchaInput)) {
-    return res.status(400).json({
-      success: false,
-      message: "Kode captcha tidak sesuai"
-    });
-  }
+  const { username, password } = req.body;
 
   try {
     const result = await pool.query(`
