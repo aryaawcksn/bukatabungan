@@ -35,7 +35,7 @@ export default function LoginPage() {
     try {
       const response = await axios.get(`${API_BASE_URL}/api/captcha/generate`);
       if (response.data.success) {
-        setCaptchaImage(response.data.image);
+        setCaptchaImage(response.data.image || response.data.code);
         setCaptchaSessionId(response.data.sessionId);
         setCaptchaInput("");
       }
@@ -269,12 +269,18 @@ export default function LoginPage() {
     {/* RIGHT — INPUT */}
     <div className="flex items-center gap-3">
       {captchaImage ? (
-        <img
-          src={captchaImage}
-          alt="Captcha"
-          className="border border-white/20 rounded-lg bg-white/10 backdrop-blur-sm"
-          style={{ width: '140px', height: '50px' }}
-        />
+        captchaImage.startsWith('data:image') ? (
+          <img
+            src={captchaImage}
+            alt="Captcha"
+            className="border border-white/20 rounded-lg bg-white/10 backdrop-blur-sm"
+            style={{ width: '140px', height: '50px' }}
+          />
+        ) : (
+          <div className="w-[140px] h-[50px] border border-white/20 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center">
+            <span className="text-white font-mono text-lg tracking-wider">{captchaImage}</span>
+          </div>
+        )
       ) : (
         <div className="w-[140px] h-[50px] border border-white/20 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center">
           <Icon icon="mdi:loading" className="w-5 h-5 animate-spin text-white/50" />

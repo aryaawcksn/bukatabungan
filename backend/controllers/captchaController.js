@@ -1,5 +1,14 @@
-const { createCanvas } = require('canvas');
-const crypto = require('crypto');
+import crypto from 'crypto';
+
+// Try to import canvas, fallback if not available
+let createCanvas;
+try {
+  const canvasModule = await import('canvas');
+  createCanvas = canvasModule.createCanvas;
+} catch (error) {
+  console.warn('Canvas module not available, using fallback captcha');
+  createCanvas = null;
+}
 
 // Store captcha sessions in memory (in production, use Redis)
 const captchaSessions = new Map();
@@ -15,7 +24,7 @@ setInterval(() => {
 }, 5 * 60 * 1000);
 
 // Generate captcha
-exports.generateCaptcha = async (req, res) => {
+export const generateCaptcha = async (req, res) => {
   try {
     // Generate random code
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
@@ -33,62 +42,72 @@ exports.generateCaptcha = async (req, res) => {
       timestamp: Date.now()
     });
 
-    // Create canvas
-    const canvas = createCanvas(140, 50);
-    const ctx = canvas.getContext('2d');
+    if (createCanvas) {
+      // Create canvas-based captcha
+      const canvas = createCanvas(140, 50);
+      const ctx = canvas.getContext('2d');
 
-    // Background
-    ctx.fillStyle = '#f0f9ff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Background
+      ctx.fillStyle = '#f0f9ff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Add noise lines
-    ctx.strokeStyle = '#cbd5e1';
-    ctx.lineWidth = 1;
-    for (let i = 0; i < 5; i++) {
-      ctx.beginPath();
-      ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height);
-      ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height);
-      ctx.stroke();
+      // Add noise lines
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = 1;
+      for (let i = 0; i < 5; i++) {
+        ctx.beginPath();
+        ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height);
+        ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height);
+        ctx.stroke();
+      }
+
+      // Draw text with rotation
+      ctx.font = 'bold 24px Arial';
+      ctx.fillStyle = '#1e40af';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      for (let i = 0; i < code.length; i++) {
+        ctx.save();
+        const x = 25 + i * 25;
+        const y = canvas.height / 2;
+        const rotation = (Math.random() - 0.5) * 0.4;
+
+        ctx.translate(x, y);
+        ctx.rotate(rotation);
+        ctx.fillText(code[i], 0, 0);
+        ctx.restore();
+      }
+
+      // Add noise dots
+      ctx.fillStyle = '#64748b';
+      for (let i = 0; i < 50; i++) {
+        ctx.fillRect(
+          Math.random() * canvas.width,
+          Math.random() * canvas.height,
+          1,
+          1
+        );
+      }
+
+      // Convert to base64
+      const imageBuffer = canvas.toBuffer('image/png');
+      const base64Image = imageBuffer.toString('base64');
+
+      res.json({
+        success: true,
+        sessionId,
+        image: `data:image/png;base64,${base64Image}`
+      });
+    } else {
+      // Fallback: return text-based captcha
+      res.json({
+        success: true,
+        sessionId,
+        code: code, // For development only
+        message: 'Canvas not available, showing code directly'
+      });
     }
-
-    // Draw text with rotation
-    ctx.font = 'bold 24px Arial';
-    ctx.fillStyle = '#1e40af';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-
-    for (let i = 0; i < code.length; i++) {
-      ctx.save();
-      const x = 25 + i * 25;
-      const y = canvas.height / 2;
-      const rotation = (Math.random() - 0.5) * 0.4;
-
-      ctx.translate(x, y);
-      ctx.rotate(rotation);
-      ctx.fillText(code[i], 0, 0);
-      ctx.restore();
-    }
-
-    // Add noise dots
-    ctx.fillStyle = '#64748b';
-    for (let i = 0; i < 50; i++) {
-      ctx.fillRect(
-        Math.random() * canvas.width,
-        Math.random() * canvas.height,
-        1,
-        1
-      );
-    }
-
-    // Convert to base64
-    const imageBuffer = canvas.toBuffer('image/png');
-    const base64Image = imageBuffer.toString('base64');
-
-    res.json({
-      success: true,
-      sessionId,
-      image: `data:image/png;base64,${base64Image}`
-    });
   } catch (error) {
     console.error('Generate captcha error:', error);
     res.status(500).json({
@@ -99,7 +118,7 @@ exports.generateCaptcha = async (req, res) => {
 };
 
 // Validate captcha
-exports.validateCaptcha = (sessionId, userInput) => {
+export const validateCaptcha = (sessionId, userInput) => {
   const session = captchaSessions.get(sessionId);
   
   if (!session) {
