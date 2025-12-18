@@ -252,17 +252,18 @@ export function FormDetailDialog({ submission, open, onClose, onApprove, onRejec
                          ? detailSubmission.cardType
                          : (detailSubmission.savingsType === 'Mutiara' ? "Belum Dipilih" : "Tanpa Kartu ATM")}
                    </div>
-                   <div className="text-sm text-slate-500">
+                   {/* <div className="text-sm text-slate-500">
                       {detailSubmission.accountInfo.isForSelf ? 'Milik Sendiri' : 'Untuk Orang Lain'}
-                   </div>
+                   </div> */}
               </div>
                <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm flex flex-col gap-1">
-                   <div className="text-xs text-slate-500 uppercase font-semibold">Setoran Awal</div>
+                   <div className="text-xs text-slate-500 uppercase font-semibold">Kepemilikikan</div>
                    <div className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                       <DollarSign className="w-5 h-5 text-emerald-600" />
-                       {detailSubmission.accountInfo.initialDeposit 
+                       <User className='w-5 h-5 text-emerald-600'/>
+                       {/* {detailSubmission.accountInfo.initialDeposit 
                          ? `Rp ${parseFloat(detailSubmission.accountInfo.initialDeposit).toLocaleString('id-ID')}`
-                         : "-"}
+                         : "-"} */}
+                      {detailSubmission.accountInfo.isForSelf ? 'Pribadi' : 'Orang Lain'}
                    </div>
                </div>
            </div>

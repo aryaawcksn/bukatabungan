@@ -5,7 +5,7 @@ export const loginLimiter = rateLimit({
     max: 5, // Limit each IP to 5 login requests per windowMs
     message: {
         success: false,
-        message: "Terlalu banyak percobaan login, silakan coba lagi setelah 15 menit"
+        message: "Terlalu banyak percobaan login, silakan coba lagi setelah 1 menit"
     },
     standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
     legacyHeaders: false, // Disable the `X-RateLimit-*` headers

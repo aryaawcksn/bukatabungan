@@ -46,6 +46,7 @@ export interface AccountFormData {
     jabatan: string;
     bidangUsaha: string;
     sumberDana: string;
+    sumberDanaCustom?: string; // Custom source of funds when sumberDana is 'Lainnya'
     tujuanRekening: string;
     tujuanRekeningLainnya?: string; // For "other" purpose specification
 
@@ -71,7 +72,9 @@ export interface AccountFormData {
     boJenisId: string; // 'KTP' | 'Paspor' | 'Lainnya'
     boNomorId: string;
     boSumberDana: string;          // NEW FIELD 4
+    boSumberDanaCustom?: string;   // Custom source of funds when boSumberDana is 'Lainnya'
     boHubungan: string;            // NEW FIELD 5
+    boHubunganCustom?: string;     // Custom relationship when boHubungan is 'Lainnya'
     boNomorHp: string;             // NEW FIELD 6
     boPekerjaan: string;
     boPendapatanTahun: string; // 'sd-5jt' | '5-10jt' | '10-25jt' | '25-100jt'

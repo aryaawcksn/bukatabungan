@@ -2,6 +2,12 @@
 
 /* Fix gradient text issues on mobile */
 @media (max-width: 768px) {
+  [role="checkbox"],
+  .checkbox,
+  button[data-state] {
+    min-width: unset !important;
+    min-height: unset !important;
+  }
   /* Fallback for gradient text that doesn't work on some mobile browsers */
   .text-transparent.bg-clip-text {
     color: #a7f3d0 !important; /* emerald-200 fallback */

@@ -117,7 +117,9 @@ export default function FormMutiara({
       boJenisId, 
       boNomorId,
       boSumberDana,
+      boSumberDanaCustom,
       boHubungan,
+      boHubunganCustom,
       boNomorHp,
       boPekerjaan, 
       boPendapatanTahun, 
@@ -155,8 +157,16 @@ export default function FormMutiara({
     if (!boSumberDana) {
       errors.boSumberDana = 'Sumber dana beneficial owner harus dipilih';
     }
+    // Validate custom source of funds when "Lainnya" is selected
+    if (boSumberDana === 'Lainnya' && (!boSumberDanaCustom || boSumberDanaCustom.trim() === '')) {
+      errors.boSumberDanaCustom = 'Sumber dana lainnya harus diisi';
+    }
     if (!boHubungan) {
       errors.boHubungan = 'Hubungan dengan beneficial owner harus dipilih';
+    }
+    // Validate custom relationship when "Lainnya" is selected
+    if (boHubungan === 'Lainnya' && (!boHubunganCustom || boHubunganCustom.trim() === '')) {
+      errors.boHubunganCustom = 'Hubungan lainnya harus diisi';
     }
     if (!boNomorHp) {
       errors.boNomorHp = 'Nomor HP beneficial owner harus diisi';
@@ -177,7 +187,7 @@ export default function FormMutiara({
   // Validation function for emergency contact completeness
   const validateEmergencyContact = (): Record<string, string> => {
     const errors: Record<string, string> = {};
-    const { kontakDaruratNama, kontakDaruratHp, kontakDaruratAlamat, kontakDaruratHubungan } = formData;
+    const { kontakDaruratNama, kontakDaruratHp, kontakDaruratAlamat, kontakDaruratHubungan, kontakDaruratHubunganLainnya } = formData;
     
     // Check if any emergency contact field is filled
     const anyFieldFilled = kontakDaruratNama || kontakDaruratHp || kontakDaruratAlamat || kontakDaruratHubungan;
@@ -192,6 +202,10 @@ export default function FormMutiara({
       }
       if (!kontakDaruratHubungan) {
         errors.kontakDaruratHubungan = 'Hubungan kontak darurat harus diisi jika mengisi kontak darurat';
+      }
+      // Validate custom relationship when "Lainnya" is selected
+      if (kontakDaruratHubungan === 'Lainnya' && (!kontakDaruratHubunganLainnya || kontakDaruratHubunganLainnya.trim() === '')) {
+        errors.kontakDaruratHubunganLainnya = 'Hubungan lainnya harus diisi';
       }
     }
     
@@ -231,27 +245,57 @@ export default function FormMutiara({
 
   // Validate beneficial owner when any field changes (only if account is for others, NOT for self)
   React.useEffect(() => {
-    setErrors(prev => {
-      const next = { ...prev };
-      // Clear previous BO errors
-      delete next.boNama;
-      delete next.boAlamat;
-      delete next.boTempatLahir;
-      delete next.boTanggalLahir;
-      delete next.boJenisId;
-      delete next.boNomorId;
-      delete next.boPekerjaan;
-      delete next.boPendapatanTahun;
-      delete next.boPersetujuan;
-      
-      // Only validate if account is for others (NOT for self)
-      if (formData.rekeningUntukSendiri === false) {
-        const boErrors = validateBeneficialOwner();
+    // Only validate if account is for others (NOT for self)
+    if (formData.rekeningUntukSendiri === false) {
+      const boErrors = validateBeneficialOwner();
+      setErrors(prev => {
+        const next = { ...prev };
+        // Clear all previous BO errors first
+        delete next.boNama;
+        delete next.boAlamat;
+        delete next.boTempatLahir;
+        delete next.boTanggalLahir;
+        delete next.boJenisKelamin;
+        delete next.boKewarganegaraan;
+        delete next.boStatusPernikahan;
+        delete next.boJenisId;
+        delete next.boNomorId;
+        delete next.boSumberDana;
+        delete next.boSumberDanaCustom;
+        delete next.boHubungan;
+        delete next.boHubunganCustom;
+        delete next.boNomorHp;
+        delete next.boPekerjaan;
+        delete next.boPendapatanTahun;
+        delete next.boPersetujuan;
+        
+        // Add new BO errors if any
         return { ...next, ...boErrors };
-      }
-      
-      return next;
-    });
+      });
+    } else {
+      // Clear all BO errors when account is for self
+      setErrors(prev => {
+        const next = { ...prev };
+        delete next.boNama;
+        delete next.boAlamat;
+        delete next.boTempatLahir;
+        delete next.boTanggalLahir;
+        delete next.boJenisKelamin;
+        delete next.boKewarganegaraan;
+        delete next.boStatusPernikahan;
+        delete next.boJenisId;
+        delete next.boNomorId;
+        delete next.boSumberDana;
+        delete next.boSumberDanaCustom;
+        delete next.boHubungan;
+        delete next.boHubunganCustom;
+        delete next.boNomorHp;
+        delete next.boPekerjaan;
+        delete next.boPendapatanTahun;
+        delete next.boPersetujuan;
+        return next;
+      });
+    }
   }, [
     formData.rekeningUntukSendiri,
     formData.boNama,
@@ -264,7 +308,9 @@ export default function FormMutiara({
     formData.boJenisId,
     formData.boNomorId,
     formData.boSumberDana,
+    formData.boSumberDanaCustom,
     formData.boHubungan,
+    formData.boHubunganCustom,
     formData.boNomorHp,
     formData.boPekerjaan,
     formData.boPendapatanTahun,
@@ -281,10 +327,11 @@ export default function FormMutiara({
       delete next.kontakDaruratHp;
       delete next.kontakDaruratAlamat;
       delete next.kontakDaruratHubungan;
+      delete next.kontakDaruratHubunganLainnya;
       // Add new emergency contact errors if any
       return { ...next, ...emergencyErrors };
     });
-  }, [formData.kontakDaruratNama, formData.kontakDaruratHp, formData.kontakDaruratAlamat, formData.kontakDaruratHubungan]);
+  }, [formData.kontakDaruratNama, formData.kontakDaruratHp, formData.kontakDaruratAlamat, formData.kontakDaruratHubungan, formData.kontakDaruratHubunganLainnya]);
 
   // Validate nomor rekening lama when tipe nasabah is 'lama'
   React.useEffect(() => {
@@ -1383,10 +1430,10 @@ export default function FormMutiara({
                         <SelectValue placeholder="-- Pilih Status --" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Milik Sendiri">🏠 Milik Sendiri</SelectItem>
-                        <SelectItem value="Milik Orang Tua">👨‍👩‍👧 Milik Orang Tua</SelectItem>
-                        <SelectItem value="Sewa/Kontrak">🔑 Sewa/Kontrak</SelectItem>
-                        <SelectItem value="Dinas">🏢 Rumah Dinas</SelectItem>
+                        <SelectItem value="Milik Sendiri">Milik Sendiri</SelectItem>
+                        <SelectItem value="Milik Orang Tua">Milik Orang Tua</SelectItem>
+                        <SelectItem value="Sewa/Kontrak">Sewa/Kontrak</SelectItem>
+                        <SelectItem value="Dinas">Rumah Dinas</SelectItem>
                       </SelectContent>
                     </Select>
                </div>
@@ -1422,100 +1469,133 @@ export default function FormMutiara({
 
           {/* Section 4: Kontak Darurat (Optional) */}
           <div className="bg-slate-50 p-6 rounded-xl border-2 border-slate-200">
-            <div className="flex items-center gap-2 mb-4">
-              <h4 className="font-semibold text-emerald-800 text-lg">Kontak Darurat</h4>
-            </div>
-            <p className="text-sm text-gray-600 mb-5 bg-white p-3 rounded-lg border border-slate-200">
-              💡 Harap lengkapi semua field. Kontak darurat akan dihubungi jika terjadi hal terkait rekening Anda.
-            </p>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
-              <div>
-                <Label htmlFor="kontakDaruratNama" className="text-gray-700 font-semibold">Nama Lengkap</Label>
-                <Input
-                  id="kontakDaruratNama"
-                  placeholder="Nama kontak darurat"
-                  value={formData.kontakDaruratNama}
-                  onChange={(e) => setFormData({ ...formData, kontakDaruratNama: e.target.value })}
-                  className={`mt-2 h-12 rounded-lg border-2 ${errors.kontakDaruratNama ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
-                />
-                {errors.kontakDaruratNama && (
-                  <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                    </svg>
-                    {errors.kontakDaruratNama}
-                  </p>
-                )}
-              </div>
-              <div>
-                <Label htmlFor="kontakDaruratAlamat" className="text-gray-700 font-semibold">Alamat</Label>
-                <Input
-                  id="kontakDaruratAlamat"
-                  placeholder="Alamat kontak darurat"
-                  value={formData.kontakDaruratAlamat}
-                  onChange={(e) => setFormData({ ...formData, kontakDaruratAlamat: e.target.value })}
-                  className={`mt-2 h-12 rounded-lg border-2 ${errors.kontakDaruratAlamat ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
-                />
-                {errors.kontakDaruratAlamat && (
-                  <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                    </svg>
-                    {errors.kontakDaruratAlamat}
-                  </p>
-                )}
-              </div>
-              <div>
-                <Label htmlFor="kontakDaruratHubungan" className="text-gray-700 font-semibold">Hubungan</Label>
-                <Select
-                  value={formData.kontakDaruratHubungan}
-                  onValueChange={(value) => setFormData({ ...formData, kontakDaruratHubungan: value })}
-                >
-                  <SelectTrigger className={`mt-2 h-12 rounded-lg border-2 ${errors.kontakDaruratHubungan ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}>
-                    <SelectValue placeholder="-- Pilih --" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Suami/Istri">Suami/Istri</SelectItem>
-                    <SelectItem value="Lainnya">Lainnya</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.kontakDaruratHubungan && (
-                  <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                    </svg>
-                    {errors.kontakDaruratHubungan}
-                  </p>
-                )}
-                {formData.kontakDaruratHubungan === 'Lainnya' && (
-                  <Input
-                    placeholder="Sebutkan hubungan lainnya"
-                    value={formData.kontakDaruratHubunganLainnya || ''}
-                    onChange={(e) => setFormData({ ...formData, kontakDaruratHubunganLainnya: e.target.value })}
-                    className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
-                  />
-                )}
-              </div>
-              <div>
-                <Label htmlFor="kontakDaruratHp" className="text-gray-700 font-semibold">Nomor HP</Label>
-                <Input
-                  id="kontakDaruratHp"
-                  placeholder="08123456789"
-                  value={formData.kontakDaruratHp}
-                  onChange={(e) => setFormData({ ...formData, kontakDaruratHp: e.target.value })}
-                  className={`mt-2 h-12 rounded-lg border-2 ${errors.kontakDaruratHp ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
-                />
-                {errors.kontakDaruratHp && (
-                  <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                    </svg>
-                    {errors.kontakDaruratHp}
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
+  <h4 className="font-semibold text-emerald-800 text-lg mb-4">
+    Kontak Darurat
+  </h4>
+
+  <p className="text-sm text-gray-600 mb-5 bg-white p-3 rounded-lg border border-slate-200">
+    💡 Harap lengkapi semua field. Kontak darurat akan dihubungi jika terjadi hal terkait rekening Anda.
+  </p>
+
+  <div className="space-y-6">
+
+    {/* Nama Lengkap – FULL */}
+    <div>
+      <Label className="text-gray-700 font-semibold">Nama Lengkap</Label>
+      <Input
+        placeholder="Nama kontak darurat"
+        value={formData.kontakDaruratNama}
+        onChange={(e) =>
+          setFormData({ ...formData, kontakDaruratNama: e.target.value })
+        }
+        className={`mt-2 h-12 rounded-lg border-2 ${
+          errors.kontakDaruratNama ? 'border-red-500' : 'border-slate-300'
+        } focus:border-emerald-500`}
+      />
+      {errors.kontakDaruratNama && (
+        <p className="text-sm text-red-600 mt-1">
+          {errors.kontakDaruratNama}
+        </p>
+      )}
+    </div>
+
+    <div>
+        <Label className="text-gray-700 font-semibold">Alamat</Label>
+        <Input
+          placeholder="Alamat kontak darurat"
+          value={formData.kontakDaruratAlamat}
+          onChange={(e) =>
+            setFormData({ ...formData, kontakDaruratAlamat: e.target.value })
+          }
+          className={`mt-2 h-12 rounded-lg border-2 ${
+            errors.kontakDaruratAlamat ? 'border-red-500' : 'border-slate-300'
+          } focus:border-emerald-500`}
+        />
+        {errors.kontakDaruratAlamat && (
+          <p className="text-sm text-red-600 mt-1">
+            {errors.kontakDaruratAlamat}
+          </p>
+        )}
+      </div>
+
+    {/* Nomor HP – FULL */}
+    
+
+    {/* Alamat + Hubungan */}
+    <div className="grid md:grid-cols-2 gap-6">
+
+      {/* Alamat */}
+      <div>
+      <Label className="text-gray-700 font-semibold">Nomor HP</Label>
+      <Input
+        placeholder="08123456789"
+        value={formData.kontakDaruratHp}
+        onChange={(e) =>
+          setFormData({ ...formData, kontakDaruratHp: e.target.value })
+        }
+        className={`mt-2 h-12 rounded-lg border-2 ${
+          errors.kontakDaruratHp ? 'border-red-500' : 'border-slate-300'
+        } focus:border-emerald-500`}
+      />
+      {errors.kontakDaruratHp && (
+        <p className="text-sm text-red-600 mt-1">
+          {errors.kontakDaruratHp}
+        </p>
+      )}
+    </div>
+
+      {/* Hubungan */}
+      <div>
+        <Label className="text-gray-700 font-semibold">Hubungan</Label>
+        <Select
+          value={formData.kontakDaruratHubungan}
+          onValueChange={(value) =>
+            setFormData({ ...formData, kontakDaruratHubungan: value })
+          }
+        >
+          <SelectTrigger
+            className={`mt-2 h-12 rounded-lg border-2 ${
+              errors.kontakDaruratHubungan
+                ? 'border-red-500'
+                : 'border-slate-300'
+            }`}
+          >
+            <SelectValue placeholder="-- Pilih --" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Suami/Istri">Suami/Istri</SelectItem>
+            <SelectItem value="Lainnya">Lainnya</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {formData.kontakDaruratHubungan === 'Lainnya' && (
+          <Input
+            placeholder="Sebutkan hubungan lainnya"
+            className={`mt-2 h-12 rounded-lg border-2 ${errors.kontakDaruratHubunganLainnya ? 'border-red-500' : 'border-slate-300'}`}
+            value={formData.kontakDaruratHubunganLainnya || ''}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                kontakDaruratHubunganLainnya: e.target.value,
+              })
+            }
+          />
+        )}
+        {errors.kontakDaruratHubunganLainnya && (
+          <p className="text-sm text-red-600 mt-1">{errors.kontakDaruratHubunganLainnya}</p>
+        )}
+
+        {errors.kontakDaruratHubungan && (
+          <p className="text-sm text-red-600 mt-1">
+            {errors.kontakDaruratHubungan}
+          </p>
+        )}
+      </div>
+    </div>
+
+  </div>
+</div>
+
 
         </div>
       )}
@@ -1582,10 +1662,12 @@ export default function FormMutiara({
                       <SelectValue placeholder="-- Pilih Range Penghasilan --" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="< 3 Juta">3 Juta</SelectItem>
-                      <SelectItem value="3 - 5 Juta">3 - 5 Juta</SelectItem>
-                      <SelectItem value="5 - 10 Juta">5 - 10 Juta</SelectItem>
-                      <SelectItem value="> 10 Juta">10 Juta</SelectItem>
+                      <SelectItem value="s.d 1 Juta">s.d 1 Juta</SelectItem>
+                      <SelectItem value="> 1 - 5 Juta">&gt; 1 - 5 Juta</SelectItem>
+                      <SelectItem value="> 5 - 10 Juta">&gt; 5 - 10 Juta</SelectItem>
+                      <SelectItem value="> 10 - 25 Juta">&gt; 10 - 25 Juta</SelectItem>
+                      <SelectItem value="> 25 - 100 Juta">&gt; 25 - 100 Juta</SelectItem>
+                      <SelectItem value="> 100 Juta">&gt; 100 Juta</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -1669,7 +1751,13 @@ export default function FormMutiara({
                 <Label htmlFor="sumberDana" className="text-gray-700">Sumber Dana</Label>
                 <Select
                   value={formData.sumberDana}
-                  onValueChange={(value) => setFormData({ ...formData, sumberDana: value })}
+                  onValueChange={(value) => {
+                    setFormData({ ...formData, sumberDana: value });
+                    // Clear custom field when changing selection
+                    if (value !== 'Lainnya') {
+                      setFormData(prev => ({ ...prev, sumberDana: value, sumberDanaCustom: '' }));
+                    }
+                  }}
                 >
                   <SelectTrigger className="mt-2 h-12 rounded-md">
                     <SelectValue placeholder="Pilih sumber dana" />
@@ -1684,6 +1772,14 @@ export default function FormMutiara({
                     <SelectItem value="Lainnya">Lainnya</SelectItem>
                   </SelectContent>
                 </Select>
+                {formData.sumberDana === 'Lainnya' && (
+                  <Input
+                    placeholder="Sebutkan sumber dana lainnya"
+                    value={formData.sumberDanaCustom || ''}
+                    onChange={(e) => setFormData({ ...formData, sumberDanaCustom: e.target.value })}
+                    className="mt-2 h-12 rounded-md"
+                  />
+                )}
               </div>
 
               {/* EDD Bank Lain Section */}
@@ -1706,7 +1802,7 @@ export default function FormMutiara({
                         Hapus
                       </button>
                     </div>
-                    <div className="grid md:grid-cols-3 gap-4">
+                    <div className="grid md:grid-cols-1 gap-4">
                       <div>
                         <Label className="text-gray-700">Nama Bank</Label>
                         <Input
@@ -2117,8 +2213,8 @@ export default function FormMutiara({
                       <SelectValue placeholder="Pilih jenis kelamin" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Laki-laki">👨 Laki-laki</SelectItem>
-                      <SelectItem value="Perempuan">👩 Perempuan</SelectItem>
+                      <SelectItem value="Laki-laki">Laki-laki</SelectItem>
+                      <SelectItem value="Perempuan">Perempuan</SelectItem>
                     </SelectContent>
                   </Select>
                   {errors.boJenisKelamin && <p className="text-sm text-red-600 mt-1">{errors.boJenisKelamin}</p>}
@@ -2133,8 +2229,8 @@ export default function FormMutiara({
                       <SelectValue placeholder="Pilih kewarganegaraan" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="WNI">🇮🇩 WNI (Warga Negara Indonesia)</SelectItem>
-                      <SelectItem value="WNA">🌍 WNA (Warga Negara Asing)</SelectItem>
+                      <SelectItem value="WNI">WNI (Warga Negara Indonesia)</SelectItem>
+                      <SelectItem value="WNA">WNA (Warga Negara Asing)</SelectItem>
                     </SelectContent>
                   </Select>
                   {errors.boKewarganegaraan && <p className="text-sm text-red-600 mt-1">{errors.boKewarganegaraan}</p>}
@@ -2221,42 +2317,72 @@ export default function FormMutiara({
                   <Label className="text-gray-700">Sumber Dana</Label>
                   <Select
                     value={formData.boSumberDana}
-                    onValueChange={(value) => setFormData({ ...formData, boSumberDana: value })}
+                    onValueChange={(value) => {
+                      setFormData({ ...formData, boSumberDana: value });
+                      // Clear custom field when changing selection
+                      if (value !== 'Lainnya') {
+                        setFormData(prev => ({ ...prev, boSumberDana: value, boSumberDanaCustom: '' }));
+                      }
+                    }}
                   >
                     <SelectTrigger className={`mt-2 h-12 rounded-md ${errors.boSumberDana ? 'border-red-500' : ''}`}>
                       <SelectValue placeholder="Pilih sumber dana" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Gaji">💰 Gaji</SelectItem>
-                      <SelectItem value="Hasil Usaha">🏪 Hasil Usaha</SelectItem>
-                      <SelectItem value="Investasi">📈 Investasi</SelectItem>
-                      <SelectItem value="Warisan">🏛️ Warisan</SelectItem>
-                      <SelectItem value="Hibah">🎁 Hibah</SelectItem>
-                      <SelectItem value="Lainnya">📋 Lainnya</SelectItem>
+                      <SelectItem value="Gaji">Gaji</SelectItem>
+                      <SelectItem value="Hasil Usaha">Hasil Usaha</SelectItem>
+                      <SelectItem value="Investasi">Investasi</SelectItem>
+                      <SelectItem value="Warisan">Warisan</SelectItem>
+                      <SelectItem value="Hibah">Hibah</SelectItem>
+                      <SelectItem value="Lainnya">Lainnya</SelectItem>
                     </SelectContent>
                   </Select>
+                  {formData.boSumberDana === 'Lainnya' && (
+                    <Input
+                      placeholder="Sebutkan sumber dana lainnya"
+                      value={formData.boSumberDanaCustom || ''}
+                      onChange={(e) => setFormData({ ...formData, boSumberDanaCustom: e.target.value })}
+                      className={`mt-2 h-12 rounded-md ${errors.boSumberDanaCustom ? 'border-red-500' : ''}`}
+                    />
+                  )}
                   {errors.boSumberDana && <p className="text-sm text-red-600 mt-1">{errors.boSumberDana}</p>}
+                  {errors.boSumberDanaCustom && <p className="text-sm text-red-600 mt-1">{errors.boSumberDanaCustom}</p>}
                 </div>
                 <div>
                   <Label className="text-gray-700">Hubungan dengan Anda</Label>
                   <Select
                     value={formData.boHubungan}
-                    onValueChange={(value) => setFormData({ ...formData, boHubungan: value })}
+                    onValueChange={(value) => {
+                      setFormData({ ...formData, boHubungan: value });
+                      // Clear custom field when changing selection
+                      if (value !== 'Lainnya') {
+                        setFormData(prev => ({ ...prev, boHubungan: value, boHubunganCustom: '' }));
+                      }
+                    }}
                   >
                     <SelectTrigger className={`mt-2 h-12 rounded-md ${errors.boHubungan ? 'border-red-500' : ''}`}>
                       <SelectValue placeholder="Pilih hubungan" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Orang Tua">👨‍👩‍👧 Orang Tua</SelectItem>
-                      <SelectItem value="Anak">👶 Anak</SelectItem>
-                      <SelectItem value="Suami/Istri">💑 Suami/Istri</SelectItem>
-                      <SelectItem value="Saudara Kandung">👫 Saudara Kandung</SelectItem>
-                      <SelectItem value="Kerabat">👥 Kerabat</SelectItem>
-                      <SelectItem value="Teman">🤝 Teman</SelectItem>
-                      <SelectItem value="Lainnya">📋 Lainnya</SelectItem>
+                      <SelectItem value="Orang Tua">Orang Tua</SelectItem>
+                      <SelectItem value="Anak">Anak</SelectItem>
+                      <SelectItem value="Suami/Istri">Suami/Istri</SelectItem>
+                      <SelectItem value="Saudara Kandung">Saudara Kandung</SelectItem>
+                      <SelectItem value="Kerabat">Kerabat</SelectItem>
+                      <SelectItem value="Teman">Teman</SelectItem>
+                      <SelectItem value="Lainnya">Lainnya</SelectItem>
                     </SelectContent>
                   </Select>
+                  {formData.boHubungan === 'Lainnya' && (
+                    <Input
+                      placeholder="Sebutkan hubungan lainnya"
+                      value={formData.boHubunganCustom || ''}
+                      onChange={(e) => setFormData({ ...formData, boHubunganCustom: e.target.value })}
+                      className={`mt-2 h-12 rounded-md ${errors.boHubunganCustom ? 'border-red-500' : ''}`}
+                    />
+                  )}
                   {errors.boHubungan && <p className="text-sm text-red-600 mt-1">{errors.boHubungan}</p>}
+                  {errors.boHubunganCustom && <p className="text-sm text-red-600 mt-1">{errors.boHubunganCustom}</p>}
                 </div>
                 <div>
                   <Label htmlFor="boNomorHp" className="text-gray-700">Nomor HP</Label>
@@ -2352,7 +2478,6 @@ export default function FormMutiara({
             <div className="bg-white p-6 rounded-xl border-2 border-slate-200 shadow-sm">
               <div className="flex items-center justify-between mb-4">
                 <h4 className="font-bold text-gray-800 text-lg flex items-center gap-2">
-                  <span>📍</span>
                   <span>Lokasi Cabang</span>
                 </h4>
               </div>
@@ -2365,7 +2490,6 @@ export default function FormMutiara({
             <div className="bg-white p-6 rounded-xl border-2 border-slate-200 shadow-sm">
               <div className="flex items-center justify-between mb-4">
                 <h4 className="font-bold text-gray-800 text-lg flex items-center gap-2">
-                  <span>👤</span>
                   <span>Data Diri Nasabah</span>
                 </h4>
               </div>
@@ -2405,7 +2529,6 @@ export default function FormMutiara({
             <div className="bg-white p-6 rounded-xl border-2 border-slate-200 shadow-sm">
               <div className="flex items-center justify-between mb-4">
                 <h4 className="font-bold text-gray-800 text-lg flex items-center gap-2">
-                  <span>💼</span>
                   <span>Data Pekerjaan & Keuangan</span>
                 </h4>
               </div>
@@ -2433,7 +2556,6 @@ export default function FormMutiara({
             <div className="bg-white p-6 rounded-xl border-2 border-slate-200 shadow-sm">
               <div className="flex items-center justify-between mb-4">
                 <h4 className="font-bold text-gray-800 text-lg flex items-center gap-2">
-                  <span>💳</span>
                   <span>Data Rekening</span>
                 </h4>
               </div>
@@ -2442,10 +2564,10 @@ export default function FormMutiara({
                   <p className="text-gray-500">Jenis Rekening</p>
                   <p className="font-medium text-gray-800">Mutiara</p>
                 </div>
-                <div>
+                {/* <div>
                   <p className="text-gray-500">Setoran Awal</p>
                   <p className="font-medium text-gray-800">Rp {parseFloat(formData.nominalSetoran || '0').toLocaleString('id-ID')}</p>
-                </div>
+                </div> */}
                 <div>
                   <p className="text-gray-500">Tujuan Pembukaan</p>
                   <p className="font-medium text-gray-800">{formData.tujuanRekening}</p>
@@ -2489,13 +2611,15 @@ export default function FormMutiara({
             
             {/* Terms & Conditions */}
             <div className="flex items-start gap-4 mb-4">
-              <Checkbox
-                id="terms"
-                checked={formData.agreeTerms}
-                onCheckedChange={(checked) => setFormData({ ...formData, agreeTerms: checked as boolean })}
-                required
-                className="mt-1"
-              />
+             <Checkbox
+                  id="terms"
+                  checked={formData.agreeTerms}
+                  onCheckedChange={(checked) =>
+                    setFormData({ ...formData, agreeTerms: checked as boolean })
+                  }
+                  required
+                  className="mt-1 h-4 w-4 md:h-5 md:w-5"
+                />
               <div>
                 <Label htmlFor="terms" className="cursor-pointer text-gray-800 font-medium text-base">
                   Saya menyetujui <button type="button" onClick={() => setShowTermsModal(true)} className="text-emerald-700 hover:underline font-bold">Syarat dan Ketentuan</button>

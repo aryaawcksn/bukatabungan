@@ -66,25 +66,33 @@ export default function OtpModal({ open, onClose, phone, onVerified }: OtpModalP
         <p className="text-sm text-gray-600 mb-4">
           Kode OTP telah dikirim ke WhatsApp <strong>{phone}</strong>
         </p>
+        {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
 
         <Input
           placeholder="Masukkan kode OTP"
           value={otp}
           onChange={(e) => setOtp(e.target.value)}
-          className="mb-3"
+          className="mb-3 border-slate-400"
         />
 
-        {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
+        <div className="flex flex-col gap-3">
+            <Button
+              className="w-full"
+              onClick={handleVerify}
+              disabled={loading}
+            >
+              {loading ? "Memverifikasi..." : "Verifikasi"}
+            </Button>
 
-        <div className="flex gap-3">
-          <Button className="w-full" onClick={handleVerify} disabled={loading}>
-            {loading ? "Memverifikasi..." : "Verifikasi"}
-          </Button>
+            <Button
+              variant="secondary"
+              className="w-full"
+              onClick={handleCancel}
+            >
+              Batal
+            </Button>
+          </div>
 
-          <Button variant="secondary" onClick={handleCancel}>
-            Batal
-          </Button>
-        </div>
       </div>
     </div>
   );

@@ -120,6 +120,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
   jabatan: '',
   bidangUsaha: '',
   sumberDana: '',
+  sumberDanaCustom: '',
   tujuanRekening: '',
   tujuanRekeningLainnya: '',
 
@@ -146,7 +147,9 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
   boJenisId: '',
   boNomorId: '',
   boSumberDana: '',
+  boSumberDanaCustom: '',
   boHubungan: '',
+  boHubunganCustom: '',
   boNomorHp: '',
   boPekerjaan: '',
   boPendapatanTahun: '',
@@ -306,6 +309,9 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
            if (!formData.employmentStatus) newErrors.employmentStatus = "Status pekerjaan wajib diisi";
            if (!formData.monthlyIncome) newErrors.monthlyIncome = "Penghasilan per bulan wajib diisi";
            if (!formData.sumberDana) newErrors.sumberDana = "Sumber dana wajib diisi";
+           if (formData.sumberDana === 'Lainnya' && (!formData.sumberDanaCustom || formData.sumberDanaCustom.trim() === '')) {
+             newErrors.sumberDanaCustom = "Sumber dana lainnya harus diisi";
+           }
         } else if (currentStep === 4) {
            // Step 4: Validate Data Rekening
            if (!formData.tujuanRekening) newErrors.tujuanRekening = "Tujuan rekening wajib diisi";
@@ -325,7 +331,13 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
              if (!formData.boJenisId) newErrors.boJenisId = "Jenis identitas beneficial owner wajib diisi";
              if (!formData.boNomorId) newErrors.boNomorId = "Nomor identitas beneficial owner wajib diisi";
              if (!formData.boSumberDana) newErrors.boSumberDana = "Sumber dana beneficial owner wajib diisi";
+             if (formData.boSumberDana === 'Lainnya' && (!formData.boSumberDanaCustom || formData.boSumberDanaCustom.trim() === '')) {
+               newErrors.boSumberDanaCustom = "Sumber dana lainnya harus diisi";
+             }
              if (!formData.boHubungan) newErrors.boHubungan = "Hubungan dengan beneficial owner wajib diisi";
+             if (formData.boHubungan === 'Lainnya' && (!formData.boHubunganCustom || formData.boHubunganCustom.trim() === '')) {
+               newErrors.boHubunganCustom = "Hubungan lainnya harus diisi";
+             }
              if (!formData.boNomorHp) newErrors.boNomorHp = "Nomor HP beneficial owner wajib diisi";
              if (!formData.boPekerjaan) newErrors.boPekerjaan = "Pekerjaan beneficial owner wajib diisi";
              if (!formData.boPendapatanTahun) newErrors.boPendapatanTahun = "Pendapatan tahunan beneficial owner wajib diisi";
@@ -349,8 +361,31 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
             }, 500);
           }
           
-          // Show alert with error count
-          alert(`Terdapat ${Object.keys(newErrors).length} kesalahan. Silakan lengkapi semua field yang wajib diisi.`);
+          // Show UI error notification instead of alert
+          const errorCount = Object.keys(newErrors).length;
+          const errorDiv = document.createElement('div');
+          errorDiv.className = `
+  fixed top-4 left-1/2 -translate-x-1/2
+  w-[calc(100%-2rem)] max-w-md
+  bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg
+  z-50 flex items-center animate-content-enter
+`;
+
+
+          errorDiv.innerHTML = `
+            <div class="flex items-center gap-2">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+              </svg>
+              <span>Terdapat field yang perlu diisi.</span>
+            </div>
+          `;
+          document.body.appendChild(errorDiv);
+          setTimeout(() => {
+            if (errorDiv.parentNode) {
+              errorDiv.parentNode.removeChild(errorDiv);
+            }
+          }, 5000);
           return;
         }
     
@@ -415,6 +450,9 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     if (!formData.employmentStatus) newErrors.employmentStatus = "Status pekerjaan wajib diisi";
     if (!formData.monthlyIncome) newErrors.monthlyIncome = "Penghasilan per bulan wajib diisi";
     if (!formData.sumberDana) newErrors.sumberDana = "Sumber dana wajib diisi";
+    if (formData.sumberDana === 'Lainnya' && (!formData.sumberDanaCustom || formData.sumberDanaCustom.trim() === '')) {
+      newErrors.sumberDanaCustom = "Sumber dana lainnya harus diisi";
+    }
     
     // Account Configuration - Required Fields
     if (!formData.tujuanRekening) newErrors.tujuanRekening = "Tujuan rekening wajib diisi";
@@ -433,6 +471,9 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       if (!formData.kontakDaruratNama) newErrors.kontakDaruratNama = "Nama kontak darurat harus diisi jika mengisi kontak darurat";
       if (!formData.kontakDaruratHp) newErrors.kontakDaruratHp = "Nomor HP kontak darurat harus diisi jika mengisi kontak darurat";
       if (!formData.kontakDaruratHubungan) newErrors.kontakDaruratHubungan = "Hubungan kontak darurat harus diisi jika mengisi kontak darurat";
+      if (formData.kontakDaruratHubungan === 'Lainnya' && (!formData.kontakDaruratHubunganLainnya || formData.kontakDaruratHubunganLainnya.trim() === '')) {
+        newErrors.kontakDaruratHubunganLainnya = "Hubungan lainnya harus diisi";
+      }
     }
     
     // Customer Type Validation
@@ -473,8 +514,29 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
         }, 500);
       }
       
-      // Show alert with error count
-      alert(`Terdapat ${Object.keys(newErrors).length} kesalahan pada formulir. Silakan periksa dan lengkapi semua field yang wajib diisi.`);
+      // Show UI error notification instead of alert
+      const errorCount = Object.keys(newErrors).length;
+      const errorDiv = document.createElement('div');
+      errorDiv.className = `
+  fixed top-4 left-1/2 -translate-x-1/2
+  w-[calc(100%-2rem)] max-w-md
+  bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg
+  z-50 flex items-center animate-content-enter
+`;
+      errorDiv.innerHTML = `
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+          </svg>
+          <span>Formulir memerlukan persetujuan</span>
+        </div>
+      `;
+      document.body.appendChild(errorDiv);
+      setTimeout(() => {
+        if (errorDiv.parentNode) {
+          errorDiv.parentNode.removeChild(errorDiv);
+        }
+      }, 5000);
       return;
     }
 
@@ -646,7 +708,8 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       telepon_perusahaan: data.teleponKantor,
       jabatan: data.jabatan,
       bidang_usaha: data.bidangUsaha || 'tidak bekerja',
-      sumber_dana: data.sumberDana,
+      sumber_dana: data.sumberDana === 'Lainnya' ? data.sumberDanaCustom : data.sumberDana,
+      sumber_dana_custom: data.sumberDanaCustom,
       rata_rata_transaksi: data.rataRataTransaksi,
       
 
@@ -667,6 +730,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       kontak_darurat_hp: data.kontakDaruratHp,
       kontak_darurat_alamat: data.kontakDaruratAlamat,
       kontak_darurat_hubungan: data.kontakDaruratHubungan === 'Lainnya' ? data.kontakDaruratHubunganLainnya : data.kontakDaruratHubungan,
+      kontak_darurat_hubungan_custom: data.kontakDaruratHubunganLainnya,
 
       // Account ownership
       rekening_untuk_sendiri: data.rekeningUntukSendiri,
@@ -681,8 +745,10 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       bo_status_pernikahan: data.rekeningUntukSendiri === false ? data.boStatusPernikahan : undefined,
       bo_jenis_id: data.rekeningUntukSendiri === false ? data.boJenisId : undefined,
       bo_nomor_id: data.rekeningUntukSendiri === false ? data.boNomorId : undefined,
-      bo_sumber_dana: data.rekeningUntukSendiri === false ? data.boSumberDana : undefined,
-      bo_hubungan: data.rekeningUntukSendiri === false ? data.boHubungan : undefined,
+      bo_sumber_dana: data.rekeningUntukSendiri === false ? (data.boSumberDana === 'Lainnya' ? data.boSumberDanaCustom : data.boSumberDana) : undefined,
+      bo_sumber_dana_custom: data.rekeningUntukSendiri === false ? data.boSumberDanaCustom : undefined,
+      bo_hubungan: data.rekeningUntukSendiri === false ? (data.boHubungan === 'Lainnya' ? data.boHubunganCustom : data.boHubungan) : undefined,
+      bo_hubungan_custom: data.rekeningUntukSendiri === false ? data.boHubunganCustom : undefined,
       bo_nomor_hp: data.rekeningUntukSendiri === false ? data.boNomorHp : undefined,
       bo_pekerjaan: data.rekeningUntukSendiri === false ? data.boPekerjaan : undefined,
       bo_pendapatan_tahun: data.rekeningUntukSendiri === false ? data.boPendapatanTahun : undefined,
