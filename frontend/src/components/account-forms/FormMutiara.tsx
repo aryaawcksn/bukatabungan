@@ -347,12 +347,12 @@ export default function FormMutiara({
     });
   }, [formData.tipeNasabah, formData.nomorRekeningLama]);
 
-  // Load provinces for both WNI and WNA
+
   React.useEffect(() => {
-    if (formData.citizenship === 'Indonesia' || formData.citizenship === 'WNA') {
+    if (formData.citizenship === 'Indonesia') {
       loadProvinces();
     } else {
-      // Reset address data if citizenship not selected
+      // Reset address data if citizenship not Indonesia
       setAddressData(prev => ({
         ...prev,
         provinces: [],
@@ -366,6 +366,11 @@ export default function FormMutiara({
         districtId: '',
         villageId: '',
       });
+      
+      // Clear address for WNA to allow custom input
+      if (formData.citizenship !== 'Indonesia') {
+        setFormData(prev => ({ ...prev, address: '' }));
+      }
     }
   }, [formData.citizenship]);
 
@@ -519,8 +524,8 @@ export default function FormMutiara({
           </div>
           
           {/* Branch Selection */}
-          <div className="max-w-2xl mx-auto">
-            <div className="bg-white p-8 rounded-2xl border-2 border-slate-200 shadow-sm">
+          <div className="max-w-5xl mx-auto">
+            <div className="bg-white p-4 md:p-8 rounded-2xl border-2 border-slate-200 shadow-sm">
               <Label htmlFor="cabang_pengambilan" className="text-gray-800 font-semibold text-lg mb-3 block">
                 Kantor Cabang <span className="text-red-500">*</span>
               </Label>
@@ -598,7 +603,7 @@ export default function FormMutiara({
           </div>
 
           {/* Section 1: Identitas Diri */}
-          <div className="bg-white p-6 rounded-2xl border-2 border-slate-200 shadow-sm">
+          <div className="bg-white p-4 md:p-6 rounded-2xl border-2 border-slate-200 shadow-sm">
             <h4 className="text-emerald-800 font-bold text-xl mb-6 flex items-center gap-2">
               <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">1</span>
               Identitas Diri
@@ -788,7 +793,30 @@ export default function FormMutiara({
                 </div>
               </div>
 
-              {/* Validity Date */}
+              {/* Validity Date - Exclude KTP (lifetime validity) */}
+              {formData.jenisId && formData.jenisId !== 'KTP' && (
+                <div className="grid md:grid-cols-1 gap-5">
+                  <div>
+                    <Label htmlFor="berlakuId" className="text-gray-700 font-semibold flex items-center gap-2">
+                      Masa Berlaku Identitas <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="berlakuId"
+                      type="date"
+                      required={formData.jenisId !== 'KTP'}
+                      value={formData.berlakuId}
+                      onChange={(e) => setFormData({ ...formData, berlakuId: e.target.value })}
+                      className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
+                    />
+                    <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                      </svg>
+                      {formData.jenisId === 'Paspor' ? 'Masukkan tanggal masa berlaku paspor' : 'Masukkan tanggal masa berlaku identitas'}
+                    </p>
+                  </div>
+                </div>
+              )}
 
 
               {/* Tempat & Tanggal Lahir */}
@@ -946,7 +974,7 @@ export default function FormMutiara({
           </div>
 
           {/* Section 2: Informasi Kontak */}
-          <div className="bg-white p-6 rounded-2xl border-2 border-slate-200 shadow-sm">
+          <div className="bg-white p-4 md:p-6 rounded-2xl border-2 border-slate-200 shadow-sm">
             <h4 className="text-emerald-800 font-bold text-xl mb-6 flex items-center gap-2">
               <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">2</span>
               Informasi Kontak
@@ -1042,30 +1070,31 @@ export default function FormMutiara({
           </div>
 
           {/* Section 3: Alamat Tempat Tinggal */}
-          <div className="bg-white p-6 rounded-2xl border-2 border-slate-200 shadow-sm">
+          <div className="bg-white p-4 md:p-6 rounded-2xl border-2 border-slate-200 shadow-sm">
             <h4 className="text-emerald-800 font-bold text-xl mb-6 flex items-center gap-2">
               <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">3</span>
               Alamat Tempat Tinggal
             </h4>
             <div className="space-y-5">
 
-              <div>
-                <Label htmlFor="streetAddress" className="text-gray-700 font-semibold">
-                  Jalan, RT/RW <span className="text-red-500">*</span>
-                </Label>
-                <Textarea
-                  id="streetAddress"
-                  required
-                  rows={3}
-                  placeholder="Contoh: Jl. Magelang No. 123, RT 02/RW 05"
-                  value={streetAddress}
-                  onChange={(e) => setStreetAddress(e.target.value)}
-                  className="mt-2 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
-                />
-                <p className="text-xs text-slate-500 mt-1">Masukkan alamat jalan, nomor rumah, RT/RW</p>
-                
-                
-              </div>
+              {/* RT/RW Field - Only for WNI */}
+              {formData.citizenship === 'Indonesia' && (
+                <div>
+                  <Label htmlFor="streetAddress" className="text-gray-700 font-semibold">
+                    Jalan, RT/RW <span className="text-red-500">*</span>
+                  </Label>
+                  <Textarea
+                    id="streetAddress"
+                    required
+                    rows={3}
+                    placeholder="Contoh: Jl. Magelang No. 123, RT 02/RW 05"
+                    value={streetAddress}
+                    onChange={(e) => setStreetAddress(e.target.value)}
+                    className="mt-2 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
+                  />
+                  <p className="text-xs text-slate-500 mt-1">Masukkan alamat jalan, nomor rumah, RT/RW</p>
+                </div>
+              )}
 
               {/* Indonesian Address Dropdowns - Only show if WNI */}
               {formData.citizenship === 'Indonesia' && (
@@ -1235,169 +1264,29 @@ export default function FormMutiara({
                 </div>
               )}
 
-              {/* Address Dropdowns for WNA - Same as WNI */}
+              {/* Custom Address Input for WNA */}
               {formData.citizenship !== 'Indonesia' && (
                 <div className="space-y-5">
-                  <div className="grid md:grid-cols-2 gap-5">
-                    {/* Province Dropdown */}
-                    <div>
-                      <Label className="text-gray-700 font-semibold">
-                        Provinsi <span className="text-red-500">*</span>
-                      </Label>
-                      <Select
-                        value={selectedAddress.provinceId}
-                        onValueChange={(value) => {
-                          const province = addressData.provinces.find(p => p.id === value);
-                          // Reset all dependent selections
-                          setSelectedAddress(prev => ({ 
-                            ...prev, 
-                            provinceId: value,
-                            cityId: '',
-                            districtId: '',
-                            villageId: ''
-                          }));
-                          if (province) {
-                            loadCities(value);
-                            updateFullAddress(province.province, '', '', '');
-                          }
-                        }}
-                        disabled={addressData.loadingProvinces}
-                      >
-                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
-                          <SelectValue placeholder={addressData.loadingProvinces ? "Memuat provinsi..." : "-- Pilih Provinsi --"} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {addressData.provinces.map((province) => (
-                            <SelectItem key={province.id} value={province.id}>
-                              {province.province}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* City Dropdown */}
-                    <div>
-                      <Label className="text-gray-700 font-semibold">
-                        Kota/Kabupaten <span className="text-red-500">*</span>
-                      </Label>
-                      <Select
-                        value={selectedAddress.cityId}
-                        onValueChange={(value) => {
-                          const city = addressData.cities.find(c => c.id === value);
-                          const province = addressData.provinces.find(p => p.id === selectedAddress.provinceId);
-                          // Reset dependent selections
-                          setSelectedAddress(prev => ({ 
-                            ...prev, 
-                            cityId: value,
-                            districtId: '',
-                            villageId: ''
-                          }));
-                          if (city && province) {
-                            loadDistricts(value);
-                            updateFullAddress(province.province, city.name, '', '');
-                          }
-                        }}
-                        disabled={!selectedAddress.provinceId || addressData.loadingCities}
-                      >
-                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
-                          <SelectValue placeholder={
-                            !selectedAddress.provinceId ? "Pilih provinsi dulu" :
-                            addressData.loadingCities ? "Memuat kota..." : 
-                            "-- Pilih Kota/Kabupaten --"
-                          } />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {addressData.cities.map((city) => (
-                            <SelectItem key={city.id} value={city.id}>
-                              {city.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                  
+                  
+                  <div>
+                    <Label className="text-gray-700 font-semibold">
+                      Alamat Lengkap (Sesuai ID) <span className="text-red-500">*</span>
+                    </Label>
+                    <textarea
+                      required
+                      rows={4}
+                      placeholder="Contoh: 123 Main Street, Apartment 4B, Downtown District, Bangkok 10110, Thailand"
+                      value={formData.address}
+                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                      className="mt-2 w-full p-3 rounded-lg border-2 border-slate-300 focus:border-emerald-500 focus:outline-none resize-none"
+                    />
+                    <p className="text-xs text-slate-500 mt-1">
+                      Masukkan alamat lengkap termasuk nama jalan, nomor, kota, kode pos, dan negara
+                    </p>
                   </div>
 
-                  <div className="grid md:grid-cols-2 gap-5">
-                    {/* District Dropdown */}
-                    <div>
-                      <Label className="text-gray-700 font-semibold flex items-center gap-2">
-                        Kecamatan
-                       
-                      </Label>
-                      <Select
-                        value={selectedAddress.districtId}
-                        onValueChange={(value) => {
-                          const district = addressData.districts.find(d => d.id === value);
-                          const city = addressData.cities.find(c => c.id === selectedAddress.cityId);
-                          const province = addressData.provinces.find(p => p.id === selectedAddress.provinceId);
-                          // Reset dependent selections
-                          setSelectedAddress(prev => ({ 
-                            ...prev, 
-                            districtId: value,
-                            villageId: ''
-                          }));
-                          if (district && city && province) {
-                            loadVillages(value);
-                            updateFullAddress(province.province, city.name, district.name, '');
-                          }
-                        }}
-                        disabled={!selectedAddress.cityId || addressData.loadingDistricts}
-                      >
-                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
-                          <SelectValue placeholder={
-                            !selectedAddress.cityId ? "Pilih kota dulu" :
-                            addressData.loadingDistricts ? "Memuat kecamatan..." : 
-                            "-- Pilih Kecamatan --"
-                          } />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {addressData.districts.map((district) => (
-                            <SelectItem key={district.id} value={district.id}>
-                              {district.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
 
-                    {/* Village Dropdown */}
-                    <div>
-                      <Label className="text-gray-700 font-semibold flex items-center gap-2">
-                        Kelurahan/Desa
-                       
-                      </Label>
-                      <Select
-                        value={selectedAddress.villageId}
-                        onValueChange={(value) => {
-                          const village = addressData.villages.find(v => v.id === value);
-                          const district = addressData.districts.find(d => d.id === selectedAddress.districtId);
-                          const city = addressData.cities.find(c => c.id === selectedAddress.cityId);
-                          const province = addressData.provinces.find(p => p.id === selectedAddress.provinceId);
-                          setSelectedAddress(prev => ({ ...prev, villageId: value }));
-                          if (village && district && city && province) {
-                            updateFullAddress(province.province, city.name, district.name, village.name);
-                          }
-                        }}
-                        disabled={!selectedAddress.districtId || addressData.loadingVillages}
-                      >
-                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
-                          <SelectValue placeholder={
-                            !selectedAddress.districtId ? "Pilih kecamatan dulu" :
-                            addressData.loadingVillages ? "Memuat kelurahan..." : 
-                            "-- Pilih Kelurahan/Desa --"
-                          } />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {addressData.villages.map((village) => (
-                            <SelectItem key={village.id} value={village.id}>
-                              {village.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
                 </div>
               )}
 
@@ -1439,36 +1328,58 @@ export default function FormMutiara({
                </div>
               </div>
               
-              {/* Address Preview - For both WNI and WNA */}
-              {formData.address && (
-                <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-                  <p className="text-xs text-green-700 font-medium mb-1">Alamat Lengkap Anda:</p>
-                  <p className="text-sm text-green-800 font-medium">{formData.address}</p>
-                  <p className="text-xs text-green-600 mt-1">Harap pastikan alamat ini sesuai dengan KTP anda</p>
-                </div>
-              )}
-              
-              <div className="grid md:grid-cols-1 gap-5">
-                 <div>
-                    <Label className="text-gray-700 font-semibold flex items-center gap-2">
-                      Alamat Domisili
-                      <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-normal">Opsional</span>
-                    </Label>
-                    <Input
-                       placeholder="Kosongkan jika sama dengan alamat KTP"
-                       value={formData.alamatDomisili}
-                       onChange={(e) => setFormData({...formData, alamatDomisili: e.target.value})}
-                       className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
-                    />
-                    <p className="text-xs text-slate-500 mt-1">Isi jika berbeda dengan alamat KTP</p>
-                 </div>
-              </div>
+              {/* Address Preview - Only for WNI */}
+              {formData.address && formData.citizenship === 'Indonesia' && (
+  <div className="mb-6">
+    {/* Label disamakan dengan gaya Label Domisili */}
+    <div className="flex items-center gap-2 mb-2">
+       <Label className="text-gray-700 font-semibold flex items-center gap-2">
+      Alamat Lengkap
+    </Label>
+    </div>
+
+    {/* Box Alamat dengan border & shadow yang halus */}
+    <div className="bg-white border-2 border-slate-200 rounded-xl p-4 shadow-sm">
+      <div className="flex">
+        <div className="mt-1">
+        </div>
+        <div className="flex-1">
+          <p className="text-sm text-slate-700 font-medium leading-relaxed">
+            {formData.address}
+          </p>
+          <p className="mt-2 text-[11px] text-slate-500 flex items-center gap-1 italic">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+            </svg>
+            Harap pastikan alamat ini sesuai dengan KTP Anda
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
+{/* Bagian Domisili tetap di bawahnya */}
+<div className="grid md:grid-cols-1 gap-5">
+  <div>
+    <Label className="text-gray-700 font-semibold flex items-center">
+      Alamat Domisili
+    </Label>
+    <Input
+      placeholder="Kosongkan jika sama dengan alamat KTP"
+      value={formData.alamatDomisili}
+      onChange={(e) => setFormData({ ...formData, alamatDomisili: e.target.value })}
+      className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500 shadow-sm"
+    />
+    <p className="text-xs text-slate-500 mt-1 italic">Isi jika Anda tinggal di lokasi berbeda dari KTP</p>
+  </div>
+</div>
 
             </div>
           </div>
 
           {/* Section 4: Kontak Darurat (Optional) */}
-          <div className="bg-slate-50 p-6 rounded-xl border-2 border-slate-200">
+          <div className="bg-slate-50 p-4 md:p-6 rounded-xl border-2 border-slate-200">
   <h4 className="font-semibold text-emerald-800 text-lg mb-4">
     Kontak Darurat
   </h4>
@@ -1620,7 +1531,7 @@ export default function FormMutiara({
           </div>
 
           {/* Section 1: Informasi Pekerjaan */}
-          <div className="bg-white p-6 rounded-2xl border-2 border-slate-200 shadow-sm">
+          <div className="bg-white p-4 md:p-6 rounded-2xl border-2 border-slate-200 shadow-sm">
             <h4 className="text-emerald-800 font-bold text-xl mb-6 flex items-center gap-2">
               <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">1</span>
               Informasi Pekerjaan
@@ -1945,7 +1856,7 @@ export default function FormMutiara({
           </div>
 
           {/* Section 1: Konfigurasi Rekening */}
-          <div className="bg-white p-6 rounded-2xl border-2 border-slate-200 shadow-sm">
+          <div className="bg-white p-4 md:p-6 rounded-2xl border-2 border-slate-200 shadow-sm">
             <h4 className="text-emerald-800 font-bold text-xl mb-6 flex items-center gap-2">
               <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">1</span>
               Detail Rekening
@@ -2081,12 +1992,12 @@ export default function FormMutiara({
           </div>
 
           {/* Section 2: Kepemilikan Rekening */}
-          <div className="bg-white p-6 rounded-2xl border-2 border-slate-200 shadow-sm">
+          <div className="bg-white p-4 md:p-6 rounded-2xl border-2 border-slate-200 shadow-sm">
             <h4 className="text-emerald-800 font-bold text-xl mb-6 flex items-center gap-2">
               <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">2</span>
               Kepemilikan Rekening
             </h4>
-            <div className="bg-blue-50 p-6 rounded-xl border-2 border-blue-200">
+            <div className="bg-blue-50 p-4 md:p-6 rounded-xl border-2 border-blue-200">
               <Label className="text-gray-800 font-semibold mb-4 block text-lg">Apakah rekening ini untuk Anda sendiri?</Label>
               <div className="flex items-center gap-6 flex-wrap">
                 <label className="flex items-center gap-3 cursor-pointer">
@@ -2126,7 +2037,7 @@ export default function FormMutiara({
 
           {/* Section 3: Beneficial Owner (Conditional) */}
           {formData.rekeningUntukSendiri === false && (
-          <div className="bg-amber-50 p-6 rounded-xl border-2 border-amber-200 shadow-sm">
+          <div className="bg-amber-50 p-4 md:p-6 rounded-xl border-2 border-amber-200 shadow-sm">
             <div className="flex items-center gap-3 mb-6">
               <div className="flex items-center justify-center w-10 h-10 rounded-full bg-amber-100">
                 <svg className="w-6 h-6 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
@@ -2475,7 +2386,7 @@ export default function FormMutiara({
           <div className="space-y-4">
             
             {/* 1. Data Cabang */}
-            <div className="bg-white p-6 rounded-xl border-2 border-slate-200 shadow-sm">
+            <div className="bg-white p-4 md:p-6 rounded-xl border-2 border-slate-200 shadow-sm">
               <div className="flex items-center justify-between mb-4">
                 <h4 className="font-bold text-gray-800 text-lg flex items-center gap-2">
                   <span>Lokasi Cabang</span>
@@ -2487,7 +2398,7 @@ export default function FormMutiara({
             </div>
 
             {/* 2. Data Diri */}
-            <div className="bg-white p-6 rounded-xl border-2 border-slate-200 shadow-sm">
+            <div className="bg-white p-4 md:p-6 rounded-xl border-2 border-slate-200 shadow-sm">
               <div className="flex items-center justify-between mb-4">
                 <h4 className="font-bold text-gray-800 text-lg flex items-center gap-2">
                   <span>Data Diri Nasabah</span>

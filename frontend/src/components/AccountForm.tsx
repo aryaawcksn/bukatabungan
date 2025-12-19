@@ -282,13 +282,23 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
            if (!formData.motherName) newErrors.motherName = "Nama ibu kandung wajib diisi";
            if (!formData.citizenship) newErrors.citizenship = "Kewarganegaraan wajib diisi";
            if (!formData.address) newErrors.address = "Alamat wajib diisi";
-           if (!formData.province) newErrors.province = "Provinsi wajib diisi";
-           if (!formData.city) newErrors.city = "Kota/Kabupaten wajib diisi";
            if (!formData.postalCode) newErrors.postalCode = "Kode pos wajib diisi";
            if (!formData.statusRumah) newErrors.statusRumah = "Status tempat tinggal wajib diisi";
+           
+           // Address validation based on citizenship
+           if (formData.citizenship === 'Indonesia') {
+             // For WNI, require Indonesian address fields
+             if (!formData.province) newErrors.province = "Provinsi wajib diisi";
+             if (!formData.city) newErrors.city = "Kota/Kabupaten wajib diisi";
+           }
+           // For WNA, only require address field (no additional validations)
            if (!formData.jenisId) newErrors.jenisId = "Jenis identitas wajib diisi";
            if (formData.jenisId === 'Lainnya' && !formData.jenisIdCustom) {
               newErrors.jenisIdCustom = "Sebutkan jenis identitas Anda";
+           }
+           // Validity date validation - exclude KTP (lifetime validity)
+           if (formData.jenisId && formData.jenisId !== 'KTP' && !formData.berlakuId) {
+              newErrors.berlakuId = "Masa berlaku identitas wajib diisi";
            }
            
            // Basic client-side validations only
@@ -439,12 +449,27 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     if (!formData.motherName) newErrors.motherName = "Nama ibu kandung wajib diisi";
     if (!formData.citizenship) newErrors.citizenship = "Kewarganegaraan wajib diisi";
     
+    // Identity Validity - Required for non-KTP
+    if (!formData.jenisId) newErrors.jenisId = "Jenis identitas wajib diisi";
+    if (formData.jenisId === 'Lainnya' && !formData.jenisIdCustom) {
+      newErrors.jenisIdCustom = "Sebutkan jenis identitas Anda";
+    }
+    if (formData.jenisId && formData.jenisId !== 'KTP' && !formData.berlakuId) {
+      newErrors.berlakuId = "Masa berlaku identitas wajib diisi";
+    }
+    
     // Address - Required Fields
     if (!formData.address) newErrors.address = "Alamat wajib diisi";
-    if (!formData.province) newErrors.province = "Provinsi wajib diisi";
-    if (!formData.city) newErrors.city = "Kota/Kabupaten wajib diisi";
     if (!formData.postalCode) newErrors.postalCode = "Kode pos wajib diisi";
     if (!formData.statusRumah) newErrors.statusRumah = "Status tempat tinggal wajib diisi";
+    
+    // Address validation based on citizenship
+    if (formData.citizenship === 'Indonesia') {
+      // For WNI, require Indonesian address fields
+      if (!formData.province) newErrors.province = "Provinsi wajib diisi";
+      if (!formData.city) newErrors.city = "Kota/Kabupaten wajib diisi";
+    }
+    // For WNA, only require address field (no additional validations)
     
     // Employment - Required Fields
     if (!formData.employmentStatus) newErrors.employmentStatus = "Status pekerjaan wajib diisi";

@@ -170,14 +170,17 @@ const styles = StyleSheet.create({
   },
 bankSection: {
   marginTop: 20,
-  border: '1px solid #000',
-  paddingBottom: 8,
+  borderWidth: 1,
+  borderColor: '#000',
+  borderStyle: 'solid',
 },
 
 bankHeader: {
   backgroundColor: '#003c8f',
-  padding: 4,
-  textAlign: 'center',
+  paddingVertical: 4,
+  paddingHorizontal: 6,
+  borderBottomWidth: 1,
+  borderBottomColor: '#000',
 },
 
 bankHeaderText: {
@@ -185,14 +188,17 @@ bankHeaderText: {
   fontSize: 8,
   fontFamily: 'Helvetica-Bold',
   textTransform: 'uppercase',
+  textAlign: 'center',
 },
 
 bankInfoRow: {
   flexDirection: 'row',
   alignItems: 'center',
   paddingHorizontal: 6,
-  paddingTop: 6,
+  paddingVertical: 6,
   flexWrap: 'wrap',
+  borderBottomWidth: 1,
+  borderBottomColor: '#000',
 },
 
 bankInfoLabel: {
@@ -202,8 +208,10 @@ bankInfoLabel: {
 
 bankInfoLine: {
   flexGrow: 1,
-  borderBottom: '1px solid #000',
+  borderBottomWidth: 1,
+  borderBottomColor: '#000',
   marginRight: 10,
+  height: 12,
 },
 
 riskOptions: {
@@ -215,33 +223,39 @@ riskOptions: {
 checkbox: {
   width: 8,
   height: 8,
-  border: '1px solid #000',
+  borderWidth: 1,
+  borderColor: '#000',
   marginRight: 2,
 },
 
 bankTable: {
   flexDirection: 'row',
-  borderTop: '1px solid #000',
-  marginTop: 8,
+  height: 80,
 },
 
 tableCol: {
-  flexGrow: 1,
-  borderRight: '1px solid #000',
-  padding: 6,
+  flex: 1,
+  borderRightWidth: 1,
+  borderRightColor: '#000',
+  paddingHorizontal: 6,
+  paddingVertical: 8,
   alignItems: 'center',
+  justifyContent: 'space-between',
 },
 
 tableColTitle: {
   fontSize: 7,
-  marginBottom: 14,
   textAlign: 'center',
+  marginBottom: 8,
 },
 
 tableSignature: {
-  borderBottom: '1px solid #000',
+  borderBottomWidth: 1,
+  borderBottomColor: '#000',
+
   width: '100%',
   height: 40,
+  marginTop: 'auto',
 },
 });
 
@@ -334,6 +348,14 @@ const RowTwoCol = ({ children }: { children: (JSX.Element | null)[] }) => {
   );
 };
 
+// Helper component for numbered lists
+const ListItem = ({ number, text }: { number: string; text: string }) => (
+  <View style={{ flexDirection: 'row', marginBottom: 2 }}>
+    <Text style={{ width: 14, fontSize: 7, lineHeight: 1.3 }}>{number}.</Text>
+    <Text style={{ flex: 1, fontSize: 7, lineHeight: 1.3 }}>{text}</Text>
+  </View>
+);
+
 // ===== MAIN COMPONENT (LOGIC REMAINS, IMPLEMENTATION IS COMPACT) =====
 export const SubmissionPdf = ({ submission }: { submission: FormSubmission }) => {
   const isSimpel = submission.cardType === 'Tabungan Simpel' || submission.savingsType === 'SimPel';
@@ -418,7 +440,6 @@ export const SubmissionPdf = ({ submission }: { submission: FormSubmission }) =>
 
             {/* ALAMAT */}
             <Text style={{ ...styles.label, marginTop: 4, marginBottom: 2, color: PRIMARY_COLOR }}>ALAMAT IDENTITAS (KTP)</Text>
-            <DataField label="Alamat Lengkap (Jalan/Dusun/RT RW)" value={submission.personalData.address.street} />
             <RowTwoCol>
                <DataField label="Kode Pos" value={submission.personalData.address.postalCode} />
                <DataField label="Kode Pos" value={submission.personalData.address.postalCode} />
@@ -609,7 +630,147 @@ export const SubmissionPdf = ({ submission }: { submission: FormSubmission }) =>
            </View>
         )}
 
-        {/* SECTION 9: DIISI OLEH BANK */}
+{/* SECTION 9: SPECIMEN TANDA TANGAN */}
+        <View style={styles.section} wrap={false}>
+          <Text style={[styles.sectionHeader, { textAlign: 'center', fontSize: 8 }]}>
+                <Text style={{ fontFamily: 'Helvetica-Oblique-bold' }}>SPECIMEN </Text>
+                <Text style={{ fontFamily: 'Helvetica-Bold' }}>TANDA TANGAN</Text>
+              </Text>
+          <View style={styles.sectionBody}>
+           <View style={{ 
+            flexDirection: 'row', 
+            justifyContent: 'center', // Mengumpul ke tengah
+            gap: 2 // Kontrol jarak hanya dari sini
+          }}>
+            {/* Kolom Kiri */}
+            <View style={{ 
+              flex: 1, 
+              height: 80, 
+              borderWidth: 1.5,
+              borderColor: '#000',
+              // marginRight dihapus
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}>
+            </View>
+            
+            {/* Kolom Kanan */}
+            <View style={{ 
+              flex: 1,
+              height: 80,
+              borderWidth: 1.5,
+              borderColor: '#000',
+              // marginLeft dihapus
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}>
+            </View>
+          </View>
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionHeader}>SYARAT DAN KETENTUAN</Text>
+          <View style={styles.sectionBody}>
+
+
+            {/* KETENTUAN UMUM */}
+            <Text style={{ ...styles.label, marginBottom: 4, color: PRIMARY_COLOR, fontSize: 8 }}>KETENTUAN UMUM</Text>
+            
+            <Text style={{ ...styles.label, marginTop: 4, marginBottom: 2 }}>I. DEFINISI REKENING</Text>
+            <View style={{ marginLeft: 4 }}>
+              <ListItem number="1" text="Tabungan adalah simpanan yang penarikannya hanya dapat dilakukan menurut syarat tertentu." />
+              <ListItem number="2" text="Deposito adalah simpanan nasabah kepada Bank yang dapat dicairkan kembali setelah jangka waktu tertentu dan dapat diperpanjang (roll over) penempatannya, dengan jangka waktu yang sama dan diatur menurut perjanjian." />
+            </View>
+
+            <Text style={{ ...styles.label, marginTop: 4, marginBottom: 2 }}>II. KEPEMILIKAN REKENING</Text>
+            <View style={{ marginLeft: 4 }}>
+              <ListItem number="1" text="Pembukaan rekening dapat berupa perorangan, Badan Usaha dan Gabungan." />
+              <ListItem number="2" text='Rekening Gabungan dapat dibuka dengan kombinasi/syarat "AND" atau "OR".' />
+              <ListItem number="3" text="Bank dibebaskan dari segala tuntutan dan tanggung jawab yang timbul dari setiap risiko dan kerugian serta dampak lainnya yang timbul karena perselisihan dan penyalahgunaan rekening oleh nasabah pemilik rekening termasuk Force Majeure." />
+              <ListItem number="4" text="Nasabah wajib untuk menginformasikan kepada Bank apabila terdapat perubahan data, antara lain perubahan nama, alamat, nomor telepon dan/atau NPWP." />
+            </View>
+
+            <Text style={{ ...styles.label, marginTop: 4, marginBottom: 2 }}>III. BUNGA DAN BIAYA</Text>
+            <View style={{ marginLeft: 4 }}>
+              <ListItem number="1" text="Perhitungan bunga atas rekening mengikuti peraturan yang berlaku." />
+              <ListItem number="2" text="Bunga atas rekening nasabah akan dikenakan pajak atau pungutan lain sesuai dengan peraturan yang berlaku." />
+              <ListItem number="3" text="Nasabah menanggung risiko dan kerugian atas penurunan nilai dana pada rekening yang disebabkan oleh pembebanan, pemotongan pajak yang dikenakan berdasarkan peraturan yang berlaku." />
+              <ListItem number="4" text="Besarnya bunga dan biaya yang dibebankan kepada nasabah akan mengikuti ketentuan yang berlaku dan dapat berubah sewaktu-waktu." />
+            </View>
+
+            <Text style={{ ...styles.label, marginTop: 4, marginBottom: 2 }}>IV. PENYETORAN, PENARIKAN, PEMINDAHBUKUAN DAN TRANSFER</Text>
+            <View style={{ marginLeft: 4 }}>
+              <ListItem number="1" text="Penyetoran, Penarikan, Pemindahbukuan dan Transfer dilakukan oleh Bank sesuai dengan tata cara yang diatur oleh Bank." />
+              <ListItem number="2" text="Penyetoran berlaku setelah dana nasabah diterima secara efektif oleh Bank dan Penarikan hanya dapat dilakukan bila telah tersedia saldo efektif dalam rekening nasabah." />
+              <ListItem number="3" text="Bila Bank menerima beberapa instruksi/perintah transaksi penarikan dan/atau transfer sekaligus dari nasabah, maka Bank hanya akan menjalankan instruksi/perintah transaksi sesuai dengan kecukupan dana nasabah." />
+            </View>
+
+            <Text style={{ ...styles.label, marginTop: 4, marginBottom: 2 }}>V. REKENING PASIF, PEMBLOKIRAN DAN PENUTUPAN REKENING</Text>
+            <View style={{ marginLeft: 4 }}>
+              <ListItem number="1" text="Perintah pemblokiran rekening dapat diberikan atas perintah nasabah, perintah dari Pejabat maupun instansi Pemerintah yang memiliki kewenangan sesuai peraturan yang berlaku serta berdasarkan pertimbangan Bank." />
+              <ListItem number="2" text="Rekening nasabah yang tergolong rekening pasif yaitu rekening tidak bermutasi selama jangka waktu tertentu sesuai dengan kebijakan Bank maka rekening tersebut tidak dapat dilakukan transaksi pendebetan rekening sebelum nasabah melakukan aktifasi." />
+              <ListItem number="3" text="Bank melarang segala bentuk penyalahgunaan rekening, termasuk sebagai sarana tindakan berindikasi pidana." />
+              <ListItem number="4" text="Penutupan rekening oleh nasabah dilakukan sesuai dengan ketentuan yang berlaku di Bank." />
+            </View>
+
+            <Text style={{ ...styles.label, marginTop: 4, marginBottom: 2 }}>VI. PENGADUAN NASABAH</Text>
+            <View style={{ marginLeft: 4 }}>
+              <ListItem number="1" text="Nasabah dapat menyampaikan pengaduan kepada Bank melalui Customer Service Kantor Cabang Bank Sleman terdekat, surat tertulis, email: info@banksleman.co.id atau telepon: (0274) 868321." />
+              <ListItem number="2" text="Bank akan menindaklanjuti dan menyelesaikan pengaduan nasabah sesuai dengan jangka waktu penyelesaian berdasarkan jenis pengaduan yang disampaikan." />
+            </View>
+
+            <Text style={{ ...styles.label, marginTop: 4, marginBottom: 2 }}>VII. LAIN-LAIN</Text>
+            <View style={{ marginLeft: 4 }}>
+              <ListItem number="1" text="Jika terjadi permasalahan hukum antara nasabah dengan Bank, maka kedua belah pihak setuju untuk memilih tempat kediaman hukum yang tetap dan secara umum pada Kantor Panitera Pengadilan Negeri yang wewenangnya meliputi wilayah tempat kantor Bank dimana rekening dibuka." />
+              <ListItem number="2" text="Bank berhak untuk memperbaiki/mengubah/melengkapi Ketentuan Umum dan Pernyataan Nasabah serta ketentuan lainnya setiap waktu." />
+              <ListItem number="3" text="Bank wajib menjaga kerahasiaan data pribadi nasabah sesuai ketentuan perundang-undangan." />
+            </View>
+
+            {/* PERNYATAAN NASABAH */}
+            <Text style={{ ...styles.label, marginTop: 8, marginBottom: 4, color: PRIMARY_COLOR, fontSize: 8 }}>PERNYATAAN NASABAH</Text>
+            <Text style={{ ...styles.value, fontSize: 7, fontFamily: 'Helvetica-Oblique', marginBottom: 2 }}>
+              Dengan menyetujui layanan ini, Saya/Kami menyatakan bahwa:
+            </Text>
+            
+            <View style={{ marginLeft: 4 }}>
+              <ListItem number="1" text="Data yang saya/kami isi dan dokumen pendukung pada Formulir Pembukaan Rekening PT BPR Bank Sleman (Perseroda) ini akurat, lengkap dan benar." />
+              <ListItem number="2" text="Saya/Kami menyatakan bahwa data dan informasi Beneficial Owner (BO) yang disampaikan di atas adalah benar dan dapat dipertanggung jawabkan." />
+              <ListItem number="3" text="Untuk kepentingan PT BPR Bank Sleman (Perseroda) dan/atau memenuhi ketentuan perundang-undangan, saya/kami menyetujui data pribadi Saya/Kami diberikan oleh PT BPR Bank Sleman (Perseroda) kepada pihak lain." />
+              <ListItem number="4" text="PT BPR Bank Sleman (Perseroda) telah memberikan penjelasan kepada saya/kami tentang konsekuensi dari persetujuan yang saya/kami berikan dan saya/kami telah memahaminya." />
+              <ListItem number="5" text="Saya/Kami bersedia untuk diperiksa oleh PT BPR Bank Sleman (Perseroda) terhadap kebenaran data yang telah Saya/Kami berikan." />
+              <ListItem number="6" text="PT BPR Bank Sleman (Perseroda) telah memberikan penjelasan yang cukup mengenai karakteristik produk yang akan Saya/Kami gunakan." />
+              <ListItem number="7" text="Saya/Kami telah menerima, membaca, mengerti dan menyetujui serta bersedia untuk mentaati Ketentuan Umum Rekening dan Ketentuan Khusus produk serta ketentuan terkait lainnya yang berlaku di PT BPR Bank Sleman (Perseroda)." />
+              <ListItem number="8" text="Saya/kami memberikan hak dan wewenang kepada PT BPR Bank Sleman (Perseroda) untuk melakukan pemblokiran, pembatalan transaksi dan/atau penutupan rekening Saya/kami apabila tidak mematuhi ketentuan yang berlaku." />
+              <ListItem number="9" text="Saya/kami mengetahui simpanan Saya/kami yang tersimpan dalam rekening Bank dijamin dalam program Penjaminan yang diselenggarakan Lembaga Penjamin Simpanan (LPS) sesuai dengan syarat dan ketentuan yang ditetapkan oleh LPS." />
+            </View>
+
+            <Text style={{ ...styles.value, fontSize: 7, fontFamily: 'Helvetica-Bold', marginTop: 4 }}>
+              Demikian pernyataan ini dibuat dengan sebenarnya untuk dapat dipergunakan sebagaimana mestinya.
+            </Text>
+
+            {/* Tanda Tangan di bawah Terms */}
+            <View style={{ marginTop: 20, alignItems: 'flex-end', paddingRight: 10 }}>
+              <View style={{ alignItems: 'center' }}>
+                <Text style={{ fontSize: 7, marginBottom: 15 }}>
+                  {new Date().toLocaleDateString('id-ID', { 
+                      day: 'numeric', 
+                      month: 'long', 
+                      year: 'numeric' 
+                  }).replace(/(\d+) (\w+) (\d+)/, '$1, $2 $3')}
+                </Text>
+                
+                <View style={{ width: 140, height: 40 }} />
+                <View style={{ borderBottomWidth: 1, borderBottomColor: '#000', width: 140, marginBottom: 4 }} />
+                <Text style={{ fontSize: 7 }}>Tanda Tangan dan Nama Jelas</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        
+
+        {/* SECTION 10: DIISI OLEH BANK */}
 <View style={styles.bankSection} wrap={false}>
 
   {/* BAR BIRU */}
@@ -646,7 +807,7 @@ export const SubmissionPdf = ({ submission }: { submission: FormSubmission }) =>
       <View style={styles.tableSignature} />
     </View>
 
-    <View style={styles.tableCol}>
+    <View style={[styles.tableCol, { borderRightWidth: 0 }]}>
       <Text style={styles.tableColTitle}>Disetujui Oleh</Text>
       <View style={styles.tableSignature} />
     </View>
