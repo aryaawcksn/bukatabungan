@@ -250,9 +250,6 @@ tableColTitle: {
 },
 
 tableSignature: {
-  borderBottomWidth: 1,
-  borderBottomColor: '#000',
-
   width: '100%',
   height: 40,
   marginTop: 'auto',
@@ -633,9 +630,12 @@ export const SubmissionPdf = ({ submission }: { submission: FormSubmission }) =>
 {/* SECTION 9: SPECIMEN TANDA TANGAN */}
         <View style={styles.section} wrap={false}>
           <Text style={[styles.sectionHeader, { textAlign: 'center', fontSize: 8 }]}>
-                <Text style={{ fontFamily: 'Helvetica-Oblique-bold' }}>SPECIMEN </Text>
-                <Text style={{ fontFamily: 'Helvetica-Bold' }}>TANDA TANGAN</Text>
-              </Text>
+            {/* Gunakan Helvetica-BoldOblique */}
+          <Text style={{ fontFamily: 'Helvetica-BoldOblique' }}>SPECIMEN </Text>
+
+          {/* Gunakan Helvetica-Bold */}
+          <Text style={{ fontFamily: 'Helvetica-Bold' }}>TANDA TANGAN</Text>
+            </Text>
           <View style={styles.sectionBody}>
            <View style={{ 
             flexDirection: 'row', 
