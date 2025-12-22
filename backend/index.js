@@ -5,7 +5,7 @@ import path from "path";
 import cookieParser from "cookie-parser"; // ✅ WAJIB ADA
 
 // Import routes
-import uploadRouter from "./upload.js";
+// import uploadRouter from "./upload.js";
 import authRoutes from "./routes/authRoutes.js";
 import pengajuanRoutes from "./routes/pengajuanRoutes.js";
 import testRoutes from "./routes/testRoutes.js";
@@ -46,10 +46,10 @@ app.use(express.json());
 app.use(cookieParser());
 
 // ===== STATIC FILES =====
-app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+// app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 // ===== ROUTES =====
-app.use("/upload", uploadRouter);
+// app.use("/upload", uploadRouter);
 app.use("/api", checkNikRoute);
 app.use("/api/auth", authRoutes); // login route
 app.use("/api/pengajuan", pengajuanRoutes);
