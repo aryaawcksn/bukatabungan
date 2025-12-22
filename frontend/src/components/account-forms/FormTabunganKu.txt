@@ -1,0 +1,600 @@
+import React, { useState } from 'react';
+import { useFormContext, Controller, useWatch } from 'react-hook-form';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Textarea } from '../ui/textarea';
+import { Checkbox } from '../ui/checkbox';
+import { Upload } from "../Upload";
+import type { AccountFormData, AccountFormProps } from './types';
+import TermsModal from '../TermsModal';
+
+interface FormTabungankuProps extends Omit<AccountFormProps, 'formData' | 'setFormData' | 'errors' | 'setErrors'> {
+  currentStep?: number;
+}
+
+export default function FormTabunganku({
+  getFieldClass = () => "",
+  ktpFile,
+  setKtpFile,
+  ktpPreview,
+  setKtpPreview,
+  ktpUrl,
+  setKtpUrl,
+  branches = [],
+  currentStep = 1,
+}: FormTabungankuProps) {
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const { register, control, formState: { errors: rhfErrors }, setValue } = useFormContext<AccountFormData>();
+
+  const employmentStatus = useWatch<AccountFormData>({ control, name: 'employmentStatus' });
+  const cardType = useWatch<AccountFormData>({ control, name: 'cardType' });
+
+  return (
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      
+      {/* STEP 1: PILIH CABANG */}
+      {currentStep === 1 && (
+        <div>
+          <h3 className="text-emerald-900 mb-6 text-2xl font-bold">Pilih Lokasi Cabang</h3>
+          <p className="text-slate-500 mb-6">Silakan pilih kantor cabang Bank Sleman terdekat untuk pengambilan buku tabungan dan kartu debit Anda.</p>
+          
+          <div className="bg-slate-50 p-6 rounded-md border border-slate-100">
+            <Label htmlFor="cabang_pengambilan" className="text-gray-700 font-semibold mb-2 block">Kantor Cabang</Label>
+            {rhfErrors.cabang_pengambilan && (
+              <p className="text-sm text-red-600 mb-1">{rhfErrors.cabang_pengambilan?.message}</p>
+            )}
+            <Controller
+              name="cabang_pengambilan"
+              control={control}
+              rules={{ required: "Cabang pengambilan wajib dipilih" }}
+              render={({ field }) => (
+                <Select
+                  value={field.value}
+                  onValueChange={(value) => {
+                    const selectedBranch = branches.find(b => b.id.toString() === value.toString());
+                    if (selectedBranch && !selectedBranch.is_active) {
+                      // Note: Standard RHF validation handles this, but we can set manual error if needed
+                      // For now, keeping the logic consistent with previous versions
+                    }
+                    field.onChange(value);
+                  }}
+                >
+                  <SelectTrigger className={`h-12 bg-white border-slate-200 focus:border-emerald-500 focus:ring-emerald-500 ${rhfErrors.cabang_pengambilan ? 'border-red-500' : ''}`}>
+                    <SelectValue placeholder="Pilih cabang pengambilan" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {branches.map((branch: any) => (
+                      <SelectItem key={branch.id} value={branch.id.toString()}>
+                        {branch.nama_cabang} {!branch.is_active ? '(Tidak tersedia)' : ''}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            <p className="text-xs text-slate-500 mt-3">
+              *Pastikan Anda dapat mengunjungi cabang ini pada jam operasional.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* STEP 2: DATA DIRI & UPLOAD */}
+      {currentStep === 2 && (
+        <div className="space-y-8">
+          
+          {/* Upload Section */}
+          <div>
+            <h3 className="text-emerald-900 mb-6 text-2xl font-bold">Dokumen Identitas</h3>
+            <div className="grid md:grid-cols-1 gap-6">
+              {/* ===== Upload Foto KTP ===== */}
+              <div>
+                {rhfErrors.ktp && <p className="text-red-600 text-sm mb-1">{rhfErrors.ktp?.message}</p>}
+                {!ktpFile && !ktpPreview ? (
+                  <Upload
+                    label="Foto KTP"
+                    description="Format: JPG, PNG (Max. 2MB)"
+                    onChange={(file) => {
+                      setKtpFile(file);
+                      setKtpPreview(URL.createObjectURL(file));
+                      setKtpUrl(null);
+                      // setValue('ktp', file); // Optional: if we want to track file in RHF
+                    }}
+                  />
+                ) : (
+                  <div className="mt-2 relative group">
+                    <img
+                      src={ktpPreview || ktpUrl!}
+                      alt="KTP Preview"
+                      className="w-full h-48 object-cover shadow-md"
+                    />
+                    <button
+                      type="button"
+                      className="absolute inset-0 bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center font-medium"
+                      onClick={() => {
+                        setKtpFile(null);
+                        setKtpPreview(null);
+                        setKtpUrl(null);
+                        // setValue('ktp', null);
+                      }}
+                    >
+                      Ganti Foto
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-slate-100 pt-8">
+            <h3 className="text-emerald-900 mb-6 text-2xl font-bold">Data Pribadi</h3>
+            <div className="space-y-5">
+
+              {/* Nama Lengkap */}
+              <div>
+                <Label htmlFor="fullName" className="text-gray-700">Nama Lengkap (Sesuai KTP)</Label>
+                <Input
+                  id="fullName"
+                  placeholder="Masukkan nama lengkap"
+                  {...register("fullName", { required: "Nama lengkap wajib diisi" })}
+                  className="mt-2 h-12"
+                />
+                {rhfErrors.fullName && <p className="text-sm text-red-600 mt-1">{rhfErrors.fullName?.message}</p>}
+              </div>
+
+              {/* NIK */}
+              <div>
+                <Label htmlFor="nik" className="text-gray-700">NIK</Label>
+                <Input
+                  id="nik"
+                  placeholder="16 digit NIK"
+                  maxLength={16}
+                  {...register("nik", {
+                    required: "NIK wajib diisi",
+                    pattern: {
+                      value: /^\d{16}$/,
+                      message: "NIK harus 16 digit angka"
+                    }
+                  })}
+                  className={`${getFieldClass('nik')} h-12 mt-2`}
+                />
+                {rhfErrors.nik && <p className="text-sm text-red-600 mt-1">{rhfErrors.nik?.message}</p>}
+              </div>
+
+              {/* Gender + Marital Status */}
+              <div className="grid md:grid-cols-2 gap-5">
+                <div>
+                  <Label className="text-gray-700">Jenis Kelamin</Label>
+                  <Controller
+                    name="gender"
+                    control={control}
+                    rules={{ required: "Jenis kelamin wajib dipilih" }}
+                    render={({ field }) => (
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger className="mt-2 h-12">
+                          <SelectValue placeholder="Pilih jenis kelamin" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Laki-laki">Laki-laki</SelectItem>
+                          <SelectItem value="Perempuan">Perempuan</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                  {rhfErrors.gender && <p className="text-sm text-red-600 mt-1">{rhfErrors.gender?.message}</p>}
+                </div>
+
+                <div>
+                  <Label className="text-gray-700">Status Pernikahan</Label>
+                  <Controller
+                    name="maritalStatus"
+                    control={control}
+                    rules={{ required: "Status pernikahan wajib dipilih" }}
+                    render={({ field }) => (
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger className="mt-2 h-12">
+                          <SelectValue placeholder="Pilih status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Belum Menikah">Belum Menikah</SelectItem>
+                          <SelectItem value="Menikah">Menikah</SelectItem>
+                          <SelectItem value="Cerai">Cerai</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                  {rhfErrors.maritalStatus && <p className="text-sm text-red-600 mt-1">{rhfErrors.maritalStatus?.message}</p>}
+                </div>
+              </div>
+
+              {/* Email + Phone */}
+              <div className="grid md:grid-cols-2 gap-5">
+                <div>
+                  <Label htmlFor="email" className="text-gray-700">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="email@example.com"
+                    {...register("email", {
+                      required: "Email wajib diisi",
+                      pattern: {
+                        value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                        message: "Format email tidak valid"
+                      }
+                    })}
+                    className={`${getFieldClass('email')} h-12 mt-2`}
+                  />
+                  {rhfErrors.email && <p className="text-sm text-red-600 mt-1">{rhfErrors.email?.message}</p>}
+                </div>
+
+                <div>
+                  <Label htmlFor="phone" className="text-gray-700">Nomor Telepon (WA Aktif)</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="08xxxxxxxxxx"
+                    {...register("phone", {
+                      required: "Nomor telepon wajib diisi",
+                      pattern: {
+                        value: /^08\d{8,11}$/,
+                        message: "Nomor HP harus dimulai dengan 08 dan 10-13 digit"
+                      }
+                    })}
+                    className={`${getFieldClass('phone')} h-12 mt-2`}
+                  />
+                  {rhfErrors.phone && <p className="text-sm text-red-600 mt-1">{rhfErrors.phone?.message}</p>}
+                </div>
+              </div>
+
+              {/* Tanggal Lahir */}
+              <div>
+                <Label htmlFor="birthDate" className="text-gray-700">Tanggal Lahir</Label>
+                <Input
+                  id="birthDate"
+                  type="date"
+                  {...register("birthDate", { required: "Tanggal lahir wajib diisi" })}
+                  className="mt-2 h-12"
+                />
+                {rhfErrors.birthDate && <p className="text-sm text-red-600 mt-1">{rhfErrors.birthDate?.message}</p>}
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-5">
+                <div>
+                  <Label htmlFor="citizenship" className="text-gray-700">Kewarganegaraan</Label>
+                  <Input
+                    id="citizenship"
+                    placeholder="Contoh: Indonesia"
+                    {...register("citizenship", { required: "Kewarganegaraan wajib diisi" })}
+                    className="mt-2 h-12"
+                  />
+                  {rhfErrors.citizenship && <p className="text-sm text-red-600 mt-1">{rhfErrors.citizenship?.message}</p>}
+                </div>
+
+                <div>
+                  <Label htmlFor="motherName" className="text-gray-700">Nama Ibu Kandung</Label>
+                  <Input
+                    id="motherName"
+                    placeholder="Masukkan nama ibu kandung"
+                    {...register("motherName", { required: "Nama ibu kandung wajib diisi" })}
+                    className="mt-2 h-12"
+                  />
+                  {rhfErrors.motherName && <p className="text-sm text-red-600 mt-1">{rhfErrors.motherName?.message}</p>}
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-5">
+                 <div>
+                  <Label htmlFor="kontakDaruratNama" className="text-gray-700">Nama Kontak Darurat</Label>
+                  <Input
+                    id="kontakDaruratNama"
+                    placeholder="Nama kerabat dekat"
+                    {...register("kontakDaruratNama", { required: "Nama kontak darurat wajib diisi" })}
+                    className="mt-2 h-12"
+                  />
+                  {rhfErrors.kontakDaruratNama && <p className="text-sm text-red-600 mt-1">{rhfErrors.kontakDaruratNama?.message}</p>}
+                </div>
+
+                <div>
+                  <Label htmlFor="kontakDaruratHp" className="text-gray-700">Nomor Kontak Darurat</Label>
+                  <Input
+                    id="kontakDaruratHp"
+                    placeholder="08xxxxxxxxxx"
+                    {...register("kontakDaruratHp", {
+                      required: "Nomor kontak darurat wajib diisi",
+                      pattern: {
+                        value: /^08\d{8,11}$/,
+                        message: "Nomor HP harus dimulai dengan 08 dan 10-13 digit"
+                      }
+                    })}
+                    className="mt-2 h-12"
+                  />
+                  {rhfErrors.kontakDaruratHp && <p className="text-sm text-red-600 mt-1">{rhfErrors.kontakDaruratHp?.message}</p>}
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* STEP 3: DATA PEKERJAAN & ALAMAT */}
+      {currentStep === 3 && (
+        <div className="space-y-8">
+          
+          {/* Alamat */}
+          <div>
+            <h3 className="text-emerald-900 mb-6 text-2xl font-bold">Alamat Domisili</h3>
+            <div className="space-y-5">
+              <div>
+                <Label htmlFor="address" className="text-gray-700">Alamat Lengkap</Label>
+                <Textarea
+                  id="address"
+                  placeholder="Jalan, RT/RW, Kelurahan, Kecamatan"
+                  rows={3}
+                  {...register("address", { required: "Alamat wajib diisi" })}
+                  className="mt-2"
+                />
+                {rhfErrors.address && <p className="text-sm text-red-600 mt-1">{rhfErrors.address?.message}</p>}
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-5">
+                <div>
+                  <Label htmlFor="province" className="text-gray-700">Provinsi</Label>
+                  <Input
+                    id="province"
+                    placeholder="Nama Provinsi"
+                    {...register("province", { required: "Provinsi wajib diisi" })}
+                    className="mt-2 h-12"
+                  />
+                  {rhfErrors.province && <p className="text-sm text-red-600 mt-1">{rhfErrors.province?.message}</p>}
+                </div>
+
+                <div>
+                  <Label htmlFor="city" className="text-gray-700">Kota/Kabupaten</Label>
+                  <Input
+                    id="city"
+                    placeholder="Nama Kota"
+                    {...register("city", { required: "Kota/Kabupaten wajib diisi" })}
+                    className="mt-2 h-12"
+                  />
+                  {rhfErrors.city && <p className="text-sm text-red-600 mt-1">{rhfErrors.city?.message}</p>}
+                </div>
+
+                <div>
+                  <Label htmlFor="postalCode" className="text-gray-700">Kode Pos</Label>
+                  <Input
+                    id="postalCode"
+                    placeholder="12345"
+                    maxLength={5}
+                    {...register("postalCode", {
+                      required: "Kode pos wajib diisi",
+                      pattern: {
+                        value: /^\d{5}$/,
+                        message: "Kode pos harus 5 digit"
+                      }
+                    })}
+                    className="mt-2 h-12"
+                  />
+                  {rhfErrors.postalCode && <p className="text-sm text-red-600 mt-1">{rhfErrors.postalCode?.message}</p>}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Informasi Pekerjaan */}
+          <div className="border-t border-slate-100 pt-8">
+            <h3 className="text-emerald-900 mb-6 text-2xl font-bold">Informasi Pekerjaan</h3>
+            <div className="space-y-5">
+              <div>
+                <Label htmlFor="employmentStatus" className="text-gray-700">Status Pekerjaan</Label>
+                <Controller
+                  name="employmentStatus"
+                  control={control}
+                  rules={{ required: "Status pekerjaan wajib dipilih" }}
+                  render={({ field }) => (
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                    >
+                      <SelectTrigger className="mt-2 h-12">
+                        <SelectValue placeholder="Pilih status pekerjaan" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="bekerja">Sudah Bekerja</SelectItem>
+                        <SelectItem value="tidak-bekerja">Belum Bekerja</SelectItem>
+                        <SelectItem value="pelajar-mahasiswa">Pelajar / Mahasiswa</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                {rhfErrors.employmentStatus && <p className="text-sm text-red-600 mt-1">{rhfErrors.employmentStatus?.message}</p>}
+              </div>
+
+              {employmentStatus !== "tidak-bekerja" && (
+                <>
+                  <div>
+                    <Label htmlFor="tempatBekerja" className="text-gray-700">
+                      {cardType === "Tabungan Simpel" ? "Nama Sekolah" : "Tempat Bekerja"}
+                    </Label>
+                    <Input
+                      id="tempatBekerja"
+                      placeholder={cardType === "Tabungan Simpel" ? "Nama sekolah" : "Nama perusahaan atau instansi"}
+                      {...register("tempatBekerja", { required: "Tempat bekerja/sekolah wajib diisi" })}
+                      className="mt-2 h-12"
+                    />
+                    {rhfErrors.tempatBekerja && <p className="text-sm text-red-600 mt-1">{rhfErrors.tempatBekerja?.message}</p>}
+                  </div>
+
+                  {cardType !== "Tabungan Simpel" && (
+                    <div>
+                      <Label htmlFor="alamatKantor" className="text-gray-700">Alamat Kantor</Label>
+                      <Textarea
+                        id="alamatKantor"
+                        placeholder="Alamat lengkap kantor"
+                        {...register("alamatKantor", { required: "Alamat kantor wajib diisi" })}
+                        className="mt-2"
+                      />
+                      {rhfErrors.alamatKantor && <p className="text-sm text-red-600 mt-1">{rhfErrors.alamatKantor?.message}</p>}
+                    </div>
+                  )}
+
+                  <div>
+                    <Label htmlFor="monthlyIncome" className="text-gray-700">
+                      {cardType === "Tabungan Simpel" ? "Penghasilan Orang Tua" : "Penghasilan per Bulan"}
+                    </Label>
+                    <Controller
+                      name="monthlyIncome"
+                      control={control}
+                      rules={{ required: "Range penghasilan wajib dipilih" }}
+                      render={({ field }) => (
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger className="mt-2 h-12">
+                            <SelectValue placeholder="Pilih range penghasilan" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="below5">&lt; Rp 5.000.000</SelectItem>
+                            <SelectItem value="5-10jt">Rp 5.000.000 - Rp 10.000.000</SelectItem>
+                            <SelectItem value="10-20jt">Rp 10.000.000 - Rp 20.000.000</SelectItem>
+                            <SelectItem value="above20">&gt; Rp 20.000.000</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {rhfErrors.monthlyIncome && <p className="text-sm text-red-600 mt-1">{rhfErrors.monthlyIncome?.message}</p>}
+                  </div>
+                </>
+              )}
+
+              <div className="grid md:grid-cols-2 gap-5">
+                <div>
+                  <Label htmlFor="sumberDana" className="text-gray-700">Sumber Dana</Label>
+                  <Controller
+                    name="sumberDana"
+                    control={control}
+                    rules={{ required: "Sumber dana wajib dipilih" }}
+                    render={({ field }) => (
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger className="mt-2 h-12">
+                          <SelectValue placeholder="Pilih sumber dana" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {employmentStatus !== "tidak-bekerja" && (
+                            <>
+                              <SelectItem value="gaji">Gaji</SelectItem>
+                              <SelectItem value="usaha">Usaha</SelectItem>
+                            </>
+                          )}
+                          <SelectItem value="warisan">Warisan</SelectItem>
+                          <SelectItem value="orang-tua">Orang Tua</SelectItem>
+                          <SelectItem value="investasi">Investasi</SelectItem>
+                          <SelectItem value="lainnya">Lainnya</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                  {rhfErrors.sumberDana && <p className="text-sm text-red-600 mt-1">{rhfErrors.sumberDana?.message}</p>}
+                </div>
+
+                <div>
+                  <Label htmlFor="tujuanRekening" className="text-gray-700">Tujuan Pembukaan Rekening</Label>
+                  <Controller
+                    name="tujuanRekening"
+                    control={control}
+                    rules={{ required: "Tujuan pembukaan wajib dipilih" }}
+                    render={({ field }) => (
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger className="mt-2 h-12">
+                          <SelectValue placeholder="Pilih tujuan" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="tabungan-personal">Tabungan Pribadi</SelectItem>
+                          {employmentStatus !== "tidak-bekerja" && (
+                            <SelectItem value="bisnis">Keperluan Bisnis</SelectItem>
+                          )}
+                          <SelectItem value="investasi">Investasi</SelectItem>
+                          <SelectItem value="pembayaran">Pembayaran / Transaksi</SelectItem>
+                          <SelectItem value="lainnya">Lainnya</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                  {rhfErrors.tujuanRekening && <p className="text-sm text-red-600 mt-1">{rhfErrors.tujuanRekening?.message}</p>}
+                </div>
+              </div>
+            </div>
+          </div>
+
+           <div className="grid md:grid-cols-2 gap-5">
+              <div>
+                <Label className="text-gray-700">Jenis Rekening</Label>
+                <Controller
+                  name="jenis_rekening"
+                  control={control}
+                  rules={{ required: "Jenis rekening wajib dipilih" }}
+                  render={({ field }) => (
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                    >
+                      <SelectTrigger className="mt-2 h-12 rounded-md">
+                        <SelectValue placeholder="Pilih jenis Rekening" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Platinum">Platinum</SelectItem>
+                        <SelectItem value="Silver">Silver</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                {rhfErrors.jenis_rekening && <p className="text-sm text-red-600 mt-1">{rhfErrors.jenis_rekening?.message}</p>}
+              </div>
+            </div>
+
+          {/* Terms & Conditions */}
+          <div className="flex items-start gap-4 bg-gradient-to-br from-emerald-50 to-green-50 p-6 rounded-2xl shadow-inner border border-green-100">
+            <Controller
+              name="agreeTerms"
+              control={control}
+              rules={{ required: "Anda harus menyetujui syarat dan ketentuan" }}
+              render={({ field }) => (
+                <Checkbox
+                  id="terms"
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                  className="mt-1"
+                />
+              )}
+            />
+            <div>
+              <Label htmlFor="terms" className="cursor-pointer text-gray-800 font-medium">
+                Saya menyetujui <button type="button" onClick={() => setShowTermsModal(true)} className="text-emerald-700 hover:underline font-bold">Syarat dan Ketentuan</button>
+              </Label>
+              {rhfErrors.agreeTerms && <p className="text-xs text-red-600 mt-1">{rhfErrors.agreeTerms?.message}</p>}
+              <p className="text-xs text-gray-600 mt-2 leading-relaxed">
+                Dengan mencentang kotak ini, saya menyatakan bahwa semua data yang saya berikan adalah benar dan saya bertanggung jawab penuh atas kebenaran data tersebut.
+              </p>
+            </div>
+          </div>
+
+          <TermsModal open={showTermsModal} onClose={() => setShowTermsModal(false)} />
+        </div>
+      )}
+    </div>
+  );
+}

@@ -65,14 +65,14 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
       `}</style>
 
       {/* --- NAVBAR --- */}
-      <nav 
+      <header 
         className={`fixed top-0 w-full z-50 transition-all duration-300 border-b ${
           isScrolled 
             ? "bg-white py-3 shadow-md border-slate-200" 
             : "bg-transparent py-5 border-transparent"
         }`}
       >
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <nav className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex items-center justify-between">
             {/* Logo Area */}
             <div className="flex-shrink-0 flex items-center gap-3">
@@ -86,24 +86,25 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
             </div>
 
             {/* Right Menu (Desktop) */}
-            <div className="hidden md:flex items-center space-x-8">
+            <ul className="hidden md:flex items-center space-x-8">
               {["Produk", "Layanan", "Promo"].map((item) => (
-                <a 
-                  key={item}
-                  href="#" 
-                  className={`text-sm font-semibold tracking-wide transition-colors duration-300 ${
-                    isScrolled 
-                      ? "text-slate-700 hover:text-emerald-700" 
-                      : "text-slate-100 hover:text-white"
-                  }`}
-                >
-                  {item}
-                </a>
+                <li key={item}>
+                  <a 
+                    href="#" 
+                    className={`text-sm font-semibold tracking-wide transition-colors duration-300 ${
+                      isScrolled 
+                        ? "text-slate-700 hover:text-emerald-700" 
+                        : "text-slate-100 hover:text-white"
+                    }`}
+                  >
+                    {item}
+                  </a>
+                </li>
               ))}
-            </div>
+            </ul>
           </div>
-        </div>
-      </nav>
+        </nav>
+      </header>
 
       {/* --- HERO SECTION --- */}
       <main className="relative bg-slate-900 overflow-hidden">
@@ -119,10 +120,10 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
         )}
 
         <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 pt-32 pb-24 lg:pt-48 lg:pb-40">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          <section className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             
             {/* Text Content */}
-            <div className="max-w-2xl text-center lg:text-left mx-auto lg:mx-0 order-2 lg:order-1 animate-content-enter">
+            <article className="max-w-2xl text-center lg:text-left mx-auto lg:mx-0 order-2 lg:order-1 animate-content-enter">
             
 
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white mb-6 leading-tight">
@@ -147,7 +148,7 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
               </div>
 
               {/* Trust Indicators - Optimized */}
-              <div className="mt-8 md:mt-12 pt-6 md:pt-8 border-t border-slate-700/50 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-6 md:gap-8 text-sm text-slate-400">
+              <aside className="mt-8 md:mt-12 pt-6 md:pt-8 border-t border-slate-700/50 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-6 md:gap-8 text-sm text-slate-400">
                 <div className="flex items-center gap-3">
                   <div className="bg-white rounded px-2 py-1 flex items-center justify-center shadow-sm">
                     <img
@@ -187,12 +188,12 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
                     </strong>
                   </div>
                 </div>
-              </div>
-            </div>
+              </aside>
+            </article>
 
             {/* Illustration Area - Mobile Optimized */}
-            <div className="relative flex justify-center lg:justify-end order-1 lg:order-2 -mt-12 lg:-mt-24">
-                <div className="relative w-full max-w-md lg:max-w-lg">
+            <aside className="relative flex justify-center lg:justify-end order-1 lg:order-2 -mt-12 lg:-mt-24">
+                <figure className="relative w-full max-w-md lg:max-w-lg">
                   
                   {/* Decorative backdrop - Desktop only for performance */}
                   <div className="hidden md:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-emerald-500/10 rounded-full blur-3xl -z-10 animate-float-slower"></div>
@@ -207,9 +208,9 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
                         decoding="async"
                       />
                   </div>
-                </div>
-            </div>
-          </div>
+                </figure>
+            </aside>
+          </section>
         </div>
       </main>
       
@@ -220,7 +221,7 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 md:gap-x-12 gap-y-8 md:gap-y-10 mb-12 md:mb-16">
             
             {/* Identity */}
-            <div className="space-y-6">
+            <section className="space-y-6">
               <div className="flex items-center gap-2">
                  <h3 className="text-white text-xl font-bold tracking-tight">Bank Sleman</h3>
               </div>
@@ -234,61 +235,67 @@ PT BPR Bank Sleman (Perseroda) atau dikenal dengan Bank Sleman merupakan BUMD mi
                 <SocialIconWrapper><InstagramIcon /></SocialIconWrapper>
                 <SocialIconWrapper><YoutubeIcon /></SocialIconWrapper>
               </div>
-            </div>
+            </section>
 
             {/* Links Columns */}
-            <div>
+            <section>
               <h4 className="text-white font-bold text-sm uppercase tracking-wider mb-6">Perusahaan</h4>
-              <ul className="space-y-3 text-sm">
-                {['Profil Perusahaan', 'Sejarah', 'Komisaris', 'Direksi', 'Struktur Organisasi'].map(item => (
-                    <li key={item}><a href="#" className="hover:text-emerald-400 transition-colors">{item}</a></li>
-                ))}
-              </ul>
-            </div>
+              <nav>
+                <ul className="space-y-3 text-sm">
+                  {['Profil Perusahaan', 'Sejarah', 'Komisaris', 'Direksi', 'Struktur Organisasi'].map(item => (
+                      <li key={item}><a href="#" className="hover:text-emerald-400 transition-colors">{item}</a></li>
+                  ))}
+                </ul>
+              </nav>
+            </section>
 
-            <div>
+            <section>
               <h4 className="text-white font-bold text-sm uppercase tracking-wider mb-6">Produk dan Layanan</h4>
-              <ul className="space-y-3 text-sm">
-                {['Tabungan', 'Deposito', 'Kredit', 'ATM', 'Digital Solution'].map(item => (
-                    <li key={item}><a href="#" className="hover:text-emerald-400 transition-colors">{item}</a></li>
-                ))}
-                <li className="pt-2 border-t border-slate-800">
-                  <button
-                    onClick={() => {
-                      const kodeRef = prompt("Masukkan nomor registrasi Anda:");
-                      if (kodeRef) {
-                        navigate(`/status/${kodeRef}`);
-                      }
-                    }}
-                    className="text-emerald-400 hover:text-emerald-300 transition-colors text-sm flex items-center gap-2"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Cek Status Pengajuan
-                  </button>
-                </li>
-              </ul>
-            </div>
+              <nav>
+                <ul className="space-y-3 text-sm">
+                  {['Tabungan', 'Deposito', 'Kredit', 'ATM', 'Digital Solution'].map(item => (
+                      <li key={item}><a href="#" className="hover:text-emerald-400 transition-colors">{item}</a></li>
+                  ))}
+                  <li className="pt-2 border-t border-slate-800">
+                    <button
+                      onClick={() => {
+                        const kodeRef = prompt("Masukkan nomor registrasi Anda:");
+                        if (kodeRef) {
+                          navigate(`/status/${kodeRef}`);
+                        }
+                      }}
+                      className="text-emerald-400 hover:text-emerald-300 transition-colors text-sm flex items-center gap-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Cek Status Pengajuan
+                    </button>
+                  </li>
+                </ul>
+              </nav>
+            </section>
 
             {/* Contact */}
-            <div>
+            <section>
               <h4 className="text-white font-bold text-sm uppercase tracking-wider mb-6">Kantor Pusat</h4>
-              <ul className="space-y-4 text-sm">
-                <li className="flex items-start gap-3">
-                  <MapPinIcon className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
-                  <span className="leading-relaxed">Jl. Magelang KM 10, Tridadi, Sleman, Daerah Istimewa Yogyakarta 55511</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <PhoneIcon className="w-5 h-5 text-emerald-500 shrink-0" />
-                  <span>(0274) 868321</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <MailIcon className="w-5 h-5 text-emerald-500 shrink-0" />
-                  <span>info@banksleman.co.id</span>
-                </li>
-              </ul>
-            </div>
+              <address className="not-italic">
+                <ul className="space-y-4 text-sm">
+                  <li className="flex items-start gap-3">
+                    <MapPinIcon className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+                    <span className="leading-relaxed">Jl. Magelang KM 10, Tridadi, Sleman, Daerah Istimewa Yogyakarta 55511</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <PhoneIcon className="w-5 h-5 text-emerald-500 shrink-0" />
+                    <a href="tel:(0274)868321" className="hover:text-emerald-400 transition-colors">(0274) 868321</a>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <MailIcon className="w-5 h-5 text-emerald-500 shrink-0" />
+                    <a href="mailto:info@banksleman.co.id" className="hover:text-emerald-400 transition-colors">info@banksleman.co.id</a>
+                  </li>
+                </ul>
+              </address>
+            </section>
           </div>
 
           <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-6">

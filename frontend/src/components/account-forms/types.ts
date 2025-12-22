@@ -1,6 +1,7 @@
 import type { Dispatch, SetStateAction, FormEvent } from 'react';
 
 export interface AccountFormData {
+    statusTempat: string;
     fullName: string;
     nik: string;
     email: string;
@@ -103,14 +104,15 @@ export interface AccountFormData {
     // Customer Type
     tipeNasabah: 'baru' | 'lama';
     nomorRekeningLama: string;
+    ktp?: string;
 }
 
 export interface AccountFormProps {
-    formData: AccountFormData;
-    setFormData: Dispatch<SetStateAction<AccountFormData>>;
-    errors: Record<string, string>;
-    setErrors: Dispatch<SetStateAction<Record<string, string>>>;
-    getFieldClass: (name: string) => string;
+    formData?: AccountFormData;
+    setFormData?: Dispatch<SetStateAction<AccountFormData>>;
+    errors?: Record<string, string>;
+    setErrors?: Dispatch<SetStateAction<Record<string, string>>>;
+    getFieldClass?: (name: string) => string;
 
     ktpFile: File | null;
     setKtpFile: Dispatch<SetStateAction<File | null>>;

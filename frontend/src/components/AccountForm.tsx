@@ -1,18 +1,14 @@
 import React, { useEffect, useState } from 'react';
+import { useForm, FormProvider } from 'react-hook-form';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { ArrowLeft, CheckCircle, Sparkles, ChevronRight, User, Building2, FileText, Check, CircleCheckBig, Loader2 } from 'lucide-react';
 import OtpModal from './OtpModal';
 import ScrollToTop from './ScrollToTop';
 import FormSimpel from './account-forms/FormSimpel';
-import FormBusiness from './account-forms/FormReguler';
 import type { AccountFormData } from './account-forms/types';
 import { useNavigate } from 'react-router-dom';
-import FormArofah from './account-forms/FormArofah';
-import FormTamasya from './account-forms/FormTamasyaPlus';
-import FormTabunganku from './account-forms/FormTabunganKu';
-import FormPensiun from './account-forms/FormPensiun';
-import FormReguler from './account-forms/FormReguler';
+// import FormTabunganku from './account-forms/FormTabunganKu';
 import FormMutiara from './account-forms/FormMutiara';
 import { API_BASE_URL } from '../config/api';
 
@@ -67,7 +63,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
   };
 
   const getFieldClass = (name: string) => {
-    return errors[name]
+    return (errors[name] || rhfErrors[name as keyof AccountFormData])
       ? 'mt-2 border-red-500 focus:border-red-500 focus:ring-red-500 rounded'
       : 'mt-2 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded';
   };
@@ -77,101 +73,126 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     window.scrollTo({ top: 0, behavior: "auto" });
   }, []);
 
-  const [formData, setFormData] = useState<AccountFormData>({
-  fullName: '',
-  nik: '',
-  email: '',
-  phone: '',
-  birthDate: '',
-  // New Fields
-  tempatLahir: '',
-  address: '',
-  alamatJalan: '',
-  alamatDomisili: '',
-  province: '',
-  city: '',
-  kecamatan: '',
-  kelurahan: '',
-  postalCode: '',
-  statusRumah: '',
-  agama: '',
-  pendidikan: '',
-  npwp: '',
+  // Initialize React Hook Form
+  const methods = useForm<AccountFormData>({
+    defaultValues: {
+      fullName: '',
+      nik: '',
+      email: '',
+      phone: '',
+      birthDate: '',
+      // New Fields
+      tempatLahir: '',
+      address: '',
+      alamatJalan: '',
+      alamatDomisili: '',
+      province: '',
+      city: '',
+      kecamatan: '',
+      kelurahan: '',
+      postalCode: '',
+      statusRumah: '',
+      agama: '',
+      pendidikan: '',
+      npwp: '',
 
-  monthlyIncome: '',
-  cabang_pengambilan: '',
-  cardType: '',
-  agreeTerms: false,
-  jenis_rekening: '',
+      monthlyIncome: '',
+      cabang_pengambilan: '',
+      cardType: '',
+      agreeTerms: false,
+      jenis_rekening: '',
 
-  gender: '',
-  maritalStatus: '',
-  citizenship: '',
-  motherName: '',
+      gender: '',
+      maritalStatus: '',
+      citizenship: '',
+      motherName: '',
 
-  // Identity fields (Requirements 2.1)
-  alias: '',
-  jenisId: '',
-  nomorId: '',
-  berlakuId: '',
+      // Identity fields (Requirements 2.1)
+      alias: '',
+      jenisId: '',
+      nomorId: '',
+      berlakuId: '',
 
-  tempatBekerja: '',
-  alamatKantor: '',
-  jabatan: '',
-  bidangUsaha: '',
-  sumberDana: '',
-  sumberDanaCustom: '',
-  tujuanRekening: '',
-  tujuanRekeningLainnya: '',
+      tempatBekerja: '',
+      alamatKantor: '',
+      jabatan: '',
+      bidangUsaha: '',
+      sumberDana: '',
+      sumberDanaCustom: '',
+      tujuanRekening: '',
+      tujuanRekeningLainnya: '',
 
-  // Employment and financial fields (Requirements 3.1)
-  rataRataTransaksi: '',
-  teleponKantor: '',
+      // Employment and financial fields (Requirements 3.1)
+      rataRataTransaksi: '',
+      teleponKantor: '',
 
 
-  // Account configuration fields (Requirements 4.1)
-  nominalSetoran: '',
-  atmPreference: '',
+      // Account configuration fields (Requirements 4.1)
+      nominalSetoran: '',
+      atmPreference: '',
 
-  // Account ownership
-  rekeningUntukSendiri: true,
+      // Account ownership
+      rekeningUntukSendiri: true,
 
-  // Beneficial Owner fields (Requirements 5.1)
-  boNama: '',
-  boAlamat: '',
-  boTempatLahir: '',
-  boTanggalLahir: '',
-  boJenisKelamin: '',
-  boKewarganegaraan: '',
-  boStatusPernikahan: '',
-  boJenisId: '',
-  boNomorId: '',
-  boSumberDana: '',
-  boSumberDanaCustom: '',
-  boHubungan: '',
-  boHubunganCustom: '',
-  boNomorHp: '',
-  boPekerjaan: '',
-  boPendapatanTahun: '',
-  boPersetujuan: false,
+      // Beneficial Owner fields (Requirements 5.1)
+      boNama: '',
+      boAlamat: '',
+      boTempatLahir: '',
+      boTanggalLahir: '',
+      boJenisKelamin: '',
+      boKewarganegaraan: '',
+      boStatusPernikahan: '',
+      boJenisId: '',
+      boNomorId: '',
+      boSumberDana: '',
+      boSumberDanaCustom: '',
+      boHubungan: '',
+      boHubunganCustom: '',
+      boNomorHp: '',
+      boPekerjaan: '',
+      boPendapatanTahun: '',
+      boPersetujuan: false,
 
-  kontakDaruratNama: '',
-  kontakDaruratHp: '',
-  kontakDaruratAlamat: '',
-  kontakDaruratHubungan: '',
-  kontakDaruratHubunganLainnya: '',
-  employmentStatus: '',
+      kontakDaruratNama: '',
+      kontakDaruratHp: '',
+      kontakDaruratAlamat: '',
+      kontakDaruratHubungan: '',
+      kontakDaruratHubunganLainnya: '',
+      employmentStatus: '',
 
-  // EDD Bank Lain
-  eddBankLain: [],
+      // EDD Bank Lain
+      eddBankLain: [],
 
-  // EDD Pekerjaan Lain
-  eddPekerjaanLain: [],
+      // EDD Pekerjaan Lain
+      eddPekerjaanLain: [],
 
-  // Customer Type
-  tipeNasabah: 'baru',
-  nomorRekeningLama: '',
-});
+      // Customer Type
+      tipeNasabah: 'baru',
+      nomorRekeningLama: '',
+
+      statusTempat: '',
+    },
+    mode: 'onBlur', // Validate on blur instead of onChange for better performance
+  });
+
+  const { control, handleSubmit: rhfHandleSubmit, setValue, getValues, formState: { errors: rhfErrors }, reset } = methods;
+
+  // Optimized setFormData wrapper
+  const setFormData = React.useCallback((updater: any) => {
+    const currentValues = getValues();
+    const newValues = typeof updater === 'function' ? updater(currentValues) : updater;
+    
+    Object.keys(newValues).forEach((key) => {
+      const fieldKey = key as keyof AccountFormData;
+      if (newValues[fieldKey] !== currentValues[fieldKey]) {
+        setValue(fieldKey, newValues[fieldKey] as any, { 
+          shouldValidate: false,
+          shouldDirty: true,
+          shouldTouch: false
+        });
+      }
+    });
+  }, [setValue, getValues]);
 
 
   const [branches, setBranches] = useState<any[]>([]);
@@ -200,7 +221,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
   
     if (savedData) {
       const parsed = JSON.parse(savedData);
-      setFormData(parsed);
+      reset(parsed); // Use reset() instead of setFormData for bulk updates
       setPendingSubmitData(parsed);
     }
     if (savedPhone) {
@@ -224,12 +245,12 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
   // Isi otomatis cardType saat savingsType berubah (kecuali untuk Mutiara)
   useEffect(() => {
     if (savingsType !== 'mutiara') {
-      setFormData((prev) => ({ ...prev, cardType: getDefaultCardType() }));
+      setValue('cardType', getDefaultCardType(), { shouldValidate: false });
     } else {
        // Reset logic for mutiara if accidentally switched
-       setFormData((prev) => ({ ...prev, cardType: '' })); 
+       setValue('cardType', '', { shouldValidate: false });
     }
-  }, [savingsType]);
+  }, [savingsType, setValue]);
 
   const getSavingsTypeName = () => {
     switch (savingsType) {
@@ -256,102 +277,103 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     setLoadingNext(true);
     try {
         const newErrors: Record<string, string> = {};
+        const currentData = getValues();
         
         if (currentStep === 1) {
            // Step 1: Validate Branch Selection
-           if (!formData.cabang_pengambilan) {
+           if (!currentData.cabang_pengambilan) {
               newErrors.cabang_pengambilan = "Silakan pilih cabang pengambilan";
            } else {
-              const selectedBranch = branches.find(b => b.id.toString() === formData.cabang_pengambilan.toString());
+              const selectedBranch = branches.find(b => b.id.toString() === currentData.cabang_pengambilan.toString());
               if (selectedBranch && !selectedBranch.is_active) {
                 newErrors.cabang_pengambilan = "Cabang sedang dalam perbaikan, silahkan pilih cabang lain";
               }
            }
         } else if (currentStep === 2) {
            // Step 2: Validate Data Diri Nasabah
-           if (!formData.fullName) newErrors.fullName = "Nama lengkap wajib diisi";
-           if (!formData.nik) newErrors.nik = "NIK wajib diisi";
-           if (!formData.email) newErrors.email = "Email wajib diisi";
-           if (!formData.phone) newErrors.phone = "Nomor telepon wajib diisi";
-           if (!formData.birthDate) newErrors.birthDate = "Tanggal lahir wajib diisi";
-           if (!formData.tempatLahir) newErrors.tempatLahir = "Tempat lahir wajib diisi";
-           if (!formData.gender) newErrors.gender = "Jenis kelamin wajib diisi";
-           if (!formData.maritalStatus) newErrors.maritalStatus = "Status pernikahan wajib diisi";
-           if (!formData.agama) newErrors.agama = "Agama wajib diisi";
-           if (!formData.pendidikan) newErrors.pendidikan = "Pendidikan wajib diisi";
-           if (!formData.motherName) newErrors.motherName = "Nama ibu kandung wajib diisi";
-           if (!formData.citizenship) newErrors.citizenship = "Kewarganegaraan wajib diisi";
-           if (!formData.address) newErrors.address = "Alamat wajib diisi";
-           if (!formData.postalCode) newErrors.postalCode = "Kode pos wajib diisi";
-           if (!formData.statusRumah) newErrors.statusRumah = "Status tempat tinggal wajib diisi";
+           if (!currentData.fullName) newErrors.fullName = "Nama lengkap wajib diisi";
+           if (!currentData.nik) newErrors.nik = "NIK wajib diisi";
+           if (!currentData.email) newErrors.email = "Email wajib diisi";
+           if (!currentData.phone) newErrors.phone = "Nomor telepon wajib diisi";
+           if (!currentData.birthDate) newErrors.birthDate = "Tanggal lahir wajib diisi";
+           if (!currentData.tempatLahir) newErrors.tempatLahir = "Tempat lahir wajib diisi";
+           if (!currentData.gender) newErrors.gender = "Jenis kelamin wajib diisi";
+           if (!currentData.maritalStatus) newErrors.maritalStatus = "Status pernikahan wajib diisi";
+           if (!currentData.agama) newErrors.agama = "Agama wajib diisi";
+           if (!currentData.pendidikan) newErrors.pendidikan = "Pendidikan wajib diisi";
+           if (!currentData.motherName) newErrors.motherName = "Nama ibu kandung wajib diisi";
+           if (!currentData.citizenship) newErrors.citizenship = "Kewarganegaraan wajib diisi";
+           if (!currentData.address) newErrors.address = "Alamat wajib diisi";
+           if (!currentData.postalCode) newErrors.postalCode = "Kode pos wajib diisi";
+           if (!currentData.statusRumah) newErrors.statusRumah = "Status tempat tinggal wajib diisi";
            
            // Address validation based on citizenship
-           if (formData.citizenship === 'Indonesia') {
+           if (currentData.citizenship === 'Indonesia') {
              // For WNI, require Indonesian address fields
-             if (!formData.province) newErrors.province = "Provinsi wajib diisi";
-             if (!formData.city) newErrors.city = "Kota/Kabupaten wajib diisi";
+             if (!currentData.province) newErrors.province = "Provinsi wajib diisi";
+             if (!currentData.city) newErrors.city = "Kota/Kabupaten wajib diisi";
            }
            // For WNA, only require address field (no additional validations)
-           if (!formData.jenisId) newErrors.jenisId = "Jenis identitas wajib diisi";
-           if (formData.jenisId === 'Lainnya' && !formData.jenisIdCustom) {
+           if (!currentData.jenisId) newErrors.jenisId = "Jenis identitas wajib diisi";
+           if (currentData.jenisId === 'Lainnya' && !currentData.jenisIdCustom) {
               newErrors.jenisIdCustom = "Sebutkan jenis identitas Anda";
            }
            // Validity date validation - exclude KTP (lifetime validity)
-           if (formData.jenisId && formData.jenisId !== 'KTP' && !formData.berlakuId) {
+           if (currentData.jenisId && currentData.jenisId !== 'KTP' && !currentData.berlakuId) {
               newErrors.berlakuId = "Masa berlaku identitas wajib diisi";
            }
            
            // Basic client-side validations only
-           if (!newErrors.nik && (!formData.jenisId || formData.jenisId === 'KTP')) {
-             const nikErr = validateNikBasic(formData.nik);
+           if (!newErrors.nik && (!currentData.jenisId || currentData.jenisId === 'KTP')) {
+             const nikErr = validateNikBasic(currentData.nik);
              if (nikErr) newErrors.nik = nikErr;
            }
            if (!newErrors.email) {
-             const emailErr = validateEmailBasic(formData.email);
+             const emailErr = validateEmailBasic(currentData.email);
              if (emailErr) newErrors.email = emailErr;
            }
            if (!newErrors.phone) {
-             const phoneErr = validatePhoneBasic(formData.phone);
+             const phoneErr = validatePhoneBasic(currentData.phone);
              if (phoneErr) newErrors.phone = phoneErr;
            }
         } else if (currentStep === 3) {
            // Step 3: Validate Data Pekerjaan & Keuangan
-           if (!formData.employmentStatus) newErrors.employmentStatus = "Status pekerjaan wajib diisi";
-           if (!formData.monthlyIncome) newErrors.monthlyIncome = "Penghasilan per bulan wajib diisi";
-           if (!formData.sumberDana) newErrors.sumberDana = "Sumber dana wajib diisi";
-           if (formData.sumberDana === 'Lainnya' && (!formData.sumberDanaCustom || formData.sumberDanaCustom.trim() === '')) {
+           if (!currentData.employmentStatus) newErrors.employmentStatus = "Status pekerjaan wajib diisi";
+           if (!currentData.monthlyIncome) newErrors.monthlyIncome = "Penghasilan per bulan wajib diisi";
+           if (!currentData.sumberDana) newErrors.sumberDana = "Sumber dana wajib diisi";
+           if (currentData.sumberDana === 'Lainnya' && (!currentData.sumberDanaCustom || currentData.sumberDanaCustom.trim() === '')) {
              newErrors.sumberDanaCustom = "Sumber dana lainnya harus diisi";
            }
         } else if (currentStep === 4) {
            // Step 4: Validate Data Rekening
-           if (!formData.tujuanRekening) newErrors.tujuanRekening = "Tujuan rekening wajib diisi";
-           if (formData.tujuanRekening === 'Lainnya' && !formData.tujuanRekeningLainnya) {
+           if (!currentData.tujuanRekening) newErrors.tujuanRekening = "Tujuan rekening wajib diisi";
+           if (currentData.tujuanRekening === 'Lainnya' && !currentData.tujuanRekeningLainnya) {
              newErrors.tujuanRekeningLainnya = "Sebutkan tujuan pembukaan rekening";
            }
            
            // Validate BO if account is for others
-           if (formData.rekeningUntukSendiri === false) {
-             if (!formData.boNama) newErrors.boNama = "Nama beneficial owner wajib diisi";
-             if (!formData.boAlamat) newErrors.boAlamat = "Alamat beneficial owner wajib diisi";
-             if (!formData.boTempatLahir) newErrors.boTempatLahir = "Tempat lahir beneficial owner wajib diisi";
-             if (!formData.boTanggalLahir) newErrors.boTanggalLahir = "Tanggal lahir beneficial owner wajib diisi";
-             if (!formData.boJenisKelamin) newErrors.boJenisKelamin = "Jenis kelamin beneficial owner wajib diisi";
-             if (!formData.boKewarganegaraan) newErrors.boKewarganegaraan = "Kewarganegaraan beneficial owner wajib diisi";
-             if (!formData.boStatusPernikahan) newErrors.boStatusPernikahan = "Status pernikahan beneficial owner wajib diisi";
-             if (!formData.boJenisId) newErrors.boJenisId = "Jenis identitas beneficial owner wajib diisi";
-             if (!formData.boNomorId) newErrors.boNomorId = "Nomor identitas beneficial owner wajib diisi";
-             if (!formData.boSumberDana) newErrors.boSumberDana = "Sumber dana beneficial owner wajib diisi";
-             if (formData.boSumberDana === 'Lainnya' && (!formData.boSumberDanaCustom || formData.boSumberDanaCustom.trim() === '')) {
+           if (currentData.rekeningUntukSendiri === false) {
+             if (!currentData.boNama) newErrors.boNama = "Nama beneficial owner wajib diisi";
+             if (!currentData.boAlamat) newErrors.boAlamat = "Alamat beneficial owner wajib diisi";
+             if (!currentData.boTempatLahir) newErrors.boTempatLahir = "Tempat lahir beneficial owner wajib diisi";
+             if (!currentData.boTanggalLahir) newErrors.boTanggalLahir = "Tanggal lahir beneficial owner wajib diisi";
+             if (!currentData.boJenisKelamin) newErrors.boJenisKelamin = "Jenis kelamin beneficial owner wajib diisi";
+             if (!currentData.boKewarganegaraan) newErrors.boKewarganegaraan = "Kewarganegaraan beneficial owner wajib diisi";
+             if (!currentData.boStatusPernikahan) newErrors.boStatusPernikahan = "Status pernikahan beneficial owner wajib diisi";
+             if (!currentData.boJenisId) newErrors.boJenisId = "Jenis identitas beneficial owner wajib diisi";
+             if (!currentData.boNomorId) newErrors.boNomorId = "Nomor identitas beneficial owner wajib diisi";
+             if (!currentData.boSumberDana) newErrors.boSumberDana = "Sumber dana beneficial owner wajib diisi";
+             if (currentData.boSumberDana === 'Lainnya' && (!currentData.boSumberDanaCustom || currentData.boSumberDanaCustom.trim() === '')) {
                newErrors.boSumberDanaCustom = "Sumber dana lainnya harus diisi";
              }
-             if (!formData.boHubungan) newErrors.boHubungan = "Hubungan dengan beneficial owner wajib diisi";
-             if (formData.boHubungan === 'Lainnya' && (!formData.boHubunganCustom || formData.boHubunganCustom.trim() === '')) {
+             if (!currentData.boHubungan) newErrors.boHubungan = "Hubungan dengan beneficial owner wajib diisi";
+             if (currentData.boHubungan === 'Lainnya' && (!currentData.boHubunganCustom || currentData.boHubunganCustom.trim() === '')) {
                newErrors.boHubunganCustom = "Hubungan lainnya harus diisi";
              }
-             if (!formData.boNomorHp) newErrors.boNomorHp = "Nomor HP beneficial owner wajib diisi";
-             if (!formData.boPekerjaan) newErrors.boPekerjaan = "Pekerjaan beneficial owner wajib diisi";
-             if (!formData.boPendapatanTahun) newErrors.boPendapatanTahun = "Pendapatan tahunan beneficial owner wajib diisi";
-             if (!formData.boPersetujuan) newErrors.boPersetujuan = "Persetujuan beneficial owner harus dicentang";
+             if (!currentData.boNomorHp) newErrors.boNomorHp = "Nomor HP beneficial owner wajib diisi";
+             if (!currentData.boPekerjaan) newErrors.boPekerjaan = "Pekerjaan beneficial owner wajib diisi";
+             if (!currentData.boPendapatanTahun) newErrors.boPendapatanTahun = "Pendapatan tahunan beneficial owner wajib diisi";
+             if (!currentData.boPersetujuan) newErrors.boPersetujuan = "Persetujuan beneficial owner harus dicentang";
            }
         }
         // Step 5 (Review) doesn't need validation here, will be validated on submit
@@ -434,92 +456,98 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     
     // Comprehensive Final Step Validation
     const newErrors: Record<string,string> = {};
+    const currentData = getValues();
     
     // Personal Identity - Required Fields
-    if (!formData.fullName) newErrors.fullName = "Nama lengkap wajib diisi";
-    if (!formData.nik) newErrors.nik = "NIK wajib diisi";
-    if (!formData.email) newErrors.email = "Email wajib diisi";
-    if (!formData.phone) newErrors.phone = "Nomor telepon wajib diisi";
-    if (!formData.birthDate) newErrors.birthDate = "Tanggal lahir wajib diisi";
-    if (!formData.tempatLahir) newErrors.tempatLahir = "Tempat lahir wajib diisi";
-    if (!formData.gender) newErrors.gender = "Jenis kelamin wajib diisi";
-    if (!formData.maritalStatus) newErrors.maritalStatus = "Status pernikahan wajib diisi";
-    if (!formData.agama) newErrors.agama = "Agama wajib diisi";
-    if (!formData.pendidikan) newErrors.pendidikan = "Pendidikan wajib diisi";
-    if (!formData.motherName) newErrors.motherName = "Nama ibu kandung wajib diisi";
-    if (!formData.citizenship) newErrors.citizenship = "Kewarganegaraan wajib diisi";
+    if (!currentData.fullName) newErrors.fullName = "Nama lengkap wajib diisi";
+    if (!currentData.nik) newErrors.nik = "NIK wajib diisi";
+    if (!currentData.email) newErrors.email = "Email wajib diisi";
+    if (!currentData.phone) newErrors.phone = "Nomor telepon wajib diisi";
+    if (!currentData.birthDate) newErrors.birthDate = "Tanggal lahir wajib diisi";
+    if (!currentData.tempatLahir) newErrors.tempatLahir = "Tempat lahir wajib diisi";
+    if (!currentData.gender) newErrors.gender = "Jenis kelamin wajib diisi";
+    if (!currentData.maritalStatus) newErrors.maritalStatus = "Status pernikahan wajib diisi";
+    if (!currentData.agama) newErrors.agama = "Agama wajib diisi";
+    if (!currentData.pendidikan) newErrors.pendidikan = "Pendidikan wajib diisi";
+    if (!currentData.motherName) newErrors.motherName = "Nama ibu kandung wajib diisi";
+    if (!currentData.citizenship) newErrors.citizenship = "Kewarganegaraan wajib diisi";
     
     // Identity Validity - Required for non-KTP
-    if (!formData.jenisId) newErrors.jenisId = "Jenis identitas wajib diisi";
-    if (formData.jenisId === 'Lainnya' && !formData.jenisIdCustom) {
+    if (!currentData.jenisId) newErrors.jenisId = "Jenis identitas wajib diisi";
+    if (currentData.jenisId === 'Lainnya' && !currentData.jenisIdCustom) {
       newErrors.jenisIdCustom = "Sebutkan jenis identitas Anda";
     }
-    if (formData.jenisId && formData.jenisId !== 'KTP' && !formData.berlakuId) {
+    if (currentData.jenisId && currentData.jenisId !== 'KTP' && !currentData.berlakuId) {
       newErrors.berlakuId = "Masa berlaku identitas wajib diisi";
     }
     
     // Address - Required Fields
-    if (!formData.address) newErrors.address = "Alamat wajib diisi";
-    if (!formData.postalCode) newErrors.postalCode = "Kode pos wajib diisi";
-    if (!formData.statusRumah) newErrors.statusRumah = "Status tempat tinggal wajib diisi";
+    if (!currentData.address) newErrors.address = "Alamat wajib diisi";
+    if (!currentData.postalCode) newErrors.postalCode = "Kode pos wajib diisi";
+    if (!currentData.statusRumah) newErrors.statusRumah = "Status tempat tinggal wajib diisi";
     
     // Address validation based on citizenship
-    if (formData.citizenship === 'Indonesia') {
+    if (currentData.citizenship === 'Indonesia') {
       // For WNI, require Indonesian address fields
-      if (!formData.province) newErrors.province = "Provinsi wajib diisi";
-      if (!formData.city) newErrors.city = "Kota/Kabupaten wajib diisi";
+      if (!currentData.province) newErrors.province = "Provinsi wajib diisi";
+      if (!currentData.city) newErrors.city = "Kota/Kabupaten wajib diisi";
     }
     // For WNA, only require address field (no additional validations)
     
     // Employment - Required Fields
-    if (!formData.employmentStatus) newErrors.employmentStatus = "Status pekerjaan wajib diisi";
-    if (!formData.monthlyIncome) newErrors.monthlyIncome = "Penghasilan per bulan wajib diisi";
-    if (!formData.sumberDana) newErrors.sumberDana = "Sumber dana wajib diisi";
-    if (formData.sumberDana === 'Lainnya' && (!formData.sumberDanaCustom || formData.sumberDanaCustom.trim() === '')) {
+    if (!currentData.employmentStatus) newErrors.employmentStatus = "Status pekerjaan wajib diisi";
+    if (!currentData.monthlyIncome) newErrors.monthlyIncome = "Penghasilan per bulan wajib diisi";
+    if (!currentData.sumberDana) newErrors.sumberDana = "Sumber dana wajib diisi";
+    if (currentData.sumberDana === 'Lainnya' && (!currentData.sumberDanaCustom || currentData.sumberDanaCustom.trim() === '')) {
       newErrors.sumberDanaCustom = "Sumber dana lainnya harus diisi";
     }
     
     // Account Configuration - Required Fields
-    if (!formData.tujuanRekening) newErrors.tujuanRekening = "Tujuan rekening wajib diisi";
-    if (formData.tujuanRekening === 'Lainnya' && !formData.tujuanRekeningLainnya) {
+    if (!currentData.tujuanRekening) newErrors.tujuanRekening = "Tujuan rekening wajib diisi";
+    if (currentData.tujuanRekening === 'Lainnya' && !currentData.tujuanRekeningLainnya) {
       newErrors.tujuanRekeningLainnya = "Sebutkan tujuan pembukaan rekening";
     }
     
     // Card Type validation for Mutiara
-    if (savingsType === 'mutiara' && !formData.cardType) {
+    if (savingsType === 'mutiara' && !currentData.cardType) {
       newErrors.cardType = "Jenis kartu wajib dipilih untuk rekening Mutiara";
     }
     
     // Emergency Contact - Optional but all-or-nothing
-    const hasEmergencyContact = formData.kontakDaruratNama || formData.kontakDaruratHp || formData.kontakDaruratHubungan;
+    const hasEmergencyContact = currentData.kontakDaruratNama || currentData.kontakDaruratHp || currentData.kontakDaruratHubungan;
     if (hasEmergencyContact) {
-      if (!formData.kontakDaruratNama) newErrors.kontakDaruratNama = "Nama kontak darurat harus diisi jika mengisi kontak darurat";
-      if (!formData.kontakDaruratHp) newErrors.kontakDaruratHp = "Nomor HP kontak darurat harus diisi jika mengisi kontak darurat";
-      if (!formData.kontakDaruratHubungan) newErrors.kontakDaruratHubungan = "Hubungan kontak darurat harus diisi jika mengisi kontak darurat";
-      if (formData.kontakDaruratHubungan === 'Lainnya' && (!formData.kontakDaruratHubunganLainnya || formData.kontakDaruratHubunganLainnya.trim() === '')) {
+      if (!currentData.kontakDaruratNama) newErrors.kontakDaruratNama = "Nama kontak darurat harus diisi jika mengisi kontak darurat";
+      if (!currentData.kontakDaruratHp) newErrors.kontakDaruratHp = "Nomor HP kontak darurat harus diisi jika mengisi kontak darurat";
+      if (!currentData.kontakDaruratHubungan) newErrors.kontakDaruratHubungan = "Hubungan kontak darurat harus diisi jika mengisi kontak darurat";
+      if (currentData.kontakDaruratHubungan === 'Lainnya' && (!currentData.kontakDaruratHubunganLainnya || currentData.kontakDaruratHubunganLainnya.trim() === '')) {
         newErrors.kontakDaruratHubunganLainnya = "Hubungan lainnya harus diisi";
       }
     }
     
     // Customer Type Validation
-    if (formData.tipeNasabah === 'lama' && !formData.nomorRekeningLama) {
+    if (currentData.tipeNasabah === 'lama' && !currentData.nomorRekeningLama) {
       newErrors.nomorRekeningLama = "Nomor rekening lama harus diisi untuk nasabah lama";
     }
-
+ 
     // Terms and Conditions
-    if (!formData.agreeTerms) newErrors.agreeTerms = "Anda harus menyetujui syarat dan ketentuan";
-
+    if (!currentData.agreeTerms) newErrors.agreeTerms = "Anda harus menyetujui syarat dan ketentuan";
+ 
+    // Beneficial Owner Approval
+    if (!currentData.rekeningUntukSendiri && !currentData.boPersetujuan) {
+      newErrors.boPersetujuan = "Persetujuan Beneficial Owner wajib dicentang";
+    }
+ 
     // Basic client-side validations only (no async duplicate checks)
-    if (!newErrors.nik && (!formData.jenisId || formData.jenisId === 'KTP')) {
-      const nikErr = validateNikBasic(formData.nik);
+    if (!newErrors.nik && (!currentData.jenisId || currentData.jenisId === 'KTP')) {
+      const nikErr = validateNikBasic(currentData.nik);
       if (nikErr) newErrors.nik = nikErr;
     }
     if (!newErrors.email) {
-      const emailErr = validateEmailBasic(formData.email);
+      const emailErr = validateEmailBasic(currentData.email);
       if (emailErr) newErrors.email = emailErr;
     }
     if (!newErrors.phone) {
-      const phoneErr = validatePhoneBasic(formData.phone);
+      const phoneErr = validatePhoneBasic(currentData.phone);
       if (phoneErr) newErrors.phone = phoneErr;
     }
 
@@ -553,7 +581,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
           <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
           </svg>
-          <span>Formulir memerlukan persetujuan</span>
+          <span>Mohon lengkapi data yang masih kurang (${errorCount} kolom)</span>
         </div>
       `;
       document.body.appendChild(errorDiv);
@@ -593,11 +621,12 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
         return;
     }
 
-   try {
+    try {
+      const currentValues = getValues();
       const res = await fetch(`${apiBase}/otp/send`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: formData.phone }),
+        body: JSON.stringify({ phone: currentValues.phone }),
       });
 
       const data = await res.json();
@@ -610,14 +639,14 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
 
       // Simpan state proses OTP
       localStorage.setItem("otpInProgress", "true");
-      localStorage.setItem("pendingSubmitData", JSON.stringify(formData));
-      localStorage.setItem("currentPhone", formData.phone);
+      localStorage.setItem("pendingSubmitData", JSON.stringify(currentValues));
+      localStorage.setItem("currentPhone", currentValues.phone);
       if (currentKtpUrl) localStorage.setItem("savedKtpUrl", currentKtpUrl);
 
 
       // Simpan data form sementara
-      setPendingSubmitData(formData);
-      setCurrentPhone(formData.phone);
+      setPendingSubmitData(currentValues);
+      setCurrentPhone(currentValues.phone);
       
       // Tampilkan modal OTP
       setShowOtpModal(true);
@@ -843,7 +872,8 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
 
   const renderSuccess = () => {
     // Get selected branch name
-    const selectedBranch = branches.find(b => b.id.toString() === formData.cabang_pengambilan);
+    const currentFormData = getValues();
+    const selectedBranch = branches.find(b => b.id.toString() === currentFormData.cabang_pengambilan);
     const branchName = selectedBranch?.nama_cabang || submitResponse?.data?.nama_cabang || 'cabang yang dipilih';
     
     return (
@@ -909,8 +939,9 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
   };
 
   const renderForm = () => {
-    const commonProps = {
-      formData,
+    // NOTE: Child components will now use useFormContext to access values/control
+    // We pass minimal props to avoid re-renders
+    const commonProps: any = {
       setFormData,
       errors,
       setErrors,
@@ -927,25 +958,16 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       savingsType,
       getSavingsTypeName,
       branches,
-      currentStep, // Pass current step
+      currentStep,
+      control, // Passing control for direct use in child components
     };
 
     if (savingsType === 'simpel') {
       return <FormSimpel {...commonProps} />;
-    } else if (savingsType === 'regular') {
-      return <FormBusiness {...commonProps} />;
     }else if (savingsType === 'mutiara') {
       return <FormMutiara {...commonProps} />;
-    }else if (savingsType === 'arofah') {
-      return <FormArofah {...commonProps} />;
-    }else if (savingsType === 'tamasya') {
-      return <FormTamasya {...commonProps} />;
-    }else if (savingsType === 'tabunganku') {
-      return <FormTabunganku {...commonProps} />;
-    }else if (savingsType === 'pensiun') {
-      return <FormPensiun {...commonProps} />;
-    }else if (savingsType === 'regular') {
-      return <FormReguler {...commonProps} />;
+    // }else if (savingsType === 'tabunganku') {
+    //   return <FormTabunganku {...commonProps} />;
     } 
     else {
       // Default for individu, mutiara, promosi
@@ -964,44 +986,79 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
 
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans animate-page-enter">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between py-4">
-            <div className="flex items-center gap-3">
-              <img 
-                src="/banksleman.png" 
-                alt="Bank Sleman Logo" 
-                className="h-10 w-auto"
-              />
-            </div>
-            <div className="text-sm font-medium text-slate-600 hidden md:block">
-              Pembukaan Rekening Online
+    <FormProvider {...methods}>
+      <div className="min-h-screen bg-slate-50 font-sans animate-page-enter">
+        {/* Header content ... truncated for brevity but stays exactly the same ... */}
+        {/* ... */}
+        <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between py-4">
+              <div className="flex items-center gap-3">
+                <img 
+                  src="/banksleman.png" 
+                  alt="Bank Sleman Logo" 
+                  className="h-10 w-auto"
+                />
+              </div>
+              <div className="text-sm font-medium text-slate-600 hidden md:block">
+                Pembukaan Rekening Online
+              </div>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      {/* Stepper */}
-      <div className="bg-white border-b border-slate-200 py-6">
-        <div className="max-w-3xl mx-auto px-6">
-          
-          {/* Mobile Stepper (< md) */}
-          <div className="md:hidden">
-            <div className="flex items-center justify-center gap-4 relative">
-              {steps.filter(step => step.number >= currentStep - 1 && step.number <= currentStep + 1).map((step, index, array) => {
-                 const Icon = step.icon;
-                 const isActive = step.number === currentStep;
-                 const isCompleted = step.number < currentStep;
+        {/* Stepper */}
+        <div className="bg-white border-b border-slate-200 py-6">
+          <div className="max-w-3xl mx-auto px-6">
+            
+            {/* Mobile Stepper (< md) */}
+            <div className="md:hidden">
+              <div className="flex items-center justify-center gap-4 relative">
+                {steps.filter(step => step.number >= currentStep - 1 && step.number <= currentStep + 1).map((step, index, array) => {
+                  const Icon = step.icon;
+                  const isActive = step.number === currentStep;
+                  const isCompleted = step.number < currentStep;
 
-                // Adjust Progress Bar for adjacent steps if needed, 
-                // but simpler to just show the nodes for mobile to avoid layout shifts.
-                // Or maybe just small connecting lines between them? 
-                // Let's keep it simple first as requested: "nama step dan highlight".
-                
-                 return (
-                  <div key={step.number} className="flex flex-col items-center gap-2 bg-white px-2 z-10">
+                  return (
+                    <div key={step.number} className="flex flex-col items-center gap-2 bg-white px-2 z-10">
+                      <div 
+                        className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+                          isActive 
+                            ? "bg-green-500 text-white shadow-lg shadow-green-500/30 scale-110" 
+                            : isCompleted 
+                              ? "bg-green-100 text-green-600" 
+                              : "bg-slate-100 text-slate-400"
+                        }`}
+                      >
+                        {isCompleted ? <Check className="w-6 h-6" /> : <Icon className="w-5 h-5" />}
+                      </div>
+                      <span className={`text-xs font-bold whitespace-nowrap ${isActive ? "text-slate-900" : "text-slate-500"}`}>
+                        {step.title}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="flex justify-center gap-1 mt-4">
+                {steps.map(s => (
+                  <div key={s.number} className={`h-1.5 rounded-full transition-all ${s.number === currentStep ? 'w-6 bg-green-500' : s.number < currentStep ? 'w-1.5 bg-green-300' : 'w-1.5 bg-slate-200'}`} />
+                ))}
+              </div>
+            </div>
+
+            {/* Desktop Stepper (>= md) */}
+            <div className="hidden md:flex items-center justify-between relative">
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-slate-100 -z-10" />
+              <div 
+                className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-green-500 transition-all duration-500 -z-10"
+                style={{ width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%` }}
+              />
+              {steps.map((step) => {
+                const Icon = step.icon;
+                const isActive = step.number === currentStep;
+                const isCompleted = step.number < currentStep;
+                return (
+                  <div key={step.number} className="flex flex-col items-center gap-2 bg-white px-2">
                     <div 
                       className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
                         isActive 
@@ -1013,163 +1070,113 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
                     >
                       {isCompleted ? <Check className="w-6 h-6" /> : <Icon className="w-5 h-5" />}
                     </div>
-                    <span className={`text-xs font-bold whitespace-nowrap ${isActive ? "text-slate-900" : "text-slate-500"}`}>
+                    <span className={`text-xs font-bold ${isActive ? "text-slate-900" : "text-slate-500"}`}>
                       {step.title}
                     </span>
                   </div>
-                 );
+                );
               })}
             </div>
-            {/* Simple progress indicator dots for total context */}
-            <div className="flex justify-center gap-1 mt-4">
-               {steps.map(s => (
-                 <div key={s.number} className={`h-1.5 rounded-full transition-all ${s.number === currentStep ? 'w-6 bg-green-500' : s.number < currentStep ? 'w-1.5 bg-green-300' : 'w-1.5 bg-slate-200'}`} />
-               ))}
-            </div>
-          </div>
-
-          {/* Desktop Stepper (>= md) */}
-          <div className="hidden md:flex items-center justify-between relative">
-            {/* Progress Bar Background */}
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-slate-100 -z-10" />
-            
-            {/* Active Progress Bar */}
-            <div 
-              className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-green-500 transition-all duration-500 -z-10"
-              style={{ width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%` }}
-            />
-
-            {steps.map((step) => {
-              const Icon = step.icon;
-              const isActive = step.number === currentStep;
-              const isCompleted = step.number < currentStep;
-
-              return (
-                <div key={step.number} className="flex flex-col items-center gap-2 bg-white px-2">
-                  <div 
-                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
-                      isActive 
-                        ? "bg-green-500 text-white shadow-lg shadow-green-500/30 scale-110" 
-                        : isCompleted 
-                          ? "bg-green-100 text-green-600" 
-                          : "bg-slate-100 text-slate-400"
-                    }`}
-                  >
-                    {isCompleted ? <Check className="w-6 h-6" /> : <Icon className="w-5 h-5" />}
-                  </div>
-                  <span className={`text-xs font-bold ${isActive ? "text-slate-900" : "text-slate-500"}`}>
-                    {step.title}
-                  </span>
-                </div>
-              );
-            })}
           </div>
         </div>
-      </div>
 
-      {/* Form Section */}
-      <section className="py-12">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-8 flex items-center justify-between">
-             {currentStep < 4 && (
-               <Button
-                variant="ghost"
-                onClick={handlePrevStep}
-                disabled={loadingPrev}
-                className="pl-0 text-slate-500 hover:text-blue-700 hover:bg-transparent disabled:opacity-50"
-              >
-                {loadingPrev ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Memuat...
-                  </>
-                ) : (
-                  <>
-                    <ArrowLeft className="h-4 w-4 mr-2" />
-                    {currentStep === 1 ? "Kembali" : "Sebelumnya"}
-                  </>
-                )}
-              </Button>
-             )}
-            <div className="text-right ml-auto">
-               <h2 className="text-2xl font-bold text-slate-900">{steps[currentStep-1].title}</h2>
-               <p className="text-slate-500 text-sm">Langkah {currentStep} dari {totalSteps}</p>
-            </div>
-          </div>
-
-          <div className="w-full animate-scale-in">
-            {currentStep === 6 ? renderSuccess() : renderForm()}
-            
-            {/* Navigation Buttons */}
-            {currentStep < 6 && (
-              <div className="mt-8 pt-6 border-t border-slate-100 flex justify-between items-center">
-
-                {/* ✅ BACK BUTTON (KIRI) */}
+        {/* Form Section */}
+        <section className="py-12">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="mb-8 flex items-center justify-between">
+              {currentStep < 4 && (
                 <Button
-                  type="button"
+                  variant="ghost"
                   onClick={handlePrevStep}
-                  disabled={currentStep === 1 || loadingPrev}
-                  className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-6 py-2 rounded-sm text-lg shadow-sm transition-all disabled:opacity-50"
+                  disabled={loadingPrev}
+                  className="pl-0 text-slate-500 hover:text-blue-700 hover:bg-transparent disabled:opacity-50"
                 >
                   {loadingPrev ? (
                     <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                       Memuat...
                     </>
                   ) : (
-                    'Kembali'
+                    <>
+                      <ArrowLeft className="h-4 w-4 mr-2" />
+                      {currentStep === 1 ? "Kembali" : "Sebelumnya"}
+                    </>
                   )}
                 </Button>
+              )}
+              <div className="text-right ml-auto">
+                <h2 className="text-2xl font-bold text-slate-900">{steps[currentStep-1].title}</h2>
+                <p className="text-slate-500 text-sm">Langkah {currentStep} dari {totalSteps}</p>
+              </div>
+            </div>
 
-                {/* ✅ NEXT / SUBMIT BUTTON (KANAN) */}
-                {currentStep < 5 ? (
-                  <Button 
-                    type="button" 
-                    onClick={handleNextStep}
-                    disabled={loadingNext}
-                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-sm text-lg shadow-sm hover:shadow-green-300/20 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+            <div className="w-full animate-scale-in">
+              {currentStep === 6 ? renderSuccess() : renderForm()}
+              
+              {currentStep < 6 && (
+                <div className="mt-8 pt-6 border-t border-slate-100 flex justify-between items-center">
+                  <Button
+                    type="button"
+                    onClick={handlePrevStep}
+                    disabled={currentStep === 1 || loadingPrev}
+                    className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-6 py-2 rounded-sm text-lg shadow-sm transition-all disabled:opacity-50"
                   >
-                    {loadingNext ? (
+                    {loadingPrev ? (
                       <>
                         <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        Memproses...
+                        Memuat...
                       </>
                     ) : (
-                      <>
-                        Lanjut <ChevronRight className="ml-2 h-5 w-5" />
-                      </>
+                      'Kembali'
                     )}
                   </Button>
-                ) : currentStep === 5 ? (
-                  <Button 
-                    type="button" 
-                    onClick={handleSubmit}
-                    disabled={loadingSubmit}
-                    className="bg-yellow-500 hover:bg-yellow-400 text-green-900 font-bold px-6 py-2 rounded-sm text-lg shadow-sm transition-all disabled:opacity-50"
-                  >
-                    {loadingSubmit ? (
-                      <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        Mengirim...
-                      </>
-                    ) : 'Kirim Permohonan'}
-                  </Button>
-                ) : null}
-              </div>
-            )}
+                  {currentStep < 5 ? (
+                    <Button 
+                      type="button" 
+                      onClick={handleNextStep}
+                      disabled={loadingNext}
+                      className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-sm text-lg shadow-sm hover:shadow-green-300/20 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                    >
+                      {loadingNext ? (
+                        <>
+                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                          Memproses...
+                        </>
+                      ) : (
+                        <>
+                          Lanjut <ChevronRight className="ml-2 h-5 w-5" />
+                        </>
+                      )}
+                    </Button>
+                  ) : currentStep === 5 ? (
+                    <Button 
+                      type="button" 
+                      onClick={handleSubmit}
+                      disabled={loadingSubmit}
+                      className="bg-yellow-500 hover:bg-yellow-400 text-green-900 font-bold px-6 py-2 rounded-sm text-lg shadow-sm transition-all disabled:opacity-50"
+                    >
+                      {loadingSubmit ? (
+                        <>
+                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                          Mengirim...
+                        </>
+                      ) : 'Kirim Permohonan'}
+                    </Button>
+                  ) : null}
+                </div>
+              )}
 
-            <OtpModal
-              open={showOtpModal}
-              onClose={() => setShowOtpModal(false)}
-              phone={currentPhone}
-              onVerified={handleOtpVerified}
-            />
+              <OtpModal
+                open={showOtpModal}
+                onClose={() => setShowOtpModal(false)}
+                phone={currentPhone}
+                onVerified={handleOtpVerified}
+              />
+            </div>
           </div>
-        </div>
-      </section>
-      
-      {/* Scroll to Top Button */}
-      <ScrollToTop />
-    </div>
+        </section>
+        <ScrollToTop />
+      </div>
+    </FormProvider>
   );
 }

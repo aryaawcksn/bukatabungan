@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
+import { useFormContext, Controller, useWatch, useFieldArray } from 'react-hook-form';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Textarea } from '../ui/textarea';
 import { Checkbox } from '../ui/checkbox';
-import type { AccountFormProps } from './types';
+import type { AccountFormData, AccountFormProps } from './types';
 import TermsModal from '../TermsModal';
 
 
@@ -26,21 +27,62 @@ const formatRupiah = (angka: string) => {
   return 'Rp. ' + rupiah;
 };
 
-interface FormMutiaraProps extends AccountFormProps {
-  currentStep?: number;
-}
+const FormMutiara = ({
+   ktpFile,
+   setKtpFile,
+   ktpPreview,
+   setKtpPreview,
+   ktpUrl,
+   setKtpUrl,
+   loadingSubmit,
+   handleSubmit,
+   savingsType,
+   getSavingsTypeName,
+   branches = [],
+   currentStep = 1,
+}: Omit<AccountFormProps, 'formData' | 'setFormData' | 'errors' | 'setErrors' | 'getFieldClass'>) => {
+  const { register, control, setValue, getValues, watch, clearErrors, setError, formState: { errors: rhfErrors } } = useFormContext<AccountFormData>();
 
-export default function FormMutiara({
-  formData,
-  setFormData,
-  errors,
-  setErrors,
-
-
-  branches = [],
-  currentStep = 1,
-}: FormMutiaraProps) {
   const [showTermsModal, setShowTermsModal] = useState(false);
+
+  // Watch fields for conditional logic
+  const watchedRekeningUntukSendiri = useWatch({ control, name: 'rekeningUntukSendiri' });
+  const watchedTipeNasabah = useWatch({ control, name: 'tipeNasabah' });
+  const watchedCitizenship = useWatch({ control, name: 'citizenship' });
+  const watchedEmergencyHubungan = useWatch({ control, name: 'kontakDaruratHubungan' });
+  
+  // Field arrays for EDD
+  const { fields: bankFields, append: appendBank, remove: removeBank } = useFieldArray({
+    control,
+    name: 'eddBankLain'
+  });
+  
+  const { fields: pekerjaanFields, append: appendPekerjaan, remove: removePekerjaan } = useFieldArray({
+    control,
+    name: 'eddPekerjaanLain'
+  });
+
+  // BO and Emergency fields watches - REMOVED for performance
+  /*
+  const watchedBoFields = useWatch({ 
+    control, 
+    name: [
+      'boNama', 'boAlamat', 'boTempatLahir', 'boTanggalLahir', 'boJenisKelamin',
+      'boKewarganegaraan', 'boStatusPernikahan', 'boJenisId', 'boNomorId',
+      'boSumberDana', 'boHubungan', 'boNomorHp', 'boPekerjaan', 'boPendapatanTahun', 'boPersetujuan'
+    ] 
+  });
+
+  const watchedEmergencyFields = useWatch({
+    control,
+    name: ['kontakDaruratNama', 'kontakDaruratHp', 'kontakDaruratAlamat', 'kontakDaruratHubungan']
+  });
+  */
+
+  const watchedJenisId = useWatch({ control, name: 'jenisId' });
+  const watchedEmploymentStatus = useWatch({ control, name: 'employmentStatus' });
+  const watchedSumberDana = useWatch({ control, name: 'sumberDana' });
+  const watchedTujuanRekening = useWatch({ control, name: 'tujuanRekening' });
 
   // State for Indonesian address dropdowns
   const [addressData, setAddressData] = useState({
@@ -66,150 +108,103 @@ export default function FormMutiara({
   const [streetAddress, setStreetAddress] = useState('');
 
   // Auto-set employment status and jenis_rekening for Mutiara
-  React.useEffect(() => {
-    setFormData(prev => ({ 
-      ...prev, 
-      employmentStatus: prev.employmentStatus !== 'Pelajar/Mahasiswa' ? 'Pelajar/Mahasiswa' : prev.employmentStatus,
-      jenis_rekening: 'Mutiara',
-      tipeNasabah: prev.tipeNasabah || 'baru',
-      cardType: prev.cardType || '' // Initialize cardType if not set
-    }));
-  }, []);
+  useEffect(() => {
+    const currentStatus = getValues('employmentStatus');
+    if (currentStatus !== 'Pelajar/Mahasiswa') {
+      setValue('employmentStatus', 'Pelajar/Mahasiswa', { shouldValidate: true });
+    }
+    setValue('jenis_rekening', 'Mutiara');
+    if (!getValues('tipeNasabah')) {
+      setValue('tipeNasabah', 'baru');
+    }
+  }, [setValue, getValues]);
 
 
 
   // Validation function for age requirement
-  const validateAge = (birthDate: string): string => {
-    if (!birthDate) return '';
+  const validateAge = (birthDate: string): string | boolean => {
+    if (!birthDate) return true;
     
     const today = new Date();
     const birth = new Date(birthDate);
     let age = today.getFullYear() - birth.getFullYear();
     const monthDiff = today.getMonth() - birth.getMonth();
     
-    // Adjust age if birthday hasn't occurred this year
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
       age--;
     }
     
-    // Minimum age requirement for Simpel account is 17 years
     if (age < 17) {
-      return 'Usia minimal untuk membuka rekening Simpel adalah 17 tahun';
+      return 'Usia minimal untuk membuka rekening Mutiara adalah 17 tahun';
     }
     
-    return '';
+    return true;
   };
 
   // Validation function for reference contact completeness
 
 
   // Validation function for beneficial owner completeness
-  const validateBeneficialOwner = (): Record<string, string> => {
-    const errors: Record<string, string> = {};
-    const { 
-      boNama, 
-      boAlamat, 
-      boTempatLahir, 
-      boTanggalLahir,
-      boJenisKelamin,
-      boKewarganegaraan,
-      boStatusPernikahan,
-      boJenisId, 
-      boNomorId,
-      boSumberDana,
-      boSumberDanaCustom,
-      boHubungan,
-      boHubunganCustom,
-      boNomorHp,
-      boPekerjaan, 
-      boPendapatanTahun, 
-      boPersetujuan 
-    } = formData;
-    
-    // All BO fields are required
-    if (!boNama) {
-      errors.boNama = 'Nama beneficial owner harus diisi';
+  const validateBeneficialOwner = (): void => {
+    clearErrors([
+      'boNama', 'boAlamat', 'boTempatLahir', 'boTanggalLahir', 'boJenisKelamin',
+      'boKewarganegaraan', 'boStatusPernikahan', 'boJenisId', 'boNomorId',
+      'boSumberDana', 'boSumberDanaCustom', 'boHubungan', 'boHubunganCustom',
+      'boNomorHp', 'boPekerjaan', 'boPendapatanTahun', 'boPersetujuan'
+    ]);
+
+    if (watchedRekeningUntukSendiri === false) {
+      const data = getValues();
+      
+      if (!data.boNama) setError('boNama', { type: 'manual', message: 'Nama beneficial owner harus diisi' });
+      if (!data.boAlamat) setError('boAlamat', { type: 'manual', message: 'Alamat beneficial owner harus diisi' });
+      if (!data.boTempatLahir) setError('boTempatLahir', { type: 'manual', message: 'Tempat lahir beneficial owner harus diisi' });
+      if (!data.boTanggalLahir) setError('boTanggalLahir', { type: 'manual', message: 'Tanggal lahir beneficial owner harus diisi' });
+      if (!data.boJenisKelamin) setError('boJenisKelamin', { type: 'manual', message: 'Jenis kelamin beneficial owner harus dipilih' });
+      if (!data.boKewarganegaraan) setError('boKewarganegaraan', { type: 'manual', message: 'Kewarganegaraan beneficial owner harus dipilih' });
+      if (!data.boStatusPernikahan) setError('boStatusPernikahan', { type: 'manual', message: 'Status pernikahan beneficial owner harus dipilih' });
+      if (!data.boJenisId) setError('boJenisId', { type: 'manual', message: 'Jenis identitas beneficial owner harus dipilih' });
+      if (!data.boNomorId) setError('boNomorId', { type: 'manual', message: 'Nomor identitas beneficial owner harus diisi' });
+      if (!data.boSumberDana) setError('boSumberDana', { type: 'manual', message: 'Sumber dana beneficial owner harus dipilih' });
+      
+      if (data.boSumberDana === 'Lainnya' && !data.boSumberDanaCustom?.trim()) {
+        setError('boSumberDanaCustom', { type: 'manual', message: 'Sumber dana lainnya harus diisi' });
+      }
+      
+      if (!data.boHubungan) setError('boHubungan', { type: 'manual', message: 'Hubungan dengan beneficial owner harus dipilih' });
+      
+      if (data.boHubungan === 'Lainnya' && !data.boHubunganCustom?.trim()) {
+        setError('boHubunganCustom', { type: 'manual', message: 'Hubungan lainnya harus diisi' });
+      }
+      
+      if (!data.boNomorHp) setError('boNomorHp', { type: 'manual', message: 'Nomor HP beneficial owner harus diisi' });
+      if (!data.boPekerjaan) setError('boPekerjaan', { type: 'manual', message: 'Pekerjaan beneficial owner harus diisi' });
+      if (!data.boPendapatanTahun) setError('boPendapatanTahun', { type: 'manual', message: 'Pendapatan tahunan beneficial owner harus dipilih' });
+      if (!data.boPersetujuan) setError('boPersetujuan', { type: 'manual', message: 'Persetujuan beneficial owner harus dicentang' });
     }
-    if (!boAlamat) {
-      errors.boAlamat = 'Alamat beneficial owner harus diisi';
-    }
-    if (!boTempatLahir) {
-      errors.boTempatLahir = 'Tempat lahir beneficial owner harus diisi';
-    }
-    if (!boTanggalLahir) {
-      errors.boTanggalLahir = 'Tanggal lahir beneficial owner harus diisi';
-    }
-    if (!boJenisKelamin) {
-      errors.boJenisKelamin = 'Jenis kelamin beneficial owner harus dipilih';
-    }
-    if (!boKewarganegaraan) {
-      errors.boKewarganegaraan = 'Kewarganegaraan beneficial owner harus dipilih';
-    }
-    if (!boStatusPernikahan) {
-      errors.boStatusPernikahan = 'Status pernikahan beneficial owner harus dipilih';
-    }
-    if (!boJenisId) {
-      errors.boJenisId = 'Jenis identitas beneficial owner harus dipilih';
-    }
-    if (!boNomorId) {
-      errors.boNomorId = 'Nomor identitas beneficial owner harus diisi';
-    }
-    if (!boSumberDana) {
-      errors.boSumberDana = 'Sumber dana beneficial owner harus dipilih';
-    }
-    // Validate custom source of funds when "Lainnya" is selected
-    if (boSumberDana === 'Lainnya' && (!boSumberDanaCustom || boSumberDanaCustom.trim() === '')) {
-      errors.boSumberDanaCustom = 'Sumber dana lainnya harus diisi';
-    }
-    if (!boHubungan) {
-      errors.boHubungan = 'Hubungan dengan beneficial owner harus dipilih';
-    }
-    // Validate custom relationship when "Lainnya" is selected
-    if (boHubungan === 'Lainnya' && (!boHubunganCustom || boHubunganCustom.trim() === '')) {
-      errors.boHubunganCustom = 'Hubungan lainnya harus diisi';
-    }
-    if (!boNomorHp) {
-      errors.boNomorHp = 'Nomor HP beneficial owner harus diisi';
-    }
-    if (!boPekerjaan) {
-      errors.boPekerjaan = 'Pekerjaan beneficial owner harus diisi';
-    }
-    if (!boPendapatanTahun) {
-      errors.boPendapatanTahun = 'Pendapatan tahunan beneficial owner harus dipilih';
-    }
-    if (!boPersetujuan) {
-      errors.boPersetujuan = 'Persetujuan beneficial owner harus dicentang';
-    }
-    
-    return errors;
   };
 
   // Validation function for emergency contact completeness
-  const validateEmergencyContact = (): Record<string, string> => {
-    const errors: Record<string, string> = {};
-    const { kontakDaruratNama, kontakDaruratHp, kontakDaruratAlamat, kontakDaruratHubungan, kontakDaruratHubunganLainnya } = formData;
+  const validateEmergencyContact = (): void => {
+    clearErrors(['kontakDaruratNama', 'kontakDaruratHp', 'kontakDaruratAlamat', 'kontakDaruratHubungan', 'kontakDaruratHubunganLainnya']);
+    
+    const { 
+      kontakDaruratNama, kontakDaruratHp, kontakDaruratAlamat, 
+      kontakDaruratHubungan, kontakDaruratHubunganLainnya 
+    } = getValues();
     
     // Check if any emergency contact field is filled
     const anyFieldFilled = kontakDaruratNama || kontakDaruratHp || kontakDaruratAlamat || kontakDaruratHubungan;
     
     if (anyFieldFilled) {
-      // If any field is filled, all fields must be filled
-      if (!kontakDaruratNama) {
-        errors.kontakDaruratNama = 'Nama kontak darurat harus diisi jika mengisi kontak darurat';
-      }
-      if (!kontakDaruratHp) {
-        errors.kontakDaruratHp = 'Nomor HP kontak darurat harus diisi jika mengisi kontak darurat';
-      }
-      if (!kontakDaruratHubungan) {
-        errors.kontakDaruratHubungan = 'Hubungan kontak darurat harus diisi jika mengisi kontak darurat';
-      }
-      // Validate custom relationship when "Lainnya" is selected
-      if (kontakDaruratHubungan === 'Lainnya' && (!kontakDaruratHubunganLainnya || kontakDaruratHubunganLainnya.trim() === '')) {
-        errors.kontakDaruratHubunganLainnya = 'Hubungan lainnya harus diisi';
+      if (!kontakDaruratNama) setError('kontakDaruratNama', { type: 'manual', message: 'Nama kontak darurat harus diisi jika mengisi kontak darurat' });
+      if (!kontakDaruratHp) setError('kontakDaruratHp', { type: 'manual', message: 'Nomor HP kontak darurat harus diisi jika mengisi kontak darurat' });
+      if (!kontakDaruratHubungan) setError('kontakDaruratHubungan', { type: 'manual', message: 'Hubungan kontak darurat harus diisi jika mengisi kontak darurat' });
+      
+      if (kontakDaruratHubungan === 'Lainnya' && !kontakDaruratHubunganLainnya?.trim()) {
+        setError('kontakDaruratHubunganLainnya', { type: 'manual', message: 'Hubungan lainnya harus diisi' });
       }
     }
-    
-    return errors;
   };
 
   // Minimum deposit amounts for each account type
@@ -243,116 +238,33 @@ export default function FormMutiara({
 
 
 
-  // Validate beneficial owner when any field changes (only if account is for others, NOT for self)
-  React.useEffect(() => {
-    // Only validate if account is for others (NOT for self)
-    if (formData.rekeningUntukSendiri === false) {
-      const boErrors = validateBeneficialOwner();
-      setErrors(prev => {
-        const next = { ...prev };
-        // Clear all previous BO errors first
-        delete next.boNama;
-        delete next.boAlamat;
-        delete next.boTempatLahir;
-        delete next.boTanggalLahir;
-        delete next.boJenisKelamin;
-        delete next.boKewarganegaraan;
-        delete next.boStatusPernikahan;
-        delete next.boJenisId;
-        delete next.boNomorId;
-        delete next.boSumberDana;
-        delete next.boSumberDanaCustom;
-        delete next.boHubungan;
-        delete next.boHubunganCustom;
-        delete next.boNomorHp;
-        delete next.boPekerjaan;
-        delete next.boPendapatanTahun;
-        delete next.boPersetujuan;
-        
-        // Add new BO errors if any
-        return { ...next, ...boErrors };
-      });
-    } else {
-      // Clear all BO errors when account is for self
-      setErrors(prev => {
-        const next = { ...prev };
-        delete next.boNama;
-        delete next.boAlamat;
-        delete next.boTempatLahir;
-        delete next.boTanggalLahir;
-        delete next.boJenisKelamin;
-        delete next.boKewarganegaraan;
-        delete next.boStatusPernikahan;
-        delete next.boJenisId;
-        delete next.boNomorId;
-        delete next.boSumberDana;
-        delete next.boSumberDanaCustom;
-        delete next.boHubungan;
-        delete next.boHubunganCustom;
-        delete next.boNomorHp;
-        delete next.boPekerjaan;
-        delete next.boPendapatanTahun;
-        delete next.boPersetujuan;
-        return next;
-      });
-    }
-  }, [
-    formData.rekeningUntukSendiri,
-    formData.boNama,
-    formData.boAlamat,
-    formData.boTempatLahir,
-    formData.boTanggalLahir,
-    formData.boJenisKelamin,
-    formData.boKewarganegaraan,
-    formData.boStatusPernikahan,
-    formData.boJenisId,
-    formData.boNomorId,
-    formData.boSumberDana,
-    formData.boSumberDanaCustom,
-    formData.boHubungan,
-    formData.boHubunganCustom,
-    formData.boNomorHp,
-    formData.boPekerjaan,
-    formData.boPendapatanTahun,
-    formData.boPersetujuan
-  ]);
+  // Validate beneficial owner and emergency contact - Handled at step transition or field level
+  /*
+  useEffect(() => {
+    validateBeneficialOwner();
+  }, [watchedRekeningUntukSendiri, ...watchedBoFields, setError, clearErrors, getValues]);
 
-  // Validate emergency contact when any field changes
-  React.useEffect(() => {
-    const emergencyErrors = validateEmergencyContact();
-    setErrors(prev => {
-      const next = { ...prev };
-      // Clear previous emergency contact errors
-      delete next.kontakDaruratNama;
-      delete next.kontakDaruratHp;
-      delete next.kontakDaruratAlamat;
-      delete next.kontakDaruratHubungan;
-      delete next.kontakDaruratHubunganLainnya;
-      // Add new emergency contact errors if any
-      return { ...next, ...emergencyErrors };
-    });
-  }, [formData.kontakDaruratNama, formData.kontakDaruratHp, formData.kontakDaruratAlamat, formData.kontakDaruratHubungan, formData.kontakDaruratHubunganLainnya]);
+  useEffect(() => {
+    validateEmergencyContact();
+  }, [...watchedEmergencyFields, setError, clearErrors, getValues]);
+  */
 
+  /*
   // Validate nomor rekening lama when tipe nasabah is 'lama'
-  React.useEffect(() => {
-    setErrors(prev => {
-      const next = { ...prev };
-      delete next.nomorRekeningLama;
-      
-      if (formData.tipeNasabah === 'lama' && !formData.nomorRekeningLama) {
-        next.nomorRekeningLama = 'Nomor rekening lama harus diisi untuk nasabah lama';
-      }
-      
-      return next;
-    });
-  }, [formData.tipeNasabah, formData.nomorRekeningLama]);
+  useEffect(() => {
+    if (watchedTipeNasabah === 'lama' && !watchedNomorRekeningLama) {
+      setError('nomorRekeningLama', { type: 'manual', message: 'Nomor rekening lama harus diisi untuk nasabah lama' });
+    } else {
+      clearErrors('nomorRekeningLama');
+    }
+  }, [watchedTipeNasabah, watchedNomorRekeningLama, setError, clearErrors]);
+  */
 
 
-  React.useEffect(() => {
-    if (formData.citizenship === 'Indonesia') {
+  useEffect(() => {
+    if (watchedCitizenship === 'Indonesia' || watchedCitizenship === 'WNA') {
       loadProvinces();
     } else {
-      // Reset address data if citizenship not Indonesia
       setAddressData(prev => ({
         ...prev,
         provinces: [],
@@ -366,13 +278,8 @@ export default function FormMutiara({
         districtId: '',
         villageId: '',
       });
-      
-      // Clear address for WNA to allow custom input
-      if (formData.citizenship !== 'Indonesia') {
-        setFormData(prev => ({ ...prev, address: '' }));
-      }
     }
-  }, [formData.citizenship]);
+  }, [watchedCitizenship]);
 
   // API functions for Indonesian address
   const loadProvinces = async () => {
@@ -448,13 +355,12 @@ export default function FormMutiara({
   // Function to update address when dropdowns change
   const updateFullAddress = (province: string, city: string, district: string, village: string) => {
     const addressParts = [];
+    const street = getValues().alamatJalan;
     
-    // Always start with street address if available
-    if (streetAddress && streetAddress.trim()) {
-      addressParts.push(streetAddress.trim());
+    if (street && street.trim()) {
+      addressParts.push(street.trim());
     }
     
-    // Add location hierarchy
     if (village && village.trim()) addressParts.push(village.trim());
     if (district && district.trim()) addressParts.push(district.trim());
     if (city && city.trim()) addressParts.push(city.trim());
@@ -462,20 +368,16 @@ export default function FormMutiara({
     
     const fullAddress = addressParts.join(', ');
     
-    setFormData(prev => ({
-      ...prev,
-      alamatJalan: streetAddress, // Store street address separately
-      province,
-      city,
-      kecamatan: district,
-      kelurahan: village,
-      address: fullAddress // Combined full address
-    }));
+    setValue('province', province, { shouldValidate: false });
+    setValue('city', city, { shouldValidate: false });
+    setValue('kecamatan', district, { shouldValidate: false });
+    setValue('kelurahan', village, { shouldValidate: false });
+    setValue('address', fullAddress, { shouldValidate: false });
   };
 
   // Update full address when street address changes
-  React.useEffect(() => {
-    if ((formData.citizenship === 'Indonesia' || formData.citizenship === 'WNA') && selectedAddress.provinceId) {
+  useEffect(() => {
+    if ((watchedCitizenship === 'Indonesia' || watchedCitizenship === 'WNA') && selectedAddress.provinceId) {
       const province = addressData.provinces.find(p => p.id === selectedAddress.provinceId);
       const city = addressData.cities.find(c => c.id === selectedAddress.cityId);
       const district = addressData.districts.find(d => d.id === selectedAddress.districtId);
@@ -487,19 +389,16 @@ export default function FormMutiara({
         district?.name || '',
         village?.name || ''
       );
-    } else if (!formData.citizenship || (formData.citizenship !== 'Indonesia' && formData.citizenship !== 'WNA')) {
-      // For cases where citizenship is not selected or other values
-      setFormData(prev => ({
-        ...prev,
-        alamatJalan: streetAddress,
-        address: streetAddress,
-        province: '',
-        city: '',
-        kecamatan: '',
-        kelurahan: ''
-      }));
+    } else if (!watchedCitizenship || (watchedCitizenship !== 'Indonesia' && watchedCitizenship !== 'WNA')) {
+      const street = getValues().alamatJalan;
+      setValue('address', street || '', { shouldValidate: false });
+      setValue('province', '', { shouldValidate: false });
+      setValue('city', '', { shouldValidate: false });
+      setValue('kecamatan', '', { shouldValidate: false });
+      setValue('kelurahan', '', { shouldValidate: false });
     }
-  }, [streetAddress, formData.citizenship, selectedAddress.provinceId, selectedAddress.cityId, selectedAddress.districtId, selectedAddress.villageId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [watchedCitizenship, selectedAddress.provinceId, selectedAddress.cityId, selectedAddress.districtId, selectedAddress.villageId, addressData.provinces, addressData.cities, addressData.districts, addressData.villages]);
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -508,7 +407,7 @@ export default function FormMutiara({
           STEP 1: PILIH CABANG
           ======================================== */}
       {currentStep === 1 && (
-        <div className="space-y-6">
+        <section className="space-y-6" aria-labelledby="branch-selection-heading">
           {/* Header */}
           {/* <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 mb-4">
@@ -525,69 +424,66 @@ export default function FormMutiara({
           
           {/* Branch Selection */}
           <div className="max-w-5xl mx-auto">
-            <div className="bg-white p-4 md:p-8 rounded-2xl border-2 border-slate-200 shadow-sm">
+            <fieldset className="bg-white p-4 md:p-8 rounded-2xl border-2 border-slate-200 shadow-sm">
+              <legend className="sr-only">Pilihan Cabang</legend>
               <Label htmlFor="cabang_pengambilan" className="text-gray-800 font-semibold text-lg mb-3 block">
                 Kantor Cabang  <span className="text-red-500">*</span>
               </Label>
-              {errors.cabang_pengambilan && (
-                <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-sm text-red-600 flex items-center gap-2">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                    </svg>
-                    {errors.cabang_pengambilan}
-                  </p>
-                </div>
+              <Controller
+                name="cabang_pengambilan"
+                control={control}
+                rules={{ required: 'Kantor cabang harus dipilih' }}
+                render={({ field }) => (
+                  <Select
+                    value={field.value}
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      const selectedBranch = branches.find(b => b.id.toString() === value.toString());
+                      if (selectedBranch && !selectedBranch.is_active) {
+                        setError('cabang_pengambilan', { type: 'manual', message: "Cabang sedang dalam perbaikan, silahkan pilih cabang lain" });
+                      } else {
+                        clearErrors('cabang_pengambilan');
+                      }
+                    }}
+                  >
+                    <SelectTrigger className={`h-14 bg-white border-2 text-base focus:border-emerald-500 focus:ring-emerald-500 rounded-xl ${rhfErrors.cabang_pengambilan ? 'border-red-500' : 'border-slate-300'}`}>
+                      <SelectValue placeholder="-- Pilih Cabang Bank Sleman --" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {branches.map((branch: any) => (
+                        <SelectItem key={branch.id} value={branch.id.toString()} disabled={!branch.is_active}>
+                          <div className="flex items-center gap-2">
+                            <svg className="w-4 h-4 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                            </svg>
+                            <span>{branch.nama_cabang}</span>
+                            {!branch.is_active && <span className="text-xs text-red-500 ml-2">(Tidak tersedia)</span>}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {rhfErrors.cabang_pengambilan && (
+                <p className="text-sm text-red-600 mt-1">{rhfErrors.cabang_pengambilan.message}</p>
               )}
-              <Select
-                value={formData.cabang_pengambilan}
-                onValueChange={(value) => {
-                   const selectedBranch = branches.find(b => b.id.toString() === value.toString());
-                   if (selectedBranch && !selectedBranch.is_active) {
-                      setErrors(prev => ({ ...prev, cabang_pengambilan: "Cabang sedang dalam perbaikan, silahkan pilih cabang lain" }));
-                   } else {
-                      setErrors(prev => {
-                        const next = { ...prev };
-                        delete next.cabang_pengambilan;
-                        return next;
-                      });
-                   }
-                   setFormData({ ...formData, cabang_pengambilan: value });
-                }}
-              >
-                <SelectTrigger className={`h-14 bg-white border-2 text-base focus:border-emerald-500 focus:ring-emerald-500 rounded-xl ${errors.cabang_pengambilan ? 'border-red-500' : 'border-slate-300'}`}>
-                  <SelectValue placeholder="-- Pilih Cabang Bank Sleman --" />
-                </SelectTrigger>
-                <SelectContent>
-                  {branches.map((branch: any) => (
-                    <SelectItem key={branch.id} value={branch.id.toString()} disabled={!branch.is_active}>
-                      <div className="flex items-center gap-2">
-                        <svg className="w-4 h-4 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                        </svg>
-                        <span>{branch.nama_cabang}</span>
-                        {!branch.is_active && <span className="text-xs text-red-500 ml-2">(Tidak tersedia)</span>}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
               <p className="text-sm text-slate-500 mt-3 flex items-start gap-2">
                 <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                 </svg>
                 Buku tabungan dapat diambil di cabang yang Anda pilih setelah permohonan disetujui.
               </p>
-            </div>
+            </fieldset>
           </div>
-        </div>
+        </section>
       )}
 
       {/* ========================================
           STEP 2: DATA DIRI NASABAH
           ======================================== */}
       {currentStep === 2 && (
-        <div className="space-y-8">
+        <section className="space-y-8" aria-labelledby="personal-data-heading">
           
           {/* Header */}
           {/* <div className="text-center mb-8">
@@ -602,13 +498,18 @@ export default function FormMutiara({
             </p>
           </div> */}
 
+
+
           {/* Section 1: Identitas Diri */}
-          <div className="bg-white p-4 md:p-6 rounded-2xl border-2 border-slate-200 shadow-sm">
-            <h4 className="text-emerald-800 font-bold text-xl mb-6 flex items-center gap-2">
-              <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">1</span>
-              Identitas Diri
-            </h4>
-            <div className="space-y-5">
+          <article className="bg-white p-4 md:p-6 rounded-2xl border-2 border-slate-200 shadow-sm">
+            <header>
+              <h4 className="text-emerald-800 font-bold text-xl mb-6 flex items-center gap-2">
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">1</span>
+                Identitas Diri
+              </h4>
+            </header>
+            <fieldset className="space-y-5">
+              <legend className="sr-only">Informasi Identitas Pribadi</legend>
 
               {/* Nama Lengkap */}
               <div>
@@ -617,12 +518,11 @@ export default function FormMutiara({
                 </Label>
                 <Input
                   id="fullName"
-                  required
+                  {...register('fullName', { required: 'Nama lengkap harus diisi' })}
                   placeholder="Masukkan nama lengkap sesuai KTP"
-                  value={formData.fullName}
-                  onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                  className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
+                  className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.fullName ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
                 />
+                {rhfErrors.fullName && <p className="text-sm text-red-600 mt-1">{rhfErrors.fullName.message}</p>}
               </div>
 
               {/* Alias */}
@@ -633,9 +533,8 @@ export default function FormMutiara({
                 </Label>
                 <Input
                   id="alias"
+                  {...register('alias')}
                   placeholder="Nama panggilan atau alias"
-                  value={formData.alias}
-                  onChange={(e) => setFormData({ ...formData, alias: e.target.value })}
                   className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
                 />
               </div>
@@ -645,64 +544,52 @@ export default function FormMutiara({
                 <Label className="text-gray-700 font-semibold">
                   Tipe Nasabah <span className="text-red-500">*</span>
                 </Label>
-                <Select
-                  value={formData.tipeNasabah}
-                  onValueChange={(value: 'baru' | 'lama') => {
-                    setFormData({ ...formData, tipeNasabah: value, nomorRekeningLama: '' });
-                    setErrors(prev => {
-                      const next = { ...prev };
-                      delete next.nomorRekeningLama;
-                      return next;
-                    });
-                  }}
-                >
-                  <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
-                    <SelectValue placeholder="-- Pilih Tipe Nasabah --" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="baru">
-                      <div className="flex items-center gap-2">
-                        <span>Nasabah Baru</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="lama">
-                      <div className="flex items-center gap-2">
-                        <span>Nasabah Lama</span>
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                <Controller
+                  name="tipeNasabah"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      value={field.value}
+                      onValueChange={(value: 'baru' | 'lama') => {
+                        field.onChange(value);
+                        setValue('nomorRekeningLama', '');
+                        clearErrors('nomorRekeningLama');
+                      }}
+                    >
+                      <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
+                        <SelectValue placeholder="-- Pilih Tipe Nasabah --" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="baru">Nasabah Baru</SelectItem>
+                        <SelectItem value="lama">Nasabah Lama</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
               </div>
 
               {/* Nomor Rekening Lama - Only show if nasabah lama */}
-              {formData.tipeNasabah === 'lama' && (
+              {watchedTipeNasabah === 'lama' && (
                 <div>
                   <Label htmlFor="nomorRekeningLama" className="text-gray-700 font-semibold">
                     Nomor Rekening yang Sudah Ada <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="nomorRekeningLama"
-                    required
+                    {...register('nomorRekeningLama', { 
+                      required: watchedTipeNasabah === 'lama' ? 'Nomor rekening lama harus diisi' : false 
+                    })}
                     placeholder="Masukkan nomor rekening yang sudah ada"
-                    value={formData.nomorRekeningLama}
-                    onChange={(e) => {
-                      setFormData({ ...formData, nomorRekeningLama: e.target.value });
-                      setErrors(prev => {
-                        const next = { ...prev };
-                        delete next.nomorRekeningLama;
-                        return next;
-                      });
-                    }}
                     className={`mt-2 h-12 rounded-lg border-2 focus:border-emerald-500 ${
-                      errors.nomorRekeningLama ? 'border-red-500' : 'border-slate-300'
+                      rhfErrors.nomorRekeningLama ? 'border-red-500' : 'border-slate-300'
                     }`}
                   />
-                  {errors.nomorRekeningLama && (
+                  {rhfErrors.nomorRekeningLama && (
                     <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
                       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                       </svg>
-                      {errors.nomorRekeningLama}
+                      {rhfErrors.nomorRekeningLama.message}
                     </p>
                   )}
                   <p className="text-sm text-slate-500 mt-2 flex items-start gap-2">
@@ -720,99 +607,95 @@ export default function FormMutiara({
                   <Label className="text-gray-700 font-semibold">
                     Jenis Identitas <span className="text-red-500">*</span>
                   </Label>
-                  <Select
-                    value={formData.jenisId}
-                    onValueChange={(value) => {
-                      setFormData({ ...formData, jenisId: value, nik: '' });
-                      setErrors(prev => {
-                        const next = { ...prev };
-                        delete next.nik;
-                        return next;
-                      });
-                    }}
-                  >
-                    <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
-                      <SelectValue placeholder="-- Pilih Jenis Identitas --" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="KTP">
-                        <div className="flex items-center gap-2">
-                          <span>KTP</span>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="Paspor">
-                        <div className="flex items-center gap-2">
-                          <span>Paspor</span>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="Lainnya">
-                        <div className="flex items-center gap-2">
-                          <span>Lainnya</span>
-                        </div>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {formData.jenisId === 'Lainnya' && (
+                  <Controller
+                    name="jenisId"
+                    control={control}
+                    rules={{ required: 'Jenis identitas harus dipilih' }}
+                    render={({ field }) => (
+                      <Select
+                        value={field.value}
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                          setValue('nik', '');
+                          clearErrors('nik');
+                        }}
+                      >
+                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
+                          <SelectValue placeholder="-- Pilih Jenis Identitas --" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="KTP">KTP</SelectItem>
+                          <SelectItem value="Paspor">Paspor</SelectItem>
+                          <SelectItem value="Lainnya">Lainnya</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                  {watchedJenisId === 'Lainnya' && (
                     <Input
+                      {...register('jenisIdCustom')}
                       placeholder="Sebutkan jenis identitas"
-                      value={formData.jenisIdCustom || ''}
-                      onChange={(e) => setFormData({ ...formData, jenisIdCustom: e.target.value })}
                       className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
                     />
                   )}
                 </div>
                 <div>
                   <Label htmlFor="nik" className="text-gray-700 font-semibold">
-                    {formData.jenisId === 'KTP' ? 'Nomor KTP' : formData.jenisId === 'Paspor' ? 'Nomor Paspor' : 'Nomor Identitas'} <span className="text-red-500">*</span>
+                    {watchedJenisId === 'KTP' ? 'Nomor KTP' : watchedJenisId === 'Paspor' ? 'Nomor Paspor' : 'Nomor Identitas'} <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="nik"
-                    required
-                    placeholder={formData.jenisId === 'KTP' ? 'Masukkan 16 digit NIK' : formData.jenisId === 'Paspor' ? 'Masukkan 6-9 karakter' : 'Masukkan nomor identitas'}
-                    maxLength={formData.jenisId === 'KTP' ? 16 : undefined}
-                    value={formData.nik}
-                    onChange={(e) => {
-                      setFormData({ ...formData, nik: e.target.value });
-                      setErrors(prev => {
-                        const next = { ...prev };
-                        delete next.nik;
-                        return next;
-                      });
-                    }}
-
-                    className={`mt-2 h-12 rounded-lg border-2 ${errors.nik ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
+                    {...register('nik', { 
+                      required: 'Nomor identitas harus diisi',
+                      validate: (val) => {
+                        const jenisIdValue = getValues('jenisId');
+                        if (jenisIdValue === 'KTP' && val.length !== 16) return 'NIK harus 16 digit';
+                        return true;
+                      }
+                    })}
+                    placeholder={watchedJenisId === 'KTP' ? 'Masukkan 16 digit NIK' : watchedJenisId === 'Paspor' ? 'Masukkan 6-9 karakter' : 'Masukkan nomor identitas'}
+                    maxLength={watchedJenisId === 'KTP' ? 16 : undefined}
+                    className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.nik ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
                   />
-                  {errors.nik && (
+                  {rhfErrors.nik && (
                     <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
                       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                       </svg>
-                      {errors.nik}
+                      {rhfErrors.nik.message}
                     </p>
                   )}
                 </div>
               </div>
 
               {/* Validity Date - Exclude KTP (lifetime validity) */}
-              {formData.jenisId && formData.jenisId !== 'KTP' && (
-                <div className="grid md:grid-cols-1 gap-5">
-                  <div>
-                    <Label htmlFor="berlakuId" className="text-gray-700 font-semibold flex items-center gap-2">
-                      Masa Berlaku Identitas <span className="text-red-500">*</span>
-                    </Label>
+              {watchedJenisId !== 'KTP' && (
+                <div className="md:col-span-2">
+                  <Label htmlFor="berlakuId" className="text-gray-700 font-semibold">
+                    Masa Berlaku Identitas <span className="text-red-500">*</span>
+                  </Label>
+                  <div className="mt-2 space-y-3">
                     <Input
                       id="berlakuId"
+                      {...register('berlakuId', { 
+                        required: watchedJenisId !== 'KTP' ? 'Masa berlaku harus diisi' : false 
+                      })}
                       type="date"
-                      required={formData.jenisId !== 'KTP'}
-                      value={formData.berlakuId}
-                      onChange={(e) => setFormData({ ...formData, berlakuId: e.target.value })}
-                      className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
+                      className={`h-12 rounded-lg border-2 ${rhfErrors.berlakuId ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
                     />
-                    <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
-                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                    {rhfErrors.berlakuId && (
+                      <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                        {rhfErrors.berlakuId.message}
+                      </p>
+                    )}
+                    <p className="text-sm text-slate-500 flex items-center gap-2 bg-slate-50 p-3 rounded-lg border border-slate-200">
+                      <svg className="w-5 h-5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0116 0z" />
                       </svg>
-                      {formData.jenisId === 'Paspor' ? 'Masukkan tanggal masa berlaku paspor' : 'Masukkan tanggal masa berlaku identitas'}
+                      {watchedJenisId === 'Paspor' ? 'Masukkan tanggal masa berlaku paspor' : 'Masukkan tanggal masa berlaku identitas'}
                     </p>
                   </div>
                 </div>
@@ -827,12 +710,11 @@ export default function FormMutiara({
                   </Label>
                   <Input
                     id="tempatLahir"
-                    required
+                    {...register('tempatLahir', { required: 'Tempat lahir harus diisi' })}
                     placeholder="Contoh: Yogyakarta"
-                    value={formData.tempatLahir}
-                    onChange={(e) => setFormData({ ...formData, tempatLahir: e.target.value })}
-                    className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
+                    className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.tempatLahir ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
                   />
+                  {rhfErrors.tempatLahir && <p className="text-sm text-red-600 mt-1">{rhfErrors.tempatLahir.message}</p>}
                 </div>
                 <div>
                   <Label htmlFor="birthDate" className="text-gray-700 font-semibold">
@@ -841,30 +723,18 @@ export default function FormMutiara({
                   <Input
                     id="birthDate"
                     type="date"
-                    required
-                    value={formData.birthDate}
-                    onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
-                    onBlur={(e) => {
-                      const val = e.target.value;
-                      const err = validateAge(val);
-                      if (err) {
-                        setErrors(prev => ({ ...prev, birthDate: err }));
-                      } else {
-                        setErrors(prev => {
-                          const next = { ...prev };
-                          delete next.birthDate;
-                          return next;
-                        });
-                      }
-                    }}
-                    className={`mt-2 h-12 rounded-lg border-2 ${errors.birthDate ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
+                    {...register('birthDate', { 
+                      required: 'Tanggal lahir harus diisi',
+                      validate: validateAge
+                    })}
+                    className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.birthDate ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
                   />
-                  {errors.birthDate && (
+                  {rhfErrors.birthDate && (
                     <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
                       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                       </svg>
-                      {errors.birthDate}
+                      {rhfErrors.birthDate.message}
                     </p>
                   )}
                   <p className="text-xs text-slate-500 mt-1">Minimal usia 17 tahun</p>
@@ -877,58 +747,70 @@ export default function FormMutiara({
                   <Label className="text-gray-700 font-semibold">
                     Jenis Kelamin <span className="text-red-500">*</span>
                   </Label>
-                  <Select
-                    value={formData.gender}
-                    onValueChange={(value) => setFormData({ ...formData, gender: value })}
-                  >
-                    <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
-                      <SelectValue placeholder="-- Pilih --" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Laki-laki">Laki-laki</SelectItem>
-                      <SelectItem value="Perempuan">Perempuan</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Controller
+                    name="gender"
+                    control={control}
+                    rules={{ required: 'Jenis kelamin harus dipilih' }}
+                    render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
+                          <SelectValue placeholder="-- Pilih --" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Laki-laki">Laki-laki</SelectItem>
+                          <SelectItem value="Perempuan">Perempuan</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                 </div>
                 <div>
                   <Label className="text-gray-700 font-semibold">
                     Status Pernikahan <span className="text-red-500">*</span>
                   </Label>
-                  <Select
-                    value={formData.maritalStatus}
-                    onValueChange={(value) => setFormData({ ...formData, maritalStatus: value })}
-                  >
-                    <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
-                      <SelectValue placeholder="-- Pilih --" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Belum Kawin">Belum Kawin</SelectItem>
-                      <SelectItem value="Kawin">Kawin</SelectItem>
-                      <SelectItem value="Cerai Hidup">Cerai Hidup</SelectItem>
-                      <SelectItem value="Cerai Mati">Cerai Mati</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Controller
+                    name="maritalStatus"
+                    control={control}
+                    rules={{ required: 'Status pernikahan harus dipilih' }}
+                    render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
+                          <SelectValue placeholder="-- Pilih --" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Belum Kawin">Belum Kawin</SelectItem>
+                          <SelectItem value="Kawin">Kawin</SelectItem>
+                          <SelectItem value="Cerai Hidup">Cerai Hidup</SelectItem>
+                          <SelectItem value="Cerai Mati">Cerai Mati</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                 </div>
                 <div>
                   <Label className="text-gray-700 font-semibold">
                     Agama <span className="text-red-500">*</span>
                   </Label>
-                  <Select
-                    value={formData.agama}
-                    onValueChange={(value) => setFormData({ ...formData, agama: value })}
-                  >
-                    <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
-                      <SelectValue placeholder="-- Pilih --" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Islam">Islam</SelectItem>
-                      <SelectItem value="Kristen">Kristen</SelectItem>
-                      <SelectItem value="Katolik">Katolik</SelectItem>
-                      <SelectItem value="Hindu">Hindu</SelectItem>
-                      <SelectItem value="Budha">Budha</SelectItem>
-                      <SelectItem value="Konghucu">Konghucu</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Controller
+                    name="agama"
+                    control={control}
+                    rules={{ required: 'Agama harus dipilih' }}
+                    render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
+                          <SelectValue placeholder="-- Pilih --" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Islam">Islam</SelectItem>
+                          <SelectItem value="Kristen">Kristen</SelectItem>
+                          <SelectItem value="Katolik">Katolik</SelectItem>
+                          <SelectItem value="Hindu">Hindu</SelectItem>
+                          <SelectItem value="Budha">Budha</SelectItem>
+                          <SelectItem value="Konghucu">Konghucu</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                 </div>
               </div>
               
@@ -938,22 +820,26 @@ export default function FormMutiara({
                   <Label className="text-gray-700 font-semibold">
                     Pendidikan Terakhir <span className="text-red-500">*</span>
                   </Label>
-                  <Select
-                    value={formData.pendidikan}
-                    onValueChange={(value) => setFormData({ ...formData, pendidikan: value })}
-                  >
-                    <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
-                      <SelectValue placeholder="-- Pilih Pendidikan --" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="SD">SD</SelectItem>
-                      <SelectItem value="SMP">SMP</SelectItem>
-                      <SelectItem value="SMA/SMK">SMA/SMK</SelectItem>
-                      <SelectItem value="Diploma">Diploma</SelectItem>
-                      <SelectItem value="S-1">S-1</SelectItem>
-                      <SelectItem value="S-2/S-3">S-2/S-3</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Controller
+                    name="pendidikan"
+                    control={control}
+                    rules={{ required: 'Pendidikan terakhir harus dipilih' }}
+                    render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
+                          <SelectValue placeholder="-- Pilih Pendidikan --" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="SD">SD</SelectItem>
+                          <SelectItem value="SMP">SMP</SelectItem>
+                          <SelectItem value="SMA/SMK">SMA/SMK</SelectItem>
+                          <SelectItem value="Diploma">Diploma</SelectItem>
+                          <SelectItem value="S-1">S-1</SelectItem>
+                          <SelectItem value="S-2/S-3">S-2/S-3</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="motherName" className="text-gray-700 font-semibold">
@@ -961,17 +847,16 @@ export default function FormMutiara({
                   </Label>
                   <Input
                     id="motherName"
-                    required
+                    {...register('motherName', { required: 'Nama ibu kandung harus diisi' })}
                     placeholder="Nama lengkap ibu kandung"
-                    value={formData.motherName}
-                    onChange={(e) => setFormData({ ...formData, motherName: e.target.value })}
-                    className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
+                    className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.motherName ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
                   />
+                  {rhfErrors.motherName && <p className="text-sm text-red-600 mt-1">{rhfErrors.motherName.message}</p>}
                 </div>
               </div>
 
-            </div>
-          </div>
+            </fieldset>
+          </article>
 
           {/* Section 2: Informasi Kontak */}
           <div className="bg-white p-4 md:p-6 rounded-2xl border-2 border-slate-200 shadow-sm">
@@ -990,26 +875,22 @@ export default function FormMutiara({
                   <Input
                     id="email"
                     type="email"
-                    required
+                    {...register('email', { 
+                      required: 'Email harus diisi',
+                      pattern: {
+                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                        message: 'Format email tidak valid'
+                      }
+                    })}
                     placeholder="contoh@email.com"
-                    value={formData.email}
-                    onChange={(e) => {
-                      setFormData({ ...formData, email: e.target.value });
-                      setErrors(prev => {
-                        const next = { ...prev };
-                        delete next.email;
-                        return next;
-                      });
-                    }}
-
-                    className={`mt-2 h-12 rounded-lg border-2 ${errors.email ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
+                    className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.email ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
                   />
-                   {errors.email && (
+                  {rhfErrors.email && (
                     <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
                       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                       </svg>
-                      {errors.email}
+                      {rhfErrors.email.message}
                     </p>
                   )}
                 </div>
@@ -1021,26 +902,22 @@ export default function FormMutiara({
                   <Input
                     id="phone"
                     type="tel"
-                    required
+                    {...register('phone', { 
+                      required: 'Nomor telepon harus diisi',
+                      pattern: {
+                        value: /^[0-9+]{10,15}$/,
+                        message: 'Format nomor telepon tidak valid'
+                      }
+                    })}
                     placeholder="08123456789"
-                    value={formData.phone}
-                    onChange={(e) => {
-                      setFormData({ ...formData, phone: e.target.value });
-                      setErrors(prev => {
-                        const next = { ...prev };
-                        delete next.phone;
-                        return next;
-                      });
-                    }}
-
-                    className={`mt-2 h-12 rounded-lg border-2 ${errors.phone ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
+                    className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.phone ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
                   />
-                  {errors.phone && (
+                  {rhfErrors.phone && (
                     <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
                       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                       </svg>
-                      {errors.phone}
+                      {rhfErrors.phone.message}
                     </p>
                   )}
                   <p className="text-xs text-slate-500 mt-1">Nomor WhatsApp yang aktif untuk verifikasi</p>
@@ -1052,18 +929,22 @@ export default function FormMutiara({
                  <Label className="text-gray-700 font-semibold">
                    Kewarganegaraan <span className="text-red-500">*</span>
                  </Label>
-                 <Select
-                   value={formData.citizenship}
-                   onValueChange={(value) => setFormData({ ...formData, citizenship: value })}
-                 >
-                   <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
-                     <SelectValue placeholder="Pilih kewarganegaraan" />
-                   </SelectTrigger>
-                   <SelectContent>
-                     <SelectItem value="Indonesia">WNI (Warga Negara Indonesia)</SelectItem>
-                     <SelectItem value="WNA">WNA (Warga Negara Asing)</SelectItem>
-                   </SelectContent>
-                 </Select>
+                 <Controller
+                    name="citizenship"
+                    control={control}
+                    rules={{ required: 'Kewarganegaraan harus dipilih' }}
+                    render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
+                          <SelectValue placeholder="Pilih kewarganegaraan" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Indonesia">WNI (Warga Negara Indonesia)</SelectItem>
+                          <SelectItem value="WNA">WNA (Warga Negara Asing)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                 />
               </div>
 
             </div>
@@ -1078,65 +959,83 @@ export default function FormMutiara({
             <div className="space-y-5">
 
               {/* RT/RW Field - Only for WNI */}
-              {formData.citizenship === 'Indonesia' && (
+              {watchedCitizenship === 'Indonesia' && (
                 <div>
-                  <Label htmlFor="streetAddress" className="text-gray-700 font-semibold">
+                  <Label htmlFor="alamatJalan" className="text-gray-700 font-semibold">
                     Jalan, RT/RW <span className="text-red-500">*</span>
                   </Label>
                   <Textarea
-                    id="streetAddress"
-                    required
+                    id="alamatJalan"
+                    {...register('alamatJalan', { 
+                      required: watchedCitizenship === 'Indonesia' ? 'Alamat jalan harus diisi' : false,
+                      onBlur: () => {
+                         const province = addressData.provinces.find(p => p.id === selectedAddress.provinceId);
+                         const city = addressData.cities.find(c => c.id === selectedAddress.cityId);
+                         const district = addressData.districts.find(d => d.id === selectedAddress.districtId);
+                         const village = addressData.villages.find(v => v.id === selectedAddress.villageId);
+                         updateFullAddress(
+                           province?.province || '',
+                           city?.name || '',
+                           district?.name || '',
+                           village?.name || ''
+                         );
+                      }
+                    })}
                     rows={3}
                     placeholder="Contoh: Jl. Magelang No. 123, RT 02/RW 05"
-                    value={streetAddress}
-                    onChange={(e) => setStreetAddress(e.target.value)}
-                    className="mt-2 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
+                    className={`mt-2 rounded-lg border-2 ${rhfErrors.alamatJalan ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
                   />
                   <p className="text-xs text-slate-500 mt-1">Masukkan alamat jalan, nomor rumah, RT/RW</p>
                 </div>
               )}
 
               {/* Indonesian Address Dropdowns - Only show if WNI */}
-              {formData.citizenship === 'Indonesia' && (
+              {watchedCitizenship === 'Indonesia' && (
                 <div className="space-y-5">
-                  
-
                   <div className="grid md:grid-cols-2 gap-5">
                     {/* Province Dropdown */}
                     <div>
                       <Label className="text-gray-700 font-semibold">
                         Provinsi <span className="text-red-500">*</span>
                       </Label>
-                      <Select
-                        value={selectedAddress.provinceId}
-                        onValueChange={(value) => {
-                          const province = addressData.provinces.find(p => p.id === value);
-                          // Reset all dependent selections
-                          setSelectedAddress(prev => ({ 
-                            ...prev, 
-                            provinceId: value,
-                            cityId: '',
-                            districtId: '',
-                            villageId: ''
-                          }));
-                          if (province) {
-                            loadCities(value);
-                            updateFullAddress(province.province, '', '', '');
-                          }
-                        }}
-                        disabled={addressData.loadingProvinces}
-                      >
-                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
-                          <SelectValue placeholder={addressData.loadingProvinces ? "Memuat provinsi..." : "-- Pilih Provinsi --"} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {addressData.provinces.map((province) => (
-                            <SelectItem key={province.id} value={province.id}>
-                              {province.province}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Controller
+                        name="province"
+                        control={control}
+                        rules={{ required: watchedCitizenship === 'Indonesia' ? 'Provinsi harus dipilih' : false }}
+                        render={({ field }) => (
+                          <Select
+                            value={selectedAddress.provinceId}
+                            onValueChange={(value) => {
+                              const province = addressData.provinces.find(p => p.id === value);
+                              // Reset all dependent selections
+                              setSelectedAddress(prev => ({ 
+                                ...prev, 
+                                provinceId: value,
+                                cityId: '',
+                                districtId: '',
+                                villageId: ''
+                              }));
+                              if (province) {
+                                field.onChange(province.province);
+                                loadCities(value);
+                                updateFullAddress(province.province, '', '', '');
+                              }
+                            }}
+                            disabled={addressData.loadingProvinces}
+                          >
+                            <SelectTrigger className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.province ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}>
+                              <SelectValue placeholder={addressData.loadingProvinces ? "Memuat provinsi..." : "-- Pilih Provinsi --"} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {addressData.provinces.map((province) => (
+                                <SelectItem key={province.id} value={province.id}>
+                                  {province.province}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
                     </div>
 
                     {/* City Dropdown */}
@@ -1144,40 +1043,48 @@ export default function FormMutiara({
                       <Label className="text-gray-700 font-semibold">
                         Kota/Kabupaten <span className="text-red-500">*</span>
                       </Label>
-                      <Select
-                        value={selectedAddress.cityId}
-                        onValueChange={(value) => {
-                          const city = addressData.cities.find(c => c.id === value);
-                          const province = addressData.provinces.find(p => p.id === selectedAddress.provinceId);
-                          // Reset dependent selections
-                          setSelectedAddress(prev => ({ 
-                            ...prev, 
-                            cityId: value,
-                            districtId: '',
-                            villageId: ''
-                          }));
-                          if (city && province) {
-                            loadDistricts(value);
-                            updateFullAddress(province.province, city.name, '', '');
-                          }
-                        }}
-                        disabled={!selectedAddress.provinceId || addressData.loadingCities}
-                      >
-                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
-                          <SelectValue placeholder={
-                            !selectedAddress.provinceId ? "Pilih provinsi dulu" :
-                            addressData.loadingCities ? "Memuat kota..." : 
-                            "-- Pilih Kota/Kabupaten --"
-                          } />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {addressData.cities.map((city) => (
-                            <SelectItem key={city.id} value={city.id}>
-                              {city.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Controller
+                        name="city"
+                        control={control}
+                        rules={{ required: watchedCitizenship === 'Indonesia' ? 'Kota/Kabupaten harus dipilih' : false }}
+                        render={({ field }) => (
+                          <Select
+                            value={selectedAddress.cityId}
+                            onValueChange={(value) => {
+                              const city = addressData.cities.find(c => c.id === value);
+                              const province = addressData.provinces.find(p => p.id === selectedAddress.provinceId);
+                              // Reset dependent selections
+                              setSelectedAddress(prev => ({ 
+                                ...prev, 
+                                cityId: value,
+                                districtId: '',
+                                villageId: ''
+                              }));
+                              if (city && province) {
+                                field.onChange(city.name);
+                                loadDistricts(value);
+                                updateFullAddress(province.province, city.name, '', '');
+                              }
+                            }}
+                            disabled={!selectedAddress.provinceId || addressData.loadingCities}
+                          >
+                            <SelectTrigger className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.city ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}>
+                              <SelectValue placeholder={
+                                !selectedAddress.provinceId ? "Pilih provinsi dulu" :
+                                addressData.loadingCities ? "Memuat kota..." : 
+                                "-- Pilih Kota/Kabupaten --"
+                              } />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {addressData.cities.map((city) => (
+                                <SelectItem key={city.id} value={city.id}>
+                                  {city.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
                     </div>
                   </div>
 
@@ -1186,107 +1093,115 @@ export default function FormMutiara({
                     <div>
                       <Label className="text-gray-700 font-semibold flex items-center gap-2">
                         Kecamatan
-                       
                       </Label>
-                      <Select
-                        value={selectedAddress.districtId}
-                        onValueChange={(value) => {
-                          const district = addressData.districts.find(d => d.id === value);
-                          const city = addressData.cities.find(c => c.id === selectedAddress.cityId);
-                          const province = addressData.provinces.find(p => p.id === selectedAddress.provinceId);
-                          // Reset dependent selections
-                          setSelectedAddress(prev => ({ 
-                            ...prev, 
-                            districtId: value,
-                            villageId: ''
-                          }));
-                          if (district && city && province) {
-                            loadVillages(value);
-                            updateFullAddress(province.province, city.name, district.name, '');
-                          }
-                        }}
-                        disabled={!selectedAddress.cityId || addressData.loadingDistricts}
-                      >
-                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
-                          <SelectValue placeholder={
-                            !selectedAddress.cityId ? "Pilih kota dulu" :
-                            addressData.loadingDistricts ? "Memuat kecamatan..." : 
-                            "-- Pilih Kecamatan --"
-                          } />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {addressData.districts.map((district) => (
-                            <SelectItem key={district.id} value={district.id}>
-                              {district.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Controller
+                        name="kecamatan"
+                        control={control}
+                        rules={{ required: watchedCitizenship === 'Indonesia' ? 'Kecamatan harus dipilih' : false }}
+                        render={({ field }) => (
+                          <Select
+                            value={selectedAddress.districtId}
+                            onValueChange={(value) => {
+                              const district = addressData.districts.find(d => d.id === value);
+                              const city = addressData.cities.find(c => c.id === selectedAddress.cityId);
+                              const province = addressData.provinces.find(p => p.id === selectedAddress.provinceId);
+                              // Reset dependent selections
+                              setSelectedAddress(prev => ({ 
+                                ...prev, 
+                                districtId: value,
+                                villageId: ''
+                              }));
+                              if (district && city && province) {
+                                field.onChange(district.name);
+                                loadVillages(value);
+                                updateFullAddress(province.province, city.name, district.name, '');
+                              }
+                            }}
+                            disabled={!selectedAddress.cityId || addressData.loadingDistricts}
+                          >
+                            <SelectTrigger className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.kecamatan ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}>
+                              <SelectValue placeholder={
+                                !selectedAddress.cityId ? "Pilih kota dulu" :
+                                addressData.loadingDistricts ? "Memuat kecamatan..." : 
+                                "-- Pilih Kecamatan --"
+                              } />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {addressData.districts.map((district) => (
+                                <SelectItem key={district.id} value={district.id}>
+                                  {district.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
                     </div>
 
                     {/* Village Dropdown */}
                     <div>
                       <Label className="text-gray-700 font-semibold flex items-center gap-2">
                         Kelurahan/Desa
-                      
                       </Label>
-                      <Select
-                        value={selectedAddress.villageId}
-                        onValueChange={(value) => {
-                          const village = addressData.villages.find(v => v.id === value);
-                          const district = addressData.districts.find(d => d.id === selectedAddress.districtId);
-                          const city = addressData.cities.find(c => c.id === selectedAddress.cityId);
-                          const province = addressData.provinces.find(p => p.id === selectedAddress.provinceId);
-                          setSelectedAddress(prev => ({ ...prev, villageId: value }));
-                          if (village && district && city && province) {
-                            updateFullAddress(province.province, city.name, district.name, village.name);
-                          }
-                        }}
-                        disabled={!selectedAddress.districtId || addressData.loadingVillages}
-                      >
-                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
-                          <SelectValue placeholder={
-                            !selectedAddress.districtId ? "Pilih kecamatan dulu" :
-                            addressData.loadingVillages ? "Memuat kelurahan..." : 
-                            "-- Pilih Kelurahan/Desa --"
-                          } />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {addressData.villages.map((village) => (
-                            <SelectItem key={village.id} value={village.id}>
-                              {village.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Controller
+                        name="kelurahan"
+                        control={control}
+                        rules={{ required: watchedCitizenship === 'Indonesia' ? 'Kelurahan harus dipilih' : false }}
+                        render={({ field }) => (
+                          <Select
+                            value={selectedAddress.villageId}
+                            onValueChange={(value) => {
+                              const village = addressData.villages.find(v => v.id === value);
+                              const district = addressData.districts.find(d => d.id === selectedAddress.districtId);
+                              const city = addressData.cities.find(c => c.id === selectedAddress.cityId);
+                              const province = addressData.provinces.find(p => p.id === selectedAddress.provinceId);
+                              setSelectedAddress(prev => ({ ...prev, villageId: value }));
+                              if (village && district && city && province) {
+                                field.onChange(village.name);
+                                updateFullAddress(province.province, city.name, district.name, village.name);
+                              }
+                            }}
+                            disabled={!selectedAddress.districtId || addressData.loadingVillages}
+                          >
+                            <SelectTrigger className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.kelurahan ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}>
+                              <SelectValue placeholder={
+                                !selectedAddress.districtId ? "Pilih kecamatan dulu" :
+                                addressData.loadingVillages ? "Memuat kelurahan..." : 
+                                "-- Pilih Kelurahan/Desa --"
+                              } />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {addressData.villages.map((village) => (
+                                <SelectItem key={village.id} value={village.id}>
+                                  {village.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
                     </div>
                   </div>
                 </div>
               )}
 
               {/* Custom Address Input for WNA */}
-              {formData.citizenship !== 'Indonesia' && (
+              {watchedCitizenship !== 'Indonesia' && (
                 <div className="space-y-5">
-                  
-                  
                   <div>
                     <Label className="text-gray-700 font-semibold">
                       Alamat Lengkap (Sesuai ID) <span className="text-red-500">*</span>
                     </Label>
                     <textarea
-                      required
+                      {...register('address', { required: watchedCitizenship !== 'Indonesia' ? 'Alamat lengkap harus diisi' : false })}
                       rows={4}
                       placeholder="Contoh: 123 Main Street, Apartment 4B, Downtown District, Bangkok 10110, Thailand"
-                      value={formData.address}
-                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                      className="mt-2 w-full p-3 rounded-lg border-2 border-slate-300 focus:border-emerald-500 focus:outline-none resize-none"
+                      className={`mt-2 w-full p-3 rounded-lg border-2 ${rhfErrors.address ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500 focus:outline-none resize-none`}
                     />
                     <p className="text-xs text-slate-500 mt-1">
                       Masukkan alamat lengkap termasuk nama jalan, nomor, kota, kode pos, dan negara
                     </p>
                   </div>
-
-
                 </div>
               )}
 
@@ -1298,12 +1213,9 @@ export default function FormMutiara({
                   </Label>
                   <Input
                     id="postalCode"
-                    required
-                    maxLength={5}
+                    {...register('postalCode', { required: 'Kode pos harus diisi', maxLength: 5 })}
                     placeholder="55281"
-                    value={formData.postalCode}
-                    onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
-                    className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
+                    className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.postalCode ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
                   />
                 </div>
 
@@ -1311,53 +1223,53 @@ export default function FormMutiara({
                   <Label className="text-gray-700 font-semibold">
                     Status Tempat Tinggal <span className="text-red-500">*</span>
                   </Label>
-                   <Select
-                      value={formData.statusRumah}
-                      onValueChange={(value) => setFormData({ ...formData, statusRumah: value })}
-                    >
-                      <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
-                        <SelectValue placeholder="-- Pilih Status --" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Milik Sendiri">Milik Sendiri</SelectItem>
-                        <SelectItem value="Milik Orang Tua">Milik Orang Tua</SelectItem>
-                        <SelectItem value="Sewa/Kontrak">Sewa/Kontrak</SelectItem>
-                        <SelectItem value="Dinas">Rumah Dinas</SelectItem>
-                      </SelectContent>
-                    </Select>
+                   <Controller
+                      name="statusRumah"
+                      control={control}
+                      rules={{ required: 'Status tempat tinggal harus dipilih' }}
+                      render={({ field }) => (
+                        <Select value={field.value} onValueChange={field.onChange}>
+                          <SelectTrigger className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.statusRumah ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}>
+                            <SelectValue placeholder="-- Pilih Status --" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Milik Sendiri">Milik Sendiri</SelectItem>
+                            <SelectItem value="Milik Orang Tua">Milik Orang Tua</SelectItem>
+                            <SelectItem value="Sewa/Kontrak">Sewa/Kontrak</SelectItem>
+                            <SelectItem value="Dinas">Rumah Dinas</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
                </div>
               </div>
               
               {/* Address Preview - Only for WNI */}
-              {formData.address && formData.citizenship === 'Indonesia' && (
-  <div className="mb-6">
-    {/* Label disamakan dengan gaya Label Domisili */}
-    <div className="flex items-center gap-2 mb-2">
-       <Label className="text-gray-700 font-semibold flex items-center gap-2">
-      Alamat Lengkap
-    </Label>
-    </div>
+              {getValues('address') && watchedCitizenship === 'Indonesia' && (
+                <div className="mb-6">
+                  <div className="flex items-center gap-2 mb-2">
+                     <Label className="text-gray-700 font-semibold flex items-center gap-2">
+                      Alamat Lengkap
+                    </Label>
+                  </div>
 
-    {/* Box Alamat dengan border & shadow yang halus */}
-    <div className="bg-white border-2 border-slate-200 rounded-xl p-4 shadow-sm">
-      <div className="flex">
-        <div className="mt-1">
-        </div>
-        <div className="flex-1">
-          <p className="text-sm text-slate-700 font-medium leading-relaxed">
-            {formData.address}
-          </p>
-          <p className="mt-2 text-[11px] text-slate-500 flex items-center gap-1 italic">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-            </svg>
-            Harap pastikan alamat ini sesuai dengan KTP Anda
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
+                  <div className="bg-white border-2 border-slate-200 rounded-xl p-4 shadow-sm">
+                    <div className="flex">
+                      <div className="flex-1">
+                        <p className="text-sm text-slate-700 font-medium leading-relaxed">
+                          {getValues('address')}
+                        </p>
+                        <p className="mt-2 text-[11px] text-slate-500 flex items-center gap-1 italic">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                          </svg>
+                          Harap pastikan alamat ini sesuai dengan KTP Anda
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
 {/* Bagian Domisili tetap di bawahnya */}
 <div className="grid md:grid-cols-1 gap-5">
@@ -1366,9 +1278,8 @@ export default function FormMutiara({
       Alamat Domisili
     </Label>
     <Input
+      {...register('alamatDomisili')}
       placeholder="Kosongkan jika sama dengan alamat KTP"
-      value={formData.alamatDomisili}
-      onChange={(e) => setFormData({ ...formData, alamatDomisili: e.target.value })}
       className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500 shadow-sm"
     />
     <p className="text-xs text-slate-500 mt-1 italic">Isi jika Anda tinggal di lokasi berbeda dari KTP</p>
@@ -1394,18 +1305,15 @@ export default function FormMutiara({
     <div>
       <Label className="text-gray-700 font-semibold">Nama Lengkap</Label>
       <Input
+        {...register('kontakDaruratNama')}
         placeholder="Nama kontak darurat"
-        value={formData.kontakDaruratNama}
-        onChange={(e) =>
-          setFormData({ ...formData, kontakDaruratNama: e.target.value })
-        }
         className={`mt-2 h-12 rounded-lg border-2 ${
-          errors.kontakDaruratNama ? 'border-red-500' : 'border-slate-300'
+          rhfErrors.kontakDaruratNama ? 'border-red-500' : 'border-slate-300'
         } focus:border-emerald-500`}
       />
-      {errors.kontakDaruratNama && (
+      {rhfErrors.kontakDaruratNama && (
         <p className="text-sm text-red-600 mt-1">
-          {errors.kontakDaruratNama}
+          {rhfErrors.kontakDaruratNama.message}
         </p>
       )}
     </div>
@@ -1413,18 +1321,15 @@ export default function FormMutiara({
     <div>
         <Label className="text-gray-700 font-semibold">Alamat</Label>
         <Input
+          {...register('kontakDaruratAlamat')}
           placeholder="Alamat kontak darurat"
-          value={formData.kontakDaruratAlamat}
-          onChange={(e) =>
-            setFormData({ ...formData, kontakDaruratAlamat: e.target.value })
-          }
           className={`mt-2 h-12 rounded-lg border-2 ${
-            errors.kontakDaruratAlamat ? 'border-red-500' : 'border-slate-300'
+            rhfErrors.kontakDaruratAlamat ? 'border-red-500' : 'border-slate-300'
           } focus:border-emerald-500`}
         />
-        {errors.kontakDaruratAlamat && (
+        {rhfErrors.kontakDaruratAlamat && (
           <p className="text-sm text-red-600 mt-1">
-            {errors.kontakDaruratAlamat}
+            {rhfErrors.kontakDaruratAlamat.message}
           </p>
         )}
       </div>
@@ -1439,18 +1344,15 @@ export default function FormMutiara({
       <div>
       <Label className="text-gray-700 font-semibold">Nomor HP</Label>
       <Input
+        {...register('kontakDaruratHp')}
         placeholder="08123456789"
-        value={formData.kontakDaruratHp}
-        onChange={(e) =>
-          setFormData({ ...formData, kontakDaruratHp: e.target.value })
-        }
         className={`mt-2 h-12 rounded-lg border-2 ${
-          errors.kontakDaruratHp ? 'border-red-500' : 'border-slate-300'
+          rhfErrors.kontakDaruratHp ? 'border-red-500' : 'border-slate-300'
         } focus:border-emerald-500`}
       />
-      {errors.kontakDaruratHp && (
+      {rhfErrors.kontakDaruratHp && (
         <p className="text-sm text-red-600 mt-1">
-          {errors.kontakDaruratHp}
+          {rhfErrors.kontakDaruratHp.message}
         </p>
       )}
     </div>
@@ -1458,47 +1360,42 @@ export default function FormMutiara({
       {/* Hubungan */}
       <div>
         <Label className="text-gray-700 font-semibold">Hubungan</Label>
-        <Select
-          value={formData.kontakDaruratHubungan}
-          onValueChange={(value) =>
-            setFormData({ ...formData, kontakDaruratHubungan: value })
-          }
-        >
-          <SelectTrigger
-            className={`mt-2 h-12 rounded-lg border-2 ${
-              errors.kontakDaruratHubungan
-                ? 'border-red-500'
-                : 'border-slate-300'
-            }`}
-          >
-            <SelectValue placeholder="-- Pilih --" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Suami/Istri">Suami/Istri</SelectItem>
-            <SelectItem value="Lainnya">Lainnya</SelectItem>
-          </SelectContent>
-        </Select>
+        <Controller
+          name="kontakDaruratHubungan"
+          control={control}
+          render={({ field }) => (
+            <Select value={field.value} onValueChange={field.onChange}>
+              <SelectTrigger
+                className={`mt-2 h-12 rounded-lg border-2 ${
+                  rhfErrors.kontakDaruratHubungan
+                    ? 'border-red-500'
+                    : 'border-slate-300'
+                }`}
+              >
+                <SelectValue placeholder="-- Pilih --" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Suami/Istri">Suami/Istri</SelectItem>
+                <SelectItem value="Lainnya">Lainnya</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
+        />
 
-        {formData.kontakDaruratHubungan === 'Lainnya' && (
+        {watchedEmergencyHubungan === 'Lainnya' && (
           <Input
+            {...register('kontakDaruratHubunganLainnya')}
             placeholder="Sebutkan hubungan lainnya"
-            className={`mt-2 h-12 rounded-lg border-2 ${errors.kontakDaruratHubunganLainnya ? 'border-red-500' : 'border-slate-300'}`}
-            value={formData.kontakDaruratHubunganLainnya || ''}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                kontakDaruratHubunganLainnya: e.target.value,
-              })
-            }
+            className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.kontakDaruratHubunganLainnya ? 'border-red-500' : 'border-slate-300'}`}
           />
         )}
-        {errors.kontakDaruratHubunganLainnya && (
-          <p className="text-sm text-red-600 mt-1">{errors.kontakDaruratHubunganLainnya}</p>
+        {rhfErrors.kontakDaruratHubunganLainnya && (
+          <p className="text-sm text-red-600 mt-1">{rhfErrors.kontakDaruratHubunganLainnya.message}</p>
         )}
 
-        {errors.kontakDaruratHubungan && (
+        {rhfErrors.kontakDaruratHubungan && (
           <p className="text-sm text-red-600 mt-1">
-            {errors.kontakDaruratHubungan}
+            {rhfErrors.kontakDaruratHubungan.message}
           </p>
         )}
       </div>
@@ -1508,7 +1405,7 @@ export default function FormMutiara({
 </div>
 
 
-        </div>
+        </section>
       )}
 
       {/* ========================================
@@ -1543,151 +1440,163 @@ export default function FormMutiara({
                    <Label className="text-gray-700 font-semibold">
                      Pekerjaan <span className="text-red-500">*</span>
                    </Label>
-                   <Select
-                    value={formData.employmentStatus}
-                    onValueChange={(value) => setFormData({ ...formData, employmentStatus: value })}
-                  >
-                    <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
-                      <SelectValue placeholder="-- Pilih Pekerjaan --" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Pelajar/Mahasiswa">Pelajar/Mahasiswa</SelectItem>
-                      <SelectItem value="Karyawan Swasta">Karyawan Swasta</SelectItem>
-                      <SelectItem value="TNI/POLRI">TNI/POLRI</SelectItem>
-                      <SelectItem value="Wiraswasta">Wiraswasta</SelectItem>
-                      <SelectItem value="BUMN/BUMD">BUMN/BUMD</SelectItem>
-                      <SelectItem value="Ibu Rumah Tangga">Ibu Rumah Tangga</SelectItem>
-                      <SelectItem value="lainnya">Lainnya</SelectItem>
-                    </SelectContent>
-                  </Select>
+                   <Controller
+                    name="employmentStatus"
+                    control={control}
+                    rules={{ required: 'Pekerjaan harus dipilih' }}
+                    render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
+                          <SelectValue placeholder="-- Pilih Pekerjaan --" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Pelajar/Mahasiswa">Pelajar/Mahasiswa</SelectItem>
+                          <SelectItem value="Karyawan Swasta">Karyawan Swasta</SelectItem>
+                          <SelectItem value="TNI/POLRI">TNI/POLRI</SelectItem>
+                          <SelectItem value="Wiraswasta">Wiraswasta</SelectItem>
+                          <SelectItem value="BUMN/BUMD">BUMN/BUMD</SelectItem>
+                          <SelectItem value="Ibu Rumah Tangga">Ibu Rumah Tangga</SelectItem>
+                          <SelectItem value="lainnya">Lainnya</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                 </div>
                 <div>
                   <Label className="text-gray-700 font-semibold">
                     Penghasilan / Gaji per Bulan <span className="text-red-500">*</span>
                   </Label>
-                   <Select
-                    value={formData.monthlyIncome}
-                    onValueChange={(value) => setFormData({ ...formData, monthlyIncome: value })}
-                  >
-                    <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
-                      <SelectValue placeholder="-- Pilih Range Penghasilan --" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="s.d 1 Juta">s.d 1 Juta</SelectItem>
-                      <SelectItem value="> 1 - 5 Juta">&gt; 1 - 5 Juta</SelectItem>
-                      <SelectItem value="> 5 - 10 Juta">&gt; 5 - 10 Juta</SelectItem>
-                      <SelectItem value="> 10 - 25 Juta">&gt; 10 - 25 Juta</SelectItem>
-                      <SelectItem value="> 25 - 100 Juta">&gt; 25 - 100 Juta</SelectItem>
-                      <SelectItem value="> 100 Juta">&gt; 100 Juta</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Controller
+                    name="monthlyIncome"
+                    control={control}
+                    rules={{ required: 'Penghasilan harus dipilih' }}
+                    render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
+                          <SelectValue placeholder="-- Pilih Range Penghasilan --" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="s.d 1 Juta">s.d 1 Juta</SelectItem>
+                          <SelectItem value="> 1 - 5 Juta">&gt; 1 - 5 Juta</SelectItem>
+                          <SelectItem value="> 5 - 10 Juta">&gt; 5 - 10 Juta</SelectItem>
+                          <SelectItem value="> 10 - 25 Juta">&gt; 10 - 25 Juta</SelectItem>
+                          <SelectItem value="> 25 - 100 Juta">&gt; 25 - 100 Juta</SelectItem>
+                          <SelectItem value="> 100 Juta">&gt; 100 Juta</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                 </div>
                </div>
 
               <div className="grid md:grid-cols-2 gap-5">
-                 <div>
+                  <div>
                     <Label className="text-gray-700">
-                      {formData.employmentStatus === 'Pelajar/Mahasiswa' ? 'Nama Sekolah / Universitas' : 'Nama Perusahaan'}
+                      {watchedEmploymentStatus === 'Pelajar/Mahasiswa' ? 'Nama Sekolah / Universitas' : 'Nama Perusahaan'}
                     </Label>
                     <Input
-                      value={formData.tempatBekerja}
-                      onChange={(e) => setFormData({ ...formData, tempatBekerja: e.target.value })}
+                      {...register('tempatBekerja')}
                       className="mt-2 h-12 rounded-md border-slate-300 focus:border-blue-500"
                     />
-                 </div>
-                 <div>
+                  </div>
+                  <div>
                     <Label className="text-gray-700">
-                      {formData.employmentStatus === 'Pelajar/Mahasiswa' ? 'Kelas / Jurusan' : 'Jabatan'}
+                      {watchedEmploymentStatus === 'Pelajar/Mahasiswa' ? 'Kelas / Jurusan' : 'Jabatan'}
                     </Label>
                     <Input
-                      value={formData.jabatan}
-                      onChange={(e) => setFormData({ ...formData, jabatan: e.target.value })}
+                      {...register('jabatan')}
                       className="mt-2 h-12 rounded-md border-slate-300 focus:border-blue-500"
                     />
-                 </div>
+                  </div>
               </div>
               
               <div className="grid md:grid-cols-2 gap-5">
-                 <div>
+                  <div>
                     <Label className="text-gray-700">
-                      {formData.employmentStatus === 'Pelajar/Mahasiswa' ? 'Alamat Sekolah / Universitas' : 'Alamat Kantor'}
+                      {watchedEmploymentStatus === 'Pelajar/Mahasiswa' ? 'Alamat Sekolah / Universitas' : 'Alamat Kantor'}
                     </Label>
                     <Input
-                      value={formData.alamatKantor}
-                      onChange={(e) => setFormData({ ...formData, alamatKantor: e.target.value })}
+                      {...register('alamatKantor')}
                       className="mt-2 h-12 rounded-md border-slate-300 focus:border-blue-500"
                     />
-                 </div>
-                 <div>
+                  </div>
+                  <div>
                     <Label className="text-gray-700">
-                      {formData.employmentStatus === 'Pelajar/Mahasiswa' ? 'Telepon Sekolah / Universitas' : 'Telepon Kantor'}
+                      {watchedEmploymentStatus === 'Pelajar/Mahasiswa' ? 'Telepon Sekolah / Universitas' : 'Telepon Kantor'}
                     </Label>
                     <Input
+                      {...register('teleponKantor')}
                       placeholder="021-12345678"
-                      value={formData.teleponKantor}
-                      onChange={(e) => setFormData({ ...formData, teleponKantor: e.target.value })}
                       className="mt-2 h-12 rounded-md border-slate-300 focus:border-blue-500"
                     />
-                 </div>
-
+                  </div>
               </div>
 
               <div className="grid md:grid-cols-2 gap-5">
-                 <div>
+                  <div>
                     <Label className="text-gray-700">Bidang Usaha (Jika Bekerja)</Label>
                     <Input
+                      {...register('bidangUsaha')}
                       placeholder="Contoh: Perdagangan, Jasa..."
-                      value={formData.bidangUsaha}
-                      onChange={(e) => setFormData({ ...formData, bidangUsaha: e.target.value })}
                       className="mt-2 h-12 rounded-md border-slate-300 focus:border-blue-500"
                     />
-                 </div>
-                 <div>
+                  </div>
+                  <div>
                     <Label className="text-gray-700">Rata-rata Transaksi per Bulan</Label>
-                    <Input
-                      type="text"
-                      placeholder="Contoh: 1.000.000"
-                      value={formatRupiah(formData.rataRataTransaksi)}
-                      onChange={(e) => {
-                        const cleanValue = e.target.value.replace(/\D/g, '');
-                        setFormData({ ...formData, rataRataTransaksi: cleanValue });
-                      }}
-                      className="mt-2 h-12 rounded-md border-slate-300 focus:border-blue-500"
+                    <Controller
+                      name="rataRataTransaksi"
+                      control={control}
+                      render={({ field }) => (
+                        <Input
+                          type="text"
+                          placeholder="Contoh: 1.000.000"
+                          value={formatRupiah(field.value)}
+                          onChange={(e) => {
+                            const cleanValue = e.target.value.replace(/\D/g, '');
+                            field.onChange(cleanValue);
+                          }}
+                          className="mt-2 h-12 rounded-md border-slate-300 focus:border-blue-500"
+                        />
+                      )}
                     />
-                 </div>
+                  </div>
               </div>
 
 
               <div>
                 <Label htmlFor="sumberDana" className="text-gray-700">Sumber Dana</Label>
-                <Select
-                  value={formData.sumberDana}
-                  onValueChange={(value) => {
-                    setFormData({ ...formData, sumberDana: value });
-                    // Clear custom field when changing selection
-                    if (value !== 'Lainnya') {
-                      setFormData(prev => ({ ...prev, sumberDana: value, sumberDanaCustom: '' }));
-                    }
-                  }}
-                >
-                  <SelectTrigger className="mt-2 h-12 rounded-md">
-                    <SelectValue placeholder="Pilih sumber dana" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Gaji">Gaji</SelectItem>
-                    <SelectItem value="Hasil Usaha">Hasil Usaha</SelectItem>
-                    <SelectItem value="Orang Tua">Orang Tua</SelectItem>
-                    <SelectItem value="Beasiswa">Beasiswa</SelectItem>
-                    <SelectItem value="Warisan">Warisan</SelectItem>
-                    <SelectItem value="Tabungan">Tabungan Pribadi</SelectItem>
-                    <SelectItem value="Lainnya">Lainnya</SelectItem>
-                  </SelectContent>
-                </Select>
-                {formData.sumberDana === 'Lainnya' && (
+                <Controller
+                  name="sumberDana"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      value={field.value}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        if (value !== 'Lainnya') {
+                          setValue('sumberDanaCustom', '');
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="mt-2 h-12 rounded-md">
+                        <SelectValue placeholder="Pilih sumber dana" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Gaji">Gaji</SelectItem>
+                        <SelectItem value="Hasil Usaha">Hasil Usaha</SelectItem>
+                        <SelectItem value="Orang Tua">Orang Tua</SelectItem>
+                        <SelectItem value="Beasiswa">Beasiswa</SelectItem>
+                        <SelectItem value="Warisan">Warisan</SelectItem>
+                        <SelectItem value="Tabungan">Tabungan Pribadi</SelectItem>
+                        <SelectItem value="Lainnya">Lainnya</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                {watchedSumberDana === 'Lainnya' && (
                   <Input
+                    {...register('sumberDanaCustom')}
                     placeholder="Sebutkan sumber dana lainnya"
-                    value={formData.sumberDanaCustom || ''}
-                    onChange={(e) => setFormData({ ...formData, sumberDanaCustom: e.target.value })}
                     className="mt-2 h-12 rounded-md"
                   />
                 )}
@@ -1698,16 +1607,13 @@ export default function FormMutiara({
                 <h4 className="font-semibold text-emerald-800 mb-3">Rekening Bank Lain (Opsional)</h4>
                 <p className="text-xs text-gray-500 mb-4">Tambahkan informasi rekening bank lain yang Anda miliki</p>
                 
-                {formData.eddBankLain.map((bank, index) => (
-                  <div key={index} className="bg-white p-4 rounded-lg border border-slate-200 mb-4">
+                {bankFields.map((field, index) => (
+                  <div key={field.id} className="bg-white p-4 rounded-lg border border-slate-200 mb-4">
                     <div className="flex justify-between items-center mb-3">
                       <h5 className="font-medium text-gray-700">Rekening Bank #{index + 1}</h5>
                       <button
                         type="button"
-                        onClick={() => {
-                          const newBanks = formData.eddBankLain.filter((_, i) => i !== index);
-                          setFormData({ ...formData, eddBankLain: newBanks });
-                        }}
+                        onClick={() => removeBank(index)}
                         className="text-red-500 hover:text-red-700 text-sm"
                       >
                         Hapus
@@ -1717,48 +1623,28 @@ export default function FormMutiara({
                       <div>
                         <Label className="text-gray-700">Nama Bank</Label>
                         <Input
-                          placeholder="Contoh: BCA, Mandiri"
-                          value={bank.bank_name}
-                          onChange={(e) => {
-                            const newBanks = [...formData.eddBankLain];
-                            newBanks[index].bank_name = e.target.value;
-                            setFormData({ ...formData, eddBankLain: newBanks });
-                          }}
-                          className="mt-2 h-10 rounded-md"
+                          {...register(`eddBankLain.${index}.bank_name`)}
+                          placeholder="Contoh: BCA, Mandiri, BRI..."
+                          className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
                         />
                       </div>
-                      <div>
-                        <Label className="text-gray-700">Jenis Rekening</Label>
-                        <Select
-                          value={bank.jenis_rekening}
-                          onValueChange={(value) => {
-                            const newBanks = [...formData.eddBankLain];
-                            newBanks[index].jenis_rekening = value;
-                            setFormData({ ...formData, eddBankLain: newBanks });
-                          }}
-                        >
-                          <SelectTrigger className="mt-2 h-10 rounded-md">
-                            <SelectValue placeholder="Pilih jenis" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Tabungan">Tabungan</SelectItem>
-                            <SelectItem value="Giro">Giro</SelectItem>
-                            <SelectItem value="Deposito">Deposito</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label className="text-gray-700">Nomor Rekening</Label>
-                        <Input
-                          placeholder="Nomor rekening"
-                          value={bank.nomor_rekening}
-                          onChange={(e) => {
-                            const newBanks = [...formData.eddBankLain];
-                            newBanks[index].nomor_rekening = e.target.value;
-                            setFormData({ ...formData, eddBankLain: newBanks });
-                          }}
-                          className="mt-2 h-10 rounded-md"
-                        />
+                      <div className="grid md:grid-cols-2 gap-4 mt-2">
+                        <div>
+                          <Label className="text-gray-700">Jenis Rekening</Label>
+                          <Input
+                            {...register(`eddBankLain.${index}.jenis_rekening`)}
+                            placeholder="Contoh: Tabungan, Giro..."
+                            className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-gray-700">Nomor Rekening</Label>
+                          <Input
+                            {...register(`eddBankLain.${index}.nomor_rekening`)}
+                            placeholder="Masukkan nomor rekening"
+                            className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1766,15 +1652,13 @@ export default function FormMutiara({
                 
                 <button
                   type="button"
-                  onClick={() => {
-                    setFormData({
-                      ...formData,
-                      eddBankLain: [...formData.eddBankLain, { bank_name: '', jenis_rekening: '', nomor_rekening: '' }]
-                    });
-                  }}
-                  className="w-full p-3 border-2 border-dashed border-blue-300 rounded-lg text-blue-600 hover:bg-blue-50 transition"
+                  onClick={() => appendBank({ bank_name: '', jenis_rekening: '', nomor_rekening: '' })}
+                  className="w-full py-3 border-2 border-dashed border-emerald-300 text-emerald-600 rounded-lg hover:bg-emerald-50 transition-colors flex items-center justify-center gap-2 font-medium"
                 >
-                  + Tambah Rekening Bank
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  Tambah Rekening Bank Lain
                 </button>
               </div>
 
@@ -1783,48 +1667,40 @@ export default function FormMutiara({
                 <h4 className="font-semibold text-emerald-800 mb-3">Pekerjaan/Usaha Lain (Opsional)</h4>
                 <p className="text-xs text-gray-500 mb-4">Tambahkan informasi pekerjaan atau usaha sampingan lainnya</p>
                 
-                {formData.eddPekerjaanLain.map((pekerjaan, index) => (
-                  <div key={index} className="bg-white p-4 rounded-lg border border-slate-200 mb-4">
+                {pekerjaanFields.map((field, index) => (
+                  <div key={field.id} className="bg-white p-4 rounded-lg border border-slate-200 mb-4">
                     <div className="flex justify-between items-center mb-3">
                       <h5 className="font-medium text-gray-700">Pekerjaan/Usaha #{index + 1}</h5>
                       <button
                         type="button"
-                        onClick={() => {
-                          const newPekerjaan = formData.eddPekerjaanLain.filter((_, i) => i !== index);
-                          setFormData({ ...formData, eddPekerjaanLain: newPekerjaan });
-                        }}
+                        onClick={() => removePekerjaan(index)}
                         className="text-red-500 hover:text-red-700 text-sm"
                       >
                         Hapus
                       </button>
                     </div>
-                    <div>
-                      <Label className="text-gray-700">Jenis Usaha/Pekerjaan</Label>
-                      <Input
-                        placeholder="Contoh: Freelance, Toko Online, Konsultan"
-                        value={pekerjaan.jenis_usaha}
-                        onChange={(e) => {
-                          const newPekerjaan = [...formData.eddPekerjaanLain];
-                          newPekerjaan[index].jenis_usaha = e.target.value;
-                          setFormData({ ...formData, eddPekerjaanLain: newPekerjaan });
-                        }}
-                        className="mt-2 h-10 rounded-md"
-                      />
+                    <div className="grid md:grid-cols-1 gap-4">
+                      <div>
+                        <Label className="text-gray-700">Jenis Usaha/Pekerjaan</Label>
+                        <Input
+                          {...register(`eddPekerjaanLain.${index}.jenis_usaha`)}
+                          placeholder="Sebutkan pekerjaan/usaha lainnya"
+                          className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
+                        />
+                      </div>
                     </div>
                   </div>
                 ))}
                 
                 <button
                   type="button"
-                  onClick={() => {
-                    setFormData({
-                      ...formData,
-                      eddPekerjaanLain: [...formData.eddPekerjaanLain, { jenis_usaha: '' }]
-                    });
-                  }}
-                  className="w-full p-3 border-2 border-dashed border-purple-300 rounded-lg text-purple-600 hover:bg-purple-50 transition"
+                  onClick={() => appendPekerjaan({ jenis_usaha: '' })}
+                  className="w-full py-3 border-2 border-dashed border-purple-300 text-purple-600 rounded-lg hover:bg-purple-50 transition-colors flex items-center justify-center gap-2 font-medium"
                 >
-                  + Tambah Pekerjaan/Usaha
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  Tambah Pekerjaan/Usaha Lain
                 </button>
               </div>
 
@@ -1881,26 +1757,21 @@ export default function FormMutiara({
                 <Label className="text-gray-700 font-semibold">
                   Jenis Kartu <span className="text-red-500">*</span>
                 </Label>
-                <Select
-                  value={formData.cardType}
-                  onValueChange={(value) => setFormData({ ...formData, cardType: value })}
-                >
-                  <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
-                    <SelectValue placeholder="-- Pilih Jenis Kartu --" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Gold">
-                      <div className="flex items-center gap-2">
-                        <span>Gold</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="Silver">
-                      <div className="flex items-center gap-2">
-                        <span>Silver</span>
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                <Controller
+                  name="cardType"
+                  control={control}
+                  render={({ field }) => (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
+                        <SelectValue placeholder="-- Pilih Jenis Kartu --" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Gold">Gold</SelectItem>
+                        <SelectItem value="Silver">Silver</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
                 <p className="text-xs text-slate-500 mt-1">
                   Pilih jenis kartu ATM sesuai kebutuhan Anda. Setiap jenis kartu memiliki fitur dan limit yang berbeda.
                 </p>
@@ -1957,33 +1828,41 @@ export default function FormMutiara({
                 <p className="text-xs text-gray-500 mt-1">Kartu ATM dapat digunakan untuk transaksi di seluruh jaringan ATM Bank Sleman</p>
               </div> */}
 
-              {/* Account Purpose - Already exists, just add conditional "other" input */}
+              {/* Account Purpose */}
               <div>
                 <Label htmlFor="tujuanRekening" className="text-gray-700">Tujuan Pembukaan Rekening</Label>
-                <Select
-                  value={formData.tujuanRekening}
-                  onValueChange={(value) => setFormData({ ...formData, tujuanRekening: value })}
-                >
-                  <SelectTrigger className="mt-2 h-12 rounded-md">
-                    <SelectValue placeholder="Pilih tujuan" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Menabung">Menabung</SelectItem>
-                    <SelectItem value="Transaksi">Transaksi</SelectItem>
-                    <SelectItem value="Investasi">Investasi</SelectItem>
-                    <SelectItem value="Pendidikan">Pendidikan</SelectItem>
-                    <SelectItem value="Lainnya">Lainnya</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Controller
+                  name="tujuanRekening"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      value={field.value}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        if (value !== 'Lainnya') {
+                          setValue('tujuanRekeningLainnya', '');
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="mt-2 h-12 rounded-md shadow-sm border-slate-200">
+                        <SelectValue placeholder="Pilih tujuan" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Menabung">Menabung</SelectItem>
+                        <SelectItem value="Transaksi">Transaksi</SelectItem>
+                        <SelectItem value="Investasi">Investasi</SelectItem>
+                        <SelectItem value="Pendidikan">Pendidikan</SelectItem>
+                        <SelectItem value="Lainnya">Lainnya</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
                 
-                {/* Conditional "other" purpose text input */}
-                {formData.tujuanRekening === 'Lainnya' && (
+                {watchedTujuanRekening === 'Lainnya' && (
                   <Input
-                    id="tujuanRekeningLainnya"
+                    {...register('tujuanRekeningLainnya')}
                     placeholder="Sebutkan tujuan pembukaan rekening"
-                    value={formData.tujuanRekeningLainnya || ''}
-                    onChange={(e) => setFormData({ ...formData, tujuanRekeningLainnya: e.target.value })}
-                    className="mt-3 h-12 rounded-md"
+                    className="mt-3 h-12 rounded-md shadow-sm border-slate-200 focus:ring-emerald-500"
                   />
                 )}
               </div>
@@ -1991,355 +1870,301 @@ export default function FormMutiara({
             </div>
           </div>
 
-          {/* Section 2: Kepemilikan Rekening */}
-          <div className="bg-white p-4 md:p-6 rounded-2xl border-2 border-slate-200 shadow-sm">
-            <h4 className="text-emerald-800 font-bold text-xl mb-6 flex items-center gap-2">
-              <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">2</span>
-              Kepemilikan Rekening
-            </h4>
-            <div className="bg-blue-50 p-4 md:p-6 rounded-xl border-2 border-blue-200">
-              <Label className="text-gray-800 font-semibold mb-4 block text-lg">Apakah rekening ini untuk Anda sendiri?</Label>
-              <div className="flex items-center gap-6 flex-wrap">
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input 
-                    type="radio" 
-                    name="rekeningUntukSendiri" 
-                    value="true" 
-                    checked={formData.rekeningUntukSendiri === true} 
-                    onChange={() => setFormData({ ...formData, rekeningUntukSendiri: true })} 
-                    className="hidden" 
-                  />
-                  <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition ${formData.rekeningUntukSendiri === true ? "border-blue-500" : "border-gray-300"}`}>
-                    {formData.rekeningUntukSendiri === true && <span className="w-2.5 h-2.5 bg-blue-500 rounded-full" />}
-                  </span>
-                  <span className="text-sm text-gray-700">Ya, untuk saya sendiri</span>
-                </label>
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input 
-                    type="radio" 
-                    name="rekeningUntukSendiri" 
-                    value="false" 
-                    checked={formData.rekeningUntukSendiri === false} 
-                    onChange={() => setFormData({ ...formData, rekeningUntukSendiri: false })} 
-                    className="hidden" 
-                  />
-                  <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition ${formData.rekeningUntukSendiri === false ? "border-blue-500" : "border-gray-300"}`}>
-                    {formData.rekeningUntukSendiri === false && <span className="w-2.5 h-2.5 bg-blue-500 rounded-full" />}
-                  </span>
-                  <span className="text-sm text-gray-700">Tidak, untuk orang lain</span>
-                </label>
+              {/* Section 2: Kepemilikan Rekening */}
+              <div className="bg-white p-4 md:p-6 rounded-2xl border-2 border-slate-200 shadow-sm">
+                <h4 className="text-emerald-800 font-bold text-xl mb-6 flex items-center gap-2">
+                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">2</span>
+                  Kepemilikan Rekening
+                </h4>
+                
+                {/* Beneficial Owner Question */}
+                <div className="bg-emerald-50 p-6 rounded-2xl border-2 border-emerald-100 mb-4">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex items-start gap-4">
+                      <div className="bg-emerald-100 p-3 rounded-xl">
+                        <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-gray-800">Pemilik Dana (Beneficial Owner)</h4>
+                        <p className="text-sm text-gray-600 mt-1 max-w-xl">
+                          Apakah rekening ini dibuka untuk kepentingan Anda sendiri atau ada pemilik dana lain?
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white p-1 rounded-xl shadow-sm border border-emerald-100 flex self-start md:self-center">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setValue('rekeningUntukSendiri', true);
+                        }}
+                        className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${
+                          watchedRekeningUntukSendiri
+                            ? 'bg-emerald-600 text-white shadow-md'
+                            : 'text-gray-500 hover:bg-gray-50'
+                        }`}
+                      >
+                        Diri Sendiri
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setValue('rekeningUntukSendiri', false);
+                        }}
+                        className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${
+                          !watchedRekeningUntukSendiri
+                            ? 'bg-orange-500 text-white shadow-md'
+                            : 'text-gray-500 hover:bg-gray-50'
+                        }`}
+                      >
+                        Orang Lain
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-600">
+                  Informasi Beneficial Owner (pemilik manfaat sebenarnya) diperlukan jika rekening ini untuk orang lain.
+                </p>
               </div>
-              <p className="text-xs text-gray-600 mt-4">
-                Informasi Beneficial Owner (pemilik manfaat sebenarnya) diperlukan jika rekening ini untuk orang lain.
-              </p>
-            </div>
-          </div>
 
-          {/* Section 3: Beneficial Owner (Conditional) */}
-          {formData.rekeningUntukSendiri === false && (
-          <div className="bg-amber-50 p-4 md:p-6 rounded-xl border-2 border-amber-200 shadow-sm">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-amber-100">
-                <svg className="w-6 h-6 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div>
-                <h4 className="font-bold text-amber-900 text-xl">Informasi Beneficial Owner</h4>
-                <p className="text-sm text-amber-800 mt-1">Wajib diisi karena rekening untuk orang lain</p>
-              </div>
-            </div>
-            <p className="text-sm text-gray-700 mb-6 bg-white p-4 rounded-lg">
-              Beneficial Owner adalah pemilik sebenarnya atau penerima manfaat dari rekening yang dibuka. 
-              Karena rekening ini untuk orang lain, mohon lengkapi informasi pemilik manfaat yang sebenarnya.
-            </p>
-            <div className="space-y-5">
+          {watchedRekeningUntukSendiri === false && (
+            <div className="bg-white p-4 md:p-6 rounded-2xl border-2 border-slate-200 shadow-sm space-y-6">
+              <h4 className="text-emerald-800 font-bold text-xl mb-6 flex items-center gap-2">
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">2</span>
+                Data Pemilik Dana (Beneficial Owner)
+              </h4>
               
-              {/* BO Name */}
-              <div>
-                <Label htmlFor="boNama" className="text-gray-700">Nama Lengkap Beneficial Owner</Label>
-                <Input
-                  id="boNama"
-                  required
-                  placeholder="Nama lengkap sesuai identitas"
-                  value={formData.boNama}
-                  onChange={(e) => setFormData({ ...formData, boNama: e.target.value })}
-                  className={`mt-2 h-12 rounded-md ${errors.boNama ? 'border-red-500' : ''}`}
-                />
-                {errors.boNama && <p className="text-sm text-red-600 mt-1">{errors.boNama}</p>}
-              </div>
-
-              {/* BO Address */}
-              <div>
-                <Label htmlFor="boAlamat" className="text-gray-700">Alamat Lengkap</Label>
-                <Textarea
-                  id="boAlamat"
-                  required
-                  rows={2}
-                  placeholder="Alamat lengkap beneficial owner"
-                  value={formData.boAlamat}
-                  onChange={(e) => setFormData({ ...formData, boAlamat: e.target.value })}
-                  className={`mt-2 ${errors.boAlamat ? 'border-red-500' : ''}`}
-                />
-                {errors.boAlamat && <p className="text-sm text-red-600 mt-1">{errors.boAlamat}</p>}
-              </div>
-
-              {/* BO Place and Date of Birth */}
               <div className="grid md:grid-cols-2 gap-5">
                 <div>
-                  <Label htmlFor="boTempatLahir" className="text-gray-700">Tempat Lahir</Label>
+                  <Label className="text-gray-700">Nama Lengkap Sesuai Identitas</Label>
                   <Input
-                    id="boTempatLahir"
-                    required
-                    placeholder="Kota kelahiran"
-                    value={formData.boTempatLahir}
-                    onChange={(e) => setFormData({ ...formData, boTempatLahir: e.target.value })}
-                    className={`mt-2 h-12 rounded-md ${errors.boTempatLahir ? 'border-red-500' : ''}`}
+                    {...register('boNama')}
+                    placeholder="Nama Lengkap Pemilik Dana"
+                    className="mt-2 h-12 rounded-md transition-all focus:ring-2 focus:ring-emerald-500/20"
                   />
-                  {errors.boTempatLahir && <p className="text-sm text-red-600 mt-1">{errors.boTempatLahir}</p>}
                 </div>
                 <div>
-                  <Label htmlFor="boTanggalLahir" className="text-gray-700">Tanggal Lahir</Label>
+                  <Label className="text-gray-700">Tempat Lahir</Label>
                   <Input
-                    id="boTanggalLahir"
-                    type="date"
-                    required
-                    value={formData.boTanggalLahir}
-                    onChange={(e) => setFormData({ ...formData, boTanggalLahir: e.target.value })}
-                    className={`mt-2 h-12 rounded-md ${errors.boTanggalLahir ? 'border-red-500' : ''}`}
+                    {...register('boTempatLahir')}
+                    placeholder="Kota Tempat Lahir"
+                    className="mt-2 h-12 rounded-md transition-all focus:ring-2 focus:ring-emerald-500/20"
                   />
-                  {errors.boTanggalLahir && <p className="text-sm text-red-600 mt-1">{errors.boTanggalLahir}</p>}
                 </div>
               </div>
 
-              {/* BO Gender, Citizenship, Marital Status */}
-              <div className="grid md:grid-cols-3 gap-5">
+              <div className="grid md:grid-cols-2 gap-5">
                 <div>
-                  <Label className="text-gray-700">Jenis Kelamin</Label>
-                  <Select
-                    value={formData.boJenisKelamin}
-                    onValueChange={(value) => setFormData({ ...formData, boJenisKelamin: value })}
-                  >
-                    <SelectTrigger className={`mt-2 h-12 rounded-md ${errors.boJenisKelamin ? 'border-red-500' : ''}`}>
-                      <SelectValue placeholder="Pilih jenis kelamin" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Laki-laki">Laki-laki</SelectItem>
-                      <SelectItem value="Perempuan">Perempuan</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {errors.boJenisKelamin && <p className="text-sm text-red-600 mt-1">{errors.boJenisKelamin}</p>}
+                  <Label className="text-gray-700">Tanggal Lahir</Label>
+                  <Input
+                    type="date"
+                    {...register('boTanggalLahir')}
+                    className="mt-2 h-12 rounded-md transition-all focus:ring-2 focus:ring-emerald-500/20"
+                  />
                 </div>
                 <div>
+                  <Label className="text-gray-700">Jenis Kelamin</Label>
+                  <Controller
+                    name="boJenisKelamin"
+                    control={control}
+                    render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger className="mt-2 h-12 rounded-md shadow-sm border-slate-200 focus:border-emerald-500">
+                          <SelectValue placeholder="Pilih Jenis Kelamin" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Laki-laki">Laki-laki</SelectItem>
+                          <SelectItem value="Perempuan">Perempuan</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-gray-700">Alamat Lengkap (Sesuai ID)</Label>
+                <Input
+                  {...register('boAlamat')}
+                  placeholder="Alamat lengkap pemilik dana"
+                  className="mt-2 h-12 rounded-md transition-all focus:ring-2 focus:ring-emerald-500/20"
+                />
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-5">
+                <div>
                   <Label className="text-gray-700">Kewarganegaraan</Label>
-                  <Select
-                    value={formData.boKewarganegaraan}
-                    onValueChange={(value) => setFormData({ ...formData, boKewarganegaraan: value })}
-                  >
-                    <SelectTrigger className={`mt-2 h-12 rounded-md ${errors.boKewarganegaraan ? 'border-red-500' : ''}`}>
-                      <SelectValue placeholder="Pilih kewarganegaraan" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="WNI">WNI (Warga Negara Indonesia)</SelectItem>
-                      <SelectItem value="WNA">WNA (Warga Negara Asing)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {errors.boKewarganegaraan && <p className="text-sm text-red-600 mt-1">{errors.boKewarganegaraan}</p>}
+                  <Controller
+                    name="boKewarganegaraan"
+                    control={control}
+                    render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger className="mt-2 h-12 rounded-md shadow-sm border-slate-200 focus:border-emerald-500">
+                          <SelectValue placeholder="Pilih Kewarganegaraan" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="WNI">Warga Negara Indonesia (WNI)</SelectItem>
+                          <SelectItem value="WNA">Warga Negara Asing (WNA)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                 </div>
                 <div>
                   <Label className="text-gray-700">Status Pernikahan</Label>
-                  <Select
-                    value={formData.boStatusPernikahan}
-                    onValueChange={(value) => setFormData({ ...formData, boStatusPernikahan: value })}
-                  >
-                    <SelectTrigger className={`mt-2 h-12 rounded-md ${errors.boStatusPernikahan ? 'border-red-500' : ''}`}>
-                      <SelectValue placeholder="Pilih status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Belum Kawin">Belum Kawin</SelectItem>
-                      <SelectItem value="Kawin">Kawin</SelectItem>
-                      <SelectItem value="Cerai Hidup">Cerai Hidup</SelectItem>
-                      <SelectItem value="Cerai Mati">Cerai Mati</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {errors.boStatusPernikahan && <p className="text-sm text-red-600 mt-1">{errors.boStatusPernikahan}</p>}
+                  <Controller
+                    name="boStatusPernikahan"
+                    control={control}
+                    render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger className="mt-2 h-12 rounded-md shadow-sm border-slate-200 focus:border-emerald-500">
+                          <SelectValue placeholder="Pilih Status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Belum Menikah">Belum Menikah</SelectItem>
+                          <SelectItem value="Menikah">Menikah</SelectItem>
+                          <SelectItem value="Cerai Hidup">Cerai Hidup</SelectItem>
+                          <SelectItem value="Cerai Mati">Cerai Mati</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                 </div>
               </div>
 
-              {/* BO Identity Type & Number */}
               <div className="grid md:grid-cols-2 gap-5">
                 <div>
                   <Label className="text-gray-700">Jenis Identitas</Label>
-                  <Select
-                    value={formData.boJenisId}
-                    onValueChange={(value) => {
-                      setFormData({ ...formData, boJenisId: value });
-                      // Clear boNomorId error when identity type changes
-                      setErrors(prev => {
-                        const next = { ...prev };
-                        delete next.boNomorId;
-                        return next;
-                      });
-                    }}
-                  >
-                    <SelectTrigger className={`mt-2 h-12 rounded-md ${errors.boJenisId ? 'border-red-500' : ''}`}>
-                      <SelectValue placeholder="Pilih jenis identitas" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="KTP">KTP</SelectItem>
-                      <SelectItem value="Paspor">Paspor</SelectItem>
-                      <SelectItem value="Lainnya">Lainnya</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {errors.boJenisId && <p className="text-sm text-red-600 mt-1">{errors.boJenisId}</p>}
+                  <Controller
+                    name="boJenisId"
+                    control={control}
+                    render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger className="mt-2 h-12 rounded-md shadow-sm border-slate-200 focus:border-emerald-500">
+                          <SelectValue placeholder="Pilih Jenis ID" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="KTP">KTP</SelectItem>
+                          <SelectItem value="Paspor">Paspor</SelectItem>
+                          <SelectItem value="SIM">SIM</SelectItem>
+                          <SelectItem value="Lainnya">Lainnya</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                 </div>
                 <div>
-                  <Label htmlFor="boNomorId" className="text-gray-700">Nomor Identitas</Label>
+                  <Label className="text-gray-700">Nomor Identitas</Label>
                   <Input
-                    id="boNomorId"
-                    required
-                    placeholder={formData.boJenisId === 'KTP' ? '16 digit' : 'Nomor identitas'}
-                    value={formData.boNomorId}
-                    onChange={(e) => setFormData({ ...formData, boNomorId: e.target.value })}
-
-                    className={`mt-2 h-12 rounded-md ${errors.boNomorId ? 'border-red-500' : ''}`}
+                    {...register('boNomorId')}
+                    placeholder="Masukkan nomor identitas"
+                    className="mt-2 h-12 rounded-md transition-all focus:ring-2 focus:ring-emerald-500/20"
                   />
-                  {errors.boNomorId && <p className="text-sm text-red-600 mt-1">{errors.boNomorId}</p>}
                 </div>
               </div>
 
-              {/* BO Occupation */}
-              <div>
-                <Label htmlFor="boPekerjaan" className="text-gray-700">Pekerjaan</Label>
-                <Input
-                  id="boPekerjaan"
-                  required
-                  placeholder="Pekerjaan beneficial owner"
-                  value={formData.boPekerjaan}
-                  onChange={(e) => setFormData({ ...formData, boPekerjaan: e.target.value })}
-                  className={`mt-2 h-12 rounded-md ${errors.boPekerjaan ? 'border-red-500' : ''}`}
-                />
-                {errors.boPekerjaan && <p className="text-sm text-red-600 mt-1">{errors.boPekerjaan}</p>}
-              </div>
-
-              {/* BO Source of Funds, Relationship, Phone */}
-              <div className="grid md:grid-cols-3 gap-5">
+              <div className="grid md:grid-cols-2 gap-5">
                 <div>
                   <Label className="text-gray-700">Sumber Dana</Label>
-                  <Select
-                    value={formData.boSumberDana}
-                    onValueChange={(value) => {
-                      setFormData({ ...formData, boSumberDana: value });
-                      // Clear custom field when changing selection
-                      if (value !== 'Lainnya') {
-                        setFormData(prev => ({ ...prev, boSumberDana: value, boSumberDanaCustom: '' }));
-                      }
-                    }}
-                  >
-                    <SelectTrigger className={`mt-2 h-12 rounded-md ${errors.boSumberDana ? 'border-red-500' : ''}`}>
-                      <SelectValue placeholder="Pilih sumber dana" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Gaji">Gaji</SelectItem>
-                      <SelectItem value="Hasil Usaha">Hasil Usaha</SelectItem>
-                      <SelectItem value="Investasi">Investasi</SelectItem>
-                      <SelectItem value="Warisan">Warisan</SelectItem>
-                      <SelectItem value="Hibah">Hibah</SelectItem>
-                      <SelectItem value="Lainnya">Lainnya</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {formData.boSumberDana === 'Lainnya' && (
-                    <Input
-                      placeholder="Sebutkan sumber dana lainnya"
-                      value={formData.boSumberDanaCustom || ''}
-                      onChange={(e) => setFormData({ ...formData, boSumberDanaCustom: e.target.value })}
-                      className={`mt-2 h-12 rounded-md ${errors.boSumberDanaCustom ? 'border-red-500' : ''}`}
-                    />
-                  )}
-                  {errors.boSumberDana && <p className="text-sm text-red-600 mt-1">{errors.boSumberDana}</p>}
-                  {errors.boSumberDanaCustom && <p className="text-sm text-red-600 mt-1">{errors.boSumberDanaCustom}</p>}
-                </div>
-                <div>
-                  <Label className="text-gray-700">Hubungan dengan Anda</Label>
-                  <Select
-                    value={formData.boHubungan}
-                    onValueChange={(value) => {
-                      setFormData({ ...formData, boHubungan: value });
-                      // Clear custom field when changing selection
-                      if (value !== 'Lainnya') {
-                        setFormData(prev => ({ ...prev, boHubungan: value, boHubunganCustom: '' }));
-                      }
-                    }}
-                  >
-                    <SelectTrigger className={`mt-2 h-12 rounded-md ${errors.boHubungan ? 'border-red-500' : ''}`}>
-                      <SelectValue placeholder="Pilih hubungan" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Orang Tua">Orang Tua</SelectItem>
-                      <SelectItem value="Anak">Anak</SelectItem>
-                      <SelectItem value="Suami/Istri">Suami/Istri</SelectItem>
-                      <SelectItem value="Saudara Kandung">Saudara Kandung</SelectItem>
-                      <SelectItem value="Kerabat">Kerabat</SelectItem>
-                      <SelectItem value="Teman">Teman</SelectItem>
-                      <SelectItem value="Lainnya">Lainnya</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {formData.boHubungan === 'Lainnya' && (
-                    <Input
-                      placeholder="Sebutkan hubungan lainnya"
-                      value={formData.boHubunganCustom || ''}
-                      onChange={(e) => setFormData({ ...formData, boHubunganCustom: e.target.value })}
-                      className={`mt-2 h-12 rounded-md ${errors.boHubunganCustom ? 'border-red-500' : ''}`}
-                    />
-                  )}
-                  {errors.boHubungan && <p className="text-sm text-red-600 mt-1">{errors.boHubungan}</p>}
-                  {errors.boHubunganCustom && <p className="text-sm text-red-600 mt-1">{errors.boHubunganCustom}</p>}
-                </div>
-                <div>
-                  <Label htmlFor="boNomorHp" className="text-gray-700">Nomor HP</Label>
-                  <Input
-                    id="boNomorHp"
-                    type="tel"
-                    required
-                    placeholder="08123456789"
-                    value={formData.boNomorHp}
-                    onChange={(e) => setFormData({ ...formData, boNomorHp: e.target.value })}
-                    className={`mt-2 h-12 rounded-md ${errors.boNomorHp ? 'border-red-500' : ''}`}
+                  <Controller
+                    name="boSumberDana"
+                    control={control}
+                    render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger className="mt-2 h-12 rounded-md shadow-sm border-slate-200 focus:border-emerald-500">
+                          <SelectValue placeholder="Pilih Sumber Dana" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Gaji">Gaji</SelectItem>
+                          <SelectItem value="Hasil Usaha">Hasil Usaha</SelectItem>
+                          <SelectItem value="Warisan">Warisan</SelectItem>
+                          <SelectItem value="Lainnya">Lainnya</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
                   />
-                  {errors.boNomorHp && <p className="text-sm text-red-600 mt-1">{errors.boNomorHp}</p>}
+                </div>
+                <div>
+                  <Label className="text-gray-700">Hubungan dengan Nasabah</Label>
+                  <Controller
+                    name="boHubungan"
+                    control={control}
+                    render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger className="mt-2 h-12 rounded-md shadow-sm border-slate-200 focus:border-emerald-500">
+                          <SelectValue placeholder="Pilih Hubungan" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Orang Tua">Orang Tua</SelectItem>
+                          <SelectItem value="Anak">Anak</SelectItem>
+                          <SelectItem value="Pasangan">Pasangan</SelectItem>
+                          <SelectItem value="Lainnya">Lainnya</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-5">
+                <div>
+                  <Label className="text-gray-700">Nomor HP</Label>
+                  <Input
+                    {...register('boNomorHp')}
+                    placeholder="Masukkan nomor HP"
+                    className={`mt-2 h-12 rounded-md ${rhfErrors.boNomorHp ? 'border-red-500' : ''}`}
+                  />
+                  {rhfErrors.boNomorHp && <p className="text-sm text-red-600 mt-1">{rhfErrors.boNomorHp.message}</p>}
+                </div>
+                <div>
+                  <Label className="text-gray-700">Pekerjaan</Label>
+                  <Input
+                    {...register('boPekerjaan')}
+                    placeholder="Masukkan pekerjaan"
+                    className="mt-2 h-12 rounded-md"
+                  />
                 </div>
               </div>
 
               {/* BO Annual Income */}
               <div>
                 <Label className="text-gray-700">Pendapatan per Tahun</Label>
-                <Select
-                  value={formData.boPendapatanTahun}
-                  onValueChange={(value) => setFormData({ ...formData, boPendapatanTahun: value })}
-                >
-                  <SelectTrigger className={`mt-2 h-12 rounded-md ${errors.boPendapatanTahun ? 'border-red-500' : ''}`}>
-                    <SelectValue placeholder="Pilih range pendapatan tahunan" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="sd-5jt">Sampai dengan 5 Juta</SelectItem>
-                    <SelectItem value="5-10jt">5 - 10 Juta</SelectItem>
-                    <SelectItem value="10-25jt">10 - 25 Juta</SelectItem>
-                    <SelectItem value="25-100jt">25 - 100 Juta</SelectItem>
-                    <SelectItem value=">100jt">Lebih dari 100 Juta</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.boPendapatanTahun && <p className="text-sm text-red-600 mt-1">{errors.boPendapatanTahun}</p>}
+                <Controller
+                  name="boPendapatanTahun"
+                  control={control}
+                  render={({ field }) => (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger className={`mt-2 h-12 rounded-md ${rhfErrors.boPendapatanTahun ? 'border-red-500' : ''}`}>
+                        <SelectValue placeholder="Pilih range pendapatan tahunan" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="sd-5jt">Sampai dengan 5 Juta</SelectItem>
+                        <SelectItem value="5-10jt">5 - 10 Juta</SelectItem>
+                        <SelectItem value="10-25jt">10 - 25 Juta</SelectItem>
+                        <SelectItem value="25-100jt">25 - 100 Juta</SelectItem>
+                        <SelectItem value=">100jt">Lebih dari 100 Juta</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
               </div>
 
               {/* BO Approval Checkbox */}
               <div className="bg-amber-50 p-5 rounded-xl border border-amber-200">
                 <div className="flex items-start gap-4">
-                  <Checkbox
-                    id="boPersetujuan"
-                    checked={formData.boPersetujuan}
-                    onCheckedChange={(checked) => setFormData({ ...formData, boPersetujuan: checked as boolean })}
-                    required
-                    className={`mt-1 ${errors.boPersetujuan ? 'border-red-500' : ''}`}
+                  <Controller
+                    name="boPersetujuan"
+                    control={control}
+                    render={({ field }) => (
+                      <Checkbox
+                        id="boPersetujuan"
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        className={`mt-1 ${rhfErrors.boPersetujuan ? 'border-red-500' : ''}`}
+                      />
+                    )}
                   />
                   <div>
                     <Label htmlFor="boPersetujuan" className="cursor-pointer text-gray-800 font-medium">
@@ -2352,11 +2177,9 @@ export default function FormMutiara({
                     </p>
                   </div>
                 </div>
-                {errors.boPersetujuan && <p className="text-sm text-red-600 mt-2">{errors.boPersetujuan}</p>}
               </div>
 
             </div>
-          </div>
           )}
 
 
@@ -2393,7 +2216,9 @@ export default function FormMutiara({
                 </h4>
               </div>
               <div className="text-gray-700">
-                <p className="font-medium">{branches.find((b: any) => b.id.toString() === formData.cabang_pengambilan)?.nama_cabang || formData.cabang_pengambilan}</p>
+                <p className="font-medium">
+                  {branches.find((b: any) => b.id.toString() === getValues().cabang_pengambilan)?.nama_cabang || getValues().cabang_pengambilan}
+                </p>
               </div>
             </div>
 
@@ -2407,31 +2232,31 @@ export default function FormMutiara({
               <div className="grid md:grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-gray-500">Nama Lengkap</p>
-                  <p className="font-medium text-gray-800">{formData.fullName}</p>
+                  <p className="font-medium text-gray-800">{getValues().fullName}</p>
                 </div>
                 <div>
                   <p className="text-gray-500">NIK / Identitas</p>
-                  <p className="font-medium text-gray-800">{formData.nik}</p>
+                  <p className="font-medium text-gray-800">{getValues().nik}</p>
                 </div>
                 <div>
                   <p className="text-gray-500">Tempat, Tanggal Lahir</p>
-                  <p className="font-medium text-gray-800">{formData.tempatLahir}, {formData.birthDate}</p>
+                  <p className="font-medium text-gray-800">{getValues().tempatLahir}, {getValues().birthDate}</p>
                 </div>
                 <div>
                   <p className="text-gray-500">Jenis Kelamin</p>
-                  <p className="font-medium text-gray-800">{formData.gender}</p>
+                  <p className="font-medium text-gray-800">{getValues().gender}</p>
                 </div>
                 <div>
                   <p className="text-gray-500">Email</p>
-                  <p className="font-medium text-gray-800">{formData.email}</p>
+                  <p className="font-medium text-gray-800">{getValues().email}</p>
                 </div>
                 <div>
                   <p className="text-gray-500">Nomor Telepon</p>
-                  <p className="font-medium text-gray-800">{formData.phone}</p>
+                  <p className="font-medium text-gray-800">{getValues().phone}</p>
                 </div>
                 <div className="md:col-span-2">
                   <p className="text-gray-500">Alamat</p>
-                  <p className="font-medium text-gray-800">{formData.address},{formData.postalCode}</p>
+                  <p className="font-medium text-gray-800">{getValues().address}, {getValues().postalCode}</p>
                 </div>
               </div>
             </div>
@@ -2446,19 +2271,19 @@ export default function FormMutiara({
               <div className="grid md:grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-gray-500">Pekerjaan</p>
-                  <p className="font-medium text-gray-800">{formData.employmentStatus}</p>
+                  <p className="font-medium text-gray-800">{getValues().employmentStatus}</p>
                 </div>
                 <div>
                   <p className="text-gray-500">Penghasilan per Bulan</p>
-                  <p className="font-medium text-gray-800">{formData.monthlyIncome}</p>
+                  <p className="font-medium text-gray-800">{getValues().monthlyIncome}</p>
                 </div>
                 <div>
                   <p className="text-gray-500">Sumber Dana</p>
-                  <p className="font-medium text-gray-800">{formData.sumberDana}</p>
+                  <p className="font-medium text-gray-800">{getValues().sumberDana}</p>
                 </div>
                 <div>
                   <p className="text-gray-500">Rata-rata Transaksi</p>
-                  <p className="font-medium text-gray-800">{formData.rataRataTransaksi}</p>
+                  <p className="font-medium text-gray-800">{formatRupiah(getValues().rataRataTransaksi)}</p>
                 </div>
               </div>
             </div>
@@ -2475,40 +2300,36 @@ export default function FormMutiara({
                   <p className="text-gray-500">Jenis Rekening</p>
                   <p className="font-medium text-gray-800">Mutiara</p>
                 </div>
-                {/* <div>
-                  <p className="text-gray-500">Setoran Awal</p>
-                  <p className="font-medium text-gray-800">Rp {parseFloat(formData.nominalSetoran || '0').toLocaleString('id-ID')}</p>
-                </div> */}
                 <div>
                   <p className="text-gray-500">Tujuan Pembukaan</p>
-                  <p className="font-medium text-gray-800">{formData.tujuanRekening}</p>
+                  <p className="font-medium text-gray-800">{getValues().tujuanRekening}</p>
                 </div>
                 <div>
                   <p className="text-gray-500">Kepemilikan</p>
-                  <p className="font-medium text-gray-800">{formData.rekeningUntukSendiri ? 'Untuk Sendiri' : 'Untuk Orang Lain'}</p>
+                  <p className="font-medium text-gray-800">{getValues().rekeningUntukSendiri ? 'Untuk Sendiri' : 'Untuk Orang Lain'}</p>
                 </div>
               </div>
               
               {/* Show BO if exists */}
-              {formData.rekeningUntukSendiri === false && formData.boNama && (
+              {!getValues().rekeningUntukSendiri && getValues().boNama && (
                 <div className="mt-4 pt-4 border-t border-slate-200">
                   <p className="text-gray-500 font-medium mb-2">Beneficial Owner</p>
                   <div className="grid md:grid-cols-2 gap-4 text-sm">
                     <div>
                       <p className="text-gray-500">Nama</p>
-                      <p className="font-medium text-gray-800">{formData.boNama}</p>
+                      <p className="font-medium text-gray-800">{getValues().boNama}</p>
                     </div>
                     <div>
                       <p className="text-gray-500">Nomor Identitas</p>
-                      <p className="font-medium text-gray-800">{formData.boNomorId}</p>
+                      <p className="font-medium text-gray-800">{getValues().boNomorId}</p>
                     </div>
                     <div>
                       <p className="text-gray-500">Pekerjaan</p>
-                      <p className="font-medium text-gray-800">{formData.boPekerjaan}</p>
+                      <p className="font-medium text-gray-800">{getValues().boPekerjaan}</p>
                     </div>
                     <div>
                       <p className="text-gray-500">Pendapatan Tahunan</p>
-                      <p className="font-medium text-gray-800">{formData.boPendapatanTahun}</p>
+                      <p className="font-medium text-gray-800">{formatRupiah(getValues().boPendapatanTahun)}</p>
                     </div>
                   </div>
                 </div>
@@ -2522,15 +2343,19 @@ export default function FormMutiara({
             
             {/* Terms & Conditions */}
             <div className="flex items-start gap-4 mb-4">
-             <Checkbox
-                  id="terms"
-                  checked={formData.agreeTerms}
-                  onCheckedChange={(checked) =>
-                    setFormData({ ...formData, agreeTerms: checked as boolean })
-                  }
-                  required
-                  className="mt-1 h-4 w-4 md:h-5 md:w-5"
-                />
+              <Controller
+                name="agreeTerms"
+                control={control}
+                rules={{ required: true }}
+                render={({ field }) => (
+                  <Checkbox
+                    id="terms"
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    className={`mt-1 h-4 w-4 md:h-5 md:w-5 ${rhfErrors.agreeTerms ? 'border-red-500' : ''}`}
+                  />
+                )}
+              />
               <div>
                 <Label htmlFor="terms" className="cursor-pointer text-gray-800 font-medium text-base">
                   Saya menyetujui <button type="button" onClick={() => setShowTermsModal(true)} className="text-emerald-700 hover:underline font-bold">Syarat dan Ketentuan</button>
@@ -2542,14 +2367,20 @@ export default function FormMutiara({
             </div>
 
             {/* BO Approval if exists */}
-            {formData.rekeningUntukSendiri === false && (
+            {!getValues().rekeningUntukSendiri && (
               <div className="flex items-start gap-4 p-4 bg-white rounded-lg border border-amber-200">
-                <Checkbox
-                  id="boApproval"
-                  checked={formData.boPersetujuan}
-                  onCheckedChange={(checked) => setFormData({ ...formData, boPersetujuan: checked as boolean })}
-                  required
-                  className="mt-1"
+                <Controller
+                  name="boPersetujuan"
+                  control={control}
+                  rules={{ required: !getValues().rekeningUntukSendiri }}
+                  render={({ field }) => (
+                    <Checkbox
+                      id="boApproval"
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      className={`mt-1 ${rhfErrors.boPersetujuan ? 'border-red-500' : ''}`}
+                    />
+                  )}
                 />
                 <div>
                   <Label htmlFor="boApproval" className="cursor-pointer text-gray-800 font-medium text-base">
@@ -2568,4 +2399,6 @@ export default function FormMutiara({
       )}
     </div>
   );
-}
+};
+
+export default FormMutiara;
