@@ -510,7 +510,7 @@ export default function FormMutiara({
       {currentStep === 1 && (
         <div className="space-y-6">
           {/* Header */}
-          <div className="text-center mb-8">
+          {/* <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 mb-4">
               <svg className="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -521,13 +521,13 @@ export default function FormMutiara({
             <p className="text-slate-600 max-w-2xl mx-auto">
               Silakan pilih kantor cabang Bank Sleman terdekat untuk pengambilan buku tabungan Mutiara Anda.
             </p>
-          </div>
+          </div> */}
           
           {/* Branch Selection */}
           <div className="max-w-5xl mx-auto">
             <div className="bg-white p-4 md:p-8 rounded-2xl border-2 border-slate-200 shadow-sm">
               <Label htmlFor="cabang_pengambilan" className="text-gray-800 font-semibold text-lg mb-3 block">
-                Kantor Cabang <span className="text-red-500">*</span>
+                Kantor Cabang  <span className="text-red-500">*</span>
               </Label>
               {errors.cabang_pengambilan && (
                 <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -590,7 +590,7 @@ export default function FormMutiara({
         <div className="space-y-8">
           
           {/* Header */}
-          <div className="text-center mb-8">
+          {/* <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mb-4">
               <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -600,7 +600,7 @@ export default function FormMutiara({
             <p className="text-slate-600 max-w-2xl mx-auto">
               Lengkapi data diri Anda sesuai dengan dokumen identitas resmi.
             </p>
-          </div>
+          </div> */}
 
           {/* Section 1: Identitas Diri */}
           <div className="bg-white p-4 md:p-6 rounded-2xl border-2 border-slate-200 shadow-sm">

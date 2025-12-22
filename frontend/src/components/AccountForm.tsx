@@ -1097,7 +1097,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
             </div>
           </div>
 
-          <Card className="bg-white p-8 md:p-10 border-0 shadow-sm rounded-md w-full animate-scale-in">
+          <div className="w-full animate-scale-in">
             {currentStep === 6 ? renderSuccess() : renderForm()}
             
             {/* Navigation Buttons */}
@@ -1164,7 +1164,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
               phone={currentPhone}
               onVerified={handleOtpVerified}
             />
-          </Card>
+          </div>
         </div>
       </section>
       
