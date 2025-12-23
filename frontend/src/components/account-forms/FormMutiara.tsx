@@ -28,16 +28,6 @@ const formatRupiah = (angka: string) => {
 };
 
 const FormMutiara = ({
-   ktpFile,
-   setKtpFile,
-   ktpPreview,
-   setKtpPreview,
-   ktpUrl,
-   setKtpUrl,
-   loadingSubmit,
-   handleSubmit,
-   savingsType,
-   getSavingsTypeName,
    branches = [],
    currentStep = 1,
 }: Omit<AccountFormProps, 'formData' | 'setFormData' | 'errors' | 'setErrors' | 'getFieldClass'>) => {
@@ -109,17 +99,15 @@ const FormMutiara = ({
 
   // Auto-set employment status and jenis_rekening for Mutiara
   useEffect(() => {
-    const currentStatus = getValues('employmentStatus');
-    if (currentStatus !== 'Pelajar/Mahasiswa') {
-      setValue('employmentStatus', 'Pelajar/Mahasiswa', { shouldValidate: true });
-    }
-    setValue('jenis_rekening', 'Mutiara');
+    // const currentStatus = getValues('employmentStatus');
+    // if (currentStatus !== 'Pelajar/Mahasiswa') {
+    //   setValue('employmentStatus', 'Pelajar/Mahasiswa', { shouldValidate: true });
+    // }
+    // setValue('jenis_rekening', 'Mutiara');
     if (!getValues('tipeNasabah')) {
       setValue('tipeNasabah', 'baru');
     }
   }, [setValue, getValues]);
-
-
 
   // Validation function for age requirement
   const validateAge = (birthDate: string): string | boolean => {
@@ -486,7 +474,7 @@ const FormMutiara = ({
         <section className="space-y-8" aria-labelledby="personal-data-heading">
           
           {/* Header */}
-          {/* <div className="text-center mb-8">
+          <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mb-4">
               <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -496,7 +484,7 @@ const FormMutiara = ({
             <p className="text-slate-600 max-w-2xl mx-auto">
               Lengkapi data diri Anda sesuai dengan dokumen identitas resmi.
             </p>
-          </div> */}
+          </div>
 
 
 
@@ -858,97 +846,168 @@ const FormMutiara = ({
             </fieldset>
           </article>
 
-          {/* Section 2: Informasi Kontak */}
-          <div className="bg-white p-4 md:p-6 rounded-2xl border-2 border-slate-200 shadow-sm">
-            <h4 className="text-emerald-800 font-bold text-xl mb-6 flex items-center gap-2">
-              <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">2</span>
-              Informasi Kontak
-            </h4>
-            <div className="space-y-5">
+         {/* Section 2: Informasi Kontak */}
+<div className="bg-white p-4 md:p-6 rounded-2xl border-2 border-slate-200 shadow-sm">
+  <h4 className="text-emerald-800 font-bold text-xl mb-6 flex items-center gap-2">
+    <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">2</span>
+    Informasi Kontak
+  </h4>
 
-              {/* Email + Phone */}
-              <div className="grid md:grid-cols-2 gap-5">
-                <div>
-                  <Label htmlFor="email" className="text-gray-700 font-semibold">
-                    Email <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    {...register('email', { 
-                      required: 'Email harus diisi',
-                      pattern: {
-                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                        message: 'Format email tidak valid'
-                      }
-                    })}
-                    placeholder="contoh@email.com"
-                    className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.email ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
-                  />
-                  {rhfErrors.email && (
-                    <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
-                      {rhfErrors.email.message}
-                    </p>
-                  )}
-                </div>
+  <div className="space-y-6">
+    {/* --- SUB-SECTION: KONTAK UTAMA --- */}
+    <div className="grid md:grid-cols-2 gap-5">
+      {/* Email */}
+      <div>
+        <Label htmlFor="email" className="text-gray-700 font-semibold">
+          Email <span className="text-red-500">*</span>
+        </Label>
+        <Input
+          id="email"
+          type="email"
+          {...register('email', { 
+            required: 'Email harus diisi',
+            pattern: {
+              value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+              message: 'Format email tidak valid'
+            }
+          })}
+          placeholder="contoh@email.com"
+          className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.email ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
+        />
+        {rhfErrors.email && (
+          <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
+            {rhfErrors.email.message}
+          </p>
+        )}
+      </div>
 
-                <div>
-                  <Label htmlFor="phone" className="text-gray-700 font-semibold">
-                    Nomor Telepon (WA Aktif) <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    {...register('phone', { 
-                      required: 'Nomor telepon harus diisi',
-                      pattern: {
-                        value: /^[0-9+]{10,15}$/,
-                        message: 'Format nomor telepon tidak valid'
-                      }
-                    })}
-                    placeholder="08123456789"
-                    className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.phone ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
-                  />
-                  {rhfErrors.phone && (
-                    <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
-                      {rhfErrors.phone.message}
-                    </p>
-                  )}
-                  <p className="text-xs text-slate-500 mt-1">Nomor WhatsApp yang aktif untuk verifikasi</p>
-                </div>
-              </div>
-              
-              {/* Kewarganegaraan */}
-              <div>
-                 <Label className="text-gray-700 font-semibold">
-                   Kewarganegaraan <span className="text-red-500">*</span>
-                 </Label>
-                 <Controller
-                    name="citizenship"
-                    control={control}
-                    rules={{ required: 'Kewarganegaraan harus dipilih' }}
-                    render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
-                          <SelectValue placeholder="Pilih kewarganegaraan" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Indonesia">WNI (Warga Negara Indonesia)</SelectItem>
-                          <SelectItem value="WNA">WNA (Warga Negara Asing)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    )}
-                 />
-              </div>
+      {/* Phone */}
+      <div>
+        <Label htmlFor="phone" className="text-gray-700 font-semibold">
+          Nomor Telepon (WA Aktif) <span className="text-red-500">*</span>
+        </Label>
+        <Input
+          id="phone"
+          type="tel"
+          {...register('phone', { 
+            required: 'Nomor telepon harus diisi',
+            pattern: {
+              value: /^[0-9+]{10,15}$/,
+              message: 'Format nomor telepon tidak valid'
+            }
+          })}
+          placeholder="08123456789"
+          className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.phone ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
+        />
+        {rhfErrors.phone && (
+          <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
+              {rhfErrors.phone.message}
+          </p>
+        )}
+        <p className="text-xs text-slate-500 mt-1">Digunakan untuk verifikasi akun</p>
+      </div>
+    </div>
 
-            </div>
+    {/* Kewarganegaraan */}
+    <div>
+      <Label className="text-gray-700 font-semibold">
+        Kewarganegaraan <span className="text-red-500">*</span>
+      </Label>
+      <Controller
+        name="citizenship"
+        control={control}
+        rules={{ required: 'Kewarganegaraan harus dipilih' }}
+        render={({ field }) => (
+          <Select value={field.value} onValueChange={field.onChange}>
+            <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
+              <SelectValue placeholder="Pilih kewarganegaraan" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Indonesia">WNI (Warga Negara Indonesia)</SelectItem>
+              <SelectItem value="WNA">WNA (Warga Negara Asing)</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
+      />
+    </div>
+
+    {/* --- SUB-SECTION: KONTAK DARURAT --- */}
+    <div className="pt-6 border-t border-slate-100">
+      <h4 className="font-semibold text-emerald-800 text-lg mb-4 flex items-center gap-2">
+        Kontak Darurat
+      </h4>
+
+      <div className="space-y-5">
+        {/* Nama Lengkap */}
+        <div>
+          <Label className="text-gray-700 font-semibold">Nama Lengkap <span className="text-red-500">*</span></Label>
+          <Input
+            {...register('kontakDaruratNama', { required: 'Nama kontak darurat wajib diisi' })}
+            placeholder="Nama lengkap kontak darurat"
+            className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.kontakDaruratNama ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
+          />
+          {rhfErrors.kontakDaruratNama && <p className="text-sm text-red-600 mt-1">{rhfErrors.kontakDaruratNama.message}</p>}
+        </div>
+
+        {/* Alamat */}
+        <div>
+          <Label className="text-gray-700 font-semibold">Alamat Lengkap <span className="text-red-500">*</span></Label>
+          <Input
+            {...register('kontakDaruratAlamat', { required: 'Alamat wajib diisi' })}
+            placeholder="Contoh: Jl. Sudirman No. 123, Jakarta"
+            className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.kontakDaruratAlamat ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
+          />
+          {rhfErrors.kontakDaruratAlamat && <p className="text-sm text-red-600 mt-1">{rhfErrors.kontakDaruratAlamat.message}</p>}
+        </div>
+
+        {/* Nomor HP + Hubungan */}
+        <div className="grid md:grid-cols-2 gap-5">
+          <div>
+            <Label className="text-gray-700 font-semibold">Nomor HP <span className="text-red-500">*</span></Label>
+            <Input
+              {...register('kontakDaruratHp', { required: 'Nomor HP wajib diisi' })}
+              placeholder="08xxxxxxxxxx"
+              className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.kontakDaruratHp ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
+            />
+            {rhfErrors.kontakDaruratHp && <p className="text-sm text-red-600 mt-1">{rhfErrors.kontakDaruratHp.message}</p>}
           </div>
+
+          <div>
+            <Label className="text-gray-700 font-semibold">Hubungan <span className="text-red-500">*</span></Label>
+            <Controller
+              name="kontakDaruratHubungan"
+              control={control}
+              rules={{ required: 'Pilih hubungan' }}
+              render={({ field }) => (
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.kontakDaruratHubungan ? 'border-red-500' : 'border-slate-300'}`}>
+                    <SelectValue placeholder="-- Pilih Hubungan --" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Suami/Istri">Suami/Istri</SelectItem>
+                    <SelectItem value="Orang Tua">Orang Tua</SelectItem>
+                    <SelectItem value="Saudara Kandung">Saudara Kandung</SelectItem>
+                    <SelectItem value="Lainnya">Lainnya</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {rhfErrors.kontakDaruratHubungan && <p className="text-sm text-red-600 mt-1">{rhfErrors.kontakDaruratHubungan.message}</p>}
+
+            {/* Input Tambahan jika pilih 'Lainnya' */}
+            {watchedEmergencyHubungan === 'Lainnya' && (
+              <Input
+                {...register('kontakDaruratHubunganLainnya', { required: 'Sebutkan hubungan lainnya' })}
+                placeholder="Sebutkan (misal: Teman, Sepupu)"
+                className="mt-3 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
+              />
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
           {/* Section 3: Alamat Tempat Tinggal */}
           <div className="bg-white p-4 md:p-6 rounded-2xl border-2 border-slate-200 shadow-sm">
@@ -1070,7 +1129,7 @@ const FormMutiara = ({
                           >
                             <SelectTrigger className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.city ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}>
                               <SelectValue placeholder={
-                                !selectedAddress.provinceId ? "Pilih provinsi dulu" :
+                                !selectedAddress.provinceId ? "Pilih provinsi" :
                                 addressData.loadingCities ? "Memuat kota..." : 
                                 "-- Pilih Kota/Kabupaten --"
                               } />
@@ -1121,7 +1180,7 @@ const FormMutiara = ({
                           >
                             <SelectTrigger className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.kecamatan ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}>
                               <SelectValue placeholder={
-                                !selectedAddress.cityId ? "Pilih kota dulu" :
+                                !selectedAddress.cityId ? "Pilih kota" :
                                 addressData.loadingDistricts ? "Memuat kecamatan..." : 
                                 "-- Pilih Kecamatan --"
                               } />
@@ -1165,7 +1224,7 @@ const FormMutiara = ({
                           >
                             <SelectTrigger className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.kelurahan ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}>
                               <SelectValue placeholder={
-                                !selectedAddress.districtId ? "Pilih kecamatan dulu" :
+                                !selectedAddress.districtId ? "Pilih kecamatan" :
                                 addressData.loadingVillages ? "Memuat kelurahan..." : 
                                 "-- Pilih Kelurahan/Desa --"
                               } />
@@ -1247,13 +1306,13 @@ const FormMutiara = ({
               {/* Address Preview - Only for WNI */}
               {getValues('address') && watchedCitizenship === 'Indonesia' && (
                 <div className="mb-6">
-                  <div className="flex items-center gap-2 mb-2">
+                  {/* <div className="flex items-center gap-2 mb-2">
                      <Label className="text-gray-700 font-semibold flex items-center gap-2">
                       Alamat Lengkap
                     </Label>
-                  </div>
+                  </div> */}
 
-                  <div className="bg-white border-2 border-slate-200 rounded-xl p-4 shadow-sm">
+                  {/* <div className="bg-white border-2 border-slate-200 rounded-xl p-4 shadow-sm">
                     <div className="flex">
                       <div className="flex-1">
                         <p className="text-sm text-slate-700 font-medium leading-relaxed">
@@ -1267,7 +1326,7 @@ const FormMutiara = ({
                         </p>
                       </div>
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               )}
 
@@ -1288,123 +1347,6 @@ const FormMutiara = ({
 
             </div>
           </div>
-
-          {/* Section 4: Kontak Darurat (Optional) */}
-          <div className="bg-slate-50 p-4 md:p-6 rounded-xl border-2 border-slate-200">
-  <h4 className="font-semibold text-emerald-800 text-lg mb-4">
-    Kontak Darurat
-  </h4>
-
-  <p className="text-sm text-gray-600 mb-5 bg-white p-3 rounded-lg border border-slate-200">
-    💡 Harap lengkapi semua field. Kontak darurat akan dihubungi jika terjadi hal terkait rekening Anda.
-  </p>
-
-  <div className="space-y-6">
-
-    {/* Nama Lengkap – FULL */}
-    <div>
-      <Label className="text-gray-700 font-semibold">Nama Lengkap</Label>
-      <Input
-        {...register('kontakDaruratNama')}
-        placeholder="Nama kontak darurat"
-        className={`mt-2 h-12 rounded-lg border-2 ${
-          rhfErrors.kontakDaruratNama ? 'border-red-500' : 'border-slate-300'
-        } focus:border-emerald-500`}
-      />
-      {rhfErrors.kontakDaruratNama && (
-        <p className="text-sm text-red-600 mt-1">
-          {rhfErrors.kontakDaruratNama.message}
-        </p>
-      )}
-    </div>
-
-    <div>
-        <Label className="text-gray-700 font-semibold">Alamat</Label>
-        <Input
-          {...register('kontakDaruratAlamat')}
-          placeholder="Alamat kontak darurat"
-          className={`mt-2 h-12 rounded-lg border-2 ${
-            rhfErrors.kontakDaruratAlamat ? 'border-red-500' : 'border-slate-300'
-          } focus:border-emerald-500`}
-        />
-        {rhfErrors.kontakDaruratAlamat && (
-          <p className="text-sm text-red-600 mt-1">
-            {rhfErrors.kontakDaruratAlamat.message}
-          </p>
-        )}
-      </div>
-
-    {/* Nomor HP – FULL */}
-    
-
-    {/* Alamat + Hubungan */}
-    <div className="grid md:grid-cols-2 gap-6">
-
-      {/* Alamat */}
-      <div>
-      <Label className="text-gray-700 font-semibold">Nomor HP</Label>
-      <Input
-        {...register('kontakDaruratHp')}
-        placeholder="08123456789"
-        className={`mt-2 h-12 rounded-lg border-2 ${
-          rhfErrors.kontakDaruratHp ? 'border-red-500' : 'border-slate-300'
-        } focus:border-emerald-500`}
-      />
-      {rhfErrors.kontakDaruratHp && (
-        <p className="text-sm text-red-600 mt-1">
-          {rhfErrors.kontakDaruratHp.message}
-        </p>
-      )}
-    </div>
-
-      {/* Hubungan */}
-      <div>
-        <Label className="text-gray-700 font-semibold">Hubungan</Label>
-        <Controller
-          name="kontakDaruratHubungan"
-          control={control}
-          render={({ field }) => (
-            <Select value={field.value} onValueChange={field.onChange}>
-              <SelectTrigger
-                className={`mt-2 h-12 rounded-lg border-2 ${
-                  rhfErrors.kontakDaruratHubungan
-                    ? 'border-red-500'
-                    : 'border-slate-300'
-                }`}
-              >
-                <SelectValue placeholder="-- Pilih --" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Suami/Istri">Suami/Istri</SelectItem>
-                <SelectItem value="Lainnya">Lainnya</SelectItem>
-              </SelectContent>
-            </Select>
-          )}
-        />
-
-        {watchedEmergencyHubungan === 'Lainnya' && (
-          <Input
-            {...register('kontakDaruratHubunganLainnya')}
-            placeholder="Sebutkan hubungan lainnya"
-            className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.kontakDaruratHubunganLainnya ? 'border-red-500' : 'border-slate-300'}`}
-          />
-        )}
-        {rhfErrors.kontakDaruratHubunganLainnya && (
-          <p className="text-sm text-red-600 mt-1">{rhfErrors.kontakDaruratHubunganLainnya.message}</p>
-        )}
-
-        {rhfErrors.kontakDaruratHubungan && (
-          <p className="text-sm text-red-600 mt-1">
-            {rhfErrors.kontakDaruratHubungan.message}
-          </p>
-        )}
-      </div>
-    </div>
-
-  </div>
-</div>
-
-
         </section>
       )}
 
@@ -1603,106 +1545,140 @@ const FormMutiara = ({
               </div>
 
               {/* EDD Bank Lain Section */}
-              <div className="bg-blue-50 p-4 rounded-xl border border-blue-200">
-                <h4 className="font-semibold text-emerald-800 mb-3">Rekening Bank Lain (Opsional)</h4>
-                <p className="text-xs text-gray-500 mb-4">Tambahkan informasi rekening bank lain yang Anda miliki</p>
-                
-                {bankFields.map((field, index) => (
-                  <div key={field.id} className="bg-white p-4 rounded-lg border border-slate-200 mb-4">
-                    <div className="flex justify-between items-center mb-3">
-                      <h5 className="font-medium text-gray-700">Rekening Bank #{index + 1}</h5>
-                      <button
-                        type="button"
-                        onClick={() => removeBank(index)}
-                        className="text-red-500 hover:text-red-700 text-sm"
-                      >
-                        Hapus
-                      </button>
-                    </div>
-                    <div className="grid md:grid-cols-1 gap-4">
-                      <div>
-                        <Label className="text-gray-700">Nama Bank</Label>
-                        <Input
-                          {...register(`eddBankLain.${index}.bank_name`)}
-                          placeholder="Contoh: BCA, Mandiri, BRI..."
-                          className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
-                        />
-                      </div>
-                      <div className="grid md:grid-cols-2 gap-4 mt-2">
-                        <div>
-                          <Label className="text-gray-700">Jenis Rekening</Label>
-                          <Input
-                            {...register(`eddBankLain.${index}.jenis_rekening`)}
-                            placeholder="Contoh: Tabungan, Giro..."
-                            className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-gray-700">Nomor Rekening</Label>
-                          <Input
-                            {...register(`eddBankLain.${index}.nomor_rekening`)}
-                            placeholder="Masukkan nomor rekening"
-                            className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                
-                <button
-                  type="button"
-                  onClick={() => appendBank({ bank_name: '', jenis_rekening: '', nomor_rekening: '' })}
-                  className="w-full py-3 border-2 border-dashed border-emerald-300 text-emerald-600 rounded-lg hover:bg-emerald-50 transition-colors flex items-center justify-center gap-2 font-medium"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                  </svg>
-                  Tambah Rekening Bank Lain
-                </button>
-              </div>
+<div className="bg-slate-50 p-5 md:p-6 rounded-2xl border-2 border-slate-200">
+  <div className="flex items-center gap-3 mb-1">
+    <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+      </svg>
+    </div>
+    <div>
+      <h4 className="font-bold text-slate-800">Rekening Bank Lain</h4>
+      <p className="text-xs text-slate-500">Opsional: Informasi rekening bank untuk keperluan verifikasi tambahan</p>
+    </div>
+  </div>
 
-              {/* EDD Pekerjaan Lain Section */}
-              <div className="bg-purple-50 p-4 rounded-xl border border-purple-200">
-                <h4 className="font-semibold text-emerald-800 mb-3">Pekerjaan/Usaha Lain (Opsional)</h4>
-                <p className="text-xs text-gray-500 mb-4">Tambahkan informasi pekerjaan atau usaha sampingan lainnya</p>
-                
-                {pekerjaanFields.map((field, index) => (
-                  <div key={field.id} className="bg-white p-4 rounded-lg border border-slate-200 mb-4">
-                    <div className="flex justify-between items-center mb-3">
-                      <h5 className="font-medium text-gray-700">Pekerjaan/Usaha #{index + 1}</h5>
-                      <button
-                        type="button"
-                        onClick={() => removePekerjaan(index)}
-                        className="text-red-500 hover:text-red-700 text-sm"
-                      >
-                        Hapus
-                      </button>
-                    </div>
-                    <div className="grid md:grid-cols-1 gap-4">
-                      <div>
-                        <Label className="text-gray-700">Jenis Usaha/Pekerjaan</Label>
-                        <Input
-                          {...register(`eddPekerjaanLain.${index}.jenis_usaha`)}
-                          placeholder="Sebutkan pekerjaan/usaha lainnya"
-                          className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                
-                <button
-                  type="button"
-                  onClick={() => appendPekerjaan({ jenis_usaha: '' })}
-                  className="w-full py-3 border-2 border-dashed border-purple-300 text-purple-600 rounded-lg hover:bg-purple-50 transition-colors flex items-center justify-center gap-2 font-medium"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                  </svg>
-                  Tambah Pekerjaan/Usaha Lain
-                </button>
-              </div>
+  <div className="mt-6 space-y-4">
+    {bankFields.map((field, index) => (
+      <div key={field.id} className="relative bg-white p-5 rounded-xl border border-slate-200 shadow-sm transition-all hover:border-emerald-200">
+        {/* Badge Number & Remove Button */}
+        <div className="flex justify-between items-center mb-4 pb-3 border-b border-slate-50">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Rekening #{index + 1}</span>
+          <button
+            type="button"
+            onClick={() => removeBank(index)}
+            className="group flex items-center gap-1 text-red-500 hover:text-red-700 transition-colors"
+          >
+            <span className="text-xs font-medium">Hapus</span>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <Label className="text-gray-700 font-medium">Nama Bank</Label>
+            <Input
+              {...register(`eddBankLain.${index}.bank_name`)}
+              placeholder="Misal: Bank Central Asia (BCA)"
+              className="mt-1.5 h-11 bg-slate-50/50 border-slate-200 focus:bg-white focus:border-emerald-500 transition-all"
+            />
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <Label className="text-gray-700 font-medium">Jenis Rekening</Label>
+              <Input
+                {...register(`eddBankLain.${index}.jenis_rekening`)}
+                placeholder="Tabungan / Giro"
+                className="mt-1.5 h-11 bg-slate-50/50 border-slate-200 focus:bg-white focus:border-emerald-500 transition-all"
+              />
+            </div>
+            <div>
+              <Label className="text-gray-700 font-medium">Nomor Rekening</Label>
+              <Input
+                {...register(`eddBankLain.${index}.nomor_rekening`)}
+                placeholder="Masukkan angka saja"
+                className="mt-1.5 h-11 bg-slate-50/50 border-slate-200 focus:bg-white focus:border-emerald-500 transition-all"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    ))}
+
+    <button
+      type="button"
+      onClick={() => appendBank({ bank_name: '', jenis_rekening: '', nomor_rekening: '' })}
+      className="w-full py-4 border-2 border-dashed border-slate-300 text-slate-500 rounded-xl hover:border-emerald-400 hover:text-emerald-600 hover:bg-emerald-50/30 transition-all flex items-center justify-center gap-2 group"
+    >
+      <div className="w-6 h-6 rounded-full bg-slate-100 group-hover:bg-emerald-100 flex items-center justify-center transition-colors">
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+        </svg>
+      </div>
+      <span className="font-semibold text-sm">Tambah Rekening Bank Lain</span>
+    </button>
+  </div>
+</div>
+
+{/* EDD Pekerjaan Lain Section */}
+<div className="bg-slate-50 p-5 md:p-6 rounded-2xl border-2 border-slate-200">
+  <div className="flex items-center gap-3 mb-1">
+    <div className="p-2 bg-purple-100 rounded-lg text-purple-600">
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+      </svg>
+    </div>
+    <div>
+      <h4 className="font-bold text-slate-800">Pekerjaan / Usaha Lain</h4>
+      <p className="text-xs text-slate-500">Opsional: Jika Anda memiliki penghasilan dari sumber lain</p>
+    </div>
+  </div>
+
+  <div className="mt-6 space-y-4">
+    {pekerjaanFields.map((field, index) => (
+      <div key={field.id} className="group relative bg-white p-5 rounded-xl border border-slate-200 shadow-sm transition-all hover:border-purple-200">
+        <div className="flex items-center gap-4">
+          <div className="flex-1">
+            <Label className="text-gray-700 font-medium">Jenis Usaha / Pekerjaan #{index + 1}</Label>
+            <div className="relative mt-1.5">
+              <Input
+                {...register(`eddPekerjaanLain.${index}.jenis_usaha`)}
+                placeholder="Contoh: Toko Kelontong, Jasa Desain, dsb"
+                className="h-11 pr-12 bg-slate-50/50 border-slate-200 focus:bg-white focus:border-purple-500 transition-all"
+              />
+              <button
+                type="button"
+                onClick={() => removePekerjaan(index)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-red-500 transition-colors"
+                title="Hapus"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    ))}
+
+    <button
+      type="button"
+      onClick={() => appendPekerjaan({ jenis_usaha: '' })}
+      className="w-full py-4 border-2 border-dashed border-slate-300 text-slate-500 rounded-xl hover:border-purple-400 hover:text-purple-600 hover:bg-purple-50/30 transition-all flex items-center justify-center gap-2 group"
+    >
+      <div className="w-6 h-6 rounded-full bg-slate-100 group-hover:bg-purple-100 flex items-center justify-center transition-colors">
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+        </svg>
+      </div>
+      <span className="font-semibold text-sm">Tambah Pekerjaan/Usaha Lain</span>
+    </button>
+  </div>
+</div>
 
 
             </div>
@@ -1932,7 +1908,7 @@ const FormMutiara = ({
           {watchedRekeningUntukSendiri === false && (
             <div className="bg-white p-4 md:p-6 rounded-2xl border-2 border-slate-200 shadow-sm space-y-6">
               <h4 className="text-emerald-800 font-bold text-xl mb-6 flex items-center gap-2">
-                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">2</span>
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">3</span>
                 Data Pemilik Dana (Beneficial Owner)
               </h4>
               

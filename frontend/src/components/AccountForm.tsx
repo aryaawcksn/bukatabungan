@@ -7,7 +7,7 @@ import OtpModal from './OtpModal';
 import ScrollToTop from './ScrollToTop';
 import FormSimpel from './account-forms/FormSimpel';
 import type { AccountFormData } from './account-forms/types';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useBlocker } from 'react-router-dom';
 // import FormTabunganku from './account-forms/FormTabunganKu';
 import FormMutiara from './account-forms/FormMutiara';
 import { API_BASE_URL } from '../config/api';
@@ -175,8 +175,8 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     mode: 'onBlur', // Validate on blur instead of onChange for better performance
   });
 
-  const { control, handleSubmit: rhfHandleSubmit, setValue, getValues, formState: { errors: rhfErrors }, reset } = methods;
-
+  const { control, handleSubmit: rhfHandleSubmit, setValue, getValues, formState: { errors: rhfErrors, isDirty }, reset } = methods;
+  
   // Optimized setFormData wrapper
   const setFormData = React.useCallback((updater: any) => {
     const currentValues = getValues();
@@ -193,6 +193,38 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       }
     });
   }, [setValue, getValues]);
+  
+  // Exit/Refresh Warning Logic
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      // isDirty from react-hook-form tracks if any field has been modified
+      // We only show the warning if the user has touched the form and hasn't finished (step 6)
+      if (isDirty && currentStep < 6) {
+        e.preventDefault();
+        e.returnValue = ''; // Standard requirement for modern browsers to show the confirmation
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isDirty, currentStep]);
+
+  // Catch back button / internal navigation
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      isDirty && currentStep < 6 && currentLocation.pathname !== nextLocation.pathname
+  );
+
+  useEffect(() => {
+    if (blocker.state === "blocked") {
+      const proceed = window.confirm("Apakah Anda yakin ingin keluar? Progres pengisian form akan hilang.");
+      if (proceed) {
+        blocker.proceed();
+      } else {
+        blocker.reset();
+      }
+    }
+  }, [blocker]);
 
 
   const [branches, setBranches] = useState<any[]>([]);
@@ -1081,100 +1113,82 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
         </div>
 
         {/* Form Section */}
-        <section className="py-12">
-          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="mb-8 flex items-center justify-between">
-              {currentStep < 4 && (
-                <Button
-                  variant="ghost"
-                  onClick={handlePrevStep}
-                  disabled={loadingPrev}
-                  className="pl-0 text-slate-500 hover:text-blue-700 hover:bg-transparent disabled:opacity-50"
-                >
-                  {loadingPrev ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Memuat...
-                    </>
-                  ) : (
-                    <>
-                      <ArrowLeft className="h-4 w-4 mr-2" />
-                      {currentStep === 1 ? "Kembali" : "Sebelumnya"}
-                    </>
-                  )}
-                </Button>
-              )}
-              <div className="text-right ml-auto">
-                <h2 className="text-2xl font-bold text-slate-900">{steps[currentStep-1].title}</h2>
-                <p className="text-slate-500 text-sm">Langkah {currentStep} dari {totalSteps}</p>
-              </div>
-            </div>
+        <section className="py-6 sm:py-10 bg-slate-50 min-h-screen">
+  <div className="max-w-3xl mx-auto px-4">
+    {/* Header - Lebih Deskriptif & Formal */}
+  <div className="mb-2 text-center">
+  {/* <span className="inline-block text-xs px-3 py-1 rounded-full text-slate-600 mb-3">
+    Langkah {currentStep} dari {totalSteps}
+  </span> */}
+  {/* <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">
+    {steps[currentStep - 1].title}
+  </h2> */}
+</div>
 
-            <div className="w-full animate-scale-in">
-              {currentStep === 6 ? renderSuccess() : renderForm()}
-              
-              {currentStep < 6 && (
-                <div className="mt-8 pt-6 border-t border-slate-100 flex justify-between items-center">
-                  <Button
-                    type="button"
-                    onClick={handlePrevStep}
-                    disabled={currentStep === 1 || loadingPrev}
-                    className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-6 py-2 rounded-sm text-lg shadow-sm transition-all disabled:opacity-50"
-                  >
-                    {loadingPrev ? (
-                      <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        Memuat...
-                      </>
-                    ) : (
-                      'Kembali'
-                    )}
-                  </Button>
-                  {currentStep < 5 ? (
-                    <Button 
-                      type="button" 
-                      onClick={handleNextStep}
-                      disabled={loadingNext}
-                      className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-sm text-lg shadow-sm hover:shadow-green-300/20 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
-                    >
-                      {loadingNext ? (
-                        <>
-                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                          Memproses...
-                        </>
-                      ) : (
-                        <>
-                          Lanjut <ChevronRight className="ml-2 h-5 w-5" />
-                        </>
-                      )}
-                    </Button>
-                  ) : currentStep === 5 ? (
-                    <Button 
-                      type="button" 
-                      onClick={handleSubmit}
-                      disabled={loadingSubmit}
-                      className="bg-yellow-500 hover:bg-yellow-400 text-green-900 font-bold px-6 py-2 rounded-sm text-lg shadow-sm transition-all disabled:opacity-50"
-                    >
-                      {loadingSubmit ? (
-                        <>
-                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                          Mengirim...
-                        </>
-                      ) : 'Kirim Permohonan'}
-                    </Button>
-                  ) : null}
-                </div>
-              )}
+    {/* Form Content */}
+    <div className="w-full">
+      {currentStep === 6 ? renderSuccess() : renderForm()}
 
-              <OtpModal
-                open={showOtpModal}
-                onClose={() => setShowOtpModal(false)}
-                phone={currentPhone}
-                onVerified={handleOtpVerified}
-              />
-            </div>
+      {/* Navigasi Simetris */}
+      {currentStep < 6 && (
+        <div className="mt-10 flex flex-row gap-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handlePrevStep}
+            disabled={currentStep === 1 || loadingPrev}
+            className="flex-1 h-12 rounded-lg border-slate-300 text-slate-700 font-medium hover:bg-slate-100 transition-all flex items-center justify-center gap-2"
+          >
+            {loadingPrev ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <>
+                <ArrowLeft className="h-4 w-4" />
+                <span>Sebelumnya</span>
+              </>
+            )}
+          </Button>
+
+          <div className="flex-1">
+            {currentStep < 5 ? (
+              <Button
+                type="button"
+                onClick={handleNextStep}
+                disabled={loadingNext}
+                className="w-full bg-green-700 hover:bg-green-800 text-white h-12 rounded-lg font-medium transition-all flex items-center justify-center gap-2"
+              >
+                {loadingNext ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <>
+                    <span>Lanjutkan</span>
+                    <ChevronRight className="h-5 w-5" />
+                  </>
+                )}
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                onClick={handleSubmit}
+                disabled={loadingSubmit}
+                className="w-full bg-emerald-700 hover:bg-emerald-800 text-white h-12 rounded-lg font-bold shadow-sm transition-all flex items-center justify-center"
+              >
+                {loadingSubmit ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Kirim Permohonan'}
+              </Button>
+            )}
           </div>
-        </section>
+        </div>
+      )}
+    </div>
+
+    <OtpModal
+      open={showOtpModal}
+      onClose={() => setShowOtpModal(false)}
+      phone={currentPhone}
+      onVerified={handleOtpVerified}
+    />
+  </div>
+</section>
         <ScrollToTop />
       </div>
     </FormProvider>

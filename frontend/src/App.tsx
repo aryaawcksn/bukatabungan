@@ -1,8 +1,8 @@
 import React from "react";
 import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
+  createBrowserRouter,
+  RouterProvider,
+  Outlet,
   useNavigate,
   useParams,
   Navigate,
@@ -19,10 +19,8 @@ import StatusCheck from "./components/StatusCheck";
 import RouteLoader from "./components/RouteLoader";
 import { VALID_SAVING_TYPES } from "./data/savingsTypes";
 
-function AppWrapper() {
-  const navigate = useNavigate();
+function RootLayout() {
   const location = useLocation();
-  const [selectedType, setSelectedType] = React.useState<string>("");
   const [isLoading, setIsLoading] = React.useState(false);
 
   // Show loading when route changes - reduced delay for mobile
@@ -38,140 +36,126 @@ function AppWrapper() {
     return () => clearTimeout(timer);
   }, [location.pathname]);
 
-  const handleOpenSavings = (type: string) => {
-    setSelectedType(type);
-    navigate(`/product/${type}`);
-  };
-
-  const handleSelectType = (type: string) => {
-    setSelectedType(type);
-    navigate(`/product/${type}`);
-  };
-
-  const handleHeroLanding = () => {
-    navigate(`/herolanding`);
-  }
-
-  const handleCompleteProcedure = () => {
-    navigate(`/form/${selectedType}`);
-  };
-
-  const handleBack = (to: string) => {
-    navigate(to);
-  };
-
-  function ProductDetailsRoute() {
-    const params = useParams();
-    const type = params.type ?? selectedType;
-
-    if (!type) return <Navigate to="/" replace />;
-
-    if (!VALID_SAVING_TYPES.includes(type)) {
-      return <InvalidRequestPage />;
-    }
-
-    React.useEffect(() => {
-      setSelectedType(type);
-    }, [type]);
-
-    return (
-      <ProductDetails
-        savingsType={type}
-        onNext={() => navigate(`/form/${type}`)}
-        onBack={() => handleBack("/selection")}
-      />
-    );
-  }
-
-  function ProcedureRoute() {
-    const params = useParams();
-    const type = params.type ?? selectedType;
-
-    if (!type) return <Navigate to="/" replace />;
-
-    if (!VALID_SAVING_TYPES.includes(type)) {
-      return <InvalidRequestPage />;
-    }
-
-    React.useEffect(() => {
-      setSelectedType(type);
-    }, [type]);
-
-    return (
-      <ProcedureSteps
-        savingsType={type}
-        onComplete={() => navigate(`/form/${type}`)}
-        onBack={() => handleBack(`/product/${type}`)}
-      />
-    );
-  }
-
-  function FormRoute() {
-    const params = useParams();
-    const type = params.type ?? selectedType;
-
-    if (!type) return <Navigate to="/" replace />;
-
-    if (!VALID_SAVING_TYPES.includes(type)) {
-      return <InvalidRequestPage />;
-    }
-
-    React.useEffect(() => {
-      setSelectedType(type);
-    }, [type]);
-
-    return (
-      <AccountForm
-        savingsType={type}
-        onBack={() => handleBack(`/product/${type}`)}
-      />
-    );
-  }
-
-  // Show loading spinner during route transitions
   if (isLoading) {
     return <RouteLoader />;
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Routes>
-        <Route
-          path="/"
-          element={<HomePage onOpenSavings={handleOpenSavings} />}
-        />
-
-        <Route path="/herolanding" element={<HeroLanding />} />
-
-        <Route
-          path="/selection"
-          element={
-            <SavingsTypeSelection
-              onSelectType={handleSelectType}
-              onBack={() => handleBack("/")}
-            />
-          }
-        />
-
-        <Route path="/product/:type" element={<ProductDetailsRoute />} />
-        <Route path="/procedure/:type" element={<ProcedureRoute />} />
-        <Route path="/form/:type" element={<FormRoute />} />
-        
-        {/* Status Check Route */}
-        <Route path="/status/:referenceCode" element={<StatusCheck />} />
-
-        {/* ✅ INI ROUTE INVALID / 404 */}
-        <Route path="*" element={<InvalidRequestPage />} />
-      </Routes>
+      <Outlet />
     </div>
   );
 }
 
-export default function App() {
+function HomePageWrapper() {
+  const navigate = useNavigate();
+  return <HomePage onOpenSavings={(type) => navigate(`/product/${type}`)} />;
+}
+
+function SelectionWrapper() {
+  const navigate = useNavigate();
   return (
-    <Router>
-      <AppWrapper />
-    </Router>
-    
+    <SavingsTypeSelection
+      onSelectType={(type) => navigate(`/product/${type}`)}
+      onBack={() => navigate("/")}
+    />
   );
+}
+
+function ProductDetailsRoute() {
+  const navigate = useNavigate();
+  const { type } = useParams();
+
+  if (!type) return <Navigate to="/" replace />;
+  if (!VALID_SAVING_TYPES.includes(type)) {
+    return <InvalidRequestPage />;
+  }
+
+  return (
+    <ProductDetails
+      savingsType={type}
+      onNext={() => navigate(`/form/${type}`)}
+      onBack={() => navigate("/selection")}
+    />
+  );
+}
+
+function ProcedureRoute() {
+  const navigate = useNavigate();
+  const { type } = useParams();
+
+  if (!type) return <Navigate to="/" replace />;
+  if (!VALID_SAVING_TYPES.includes(type)) {
+    return <InvalidRequestPage />;
+  }
+
+  return (
+    <ProcedureSteps
+      savingsType={type}
+      onComplete={() => navigate(`/form/${type}`)}
+      onBack={() => navigate(`/product/${type}`)}
+    />
+  );
+}
+
+function FormRoute() {
+  const navigate = useNavigate();
+  const { type } = useParams();
+
+  if (!type) return <Navigate to="/" replace />;
+  if (!VALID_SAVING_TYPES.includes(type)) {
+    return <InvalidRequestPage />;
+  }
+
+  return (
+    <AccountForm
+      savingsType={type}
+      onBack={() => navigate(`/product/${type}`)}
+    />
+  );
+}
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <RootLayout />,
+    children: [
+      {
+        index: true,
+        element: <HomePageWrapper />,
+      },
+      {
+        path: "herolanding",
+        element: <HeroLanding />,
+      },
+      {
+        path: "selection",
+        element: <SelectionWrapper />,
+      },
+      {
+        path: "product/:type",
+        element: <ProductDetailsRoute />,
+      },
+      {
+        path: "procedure/:type",
+        element: <ProcedureRoute />,
+      },
+      {
+        path: "form/:type",
+        element: <FormRoute />,
+      },
+      {
+        path: "status/:referenceCode",
+        element: <StatusCheck />,
+      },
+      {
+        path: "*",
+        element: <InvalidRequestPage />,
+      },
+    ],
+  },
+]);
+
+export default function App() {
+  return <RouterProvider router={router} />;
 }
