@@ -658,36 +658,39 @@ const FormMutiara = ({
 
               {/* Validity Date - Exclude KTP (lifetime validity) */}
               {watchedJenisId !== 'KTP' && (
-                <div className="md:col-span-2">
-                  <Label htmlFor="berlakuId" className="text-gray-700 font-semibold">
-                    Masa Berlaku Identitas <span className="text-red-500">*</span>
-                  </Label>
-                  <div className="mt-2 space-y-3">
-                    <Input
-                      id="berlakuId"
-                      {...register('berlakuId', { 
-                        required: watchedJenisId !== 'KTP' ? 'Masa berlaku harus diisi' : false 
-                      })}
-                      type="date"
-                      className={`h-12 rounded-lg border-2 ${rhfErrors.berlakuId ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
-                    />
-                    {rhfErrors.berlakuId && (
-                      <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                        </svg>
-                        {rhfErrors.berlakuId.message}
-                      </p>
-                    )}
-                    <p className="text-sm text-slate-500 flex items-center gap-2 bg-slate-50 p-3 rounded-lg border border-slate-200">
-                      <svg className="w-5 h-5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0116 0z" />
-                      </svg>
-                      {watchedJenisId === 'Paspor' ? 'Masukkan tanggal masa berlaku paspor' : 'Masukkan tanggal masa berlaku identitas'}
-                    </p>
-                  </div>
-                </div>
-              )}
+  <div className="md:col-span-2">
+    <Label htmlFor="berlakuId" className="text-gray-700 font-semibold">
+      Masa Berlaku Identitas <span className="text-red-500">*</span>
+    </Label>
+    
+    {/* Hapus space-y-3 atau ganti jadi yang lebih kecil seperti space-y-1 */}
+    <div className="mt-2"> 
+      <Input
+        id="berlakuId"
+        {...register('berlakuId', { 
+          required: watchedJenisId !== 'KTP' ? 'Masa berlaku harus diisi' : false 
+        })}
+        type="date"
+        className={`h-12 rounded-lg border-2 ${rhfErrors.berlakuId ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
+      />
+      
+      {/* Pesan Error */}
+      {rhfErrors.berlakuId && (
+        <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
+          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+          </svg>
+          {rhfErrors.berlakuId.message}
+        </p>
+      )}
+
+      {/* Teks Bantuan (Kecil di bawah) */}
+      <p className="text-xs text-slate-500 mt-1">
+        {watchedJenisId === 'Paspor' ? 'Masukkan tanggal masa berlaku paspor' : 'Masukkan tanggal masa berlaku identitas'}
+      </p>
+    </div>
+  </div>
+)}
 
 
               {/* Tempat & Tanggal Lahir */}
