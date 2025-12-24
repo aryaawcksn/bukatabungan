@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { CheckCircle, Clock, XCircle, AlertCircle, ArrowLeft, MapPin, Phone, RefreshCw, Check } from 'lucide-react';
+import { CheckCircle, Clock, XCircle, AlertCircle, ArrowLeft, MapPin, Phone, RefreshCw, Check, Home } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import ScrollToTop from './ScrollToTop';
@@ -109,182 +109,219 @@ export default function StatusCheck() {
   }
 
   return (
-  <div className="min-h-screen bg-slate-50 py-10 px-4">
-    <div className="max-w-3xl mx-auto">
-      {/* Navigation & Title */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+  <div className="min-h-screen bg-[#F4F7F9] antialiased text-slate-900">
+    <ScrollToTop />
+    <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between py-4">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between w-full gap-1 md:gap-0">
+            <img 
+              src="/banksleman.png" 
+              alt="Bank Sleman Logo" 
+              className="h-10 w-auto object-contain flex-shrink-0"
+            />
+            <div className="text-xs md:text-sm font-medium text-slate-600 md:pt-3">
+              Pembukaan Rekening Online
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div className="max-w-4xl mx-auto py-8 px-4">
+      
+      {/* Header & Meta Information */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 pb-6 border-b border-slate-200 gap-4">
         <div>
-          <button 
+          {/* <button 
             onClick={() => navigate('/')}
-            className="group flex items-center text-slate-500 hover:text-blue-600 transition-colors mb-2"
+            className="flex items-center text-slate-500 hover:text-slate-800 transition-colors text-xs font-semibold uppercase tracking-wider mb-4"
           >
-            <ArrowLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-            Kembali
-          </button>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-            Lacak Pengajuan
+            <ArrowLeft className="h-3 w-3 mr-2" />
+            Kembali ke Beranda
+          </button> */}
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight text-center md:text-left">
+            Status Pengajuan Layanan
           </h1>
         </div>
         
         {statusData && (
-          <div className="bg-white px-4 py-2 rounded-full border border-slate-200 shadow-sm flex items-center gap-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Ref ID:</span>
-            <span className="font-mono font-bold text-blue-600">{statusData.kode_referensi}</span>
+          <div className="text-center md:text-right">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Nomor Registrasi</p>
+            <p className="font-mono text-lg font-bold text-slate-800">{statusData.kode_referensi}</p>
           </div>
         )}
       </div>
 
       {error ? (
-        <Card className="overflow-hidden border-0 shadow-xl">
-          <div className="bg-red-500 h-2 w-full" />
-          <div className="p-10 text-center">
-            <div className="bg-red-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <XCircle className="h-10 w-10 text-red-600" />
-            </div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">Data Tidak Ditemukan</h2>
-            <p className="text-slate-500 mb-8 max-w-sm mx-auto">{error}</p>
-            <Button onClick={() => navigate('/')} className="bg-slate-900 hover:bg-slate-800 text-white px-8">
-              Coba Lagi
-            </Button>
-          </div>
-        </Card>
+        <div className="bg-white rounded-lg border border-slate-200 p-12 text-center shadow-sm">
+          <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-lg font-bold text-slate-900">Data Tidak Ditemukan</h2>
+          <p className="text-slate-500 mt-2 mb-6 text-sm">{error}</p>
+          <Button onClick={() => navigate('/')} className="bg-slate-800 text-white rounded-md px-6 py-2 h-auto text-sm">
+            Coba Lagi
+          </Button>
+        </div>
       ) : statusData ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           
-          {/* Main Status Column */}
-          <div className="md:col-span-2 space-y-6">
-            <Card className="p-0 overflow-hidden border-slate-200 shadow-sm">
-              <div className={`p-6 flex items-center gap-4 ${
-                statusData.status === 'approved' ? 'bg-emerald-50' : 
-                statusData.status === 'rejected' ? 'bg-red-50' : 'bg-blue-50'
-              }`}>
-                <div className="p-3 bg-white rounded-xl shadow-sm">
-                  {getStatusIcon(statusData.status)}
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-slate-500 uppercase tracking-wide">Status Saat Ini</p>
-                  <h2 className="text-xl font-bold text-slate-900">
-                    {statusData.status === 'approved' ? 'Disetujui' :
-                     statusData.status === 'rejected' ? 'Ditolak' : 'Dalam Proses Verifikasi'}
-                  </h2>
-                </div>
+          {/* Main Content Area */}
+          <div className="lg:col-span-8 space-y-6">
+            
+            {/* Status Card */}
+            <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">Detail Status</span>
+                <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded border ${
+                  statusData.status === 'approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 
+                  statusData.status === 'rejected' ? 'bg-red-50 text-red-700 border-red-200' : 
+                  'bg-blue-50 text-blue-700 border-blue-200'
+                }`}>
+                  {statusData.status === 'approved' ? 'Disetujui' : statusData.status === 'rejected' ? 'Ditolak' : 'Dalam Proses'}
+                </span>
               </div>
               
-              <div className="p-6 border-t border-slate-100">
-                <p className="text-slate-600 leading-relaxed">
+              <div className="p-6">
+                <h2 className="text-xl font-bold text-slate-900 mb-2">
+                  {statusData.status === 'approved' ? 'Permohonan Anda Telah Disetujui' :
+                   statusData.status === 'rejected' ? 'Permohonan Belum Dapat Disetujui' : 
+                   'Permohonan Dalam Tahap Verifikasi'}
+                </h2>
+                <p className="text-sm text-slate-600 leading-relaxed mb-6">
                   {statusData.statusMessage}
                 </p>
-                
-                {/* Tampilkan catatan jika ada */}
+
+                {/* Section Catatan Resmi */}
                 {(statusData.approval_notes || statusData.rejection_notes) && (
-                  <div className="mt-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
-                    <h4 className="text-sm font-semibold text-slate-700 mb-2">
-                      {statusData.status === 'approved' ? 'Catatan Persetujuan:' : 'Alasan Penolakan:'}
-                    </h4>
-                    <p className="text-sm text-slate-600 leading-relaxed">
-                      {statusData.approval_notes || statusData.rejection_notes}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </Card>
-
-            {/* Application Steps (Visual Progress) */}
-            <Card className="p-6 border-slate-200 shadow-sm">
-              <h3 className="font-bold text-slate-900 mb-6">Timeline Pengajuan</h3>
-              <div className="relative space-y-8 before:absolute before:inset-0 before:ml-5 before:h-full before:w-0.5 before:bg-slate-200">
-                {/* Step 1: Submission */}
-                <div className="relative flex items-center gap-6">
-                  <div className="absolute left-0 w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center ring-4 ring-white">
-                    <Check className="h-5 w-5 text-white" />
-                  </div>
-                  <div className="ml-12">
-                    <p className="text-sm font-bold text-slate-900">Pengajuan Terkirim</p>
-                    <p className="text-xs text-slate-500">{formatDate(statusData.created_at)}</p>
-                  </div>
-                </div>
-
-                {/* Step 2: Verification */}
-                <div className="relative flex items-center gap-6">
-                  <div className={`absolute left-0 w-10 h-10 rounded-full flex items-center justify-center ring-4 ring-white ${
-                    statusData.status !== 'pending' ? 'bg-emerald-500' : 'bg-blue-500 animate-pulse'
-                  }`}>
-                    {statusData.status !== 'pending' ? <Check className="h-5 w-5 text-white" /> : <Clock className="h-5 w-5 text-white" />}
-                  </div>
-                  <div className="ml-12">
-                    <p className="text-sm font-bold text-slate-900">Verifikasi Dokumen</p>
-                    <p className="text-xs text-slate-500">
-                      {statusData.status === 'pending' ? 'Sedang diperiksa oleh analis kami' : 'Selesai diverifikasi'}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Step 3: Result */}
-                {(statusData.approved_at || statusData.rejected_at) && (
-                  <div className="relative flex items-center gap-6">
-                    <div className={`absolute left-0 w-10 h-10 rounded-full flex items-center justify-center ring-4 ring-white ${
-                      statusData.status === 'approved' ? 'bg-emerald-500' : 'bg-red-500'
-                    }`}>
-                      <Check className="h-5 w-5 text-white" />
-                    </div>
-                    <div className="ml-12">
-                      <p className="text-sm font-bold text-slate-900">
-                        {statusData.status === 'approved' ? 'Keputusan Akhir: Disetujui' : 'Keputusan Akhir: Ditolak'}
+                  <div className="mt-6 border-t border-slate-100 pt-6">
+                    <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3">Catatan Petugas:</h3>
+                    <div className="bg-slate-50 border border-slate-200 p-4">
+                      <p className="text-sm text-slate-700 leading-relaxed font-medium">
+                        {statusData.approval_notes || statusData.rejection_notes}
                       </p>
-                      <p className="text-xs text-slate-500">{formatDate((statusData.approved_at || statusData.rejected_at) as string)}</p>
                     </div>
                   </div>
                 )}
               </div>
-            </Card>
+            </div>
+
+            {/* Timeline Section */}
+            <div className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm">
+              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-8">Riwayat Aktivitas</h3>
+              
+              <div className="space-y-0 relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[1px] before:bg-slate-200">
+                {/* Step Item */}
+                <div className="relative pl-10 pb-8">
+                  <div className="absolute left-0 top-1 w-[24px] h-[24px] bg-white border-2 border-emerald-500 rounded-full flex items-center justify-center z-10">
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full" />
+                  </div>
+                  <div className="flex flex-col md:flex-row md:justify-between md:items-start">
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-800 text-[13px]">Pengajuan Diterima Sistem</h4>
+                      <p className="text-xs text-slate-500 mt-0.5">Dokumen telah berhasil diunggah dan masuk dalam sistem.</p>
+                    </div>
+                    <p className="text-[11px] font-medium text-slate-400 mt-1 md:mt-0">{formatDate(statusData.created_at)}</p>
+                  </div>
+                </div>
+
+                {/* Step Item 2 */}
+                <div className="relative pl-10 pb-8">
+                  <div className={`absolute left-0 top-1 w-[24px] h-[24px] bg-white border-2 rounded-full flex items-center justify-center z-10 ${
+                    statusData.status !== 'pending' ? 'border-emerald-500' : 'border-blue-500'
+                  }`}>
+                    <div className={`w-2 h-2 rounded-full ${statusData.status !== 'pending' ? 'bg-emerald-500' : 'bg-blue-500 animate-pulse'}`} />
+                  </div>
+                  <div className="flex flex-col md:flex-row md:justify-between md:items-start">
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-800 text-[13px]">Proses Verifikasi Internal</h4>
+                      <p className="text-xs text-slate-500 mt-0.5">Pemeriksaan validitas data oleh tim internal.</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Final Result */}
+                {(statusData.approved_at || statusData.rejected_at) && (
+                  <div className="relative pl-10">
+                    <div className={`absolute left-0 top-1 w-[24px] h-[24px] bg-white border-2 rounded-full flex items-center justify-center z-10 ${
+                      statusData.status === 'approved' ? 'border-emerald-500' : 'border-red-500'
+                    }`}>
+                      <div className={`w-2 h-2 rounded-full ${statusData.status === 'approved' ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                    </div>
+                    <div className="flex flex-col md:flex-row md:justify-between md:items-start">
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-800 text-[13px]">Dokumen telah {statusData.status === 'approved' ? 'Disetujui' : 'Ditolak'}</h4>
+                        <p className="text-xs text-slate-500 mt-0.5">Tim verifikasi telah menyelesaikan proses.</p>
+                      </div>
+                      <p className="text-[11px] font-medium text-slate-400 mt-1 md:mt-0">{formatDate((statusData.approved_at || statusData.rejected_at) as string)}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
-          {/* Sidebar Information */}
-          <div className="space-y-6">
-            <Card className="p-5 border-slate-200 shadow-sm bg-white">
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Informasi Pemohon</h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="text-xs text-slate-500 block">Nama Lengkap</label>
-                  <p className="font-semibold text-slate-900">{statusData.nama_lengkap}</p>
+          {/* Sidebar Area */}
+          <aside className="lg:col-span-4 space-y-6">
+            {/* Information Summary */}
+            <div className="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm">
+              <div className="bg-slate-50 px-4 py-3 border-b border-slate-100">
+                <h3 className="text-[11px] font-bold text-slate-600 uppercase tracking-widest">Informasi Pendaftar</h3>
+              </div>
+              <div className="p-4 space-y-4">
+                <div className="grid grid-cols-1 gap-1">
+                  <span className="text-[10px] text-slate-400 uppercase font-bold tracking-tight">Nama Lengkap</span>
+                  <span className="text-sm font-semibold text-slate-800 underline decoration-slate-200 underline-offset-4">{statusData.nama_lengkap}</span>
                 </div>
-                <div>
-                  <label className="text-xs text-slate-500 block">Tipe Produk</label>
-                  <p className="font-semibold text-slate-900">{statusData.jenis_rekening}</p>
+                <div className="grid grid-cols-1 gap-1">
+                  <span className="text-[10px] text-slate-400 uppercase font-bold tracking-tight">Jenis Produk</span>
+                  <span className="text-sm font-semibold text-slate-800">{statusData.jenis_rekening}</span>
                 </div>
               </div>
-            </Card>
+            </div>
 
-            <Card className="p-5 border-slate-200 shadow-sm bg-slate-900 text-white">
-              <div className="flex items-center gap-2 mb-4 text-blue-400">
-                <MapPin className="h-4 w-4" />
-                <h3 className="text-xs font-bold uppercase tracking-widest text-white">Cabang Tujuan</h3>
+            {/* Branch Details */}
+            <div className="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm">
+              <div className="bg-slate-50 px-4 py-3 flex items-center gap-2">
+                <MapPin className="h-3 w-3 text-blue-400" />
+                <h3 className="text-[11px] font-bold text-slate-900 uppercase tracking-widest">Kantor Layanan</h3>
               </div>
-              <p className="font-bold text-lg mb-1">{statusData.cabang.nama_cabang}</p>
-              <p className="text-sm text-slate-400 leading-relaxed">
-                {statusData.cabang.alamat_cabang}
-              </p>
-              
-              {statusData.status === 'approved' && (
-                <div className="mt-4 pt-4 border-t border-slate-700">
-                  <p className="text-[11px] text-blue-300 italic uppercase font-medium">Instruksi:</p>
-                  <p className="text-xs text-slate-300 mt-1">Bawa KTP asli untuk verifikasi fisik.</p>
-                </div>
-              )}
-            </Card>
+              <div className="p-4">
+                <h4 className="font-bold text-slate-900 text-sm mb-1">{statusData.cabang.nama_cabang}</h4>
+                <p className="text-xs text-slate-500 leading-normal mb-4">
+                  {statusData.cabang.alamat_cabang}
+                </p>
+                
+                {statusData.status === 'approved' && (
+                  <div className="pt-4 border-t border-slate-100">
+                    <p className="text-[10px] font-bold text-slate-900 uppercase mb-2">Petunjuk Lanjutan:</p>
+                    <div className="bg-blue-50 border-l-2 border-blue-500 p-3">
+                      <p className="text-[11px] text-blue-800 leading-relaxed font-medium">
+                        Harap hadir di kantor cabang dengan membawa dokumen identitas diri (KTP/Passport) asli untuk verifikasi fisik terakhir.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
 
             <button 
               onClick={fetchStatus}
-              className="w-full py-3 px-4 rounded-xl border-2 border-slate-200 text-slate-600 font-bold hover:bg-slate-100 transition-all active:scale-95 flex items-center justify-center gap-2"
+              className="w-full py-3 rounded-md bg-slate-800 text-white text-[12px] font-bold hover:bg-slate-700 transition-all flex items-center justify-center gap-2 shadow-md"
             >
-              <RefreshCw className="h-4 w-4" />
-              Update Status
+              <RefreshCw className="h-3 w-3" />
+              Perbarui Status Pengajuan
             </button>
-          </div>
+            <button 
+              onClick={() => navigate('/')}
+              className="w-full py-3 rounded-md bg-slate-800 text-white text-[12px] font-bold hover:bg-slate-700 transition-all flex items-center justify-center gap-2 shadow-md"
+            >
+              <Home className="h-3 w-3" />
+              Kembali ke Beranda
+            </button>
+          </aside>
         </div>
       ) : null}
     </div>
-    <ScrollToTop />
   </div>
 );
 }

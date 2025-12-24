@@ -840,7 +840,8 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       bo_jenis_kelamin: data.rekeningUntukSendiri === false ? data.boJenisKelamin : undefined,
       bo_kewarganegaraan: data.rekeningUntukSendiri === false ? data.boKewarganegaraan : undefined,
       bo_status_pernikahan: data.rekeningUntukSendiri === false ? data.boStatusPernikahan : undefined,
-      bo_jenis_id: data.rekeningUntukSendiri === false ? data.boJenisId : undefined,
+      bo_jenis_id: data.rekeningUntukSendiri === false ? (data.boJenisId === 'Lainnya' ? data.boJenisIdCustom : data.boJenisId) : undefined,
+      bo_jenis_id_custom: data.rekeningUntukSendiri === false ? data.boJenisIdCustom : undefined,
       bo_nomor_id: data.rekeningUntukSendiri === false ? data.boNomorId : undefined,
       bo_sumber_dana: data.rekeningUntukSendiri === false ? (data.boSumberDana === 'Lainnya' ? data.boSumberDanaCustom : data.boSumberDana) : undefined,
       bo_sumber_dana_custom: data.rekeningUntukSendiri === false ? data.boSumberDanaCustom : undefined,
@@ -1036,15 +1037,15 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
         <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between py-4">
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between w-full gap-1 md:gap-0">
                 <img 
                   src="/banksleman.png" 
                   alt="Bank Sleman Logo" 
-                  className="h-10 w-auto"
+                  className="h-10 w-auto object-contain flex-shrink-0"
                 />
-              </div>
-              <div className="text-sm font-medium text-slate-600 hidden md:block">
-                Pembukaan Rekening Online
+                <div className="text-xs md:text-sm font-medium text-slate-600 md:pt-3">
+                  Pembukaan Rekening Online
+                </div>
               </div>
             </div>
           </div>
@@ -1200,7 +1201,6 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     />
   </div>
 </section>
-        <ScrollToTop />
       </div>
     </FormProvider>
   );

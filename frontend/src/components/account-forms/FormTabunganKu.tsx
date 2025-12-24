@@ -76,6 +76,26 @@ const FormTabunganku = ({
   const watchedSumberDana = useWatch({ control, name: 'sumberDana' });
   const watchedTujuanRekening = useWatch({ control, name: 'tujuanRekening' });
 
+  // Helper function to format NPWP
+  const formatNPWP = (value: string) => {
+    // Remove all non-numeric characters
+    const numbers = value.replace(/\D/g, '');
+    
+    // Apply NPWP format: XX.XXX.XXX.X-XXX.XXX
+    if (numbers.length <= 2) return numbers;
+    if (numbers.length <= 5) return `${numbers.slice(0, 2)}.${numbers.slice(2)}`;
+    if (numbers.length <= 8) return `${numbers.slice(0, 2)}.${numbers.slice(2, 5)}.${numbers.slice(5)}`;
+    if (numbers.length <= 9) return `${numbers.slice(0, 2)}.${numbers.slice(2, 5)}.${numbers.slice(5, 8)}.${numbers.slice(8)}`;
+    if (numbers.length <= 12) return `${numbers.slice(0, 2)}.${numbers.slice(2, 5)}.${numbers.slice(5, 8)}.${numbers.slice(8, 9)}-${numbers.slice(9)}`;
+    return `${numbers.slice(0, 2)}.${numbers.slice(2, 5)}.${numbers.slice(5, 8)}.${numbers.slice(8, 9)}-${numbers.slice(9, 12)}.${numbers.slice(12, 15)}`;
+  };
+
+  // Handle NPWP input formatting
+  const handleNPWPChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatNPWP(e.target.value);
+    setValue('npwp', formatted, { shouldValidate: true });
+  };
+
   // State for Indonesian address dropdowns
   const [addressData, setAddressData] = useState({
     provinces: [] as Array<{id: string, province: string}>,
@@ -847,6 +867,28 @@ const FormTabunganku = ({
                   />
                   {rhfErrors.motherName && <p className="text-sm text-red-600 mt-1">{rhfErrors.motherName.message}</p>}
                 </div>
+              </div>
+
+              {/* NPWP */}
+              <div>
+                <Label htmlFor="npwp" className="text-gray-700 font-semibold">
+                  NPWP (Opsional)
+                </Label>
+                <Input
+                  id="npwp"
+                  {...register('npwp', {
+                    pattern: {
+                      value: /^[0-9]{2}\.[0-9]{3}\.[0-9]{3}\.[0-9]{1}-[0-9]{3}\.[0-9]{3}$/,
+                      message: 'Format NPWP tidak valid (contoh: 12.345.678.9-012.345)'
+                    }
+                  })}
+                  onChange={handleNPWPChange}
+                  placeholder="12.345.678.9-012.345"
+                  maxLength={20}
+                  className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.npwp ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
+                />
+                {rhfErrors.npwp && <p className="text-sm text-red-600 mt-1">{rhfErrors.npwp.message}</p>}
+                <p className="text-xs text-slate-500 mt-1">Format: 12.345.678.9-012.345 (kosongkan jika tidak ada)</p>
               </div>
 
             </fieldset>

@@ -71,6 +71,7 @@ export interface AccountFormData {
     boKewarganegaraan: string;     // NEW FIELD 2
     boStatusPernikahan: string;    // NEW FIELD 3
     boJenisId: string; // 'KTP' | 'Paspor' | 'Lainnya'
+    boJenisIdCustom?: string;      // Custom ID type when boJenisId is 'Lainnya'
     boNomorId: string;
     boSumberDana: string;          // NEW FIELD 4
     boSumberDanaCustom?: string;   // Custom source of funds when boSumberDana is 'Lainnya'

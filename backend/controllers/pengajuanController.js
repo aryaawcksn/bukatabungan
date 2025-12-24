@@ -148,9 +148,12 @@ export const createPengajuan = async (req, res) => {
       bo_kewarganegaraan,
       bo_status_pernikahan,
       bo_jenis_id,
+      bo_jenis_id_custom,
       bo_nomor_id,
       bo_sumber_dana,
+      bo_sumber_dana_custom,
       bo_hubungan,
+      bo_hubungan_custom,
       bo_nomor_hp,
       bo_pekerjaan,
       bo_pendapatan_tahun,
@@ -339,12 +342,18 @@ export const createPengajuan = async (req, res) => {
 
     // 6. Insert beneficial owner (only if account is for others, NOT for self, and BO data is provided)
     if (rekening_untuk_sendiri === false && bo_nama) {
+      // Process custom fields - use custom value if "Lainnya" is selected
+      const finalBoJenisId = bo_jenis_id === 'Lainnya' ? bo_jenis_id_custom : bo_jenis_id;
+      const finalBoSumberDana = bo_sumber_dana === 'Lainnya' ? bo_sumber_dana_custom : bo_sumber_dana;
+      const finalBoHubungan = bo_hubungan === 'Lainnya' ? bo_hubungan_custom : bo_hubungan;
+      
       console.log("🔥 About to insert BO with values:", {
         bo_jenis_kelamin,
         bo_kewarganegaraan,
         bo_status_pernikahan,
-        bo_sumber_dana,
-        bo_hubungan,
+        finalBoJenisId,
+        finalBoSumberDana,
+        finalBoHubungan,
         bo_nomor_hp
       });
 
@@ -365,10 +374,10 @@ export const createPengajuan = async (req, res) => {
         emptyToNull(bo_jenis_kelamin),
         emptyToNull(bo_kewarganegaraan),
         emptyToNull(bo_status_pernikahan),
-        emptyToNull(bo_jenis_id),
+        emptyToNull(finalBoJenisId),
         emptyToNull(bo_nomor_id),
-        emptyToNull(bo_sumber_dana),
-        emptyToNull(bo_hubungan),
+        emptyToNull(finalBoSumberDana),
+        emptyToNull(finalBoHubungan),
         emptyToNull(bo_nomor_hp),
         emptyToNull(bo_pekerjaan),
         emptyToNull(bo_pendapatan_tahun),
@@ -522,7 +531,7 @@ export const getStatusByReferenceCode = async (req, res) => {
         statusColor = 'green';
         break;
       case 'rejected':
-        statusMessage = 'Pengajuan ditolak. Silakan hubungi cabang untuk informasi lebih lanjut.';
+        statusMessage = 'Pengajuan ditolak. Anda dapat melengkapi dokumen yang dibutuhkan sebelum mencoba mengajukan kembali.';
         statusColor = 'red';
         break;
       default:

@@ -43,6 +43,30 @@ const FormMutiara = ({
   const watchedCitizenship = useWatch({ control, name: 'citizenship' });
   const watchedEmergencyHubungan = useWatch({ control, name: 'kontakDaruratHubungan' });
   
+  // Watch BO fields for custom inputs
+  const watchedBoJenisId = useWatch({ control, name: 'boJenisId' });
+  const watchedBoHubungan = useWatch({ control, name: 'boHubungan' });
+
+  // Helper function to format NPWP
+  const formatNPWP = (value: string) => {
+    // Remove all non-numeric characters
+    const numbers = value.replace(/\D/g, '');
+    
+    // Apply NPWP format: XX.XXX.XXX.X-XXX.XXX
+    if (numbers.length <= 2) return numbers;
+    if (numbers.length <= 5) return `${numbers.slice(0, 2)}.${numbers.slice(2)}`;
+    if (numbers.length <= 8) return `${numbers.slice(0, 2)}.${numbers.slice(2, 5)}.${numbers.slice(5)}`;
+    if (numbers.length <= 9) return `${numbers.slice(0, 2)}.${numbers.slice(2, 5)}.${numbers.slice(5, 8)}.${numbers.slice(8)}`;
+    if (numbers.length <= 12) return `${numbers.slice(0, 2)}.${numbers.slice(2, 5)}.${numbers.slice(5, 8)}.${numbers.slice(8, 9)}-${numbers.slice(9)}`;
+    return `${numbers.slice(0, 2)}.${numbers.slice(2, 5)}.${numbers.slice(5, 8)}.${numbers.slice(8, 9)}-${numbers.slice(9, 12)}.${numbers.slice(12, 15)}`;
+  };
+
+  // Handle NPWP input formatting
+  const handleNPWPChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatNPWP(e.target.value);
+    setValue('npwp', formatted, { shouldValidate: true });
+  };
+  
   // Field arrays for EDD
   const { fields: bankFields, append: appendBank, remove: removeBank } = useFieldArray({
     control,
@@ -494,11 +518,14 @@ const FormMutiara = ({
           {/* Section 1: Identitas Diri */}
           <article className="bg-white p-4 md:p-6 rounded-2xl border-2 border-slate-200 shadow-sm">
             <header>
-              <h4 className="text-emerald-800 font-bold text-xl mb-6 flex items-center gap-2">
-                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">1</span>
-                Identitas Diri
-              </h4>
-            </header>
+          <h4 className="text-emerald-800 font-bold text-xl flex items-center gap-2">
+            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">1</span>
+            Identitas Diri
+          </h4>
+          <p className="text-slate-500 text-sm ml-10 mb-6">
+            Lengkapi data diri anda sesuai dengan dokumen identitas resmi.
+          </p>
+        </header>
             <fieldset className="space-y-5">
               <legend className="sr-only">Informasi Identitas Pribadi</legend>
 
@@ -661,39 +688,39 @@ const FormMutiara = ({
 
               {/* Validity Date - Exclude KTP (lifetime validity) */}
               {watchedJenisId !== 'KTP' && (
-  <div className="md:col-span-2">
-    <Label htmlFor="berlakuId" className="text-gray-700 font-semibold">
-      Masa Berlaku Identitas <span className="text-red-500">*</span>
-    </Label>
-    
-    {/* Hapus space-y-3 atau ganti jadi yang lebih kecil seperti space-y-1 */}
-    <div className="mt-2"> 
-      <Input
-        id="berlakuId"
-        {...register('berlakuId', { 
-          required: watchedJenisId !== 'KTP' ? 'Masa berlaku harus diisi' : false 
-        })}
-        type="date"
-        className={`h-12 rounded-lg border-2 ${rhfErrors.berlakuId ? 'border-red-500' : 'border-slate-300'} focus:border-green-400 focus:ring-2 focus:ring-green-100`}
-      />
-      
-      {/* Pesan Error */}
-      {rhfErrors.berlakuId && (
-        <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-          </svg>
-          {rhfErrors.berlakuId.message}
-        </p>
-      )}
+              <div className="md:col-span-2">
+                <Label htmlFor="berlakuId" className="text-gray-700 font-semibold">
+                  Masa Berlaku Identitas <span className="text-red-500">*</span>
+                </Label>
+                
+                {/* Hapus space-y-3 atau ganti jadi yang lebih kecil seperti space-y-1 */}
+                <div className="mt-2"> 
+                  <Input
+                    id="berlakuId"
+                    {...register('berlakuId', { 
+                      required: watchedJenisId !== 'KTP' ? 'Masa berlaku harus diisi' : false 
+                    })}
+                    type="date"
+                    className={`h-12 rounded-lg border-2 ${rhfErrors.berlakuId ? 'border-red-500' : 'border-slate-300'} focus:border-green-400 focus:ring-2 focus:ring-green-100`}
+                  />
+                  
+                  {/* Pesan Error */}
+                  {rhfErrors.berlakuId && (
+                    <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      {rhfErrors.berlakuId.message}
+                    </p>
+                  )}
 
-      {/* Teks Bantuan (Kecil di bawah) */}
-      <p className="text-xs text-slate-500 mt-1">
-        {watchedJenisId === 'Paspor' ? 'Masukkan tanggal masa berlaku paspor' : 'Masukkan tanggal masa berlaku identitas'}
-      </p>
-    </div>
-  </div>
-)}
+                  {/* Teks Bantuan (Kecil di bawah) */}
+                  <p className="text-xs text-slate-500 mt-1">
+                    {watchedJenisId === 'Paspor' ? 'Masukkan tanggal masa berlaku paspor' : 'Masukkan tanggal masa berlaku identitas'}
+                  </p>
+                </div>
+              </div>
+            )}
 
 
               {/* Tempat & Tanggal Lahir */}
@@ -849,15 +876,43 @@ const FormMutiara = ({
                 </div>
               </div>
 
+              {/* NPWP */}
+              <div>
+                <Label htmlFor="npwp" className="text-gray-700 font-semibold">
+                  NPWP (Opsional)
+                </Label>
+                <Input
+                  id="npwp"
+                  {...register('npwp', {
+                    pattern: {
+                      value: /^[0-9]{2}\.[0-9]{3}\.[0-9]{3}\.[0-9]{1}-[0-9]{3}\.[0-9]{3}$/,
+                      message: 'Format NPWP tidak valid (contoh: 12.345.678.9-012.345)'
+                    }
+                  })}
+                  onChange={handleNPWPChange}
+                  placeholder="12.345.678.9-012.345"
+                  maxLength={20}
+                  className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.npwp ? 'border-red-500' : 'border-slate-300'} focus:border-green-400 focus:ring-2 focus:ring-green-100`}
+                />
+                {rhfErrors.npwp && <p className="text-sm text-red-600 mt-1">{rhfErrors.npwp.message}</p>}
+                <p className="text-xs text-slate-500 mt-1">Format: 12.345.678.9-012.345 (kosongkan jika tidak ada)</p>
+              </div>
+
             </fieldset>
           </article>
 
          {/* Section 2: Informasi Kontak */}
 <div className="bg-white p-4 md:p-6 rounded-2xl border-2 border-slate-200 shadow-sm">
-  <h4 className="text-emerald-800 font-bold text-xl mb-6 flex items-center gap-2">
-    <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">2</span>
-    Informasi Kontak
-  </h4>
+          <header>
+            <h4 className="text-emerald-800 font-bold text-xl flex items-center gap-2">
+              <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">2</span>
+              Informasi Kontak
+            </h4>
+            <p className="text-slate-500 text-sm ml-10 mb-6">
+              Silakan isi informasi kontak Anda untuk keperluan komunikasi dan pemberitahuan.
+            </p>
+          </header>
+  
 
   <div className="space-y-6">
     {/* --- SUB-SECTION: KONTAK UTAMA --- */}
@@ -1019,10 +1074,15 @@ const FormMutiara = ({
 
           {/* Section 3: Alamat Tempat Tinggal */}
           <div className="bg-white p-4 md:p-6 rounded-2xl border-2 border-slate-200 shadow-sm">
-            <h4 className="text-emerald-800 font-bold text-xl mb-6 flex items-center gap-2">
+             <header>
+            <h4 className="text-emerald-800 font-bold text-xl flex items-center gap-2">
               <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">3</span>
               Alamat Tempat Tinggal
             </h4>
+            <p className="text-slate-500 text-sm ml-10 mb-6">
+              Isi alamat tempat tinggal Anda sesuai dengan dokumen identitas yang berlaku.
+            </p>
+          </header>
             <div className="space-y-5">
 
               {/* RT/RW Field - Only for WNI */}
@@ -1379,10 +1439,15 @@ const FormMutiara = ({
 
           {/* Section 1: Informasi Pekerjaan */}
           <div className="bg-white p-4 md:p-6 rounded-2xl border-2 border-slate-200 shadow-sm">
-            <h4 className="text-emerald-800 font-bold text-xl mb-6 flex items-center gap-2">
-              <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">1</span>
+             <header>
+            <h4 className="text-emerald-800 font-bold text-xl flex items-center gap-2">
+              <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">3</span>
               Informasi Pekerjaan
             </h4>
+            <p className="text-slate-500 text-sm ml-10 mb-6">
+              Silakan isi informasi pekerjaan dan penghasilan Anda.
+            </p>
+          </header>
             <div className="space-y-5">
 
               <div className="grid md:grid-cols-2 gap-5">
@@ -1717,10 +1782,15 @@ const FormMutiara = ({
 
           {/* Section 1: Konfigurasi Rekening */}
           <div className="bg-white p-4 md:p-6 rounded-2xl border-2 border-slate-200 shadow-sm">
-            <h4 className="text-emerald-800 font-bold text-xl mb-6 flex items-center gap-2">
-              <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">1</span>
-              Detail Rekening
+             <header>
+            <h4 className="text-emerald-800 font-bold text-xl flex items-center gap-2">
+              <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">4</span>
+              Konfigurasi Rekening
             </h4>
+            <p className="text-slate-500 text-sm ml-10 mb-6">
+              Silakan pilih jenis kartu dan tujuan pembukaan rekening Anda.
+            </p>
+          </header>
             <div className="space-y-5">
               
               {/* Account Type - Pre-filled and Read-only */}
@@ -1820,7 +1890,7 @@ const FormMutiara = ({
 
               {/* Account Purpose */}
               <div>
-                <Label htmlFor="tujuanRekening" className="text-gray-700">Tujuan Pembukaan Rekening</Label>
+                <Label htmlFor="tujuanRekening" className="text-gray-700">Tujuan Pembukaan Rekening <span className="text-red-500">*</span></Label>
                 <Controller
                   name="tujuanRekening"
                   control={control}
@@ -1862,73 +1932,96 @@ const FormMutiara = ({
 
               {/* Section 2: Kepemilikan Rekening */}
               <div className="bg-white p-4 md:p-6 rounded-2xl border-2 border-slate-200 shadow-sm">
-                <h4 className="text-emerald-800 font-bold text-xl mb-6 flex items-center gap-2">
-                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">2</span>
-                  Kepemilikan Rekening
-                </h4>
-                
-                {/* Beneficial Owner Question */}
-                <div className="bg-emerald-50 p-6 rounded-2xl border-2 border-emerald-100 mb-4">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="flex items-start gap-4">
-                      <div className="bg-emerald-100 p-3 rounded-xl">
-                        <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-gray-800">Pemilik Dana (Beneficial Owner)</h4>
-                        <p className="text-sm text-gray-600 mt-1 max-w-xl">
-                          Apakah rekening ini dibuka untuk kepentingan Anda sendiri atau ada pemilik dana lain?
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="bg-white p-1 rounded-xl shadow-sm border border-emerald-100 flex self-start md:self-center">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setValue('rekeningUntukSendiri', true);
-                        }}
-                        className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${
-                          watchedRekeningUntukSendiri
-                            ? 'bg-emerald-600 text-white shadow-md'
-                            : 'text-gray-500 hover:bg-gray-50'
-                        }`}
-                      >
-                        Diri Sendiri
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setValue('rekeningUntukSendiri', false);
-                        }}
-                        className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${
-                          !watchedRekeningUntukSendiri
-                            ? 'bg-orange-500 text-white shadow-md'
-                            : 'text-gray-500 hover:bg-gray-50'
-                        }`}
-                      >
-                        Orang Lain
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <p className="text-xs text-gray-600">
-                  Informasi Beneficial Owner (pemilik manfaat sebenarnya) diperlukan jika rekening ini untuk orang lain.
-                </p>
-              </div>
+  {/* Section Header */}
+  <header className="mb-6">
+    <h4 className="text-emerald-800 font-bold text-xl flex items-center gap-2">
+      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">
+        5
+      </span>
+      Kepemilikan Rekening
+    </h4>
+    <p className="text-slate-500 text-sm ml-10 mt-1">
+      Tentukan pengendali dana atau pemilik manfaat (Beneficial Owner) dari rekening ini.
+    </p>
+  </header>
+
+  {/* Question Card */}
+  <div className="bg-emerald-50 p-5 rounded-2xl border-2 border-emerald-100 mb-4">
+    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="flex items-start gap-4">
+        {/* Icon */}
+        <div className="bg-emerald-100 p-3 rounded-xl shrink-0">
+          <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+        </div>
+        
+        {/* Text Area */}
+        <div>
+          <h5 className="font-bold text-gray-800">
+            Pemilik Dana <span className="text-red-500">*</span>
+          </h5>
+          <p className="text-sm text-emerald-700/80 mt-0.5">
+            Apakah rekening ini dibuka untuk kepentingan Anda sendiri?
+          </p>
+        </div>
+      </div>
+      
+      {/* Toggle Buttons */}
+      <div className="bg-white p-1 rounded-xl shadow-sm border border-emerald-100 flex w-full md:w-auto shrink-0">
+  <button
+    type="button"
+    onClick={() => setValue('rekeningUntukSendiri', true)}
+    className={`flex-1 md:flex-none px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${
+      watchedRekeningUntukSendiri
+        ? 'bg-emerald-600 text-white shadow-md'
+        : 'text-gray-500 hover:bg-gray-50'
+    }`}
+  >
+    Ya
+  </button>
+  <button
+    type="button"
+    onClick={() => setValue('rekeningUntukSendiri', false)}
+    className={`flex-1 md:flex-none px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${
+      !watchedRekeningUntukSendiri
+        ? 'bg-orange-500 text-white shadow-md'
+        : 'text-gray-500 hover:bg-gray-50'
+    }`}
+  >
+    Tidak
+  </button>
+</div>
+    </div>
+  </div>
+
+  {/* Footer Note */}
+  <div className="flex ml-2">
+    <div className="text-emerald-500 shrink-0">
+    </div>
+    <p className="text-xs text-slate-500 leading-relaxed">
+      Informasi Beneficial Owner (pemilik manfaat sebenarnya) diperlukan jika rekening ini untuk orang lain.
+    </p>
+  </div>
+</div>
 
           {watchedRekeningUntukSendiri === false && (
             <div className="bg-white p-4 md:p-6 rounded-2xl border-2 border-slate-200 shadow-sm space-y-6">
-              <h4 className="text-emerald-800 font-bold text-xl mb-6 flex items-center gap-2">
-                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">3</span>
-                Data Pemilik Dana (Beneficial Owner)
-              </h4>
+              <header className="mb-6">
+    <h4 className="text-emerald-800 font-bold text-xl flex items-center gap-2">
+      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">
+        6
+      </span>
+      Data Beneficial Owner
+    </h4>
+    <p className="text-slate-500 text-sm ml-10 mt-1">
+      Silakan isi data pemilik dana atau Beneficial Owner dari rekening ini.
+    </p>
+  </header>
               
               <div className="grid md:grid-cols-2 gap-5">
                 <div>
-                  <Label className="text-gray-700">Nama Lengkap Sesuai Identitas</Label>
+                  <Label className="text-gray-700">Nama Lengkap Sesuai Identitas <span className="text-red-500">*</span></Label>
                   <Input
                     {...register('boNama')}
                     placeholder="Nama Lengkap Pemilik Dana"
@@ -1936,7 +2029,7 @@ const FormMutiara = ({
                   />
                 </div>
                 <div>
-                  <Label className="text-gray-700">Tempat Lahir</Label>
+                  <Label className="text-gray-700">Tempat Lahir <span className="text-red-500">*</span></Label>
                   <Input
                     {...register('boTempatLahir')}
                     placeholder="Kota Tempat Lahir"
@@ -1947,7 +2040,7 @@ const FormMutiara = ({
 
               <div className="grid md:grid-cols-2 gap-5">
                 <div>
-                  <Label className="text-gray-700">Tanggal Lahir</Label>
+                  <Label className="text-gray-700">Tanggal Lahir <span className="text-red-500">*</span></Label>
                   <Input
                     type="date"
                     {...register('boTanggalLahir')}
@@ -1955,7 +2048,7 @@ const FormMutiara = ({
                   />
                 </div>
                 <div>
-                  <Label className="text-gray-700">Jenis Kelamin</Label>
+                  <Label className="text-gray-700">Jenis Kelamin <span className="text-red-500">*</span></Label>
                   <Controller
                     name="boJenisKelamin"
                     control={control}
@@ -1975,7 +2068,7 @@ const FormMutiara = ({
               </div>
 
               <div>
-                <Label className="text-gray-700">Alamat Lengkap (Sesuai ID)</Label>
+                <Label className="text-gray-700">Alamat Lengkap (Sesuai ID) <span className="text-red-500">*</span></Label>
                 <Input
                   {...register('boAlamat')}
                   placeholder="Alamat lengkap pemilik dana"
@@ -1985,7 +2078,7 @@ const FormMutiara = ({
 
               <div className="grid md:grid-cols-2 gap-5">
                 <div>
-                  <Label className="text-gray-700">Kewarganegaraan</Label>
+                  <Label className="text-gray-700">Kewarganegaraan <span className="text-red-500">*</span></Label>
                   <Controller
                     name="boKewarganegaraan"
                     control={control}
@@ -2003,7 +2096,7 @@ const FormMutiara = ({
                   />
                 </div>
                 <div>
-                  <Label className="text-gray-700">Status Pernikahan</Label>
+                  <Label className="text-gray-700">Status Pernikahan <span className="text-red-500">*</span></Label>
                   <Controller
                     name="boStatusPernikahan"
                     control={control}
@@ -2026,7 +2119,7 @@ const FormMutiara = ({
 
               <div className="grid md:grid-cols-2 gap-5">
                 <div>
-                  <Label className="text-gray-700">Jenis Identitas</Label>
+                  <Label className="text-gray-700">Jenis Identitas <span className="text-red-500">*</span></Label>
                   <Controller
                     name="boJenisId"
                     control={control}
@@ -2044,9 +2137,16 @@ const FormMutiara = ({
                       </Select>
                     )}
                   />
+                  {watchedBoJenisId === 'Lainnya' && (
+                    <Input
+                      {...register('boJenisIdCustom')}
+                      placeholder="Sebutkan jenis identitas lainnya"
+                      className="mt-2 h-12 rounded-md border-slate-200 transition-all focus:border-green-400 focus:ring-2 focus:ring-green-100"
+                    />
+                  )}
                 </div>
                 <div>
-                  <Label className="text-gray-700">Nomor Identitas</Label>
+                  <Label className="text-gray-700">Nomor Identitas <span className="text-red-500">*</span></Label>
                   <Input
                     {...register('boNomorId')}
                     placeholder="Masukkan nomor identitas"
@@ -2057,7 +2157,7 @@ const FormMutiara = ({
 
               <div className="grid md:grid-cols-2 gap-5">
                 <div>
-                  <Label className="text-gray-700">Sumber Dana</Label>
+                  <Label className="text-gray-700">Sumber Dana <span className="text-red-500">*</span></Label>
                   <Controller
                     name="boSumberDana"
                     control={control}
@@ -2077,7 +2177,7 @@ const FormMutiara = ({
                   />
                 </div>
                 <div>
-                  <Label className="text-gray-700">Hubungan dengan Nasabah</Label>
+                  <Label className="text-gray-700">Hubungan dengan Nasabah <span className="text-red-500">*</span></Label>
                   <Controller
                     name="boHubungan"
                     control={control}
@@ -2095,12 +2195,19 @@ const FormMutiara = ({
                       </Select>
                     )}
                   />
+                  {watchedBoHubungan === 'Lainnya' && (
+                    <Input
+                      {...register('boHubunganCustom')}
+                      placeholder="Sebutkan hubungan lainnya"
+                      className="mt-2 h-12 rounded-md border-slate-200 transition-all focus:border-green-400 focus:ring-2 focus:ring-green-100"
+                    />
+                  )}
                 </div>
               </div>
 
               <div className="grid md:grid-cols-2 gap-5">
                 <div>
-                  <Label className="text-gray-700">Nomor HP</Label>
+                  <Label className="text-gray-700">Nomor HP <span className="text-red-500">*</span></Label>
                   <Input
                     {...register('boNomorHp')}
                       placeholder="Masukkan nomor HP"
@@ -2109,7 +2216,7 @@ const FormMutiara = ({
                   {rhfErrors.boNomorHp && <p className="text-sm text-red-600 mt-1">{rhfErrors.boNomorHp.message}</p>}
                 </div>
                 <div>
-                  <Label className="text-gray-700">Pekerjaan</Label>
+                  <Label className="text-gray-700">Pekerjaan <span className="text-red-500">*</span></Label>
                   <Input
                     {...register('boPekerjaan')}
                     placeholder="Masukkan pekerjaan"
@@ -2120,7 +2227,7 @@ const FormMutiara = ({
 
               {/* BO Annual Income */}
               <div>
-                <Label className="text-gray-700">Pendapatan per Tahun</Label>
+                <Label className="text-gray-700">Pendapatan per Tahun <span className="text-red-500">*</span></Label>
                 <Controller
                   name="boPendapatanTahun"
                   control={control}
