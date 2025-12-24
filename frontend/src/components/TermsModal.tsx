@@ -33,7 +33,7 @@ export default function TermsModal({ open, onClose }: TermsModalProps) {
           
           {/* SECTION: KETENTUAN UMUM */}
           <section>
-            <h3 className="text-lg font-bold text-gray-900 mb-4 border-b pb-2">Ketentuan Umum</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-4 pb-2">Ketentuan Umum</h3>
             
             <div className="space-y-4">
               <div>
@@ -126,7 +126,7 @@ export default function TermsModal({ open, onClose }: TermsModalProps) {
 
           {/* SECTION: PERNYATAAN NASABAH */}
           <section>
-            <h3 className="text-lg font-bold text-gray-900 mb-4 border-b pb-2">Pernyataan Nasabah</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-4 pb-2">Pernyataan Nasabah</h3>
             <p className="mb-3 italic font-medium">Dengan menyetujui layanan ini, Saya/Kami menyatakan bahwa:</p>
             <ol className="list-decimal pl-5 space-y-3">
               <li>Data yang saya/kami isi dan dokumen pendukung pada Formulir Pembukaan Rekening PT BPR Bank Sleman (Perseroda) ini akurat, lengkap dan benar. Dalam hal ada perubahan terhadap data atau dokumen tersebut di kemudian hari, maka Saya/kami bersedia segera memberitahukan serta menyerahkan perubahan atas dokumen tersebut kepada Bank.</li>
@@ -157,7 +157,8 @@ export default function TermsModal({ open, onClose }: TermsModalProps) {
         {/* Footer */}
         <div className="p-6 border-t border-gray-100 flex justify-end bg-gray-50 rounded-b-2xl">
           <Button onClick={onClose} className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 shadow-lg shadow-emerald-200">
-            Saya Mengerti & Setuju
+            Saya telah membaca dan memahami
+
           </Button>
         </div>
 

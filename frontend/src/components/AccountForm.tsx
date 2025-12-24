@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
-import { ArrowLeft, CheckCircle, Sparkles, ChevronRight, User, Building2, FileText, Check, CircleCheckBig, Loader2 } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Sparkles, ChevronRight, User, Building2, FileText, Check, CircleCheckBig, Loader2, ChevronLeft } from 'lucide-react';
 import OtpModal from './OtpModal';
 import ScrollToTop from './ScrollToTop';
 import FormSimpel from './account-forms/FormSimpel';
@@ -11,6 +11,7 @@ import { useNavigate, useBlocker } from 'react-router-dom';
 // import FormTabunganku from './account-forms/FormTabunganKu';
 import FormMutiara from './account-forms/FormMutiara';
 import { API_BASE_URL } from '../config/api';
+import FormTabunganku from './account-forms/FormTabunganKu';
 
 interface AccountFormProps {
   savingsType: string;
@@ -271,16 +272,23 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     if (savingsType === 'mutiara') {
       return ''; // Mutiara harus pilih Gold/Silver/Platinum
     }
+    // TabunganKu dan SimPel tidak memiliki kartu ATM
+    if (savingsType === 'tabunganku' || savingsType === 'simpel') {
+      return '';
+    }
     return savingsType;
   };
 
   // Isi otomatis cardType saat savingsType berubah (kecuali untuk Mutiara)
   useEffect(() => {
-    if (savingsType !== 'mutiara') {
-      setValue('cardType', getDefaultCardType(), { shouldValidate: false });
-    } else {
+    if (savingsType === 'mutiara') {
        // Reset logic for mutiara if accidentally switched
        setValue('cardType', '', { shouldValidate: false });
+    } else if (savingsType === 'tabunganku' || savingsType === 'simpel') {
+      // TabunganKu dan SimPel tidak memiliki kartu ATM
+      setValue('cardType', '', { shouldValidate: false });
+    } else {
+      setValue('cardType', getDefaultCardType(), { shouldValidate: false });
     }
   }, [savingsType, setValue]);
 
@@ -288,19 +296,11 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     switch (savingsType) {
       case 'mutiara':
         return 'Mutiara';
-      case 'regular':
-        return 'Reguler';
       case 'simpel':
         return 'SimPel';
-      case 'arofah':
-        return 'Arofah';
-      case 'tamasya':
-        return 'TamasyaPlus';
       case 'tabunganku':
         return 'TabunganKu';
       case 'pensiun':
-        return 'Pensiun';
-      default:
         return 'Undefinied';
     }
   };
@@ -338,12 +338,20 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
            if (!currentData.address) newErrors.address = "Alamat wajib diisi";
            if (!currentData.postalCode) newErrors.postalCode = "Kode pos wajib diisi";
            if (!currentData.statusRumah) newErrors.statusRumah = "Status tempat tinggal wajib diisi";
-           
+           if (!currentData.kontakDaruratNama) newErrors.kontakDaruratNama = "Nama kontak darurat wajib diisi";
+           if (!currentData.kontakDaruratHp) newErrors.kontakDaruratHp = "Nomor HP kontak darurat wajib diisi";
+           if (!currentData.kontakDaruratAlamat) newErrors.kontakDaruratAlamat = "Alamat kontak darurat wajib diisi";
+           if (!currentData.kontakDaruratHubungan) newErrors.kontakDaruratHubungan = "Hubungan dengan kontak darurat wajib diisi";
+           if (currentData.kontakDaruratHubungan === 'Lainnya' && (!currentData.kontakDaruratHubunganLainnya || currentData.kontakDaruratHubunganLainnya.trim() === '')) {
+             newErrors.kontakDaruratHubunganLainnya = "Sebutkan hubungan lainnya";
+           }
            // Address validation based on citizenship
            if (currentData.citizenship === 'Indonesia') {
              // For WNI, require Indonesian address fields
              if (!currentData.province) newErrors.province = "Provinsi wajib diisi";
              if (!currentData.city) newErrors.city = "Kota/Kabupaten wajib diisi";
+             if (!currentData.kecamatan) newErrors.kecamatan = "Kecamatan wajib diisi";
+             if (!currentData.kelurahan) newErrors.kelurahan = "Kelurahan wajib diisi";
            }
            // For WNA, only require address field (no additional validations)
            if (!currentData.jenisId) newErrors.jenisId = "Jenis identitas wajib diisi";
@@ -371,6 +379,9 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
         } else if (currentStep === 3) {
            // Step 3: Validate Data Pekerjaan & Keuangan
            if (!currentData.employmentStatus) newErrors.employmentStatus = "Status pekerjaan wajib diisi";
+           if (!currentData.tempatBekerja) newErrors.tempatBekerja = "Tempat bekerja wajib diisi";
+           if (!currentData.alamatKantor) newErrors.alamatKantor = "Alamat kantor wajib diisi";
+           if (!currentData.jabatan) newErrors.jabatan = "Jabatan wajib diisi";
            if (!currentData.monthlyIncome) newErrors.monthlyIncome = "Penghasilan per bulan wajib diisi";
            if (!currentData.sumberDana) newErrors.sumberDana = "Sumber dana wajib diisi";
            if (currentData.sumberDana === 'Lainnya' && (!currentData.sumberDanaCustom || currentData.sumberDanaCustom.trim() === '')) {
@@ -429,11 +440,11 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
           const errorCount = Object.keys(newErrors).length;
           const errorDiv = document.createElement('div');
           errorDiv.className = `
-  fixed top-4 left-1/2 -translate-x-1/2
-  w-[calc(100%-2rem)] max-w-md
-  bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg
-  z-50 flex items-center animate-content-enter
-`;
+            fixed top-4 left-1/2 -translate-x-1/2
+            w-[calc(100%-2rem)] max-w-md
+            bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg
+            z-50 flex items-center animate-content-enter
+          `;
 
 
           errorDiv.innerHTML = `
@@ -613,7 +624,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
           <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
           </svg>
-          <span>Mohon lengkapi data yang masih kurang (${errorCount} kolom)</span>
+          <span>Mohon menyetujui syarat & ketentuan untuk melanjutkan.</span>
         </div>
       `;
       document.body.appendChild(errorDiv);
@@ -808,8 +819,8 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       tujuan_pembukaan: data.tujuanRekening,
       tujuan_rekening_lainnya: data.tujuanRekeningLainnya,
       nominal_setoran: data.nominalSetoran,
-      jenis_kartu: savingsType?.toLowerCase().trim() === 'simpel' ? undefined : (data.cardType || data.atmPreference || getDefaultCardType()),
-      card_type: savingsType?.toLowerCase().trim() === 'simpel' ? undefined : (data.cardType || data.atmPreference || getDefaultCardType()),
+      jenis_kartu: (savingsType?.toLowerCase().trim() === 'simpel' || savingsType?.toLowerCase().trim() === 'tabunganku') ? undefined : (data.cardType || data.atmPreference || getDefaultCardType()),
+      card_type: (savingsType?.toLowerCase().trim() === 'simpel' || savingsType?.toLowerCase().trim() === 'tabunganku') ? undefined : (data.cardType || data.atmPreference || getDefaultCardType()),
       
       // cdd_reference - Emergency contact
       kontak_darurat_nama: data.kontakDaruratNama,
@@ -998,8 +1009,8 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
       return <FormSimpel {...commonProps} />;
     }else if (savingsType === 'mutiara') {
       return <FormMutiara {...commonProps} />;
-    // }else if (savingsType === 'tabunganku') {
-    //   return <FormTabunganku {...commonProps} />;
+    }else if (savingsType === 'tabunganku') {
+      return <FormTabunganku {...commonProps} />;
     } 
     else {
       // Default for individu, mutiara, promosi
@@ -1143,7 +1154,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
               <Loader2 className="h-5 w-5 animate-spin" />
             ) : (
               <>
-                <ArrowLeft className="h-4 w-4" />
+                <ChevronLeft className="h-5 w-5" />
                 <span>Sebelumnya</span>
               </>
             )}

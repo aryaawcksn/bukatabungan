@@ -27,7 +27,7 @@ const formatRupiah = (angka: string) => {
   return 'Rp. ' + rupiah;
 };
 
-const FormSimpel = ({
+const FormTabunganku = ({
    branches = [],
    currentStep = 1,
    savingsType,
@@ -99,12 +99,12 @@ const FormSimpel = ({
   // State to store the street address separately (not in formData)
   const [streetAddress, setStreetAddress] = useState('');
 
-  // Auto-set employment status and jenis_rekening based on savings type
+  // Auto-set jenis_rekening based on savings type
   useEffect(() => {
-    const currentStatus = getValues('employmentStatus');
-    if (currentStatus !== 'Pelajar/Mahasiswa') {
-      setValue('employmentStatus', 'Pelajar/Mahasiswa', { shouldValidate: true });
-    }
+    // const currentStatus = getValues('employmentStatus');
+    // if (currentStatus !== 'Pelajar/Mahasiswa') {
+    //   setValue('employmentStatus', 'Pelajar/Mahasiswa', { shouldValidate: true });
+    // }
     // Set jenis_rekening based on savings type from URL
     setValue('jenis_rekening', getSavingsTypeName(), { shouldValidate: false });
     if (!getValues('tipeNasabah')) {
@@ -125,8 +125,8 @@ const FormSimpel = ({
       age--;
     }
     
-    if (age > 17) {
-      return 'Usia minimal untuk membuka rekening Simpel adalah 17 tahun';
+    if (age < 17) {
+      return 'Usia minimal untuk membuka rekening Mutiara adalah 17 tahun';
     }
     
     return true;
@@ -400,7 +400,7 @@ const FormSimpel = ({
       {currentStep === 1 && (
         <section className="space-y-6" aria-labelledby="branch-selection-heading">
           {/* Header */}
-          <div className="text-center mb-8">
+          {/* <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 mb-4">
               <svg className="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -411,7 +411,7 @@ const FormSimpel = ({
             <p className="text-slate-600 max-w-2xl mx-auto">
               Silakan pilih kantor cabang Bank Sleman terdekat untuk pengambilan buku tabungan Mutiara Anda.
             </p>
-          </div>
+          </div> */}
           
           {/* Branch Selection */}
           <div className="max-w-5xl mx-auto">
@@ -437,7 +437,7 @@ const FormSimpel = ({
                       }
                     }}
                   >
-                    <SelectTrigger className={`h-14 bg-white border-2 text-base focus:border-blue-400 focus:ring-2 focus:ring-blue-100 rounded-xl ${rhfErrors.cabang_pengambilan ? 'border-red-500' : 'border-slate-300'}`}>
+                    <SelectTrigger className={`h-14 bg-white border-2 text-base focus:border-emerald-500 focus:ring-emerald-500 rounded-xl ${rhfErrors.cabang_pengambilan ? 'border-red-500' : 'border-slate-300'}`}>
                       <SelectValue placeholder="-- Pilih Cabang Bank Sleman --" />
                     </SelectTrigger>
                     <SelectContent>
@@ -505,13 +505,13 @@ const FormSimpel = ({
               {/* Nama Lengkap */}
               <div>
                 <Label htmlFor="fullName" className="text-gray-700 font-semibold">
-                  Nama Lengkap (Sesuai KIA) <span className="text-red-500">*</span>
+                  Nama Lengkap (Sesuai KTP) <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="fullName"
                   {...register('fullName', { required: 'Nama lengkap harus diisi' })}
                   placeholder="Masukkan nama lengkap sesuai KTP"
-                  className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.fullName ? 'border-red-500' : 'border-slate-300'} focus:border-blue-400 focus:ring-2 focus:ring-blue-100`}
+                  className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.fullName ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
                 />
                 {rhfErrors.fullName && <p className="text-sm text-red-600 mt-1">{rhfErrors.fullName.message}</p>}
               </div>
@@ -526,7 +526,7 @@ const FormSimpel = ({
                   id="alias"
                   {...register('alias')}
                   placeholder="Nama panggilan atau alias"
-                  className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                  className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
                 />
               </div>
 
@@ -547,7 +547,7 @@ const FormSimpel = ({
                         clearErrors('nomorRekeningLama');
                       }}
                     >
-                      <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100">
+                      <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
                         <SelectValue placeholder="-- Pilih Tipe Nasabah --" />
                       </SelectTrigger>
                       <SelectContent>
@@ -571,7 +571,7 @@ const FormSimpel = ({
                       required: watchedTipeNasabah === 'lama' ? 'Nomor rekening lama harus diisi' : false 
                     })}
                     placeholder="Masukkan nomor rekening yang sudah ada"
-                    className={`mt-2 h-12 rounded-lg border-2 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 ${
+                    className={`mt-2 h-12 rounded-lg border-2 focus:border-emerald-500 ${
                       rhfErrors.nomorRekeningLama ? 'border-red-500' : 'border-slate-300'
                     }`}
                   />
@@ -593,51 +593,91 @@ const FormSimpel = ({
               )}
 
               {/* Identity Type & Number */}
-<div className="grid md:grid-cols-2 gap-5">
-  <div>
-    <Label htmlFor="nik" className="text-gray-700 font-semibold">
-      Nomor Identitas (KIA) <span className="text-red-500">*</span>
-    </Label>
-    <Input
-      id="nik"
-      {...register('nik', {
-        required: 'Nomor identitas harus diisi',
-        validate: (val) => val.length === 16 || 'NIK harus 16 digit',
-      })}
-      placeholder="Masukkan 16 digit NIK"
-      maxLength={16}
-      className={`mt-2 h-12 rounded-lg border-2 ${
-        rhfErrors.nik ? 'border-red-500' : 'border-slate-300'
-      } focus:border-blue-400 focus:ring-2 focus:ring-blue-100`}
-    />
-    {rhfErrors.nik && (
-      <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
-        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-        </svg>
-        {rhfErrors.nik.message}
-      </p>
-    )}
-  </div>
-</div>
+              <div className="grid md:grid-cols-2 gap-5">
+                <div>
+                  <Label className="text-gray-700 font-semibold">
+                    Jenis Identitas <span className="text-red-500">*</span>
+                  </Label>
+                  <Controller
+                    name="jenisId"
+                    control={control}
+                    rules={{ required: 'Jenis identitas harus dipilih' }}
+                    render={({ field }) => (
+                      <Select
+                        value={field.value}
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                          setValue('nik', '');
+                          clearErrors('nik');
+                        }}
+                      >
+                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
+                          <SelectValue placeholder="-- Pilih Jenis Identitas --" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="KTP">KTP</SelectItem>
+                          <SelectItem value="Paspor">Paspor</SelectItem>
+                          <SelectItem value="Lainnya">Lainnya</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                  {watchedJenisId === 'Lainnya' && (
+                    <Input
+                      {...register('jenisIdCustom')}
+                      placeholder="Sebutkan jenis identitas"
+                      className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
+                    />
+                  )}
+                </div>
+                <div>
+                  <Label htmlFor="nik" className="text-gray-700 font-semibold">
+                    {watchedJenisId === 'KTP' ? 'Nomor KTP' : watchedJenisId === 'Paspor' ? 'Nomor Paspor' : 'Nomor Identitas'} <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="nik"
+                    {...register('nik', { 
+                      required: 'Nomor identitas harus diisi',
+                      validate: (val) => {
+                        const jenisIdValue = getValues('jenisId');
+                        if (jenisIdValue === 'KTP' && val.length !== 16) return 'NIK harus 16 digit';
+                        return true;
+                      }
+                    })}
+                    placeholder={watchedJenisId === 'KTP' ? 'Masukkan 16 digit NIK' : watchedJenisId === 'Paspor' ? 'Masukkan 6-9 karakter' : 'Masukkan nomor identitas'}
+                    maxLength={watchedJenisId === 'KTP' ? 16 : undefined}
+                    className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.nik ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
+                  />
+                  {rhfErrors.nik && (
+                    <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      {rhfErrors.nik.message}
+                    </p>
+                  )}
+                </div>
+              </div>
 
-{/* Validity Date - Only for KIA */}
-{watchedJenisId === 'KIA' && (
-  <div className="mt-5">
+              {/* Validity Date - Exclude KTP (lifetime validity) */}
+              {watchedJenisId !== 'KTP' && (
+  <div className="md:col-span-2">
     <Label htmlFor="berlakuId" className="text-gray-700 font-semibold">
-      Masa Berlaku KIA <span className="text-red-500">*</span>
+      Masa Berlaku Identitas <span className="text-red-500">*</span>
     </Label>
-    <div className="mt-2">
+    
+    {/* Hapus space-y-3 atau ganti jadi yang lebih kecil seperti space-y-1 */}
+    <div className="mt-2"> 
       <Input
         id="berlakuId"
-        {...register('berlakuId', {
-          required: 'Masa berlaku KIA harus diisi',
+        {...register('berlakuId', { 
+          required: watchedJenisId !== 'KTP' ? 'Masa berlaku harus diisi' : false 
         })}
         type="date"
-        className={`h-12 rounded-lg border-2 ${
-          rhfErrors.berlakuId ? 'border-red-500' : 'border-slate-300'
-        } focus:border-blue-400 focus:ring-2 focus:ring-blue-100`}
+        className={`h-12 rounded-lg border-2 ${rhfErrors.berlakuId ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
       />
+      
+      {/* Pesan Error */}
       {rhfErrors.berlakuId && (
         <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -646,8 +686,10 @@ const FormSimpel = ({
           {rhfErrors.berlakuId.message}
         </p>
       )}
+
+      {/* Teks Bantuan (Kecil di bawah) */}
       <p className="text-xs text-slate-500 mt-1">
-        Sesuai dengan tanggal masa berlaku yang tertera pada kartu KIA anak.
+        {watchedJenisId === 'Paspor' ? 'Masukkan tanggal masa berlaku paspor' : 'Masukkan tanggal masa berlaku identitas'}
       </p>
     </div>
   </div>
@@ -664,7 +706,7 @@ const FormSimpel = ({
                     id="tempatLahir"
                     {...register('tempatLahir', { required: 'Tempat lahir harus diisi' })}
                     placeholder="Contoh: Yogyakarta"
-                    className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.tempatLahir ? 'border-red-500' : 'border-slate-300'} focus:border-blue-400 focus:ring-2 focus:ring-blue-100`}
+                    className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.tempatLahir ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
                   />
                   {rhfErrors.tempatLahir && <p className="text-sm text-red-600 mt-1">{rhfErrors.tempatLahir.message}</p>}
                 </div>
@@ -679,7 +721,7 @@ const FormSimpel = ({
                       required: 'Tanggal lahir harus diisi',
                       validate: validateAge
                     })}
-                    className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.birthDate ? 'border-red-500' : 'border-slate-300'} focus:border-blue-400 focus:ring-2 focus:ring-blue-100`}
+                    className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.birthDate ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
                   />
                   {rhfErrors.birthDate && (
                     <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
@@ -705,7 +747,7 @@ const FormSimpel = ({
                     rules={{ required: 'Jenis kelamin harus dipilih' }}
                     render={({ field }) => (
                       <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100">
+                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
                           <SelectValue placeholder="-- Pilih --" />
                         </SelectTrigger>
                         <SelectContent>
@@ -726,7 +768,7 @@ const FormSimpel = ({
                     rules={{ required: 'Status pernikahan harus dipilih' }}
                     render={({ field }) => (
                       <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100">
+                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
                           <SelectValue placeholder="-- Pilih --" />
                         </SelectTrigger>
                         <SelectContent>
@@ -749,7 +791,7 @@ const FormSimpel = ({
                     rules={{ required: 'Agama harus dipilih' }}
                     render={({ field }) => (
                       <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100">
+                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
                           <SelectValue placeholder="-- Pilih --" />
                         </SelectTrigger>
                         <SelectContent>
@@ -778,7 +820,7 @@ const FormSimpel = ({
                     rules={{ required: 'Pendidikan terakhir harus dipilih' }}
                     render={({ field }) => (
                       <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100">
+                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
                           <SelectValue placeholder="-- Pilih Pendidikan --" />
                         </SelectTrigger>
                         <SelectContent>
@@ -801,7 +843,7 @@ const FormSimpel = ({
                     id="motherName"
                     {...register('motherName', { required: 'Nama ibu kandung harus diisi' })}
                     placeholder="Nama lengkap ibu kandung"
-                    className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.motherName ? 'border-red-500' : 'border-slate-300'} focus:border-blue-400 focus:ring-2 focus:ring-blue-100`}
+                    className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.motherName ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
                   />
                   {rhfErrors.motherName && <p className="text-sm text-red-600 mt-1">{rhfErrors.motherName.message}</p>}
                 </div>
@@ -836,7 +878,7 @@ const FormSimpel = ({
             }
           })}
           placeholder="contoh@email.com"
-          className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.email ? 'border-red-500' : 'border-slate-300'} focus:border-blue-400 focus:ring-2 focus:ring-blue-100`}
+          className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.email ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
         />
         {rhfErrors.email && (
           <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
@@ -861,7 +903,7 @@ const FormSimpel = ({
             }
           })}
           placeholder="08123456789"
-          className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.phone ? 'border-red-500' : 'border-slate-300'} focus:border-blue-400 focus:ring-2 focus:ring-blue-100`}
+          className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.phone ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
         />
         {rhfErrors.phone && (
           <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
@@ -883,7 +925,7 @@ const FormSimpel = ({
         rules={{ required: 'Kewarganegaraan harus dipilih' }}
         render={({ field }) => (
           <Select value={field.value} onValueChange={field.onChange}>
-            <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100">
+            <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
               <SelectValue placeholder="Pilih kewarganegaraan" />
             </SelectTrigger>
             <SelectContent>
@@ -908,7 +950,7 @@ const FormSimpel = ({
           <Input
             {...register('kontakDaruratNama', { required: 'Nama kontak darurat wajib diisi' })}
             placeholder="Nama lengkap kontak darurat"
-            className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.kontakDaruratNama ? 'border-red-500' : 'border-slate-300'} focus:border-blue-400 focus:ring-2 focus:ring-blue-100`}
+            className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.kontakDaruratNama ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
           />
           {rhfErrors.kontakDaruratNama && <p className="text-sm text-red-600 mt-1">{rhfErrors.kontakDaruratNama.message}</p>}
         </div>
@@ -919,7 +961,7 @@ const FormSimpel = ({
           <Input
             {...register('kontakDaruratAlamat', { required: 'Alamat wajib diisi' })}
             placeholder="Contoh: Jl. Sudirman No. 123, Jakarta"
-            className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.kontakDaruratAlamat ? 'border-red-500' : 'border-slate-300'} focus:border-blue-400 focus:ring-2 focus:ring-blue-100`}
+            className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.kontakDaruratAlamat ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
           />
           {rhfErrors.kontakDaruratAlamat && <p className="text-sm text-red-600 mt-1">{rhfErrors.kontakDaruratAlamat.message}</p>}
         </div>
@@ -931,7 +973,7 @@ const FormSimpel = ({
             <Input
               {...register('kontakDaruratHp', { required: 'Nomor HP wajib diisi' })}
               placeholder="08xxxxxxxxxx"
-              className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.kontakDaruratHp ? 'border-red-500' : 'border-slate-300'} focus:border-blue-400 focus:ring-2 focus:ring-blue-100`}
+              className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.kontakDaruratHp ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
             />
             {rhfErrors.kontakDaruratHp && <p className="text-sm text-red-600 mt-1">{rhfErrors.kontakDaruratHp.message}</p>}
           </div>
@@ -944,7 +986,7 @@ const FormSimpel = ({
               rules={{ required: 'Pilih hubungan' }}
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.kontakDaruratHubungan ? 'border-red-500' : 'border-slate-300'} focus:border-blue-400 focus:ring-2 focus:ring-blue-100`}>
+                  <SelectTrigger className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.kontakDaruratHubungan ? 'border-red-500' : 'border-slate-300'}`}>
                     <SelectValue placeholder="-- Pilih Hubungan --" />
                   </SelectTrigger>
                   <SelectContent>
@@ -963,7 +1005,7 @@ const FormSimpel = ({
               <Input
                 {...register('kontakDaruratHubunganLainnya', { required: 'Sebutkan hubungan lainnya' })}
                 placeholder="Sebutkan (misal: Teman, Sepupu)"
-                className="mt-3 h-12 rounded-lg border-2 border-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                className="mt-3 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
               />
             )}
           </div>
@@ -1006,7 +1048,7 @@ const FormSimpel = ({
                     })}
                     rows={3}
                     placeholder="Contoh: Jl. Magelang No. 123, RT 02/RW 05"
-                    className={`mt-2 rounded-lg border-2 ${rhfErrors.alamatJalan ? 'border-red-500' : 'border-slate-300'} focus:border-blue-400 focus:ring-2 focus:ring-blue-100`}
+                    className={`mt-2 rounded-lg border-2 ${rhfErrors.alamatJalan ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
                   />
                   <p className="text-xs text-slate-500 mt-1">Masukkan alamat jalan, nomor rumah, RT/RW</p>
                 </div>
@@ -1046,7 +1088,7 @@ const FormSimpel = ({
                             }}
                             disabled={addressData.loadingProvinces}
                           >
-                            <SelectTrigger className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.province ? 'border-red-500' : 'border-slate-300'} focus:border-blue-400 focus:ring-2 focus:ring-blue-100`}>
+                            <SelectTrigger className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.province ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}>
                               <SelectValue placeholder={addressData.loadingProvinces ? "Memuat provinsi..." : "-- Pilih Provinsi --"} />
                             </SelectTrigger>
                             <SelectContent>
@@ -1091,7 +1133,7 @@ const FormSimpel = ({
                             }}
                             disabled={!selectedAddress.provinceId || addressData.loadingCities}
                           >
-                            <SelectTrigger className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.city ? 'border-red-500' : 'border-slate-300'} focus:border-blue-400 focus:ring-2 focus:ring-blue-100`}>
+                            <SelectTrigger className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.city ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}>
                               <SelectValue placeholder={
                                 !selectedAddress.provinceId ? "Pilih provinsi" :
                                 addressData.loadingCities ? "Memuat kota..." : 
@@ -1142,7 +1184,7 @@ const FormSimpel = ({
                             }}
                             disabled={!selectedAddress.cityId || addressData.loadingDistricts}
                           >
-                            <SelectTrigger className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.kecamatan ? 'border-red-500' : 'border-slate-300'} focus:border-blue-400 focus:ring-2 focus:ring-blue-100`}>
+                            <SelectTrigger className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.kecamatan ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}>
                               <SelectValue placeholder={
                                 !selectedAddress.cityId ? "Pilih kota" :
                                 addressData.loadingDistricts ? "Memuat kecamatan..." : 
@@ -1186,7 +1228,7 @@ const FormSimpel = ({
                             }}
                             disabled={!selectedAddress.districtId || addressData.loadingVillages}
                           >
-                            <SelectTrigger className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.kelurahan ? 'border-red-500' : 'border-slate-300'} focus:border-blue-400 focus:ring-2 focus:ring-blue-100`}>
+                            <SelectTrigger className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.kelurahan ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}>
                               <SelectValue placeholder={
                                 !selectedAddress.districtId ? "Pilih kecamatan" :
                                 addressData.loadingVillages ? "Memuat kelurahan..." : 
@@ -1219,7 +1261,7 @@ const FormSimpel = ({
                       {...register('address', { required: watchedCitizenship !== 'Indonesia' ? 'Alamat lengkap harus diisi' : false })}
                       rows={4}
                       placeholder="Contoh: 123 Main Street, Apartment 4B, Downtown District, Bangkok 10110, Thailand"
-                      className={`mt-2 w-full p-3 rounded-lg border-2 ${rhfErrors.address ? 'border-red-500' : 'border-slate-300'} focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none resize-none`}
+                      className={`mt-2 w-full p-3 rounded-lg border-2 ${rhfErrors.address ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500 focus:outline-none resize-none`}
                     />
                     <p className="text-xs text-slate-500 mt-1">
                       Masukkan alamat lengkap termasuk nama jalan, nomor, kota, kode pos, dan negara
@@ -1238,7 +1280,7 @@ const FormSimpel = ({
                     id="postalCode"
                     {...register('postalCode', { required: 'Kode pos harus diisi', maxLength: 5 })}
                     placeholder="55281"
-                    className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.postalCode ? 'border-red-500' : 'border-slate-300'} focus:border-blue-400 focus:ring-2 focus:ring-blue-100`}
+                    className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.postalCode ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
                   />
                 </div>
 
@@ -1252,7 +1294,7 @@ const FormSimpel = ({
                       rules={{ required: 'Status tempat tinggal harus dipilih' }}
                       render={({ field }) => (
                         <Select value={field.value} onValueChange={field.onChange}>
-                          <SelectTrigger className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.statusRumah ? 'border-red-500' : 'border-slate-300'} focus:border-blue-400 focus:ring-2 focus:ring-blue-100`}>
+                          <SelectTrigger className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.statusRumah ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}>
                             <SelectValue placeholder="-- Pilih Status --" />
                           </SelectTrigger>
                           <SelectContent>
@@ -1303,7 +1345,7 @@ const FormSimpel = ({
     <Input
       {...register('alamatDomisili')}
       placeholder="Kosongkan jika sama dengan alamat KTP"
-      className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 shadow-sm"
+      className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500 shadow-sm"
     />
     <p className="text-xs text-slate-500 mt-1 italic">Isi jika Anda tinggal di lokasi berbeda dari KTP</p>
   </div>
@@ -1352,7 +1394,7 @@ const FormSimpel = ({
                     rules={{ required: 'Pekerjaan harus dipilih' }}
                     render={({ field }) => (
                       <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100">
+                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
                           <SelectValue placeholder="-- Pilih Pekerjaan --" />
                         </SelectTrigger>
                         <SelectContent>
@@ -1378,7 +1420,7 @@ const FormSimpel = ({
                     rules={{ required: 'Penghasilan harus dipilih' }}
                     render={({ field }) => (
                       <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100">
+                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
                           <SelectValue placeholder="-- Pilih Range Penghasilan --" />
                         </SelectTrigger>
                         <SelectContent>
@@ -1402,7 +1444,7 @@ const FormSimpel = ({
                     </Label>
                     <Input
                       {...register('tempatBekerja')}
-                      className="mt-2 h-12 rounded-md border-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                      className="mt-2 h-12 rounded-md border-slate-300 focus:border-blue-500"
                     />
                   </div>
                   <div>
@@ -1411,7 +1453,7 @@ const FormSimpel = ({
                     </Label>
                     <Input
                       {...register('jabatan')}
-                      className="mt-2 h-12 rounded-md border-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                      className="mt-2 h-12 rounded-md border-slate-300 focus:border-blue-500"
                     />
                   </div>
               </div>
@@ -1423,7 +1465,7 @@ const FormSimpel = ({
                     </Label>
                     <Input
                       {...register('alamatKantor')}
-                      className="mt-2 h-12 rounded-md border-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                      className="mt-2 h-12 rounded-md border-slate-300 focus:border-blue-500"
                     />
                   </div>
                   <div>
@@ -1433,7 +1475,7 @@ const FormSimpel = ({
                     <Input
                       {...register('teleponKantor')}
                       placeholder="021-12345678"
-                      className="mt-2 h-12 rounded-md border-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                      className="mt-2 h-12 rounded-md border-slate-300 focus:border-blue-500"
                     />
                   </div>
               </div>
@@ -1444,7 +1486,7 @@ const FormSimpel = ({
                     <Input
                       {...register('bidangUsaha')}
                       placeholder="Contoh: Perdagangan, Jasa..."
-                      className="mt-2 h-12 rounded-md border-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                      className="mt-2 h-12 rounded-md border-slate-300 focus:border-blue-500"
                     />
                   </div>
                   <div>
@@ -1461,7 +1503,7 @@ const FormSimpel = ({
                             const cleanValue = e.target.value.replace(/\D/g, '');
                             field.onChange(cleanValue);
                           }}
-                          className="mt-2 h-12 rounded-md border-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                          className="mt-2 h-12 rounded-md border-slate-300 focus:border-blue-500"
                         />
                       )}
                     />
@@ -1484,7 +1526,7 @@ const FormSimpel = ({
                         }
                       }}
                     >
-                      <SelectTrigger className="mt-2 h-12 rounded-md border-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100">
+                      <SelectTrigger className="mt-2 h-12 rounded-md">
                         <SelectValue placeholder="Pilih sumber dana" />
                       </SelectTrigger>
                       <SelectContent>
@@ -1503,7 +1545,7 @@ const FormSimpel = ({
                   <Input
                     {...register('sumberDanaCustom')}
                     placeholder="Sebutkan sumber dana lainnya"
-                    className="mt-2 h-12 rounded-md border-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                    className="mt-2 h-12 rounded-md"
                   />
                 )}
               </div>
@@ -1546,7 +1588,7 @@ const FormSimpel = ({
             <Input
               {...register(`eddBankLain.${index}.bank_name`)}
               placeholder="Misal: Bank Central Asia (BCA)"
-              className="mt-1.5 h-11 bg-slate-50/50 border-slate-200 focus:bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
+              className="mt-1.5 h-11 bg-slate-50/50 border-slate-200 focus:bg-white focus:border-emerald-500 transition-all"
             />
           </div>
           
@@ -1556,7 +1598,7 @@ const FormSimpel = ({
               <Input
                 {...register(`eddBankLain.${index}.jenis_rekening`)}
                 placeholder="Tabungan / Giro"
-                className="mt-1.5 h-11 bg-slate-50/50 border-slate-200 focus:bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
+                className="mt-1.5 h-11 bg-slate-50/50 border-slate-200 focus:bg-white focus:border-emerald-500 transition-all"
               />
             </div>
             <div>
@@ -1564,7 +1606,7 @@ const FormSimpel = ({
               <Input
                 {...register(`eddBankLain.${index}.nomor_rekening`)}
                 placeholder="Masukkan angka saja"
-                className="mt-1.5 h-11 bg-slate-50/50 border-slate-200 focus:bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
+                className="mt-1.5 h-11 bg-slate-50/50 border-slate-200 focus:bg-white focus:border-emerald-500 transition-all"
               />
             </div>
           </div>
@@ -1611,7 +1653,7 @@ const FormSimpel = ({
               <Input
                 {...register(`eddPekerjaanLain.${index}.jenis_usaha`)}
                 placeholder="Contoh: Toko Kelontong, Jasa Desain, dsb"
-                className="h-11 pr-12 bg-slate-50/50 border-slate-200 focus:bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
+                className="h-11 pr-12 bg-slate-50/50 border-slate-200 focus:bg-white focus:border-purple-500 transition-all"
               />
               <button
                 type="button"
@@ -1679,7 +1721,7 @@ const FormSimpel = ({
             </h4>
             <div className="space-y-5">
               
-              {/* Account Type - Pre-filled and Read-only for Mutiara */}
+              {/* Account Type - Pre-filled and Read-only */}
               <div>
                 <Label htmlFor="jenis_rekening" className="text-gray-700">Jenis Rekening</Label>
                 <Controller
@@ -1698,8 +1740,8 @@ const FormSimpel = ({
                 <p className="text-xs text-gray-500 mt-1">Jenis rekening {getSavingsTypeName()}</p>
               </div>
 
-              {/* Card Type Selection - Only for Mutiara */}
-              {/* <div>
+              {/* Card Type Selection - Only for Mutiara - COMMENTED OUT FOR TabunganKu
+              <div>
                 <Label className="text-gray-700 font-semibold">
                   Jenis Kartu <span className="text-red-500">*</span>
                 </Label>
@@ -1708,7 +1750,7 @@ const FormSimpel = ({
                   control={control}
                   render={({ field }) => (
                     <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100">
+                      <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
                         <SelectValue placeholder="-- Pilih Jenis Kartu --" />
                       </SelectTrigger>
                       <SelectContent>
@@ -1721,7 +1763,8 @@ const FormSimpel = ({
                 <p className="text-xs text-slate-500 mt-1">
                   Pilih jenis kartu ATM sesuai kebutuhan Anda. Setiap jenis kartu memiliki fitur dan limit yang berbeda.
                 </p>
-              </div> */}
+              </div>
+              */}
 
               {/* Initial Deposit Amount
               <div>
@@ -1790,7 +1833,7 @@ const FormSimpel = ({
                         }
                       }}
                     >
-                      <SelectTrigger className="mt-2 h-12 rounded-md shadow-sm border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100">
+                      <SelectTrigger className="mt-2 h-12 rounded-md shadow-sm border-slate-200">
                         <SelectValue placeholder="Pilih tujuan" />
                       </SelectTrigger>
                       <SelectContent>
@@ -1808,7 +1851,7 @@ const FormSimpel = ({
                   <Input
                     {...register('tujuanRekeningLainnya')}
                     placeholder="Sebutkan tujuan pembukaan rekening"
-                    className="mt-3 h-12 rounded-md shadow-sm border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                    className="mt-3 h-12 rounded-md shadow-sm border-slate-200 focus:ring-emerald-500"
                   />
                 )}
               </div>
@@ -1888,7 +1931,7 @@ const FormSimpel = ({
                   <Input
                     {...register('boNama')}
                     placeholder="Nama Lengkap Pemilik Dana"
-                    className="mt-2 h-12 rounded-md transition-all focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                    className="mt-2 h-12 rounded-md transition-all focus:ring-2 focus:ring-emerald-500/20"
                   />
                 </div>
                 <div>
@@ -1896,7 +1939,7 @@ const FormSimpel = ({
                   <Input
                     {...register('boTempatLahir')}
                     placeholder="Kota Tempat Lahir"
-                    className="mt-2 h-12 rounded-md transition-all focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                    className="mt-2 h-12 rounded-md transition-all focus:ring-2 focus:ring-emerald-500/20"
                   />
                 </div>
               </div>
@@ -1907,7 +1950,7 @@ const FormSimpel = ({
                   <Input
                     type="date"
                     {...register('boTanggalLahir')}
-                    className="mt-2 h-12 rounded-md transition-all focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                    className="mt-2 h-12 rounded-md transition-all focus:ring-2 focus:ring-emerald-500/20"
                   />
                 </div>
                 <div>
@@ -1917,7 +1960,7 @@ const FormSimpel = ({
                     control={control}
                     render={({ field }) => (
                       <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger className="mt-2 h-12 rounded-md shadow-sm border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100">
+                        <SelectTrigger className="mt-2 h-12 rounded-md shadow-sm border-slate-200 focus:border-emerald-500">
                           <SelectValue placeholder="Pilih Jenis Kelamin" />
                         </SelectTrigger>
                         <SelectContent>
@@ -1935,7 +1978,7 @@ const FormSimpel = ({
                 <Input
                   {...register('boAlamat')}
                   placeholder="Alamat lengkap pemilik dana"
-                  className="mt-2 h-12 rounded-md transition-all focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                  className="mt-2 h-12 rounded-md transition-all focus:ring-2 focus:ring-emerald-500/20"
                 />
               </div>
 
@@ -1947,7 +1990,7 @@ const FormSimpel = ({
                     control={control}
                     render={({ field }) => (
                       <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger className="mt-2 h-12 rounded-md shadow-sm border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100">
+                        <SelectTrigger className="mt-2 h-12 rounded-md shadow-sm border-slate-200 focus:border-emerald-500">
                           <SelectValue placeholder="Pilih Kewarganegaraan" />
                         </SelectTrigger>
                         <SelectContent>
@@ -1965,7 +2008,7 @@ const FormSimpel = ({
                     control={control}
                     render={({ field }) => (
                       <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger className="mt-2 h-12 rounded-md shadow-sm border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100">
+                        <SelectTrigger className="mt-2 h-12 rounded-md shadow-sm border-slate-200 focus:border-emerald-500">
                           <SelectValue placeholder="Pilih Status" />
                         </SelectTrigger>
                         <SelectContent>
@@ -1988,7 +2031,7 @@ const FormSimpel = ({
                     control={control}
                     render={({ field }) => (
                       <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger className="mt-2 h-12 rounded-md shadow-sm border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100">
+                        <SelectTrigger className="mt-2 h-12 rounded-md shadow-sm border-slate-200 focus:border-emerald-500">
                           <SelectValue placeholder="Pilih Jenis ID" />
                         </SelectTrigger>
                         <SelectContent>
@@ -2006,7 +2049,7 @@ const FormSimpel = ({
                   <Input
                     {...register('boNomorId')}
                     placeholder="Masukkan nomor identitas"
-                    className="mt-2 h-12 rounded-md transition-all focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                    className="mt-2 h-12 rounded-md transition-all focus:ring-2 focus:ring-emerald-500/20"
                   />
                 </div>
               </div>
@@ -2019,7 +2062,7 @@ const FormSimpel = ({
                     control={control}
                     render={({ field }) => (
                       <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger className="mt-2 h-12 rounded-md shadow-sm border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100">
+                        <SelectTrigger className="mt-2 h-12 rounded-md shadow-sm border-slate-200 focus:border-emerald-500">
                           <SelectValue placeholder="Pilih Sumber Dana" />
                         </SelectTrigger>
                         <SelectContent>
@@ -2039,7 +2082,7 @@ const FormSimpel = ({
                     control={control}
                     render={({ field }) => (
                       <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger className="mt-2 h-12 rounded-md shadow-sm border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100">
+                        <SelectTrigger className="mt-2 h-12 rounded-md shadow-sm border-slate-200 focus:border-emerald-500">
                           <SelectValue placeholder="Pilih Hubungan" />
                         </SelectTrigger>
                         <SelectContent>
@@ -2060,7 +2103,7 @@ const FormSimpel = ({
                   <Input
                     {...register('boNomorHp')}
                     placeholder="Masukkan nomor HP"
-                    className={`mt-2 h-12 rounded-md focus:border-blue-400 focus:ring-2 focus:ring-blue-100 ${rhfErrors.boNomorHp ? 'border-red-500' : 'border-slate-300'}`}
+                    className={`mt-2 h-12 rounded-md ${rhfErrors.boNomorHp ? 'border-red-500' : ''}`}
                   />
                   {rhfErrors.boNomorHp && <p className="text-sm text-red-600 mt-1">{rhfErrors.boNomorHp.message}</p>}
                 </div>
@@ -2069,7 +2112,7 @@ const FormSimpel = ({
                   <Input
                     {...register('boPekerjaan')}
                     placeholder="Masukkan pekerjaan"
-                    className="mt-2 h-12 rounded-md border-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                    className="mt-2 h-12 rounded-md"
                   />
                 </div>
               </div>
@@ -2082,7 +2125,7 @@ const FormSimpel = ({
                   control={control}
                   render={({ field }) => (
                     <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger className={`mt-2 h-12 rounded-md focus:border-blue-400 focus:ring-2 focus:ring-blue-100 ${rhfErrors.boPendapatanTahun ? 'border-red-500' : 'border-slate-300'}`}>
+                      <SelectTrigger className={`mt-2 h-12 rounded-md ${rhfErrors.boPendapatanTahun ? 'border-red-500' : ''}`}>
                         <SelectValue placeholder="Pilih range pendapatan tahunan" />
                       </SelectTrigger>
                       <SelectContent>
@@ -2347,4 +2390,4 @@ const FormSimpel = ({
   );
 };
 
-export default FormSimpel;
+export default FormTabunganku;

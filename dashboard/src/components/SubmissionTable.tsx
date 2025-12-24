@@ -16,7 +16,8 @@ import {
   MoreHorizontal,
   CreditCard,
   User,
-  Calendar
+  Calendar,
+  MessageSquare
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -26,6 +27,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "./ui/tooltip";
 import type { FormSubmission } from "../DashboardPage";
 
 interface SubmissionTableProps {
@@ -71,35 +78,38 @@ export function SubmissionTable({
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-      <Table>
-        <TableHeader className="bg-slate-50/50">
-          <TableRow className="hover:bg-slate-50/50">
-            <TableHead className="w-[180px] font-semibold text-slate-700">Tanggal & ID</TableHead>
-            <TableHead className="min-w-[200px] font-semibold text-slate-700">Nama Nasabah</TableHead>
-            <TableHead className="w-[150px] font-semibold text-slate-700">Rekening</TableHead>
-             <TableHead className="w-[150px] font-semibold text-slate-700">Kewarganegaraan</TableHead>
-            <TableHead className="w-[140px] font-semibold text-slate-700">Status</TableHead>
-            <TableHead className="w-[80px] text-right font-semibold text-slate-700">Aksi</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {submissions.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={6} className="h-24 text-center text-slate-500">
-                Tidak ada data permohonan ditemukan.
-              </TableCell>
+    <TooltipProvider>
+      <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+        <Table>
+          <TableHeader className="bg-slate-50/50">
+            <TableRow className="hover:bg-slate-50/50">
+              <TableHead className="w-[180px] font-semibold text-slate-700">Tanggal & ID</TableHead>
+              <TableHead className="min-w-[200px] font-semibold text-slate-700">Nama Nasabah</TableHead>
+              <TableHead className="w-[150px] font-semibold text-slate-700">Rekening</TableHead>
+              <TableHead className="w-[150px] font-semibold text-slate-700">Kewarganegaraan</TableHead>
+              <TableHead className="w-[140px] font-semibold text-slate-700">Status</TableHead>
+              <TableHead className="w-[100px] font-semibold text-slate-700">Catatan</TableHead>
+              <TableHead className="w-[80px] text-right font-semibold text-slate-700">Aksi</TableHead>
             </TableRow>
-          ) : (
-            submissions.map((submission) => {
-               const status = statusConfig[submission.status] || statusConfig.pending;
-               
-               return (
-                <TableRow 
-                  key={submission.id} 
-                  className="group hover:bg-slate-50 transition-colors cursor-pointer"
-                  onDoubleClick={() => onViewDetails(submission)}
-                >
+          </TableHeader>
+          <TableBody>
+            {submissions.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="h-24 text-center text-slate-500">
+                  Tidak ada data permohonan ditemukan.
+                </TableCell>
+              </TableRow>
+            ) : (
+              submissions.map((submission) => {
+                 const status = statusConfig[submission.status] || statusConfig.pending;
+                 const hasNotes = submission.approval_notes || submission.rejection_notes;
+                 
+                 return (
+                  <TableRow 
+                    key={submission.id} 
+                    className="group hover:bg-slate-50 transition-colors cursor-pointer"
+                    onDoubleClick={() => onViewDetails(submission)}
+                  >
                   {/* Tanggal & Ref */}
                   <TableCell className="align-top py-4">
                     <div className="flex flex-col gap-1">
@@ -146,12 +156,37 @@ export function SubmissionTable({
                     </span>
                   </TableCell>
 
-                  {/* Status */}
-                  <TableCell className="align-top py-4">
-                    <Badge variant="outline" className={`${status.className} font-medium tracking-wide`}>
-                        {status.label}
-                    </Badge>
-                  </TableCell>
+                    {/* Status */}
+                    <TableCell className="align-top py-4">
+                      <Badge variant="outline" className={`${status.className} font-medium tracking-wide`}>
+                          {status.label}
+                      </Badge>
+                    </TableCell>
+
+                    {/* Catatan */}
+                    <TableCell className="align-top py-4">
+                      {hasNotes ? (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-slate-200">
+                              <MessageSquare className="h-4 w-4 text-slate-600" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="left" className="max-w-xs">
+                            <div className="space-y-2">
+                              <p className="font-semibold text-xs">
+                                {submission.status === 'approved' ? 'Catatan Persetujuan:' : 'Alasan Penolakan:'}
+                              </p>
+                              <p className="text-xs">
+                                {submission.approval_notes || submission.rejection_notes}
+                              </p>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        <span className="text-xs text-slate-400">-</span>
+                      )}
+                    </TableCell>
 
                   {/* Aksi */}
                   <TableCell className="align-top py-4 text-right">
@@ -191,5 +226,6 @@ export function SubmissionTable({
         </TableBody>
       </Table>
     </div>
+    </TooltipProvider>
   );
 }

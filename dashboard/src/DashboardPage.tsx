@@ -127,6 +127,8 @@ export interface FormSubmission {
   approvedAt?: string;
   rejectedBy?: string;
   rejectedAt?: string;
+  approval_notes?: string;
+  rejection_notes?: string;
 }
 
 // Helper function untuk mapping data dari backend ke format FormSubmission
@@ -298,7 +300,9 @@ export const mapBackendDataToFormSubmission = (data: any): FormSubmission => {
     approvedBy: data.approvedBy || undefined,
     approvedAt: data.approved_at ? formatDateTime(data.approved_at) : undefined,
     rejectedBy: data.rejectedBy || undefined,
-    rejectedAt: data.rejected_at ? formatDateTime(data.rejected_at) : undefined
+    rejectedAt: data.rejected_at ? formatDateTime(data.rejected_at) : undefined,
+    approval_notes: data.approval_notes || undefined,
+    rejection_notes: data.rejection_notes || undefined
   };
   
   // Data mapping completed
@@ -822,7 +826,7 @@ export default function DashboardPage() {
     setDetailRefreshKey(prev => prev + 1); // Force refresh detail dialog
   }, [fetchSubmissions]);
 
-  const handleApprovalConfirm = useCallback(async (sendWhatsApp: boolean, message: string) => {
+  const handleApprovalConfirm = useCallback(async (sendWhatsApp: boolean, message: string, notes: string) => {
     if (!approvalDialog.submission) return;
     
     const newStatus = approvalDialog.type === 'approve' ? 'approved' : 'rejected';
@@ -844,7 +848,8 @@ export default function DashboardPage() {
         body: JSON.stringify({ 
           status: newStatus,
           sendWhatsApp: sendWhatsApp,
-          message
+          message,
+          notes
         }),
         credentials: 'include'
       });
@@ -1819,6 +1824,7 @@ const handleToggleMark = useCallback((id: string) => {
             type={approvalDialog.type}
             applicantName={approvalDialog.submission.personalData.fullName}
             phone={approvalDialog.submission.personalData.phone}
+            referenceCode={approvalDialog.submission.referenceCode}
           />
         </Suspense>
       )}

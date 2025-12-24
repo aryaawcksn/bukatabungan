@@ -30,6 +30,8 @@ const formatRupiah = (angka: string) => {
 const FormMutiara = ({
    branches = [],
    currentStep = 1,
+   savingsType,
+   getSavingsTypeName,
 }: Omit<AccountFormProps, 'formData' | 'setFormData' | 'errors' | 'setErrors' | 'getFieldClass'>) => {
   const { register, control, setValue, getValues, watch, clearErrors, setError, formState: { errors: rhfErrors } } = useFormContext<AccountFormData>();
 
@@ -97,17 +99,18 @@ const FormMutiara = ({
   // State to store the street address separately (not in formData)
   const [streetAddress, setStreetAddress] = useState('');
 
-  // Auto-set employment status and jenis_rekening for Mutiara
+  // Auto-set jenis_rekening based on savings type
   useEffect(() => {
     // const currentStatus = getValues('employmentStatus');
     // if (currentStatus !== 'Pelajar/Mahasiswa') {
     //   setValue('employmentStatus', 'Pelajar/Mahasiswa', { shouldValidate: true });
     // }
-    // setValue('jenis_rekening', 'Mutiara');
+    // Set jenis_rekening based on savings type from URL
+    setValue('jenis_rekening', getSavingsTypeName(), { shouldValidate: false });
     if (!getValues('tipeNasabah')) {
       setValue('tipeNasabah', 'baru');
     }
-  }, [setValue, getValues]);
+  }, [setValue, getValues, getSavingsTypeName]);
 
   // Validation function for age requirement
   const validateAge = (birthDate: string): string | boolean => {
@@ -434,7 +437,7 @@ const FormMutiara = ({
                       }
                     }}
                   >
-                    <SelectTrigger className={`h-14 bg-white border-2 text-base focus:border-emerald-500 focus:ring-emerald-500 rounded-xl ${rhfErrors.cabang_pengambilan ? 'border-red-500' : 'border-slate-300'}`}>
+                    <SelectTrigger className={`h-14 bg-white border-2 text-base focus:border-green-400 focus:ring-2 focus:ring-green-100 rounded-xl ${rhfErrors.cabang_pengambilan ? 'border-red-500' : 'border-slate-300'}`}>
                       <SelectValue placeholder="-- Pilih Cabang Bank Sleman --" />
                     </SelectTrigger>
                     <SelectContent>
@@ -474,8 +477,8 @@ const FormMutiara = ({
         <section className="space-y-8" aria-labelledby="personal-data-heading">
           
           {/* Header */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mb-4">
+          {/* <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
               <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
@@ -484,7 +487,7 @@ const FormMutiara = ({
             <p className="text-slate-600 max-w-2xl mx-auto">
               Lengkapi data diri Anda sesuai dengan dokumen identitas resmi.
             </p>
-          </div>
+          </div> */}
 
 
 
@@ -508,7 +511,7 @@ const FormMutiara = ({
                   id="fullName"
                   {...register('fullName', { required: 'Nama lengkap harus diisi' })}
                   placeholder="Masukkan nama lengkap sesuai KTP"
-                  className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.fullName ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
+                  className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.fullName ? 'border-red-500' : 'border-slate-300'} focus:border-green-400 focus:ring-2 focus:ring-green-100`}
                 />
                 {rhfErrors.fullName && <p className="text-sm text-red-600 mt-1">{rhfErrors.fullName.message}</p>}
               </div>
@@ -517,13 +520,13 @@ const FormMutiara = ({
               <div>
                 <Label htmlFor="alias" className="text-gray-700 font-semibold flex items-center gap-2">
                   Nama Panggilan / Alias
-                  <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-normal">Opsional</span>
+                  
                 </Label>
                 <Input
                   id="alias"
                   {...register('alias')}
                   placeholder="Nama panggilan atau alias"
-                  className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
+                  className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-green-400 focus:ring-2 focus:ring-green-100"
                 />
               </div>
 
@@ -544,7 +547,7 @@ const FormMutiara = ({
                         clearErrors('nomorRekeningLama');
                       }}
                     >
-                      <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
+                      <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-green-400 focus:ring-2 focus:ring-green-100">
                         <SelectValue placeholder="-- Pilih Tipe Nasabah --" />
                       </SelectTrigger>
                       <SelectContent>
@@ -568,7 +571,7 @@ const FormMutiara = ({
                       required: watchedTipeNasabah === 'lama' ? 'Nomor rekening lama harus diisi' : false 
                     })}
                     placeholder="Masukkan nomor rekening yang sudah ada"
-                    className={`mt-2 h-12 rounded-lg border-2 focus:border-emerald-500 ${
+                    className={`mt-2 h-12 rounded-lg border-2 focus:border-green-400 focus:ring-2 focus:ring-green-100 ${
                       rhfErrors.nomorRekeningLama ? 'border-red-500' : 'border-slate-300'
                     }`}
                   />
@@ -608,7 +611,7 @@ const FormMutiara = ({
                           clearErrors('nik');
                         }}
                       >
-                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
+                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-green-400 focus:ring-2 focus:ring-green-100">
                           <SelectValue placeholder="-- Pilih Jenis Identitas --" />
                         </SelectTrigger>
                         <SelectContent>
@@ -623,7 +626,7 @@ const FormMutiara = ({
                     <Input
                       {...register('jenisIdCustom')}
                       placeholder="Sebutkan jenis identitas"
-                      className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
+                      className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-green-400 focus:ring-2 focus:ring-green-100"
                     />
                   )}
                 </div>
@@ -643,7 +646,7 @@ const FormMutiara = ({
                     })}
                     placeholder={watchedJenisId === 'KTP' ? 'Masukkan 16 digit NIK' : watchedJenisId === 'Paspor' ? 'Masukkan 6-9 karakter' : 'Masukkan nomor identitas'}
                     maxLength={watchedJenisId === 'KTP' ? 16 : undefined}
-                    className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.nik ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
+                    className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.nik ? 'border-red-500' : 'border-slate-300'} focus:border-green-400 focus:ring-2 focus:ring-green-100`}
                   />
                   {rhfErrors.nik && (
                     <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
@@ -671,7 +674,7 @@ const FormMutiara = ({
           required: watchedJenisId !== 'KTP' ? 'Masa berlaku harus diisi' : false 
         })}
         type="date"
-        className={`h-12 rounded-lg border-2 ${rhfErrors.berlakuId ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
+        className={`h-12 rounded-lg border-2 ${rhfErrors.berlakuId ? 'border-red-500' : 'border-slate-300'} focus:border-green-400 focus:ring-2 focus:ring-green-100`}
       />
       
       {/* Pesan Error */}
@@ -703,7 +706,7 @@ const FormMutiara = ({
                     id="tempatLahir"
                     {...register('tempatLahir', { required: 'Tempat lahir harus diisi' })}
                     placeholder="Contoh: Yogyakarta"
-                    className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.tempatLahir ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
+                    className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.tempatLahir ? 'border-red-500' : 'border-slate-300'} focus:border-green-400 focus:ring-2 focus:ring-green-100`}
                   />
                   {rhfErrors.tempatLahir && <p className="text-sm text-red-600 mt-1">{rhfErrors.tempatLahir.message}</p>}
                 </div>
@@ -718,7 +721,7 @@ const FormMutiara = ({
                       required: 'Tanggal lahir harus diisi',
                       validate: validateAge
                     })}
-                    className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.birthDate ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
+                    className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.birthDate ? 'border-red-500' : 'border-slate-300'} focus:border-green-400 focus:ring-2 focus:ring-green-100`}
                   />
                   {rhfErrors.birthDate && (
                     <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
@@ -744,7 +747,7 @@ const FormMutiara = ({
                     rules={{ required: 'Jenis kelamin harus dipilih' }}
                     render={({ field }) => (
                       <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
+                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-green-400 focus:ring-2 focus:ring-green-100">
                           <SelectValue placeholder="-- Pilih --" />
                         </SelectTrigger>
                         <SelectContent>
@@ -765,7 +768,7 @@ const FormMutiara = ({
                     rules={{ required: 'Status pernikahan harus dipilih' }}
                     render={({ field }) => (
                       <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
+                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-green-400 focus:ring-2 focus:ring-green-100">
                           <SelectValue placeholder="-- Pilih --" />
                         </SelectTrigger>
                         <SelectContent>
@@ -788,7 +791,7 @@ const FormMutiara = ({
                     rules={{ required: 'Agama harus dipilih' }}
                     render={({ field }) => (
                       <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
+                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-green-400 focus:ring-2 focus:ring-green-100">
                           <SelectValue placeholder="-- Pilih --" />
                         </SelectTrigger>
                         <SelectContent>
@@ -817,7 +820,7 @@ const FormMutiara = ({
                     rules={{ required: 'Pendidikan terakhir harus dipilih' }}
                     render={({ field }) => (
                       <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
+                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-green-400 focus:ring-2 focus:ring-green-100">
                           <SelectValue placeholder="-- Pilih Pendidikan --" />
                         </SelectTrigger>
                         <SelectContent>
@@ -840,7 +843,7 @@ const FormMutiara = ({
                     id="motherName"
                     {...register('motherName', { required: 'Nama ibu kandung harus diisi' })}
                     placeholder="Nama lengkap ibu kandung"
-                    className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.motherName ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
+                    className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.motherName ? 'border-red-500' : 'border-slate-300'} focus:border-green-400 focus:ring-2 focus:ring-green-100`}
                   />
                   {rhfErrors.motherName && <p className="text-sm text-red-600 mt-1">{rhfErrors.motherName.message}</p>}
                 </div>
@@ -875,7 +878,7 @@ const FormMutiara = ({
             }
           })}
           placeholder="contoh@email.com"
-          className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.email ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
+          className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.email ? 'border-red-500' : 'border-slate-300'} focus:border-green-400 focus:ring-2 focus:ring-green-100`}
         />
         {rhfErrors.email && (
           <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
@@ -900,7 +903,7 @@ const FormMutiara = ({
             }
           })}
           placeholder="08123456789"
-          className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.phone ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
+          className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.phone ? 'border-red-500' : 'border-slate-300'} focus:border-green-400 focus:ring-2 focus:ring-green-100`}
         />
         {rhfErrors.phone && (
           <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
@@ -922,7 +925,7 @@ const FormMutiara = ({
         rules={{ required: 'Kewarganegaraan harus dipilih' }}
         render={({ field }) => (
           <Select value={field.value} onValueChange={field.onChange}>
-            <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
+            <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-green-400 focus:ring-2 focus:ring-green-100">
               <SelectValue placeholder="Pilih kewarganegaraan" />
             </SelectTrigger>
             <SelectContent>
@@ -947,7 +950,7 @@ const FormMutiara = ({
           <Input
             {...register('kontakDaruratNama', { required: 'Nama kontak darurat wajib diisi' })}
             placeholder="Nama lengkap kontak darurat"
-            className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.kontakDaruratNama ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
+            className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.kontakDaruratNama ? 'border-red-500' : 'border-slate-300'} focus:border-green-400 focus:ring-2 focus:ring-green-100`}
           />
           {rhfErrors.kontakDaruratNama && <p className="text-sm text-red-600 mt-1">{rhfErrors.kontakDaruratNama.message}</p>}
         </div>
@@ -955,11 +958,13 @@ const FormMutiara = ({
         {/* Alamat */}
         <div>
           <Label className="text-gray-700 font-semibold">Alamat Lengkap <span className="text-red-500">*</span></Label>
-          <Input
-            {...register('kontakDaruratAlamat', { required: 'Alamat wajib diisi' })}
-            placeholder="Contoh: Jl. Sudirman No. 123, Jakarta"
-            className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.kontakDaruratAlamat ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
-          />
+          <Textarea
+                rows={3}
+                {...register('kontakDaruratAlamat', { required: 'Alamat wajib diisi' })}
+                placeholder="Contoh: Jl. Sudirman No. 123, Jakarta"
+                className={`mt-2 rounded-lg border-2 ${rhfErrors.kontakDaruratAlamat ? 'border-red-500' : 'border-slate-300'} focus:border-green-400 focus:ring-2 focus:ring-green-100`}
+              />
+
           {rhfErrors.kontakDaruratAlamat && <p className="text-sm text-red-600 mt-1">{rhfErrors.kontakDaruratAlamat.message}</p>}
         </div>
 
@@ -970,7 +975,7 @@ const FormMutiara = ({
             <Input
               {...register('kontakDaruratHp', { required: 'Nomor HP wajib diisi' })}
               placeholder="08xxxxxxxxxx"
-              className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.kontakDaruratHp ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
+              className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.kontakDaruratHp ? 'border-red-500' : 'border-slate-300'} focus:border-green-400 focus:ring-2 focus:ring-green-100`}
             />
             {rhfErrors.kontakDaruratHp && <p className="text-sm text-red-600 mt-1">{rhfErrors.kontakDaruratHp.message}</p>}
           </div>
@@ -983,7 +988,7 @@ const FormMutiara = ({
               rules={{ required: 'Pilih hubungan' }}
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.kontakDaruratHubungan ? 'border-red-500' : 'border-slate-300'}`}>
+                  <SelectTrigger className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.kontakDaruratHubungan ? 'border-red-500' : 'border-slate-300'} focus:border-green-400 focus:ring-2 focus:ring-green-100`}>
                     <SelectValue placeholder="-- Pilih Hubungan --" />
                   </SelectTrigger>
                   <SelectContent>
@@ -1002,7 +1007,7 @@ const FormMutiara = ({
               <Input
                 {...register('kontakDaruratHubunganLainnya', { required: 'Sebutkan hubungan lainnya' })}
                 placeholder="Sebutkan (misal: Teman, Sepupu)"
-                className="mt-3 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500"
+                className="mt-3 h-12 rounded-lg border-2 border-slate-300 focus:border-green-400 focus:ring-2 focus:ring-green-100"
               />
             )}
           </div>
@@ -1045,7 +1050,7 @@ const FormMutiara = ({
                     })}
                     rows={3}
                     placeholder="Contoh: Jl. Magelang No. 123, RT 02/RW 05"
-                    className={`mt-2 rounded-lg border-2 ${rhfErrors.alamatJalan ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
+                    className={`mt-2 rounded-lg border-2 ${rhfErrors.alamatJalan ? 'border-red-500' : 'border-slate-300'} focus:border-green-400 focus:ring-2 focus:ring-green-100`}
                   />
                   <p className="text-xs text-slate-500 mt-1">Masukkan alamat jalan, nomor rumah, RT/RW</p>
                 </div>
@@ -1085,7 +1090,7 @@ const FormMutiara = ({
                             }}
                             disabled={addressData.loadingProvinces}
                           >
-                            <SelectTrigger className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.province ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}>
+                            <SelectTrigger className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.province ? 'border-red-500' : 'border-slate-300'} focus:border-green-400 focus:ring-2 focus:ring-green-100`}>
                               <SelectValue placeholder={addressData.loadingProvinces ? "Memuat provinsi..." : "-- Pilih Provinsi --"} />
                             </SelectTrigger>
                             <SelectContent>
@@ -1130,7 +1135,7 @@ const FormMutiara = ({
                             }}
                             disabled={!selectedAddress.provinceId || addressData.loadingCities}
                           >
-                            <SelectTrigger className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.city ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}>
+                            <SelectTrigger className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.city ? 'border-red-500' : 'border-slate-300'} focus:border-green-400 focus:ring-2 focus:ring-green-100`}>
                               <SelectValue placeholder={
                                 !selectedAddress.provinceId ? "Pilih provinsi" :
                                 addressData.loadingCities ? "Memuat kota..." : 
@@ -1154,7 +1159,7 @@ const FormMutiara = ({
                     {/* District Dropdown */}
                     <div>
                       <Label className="text-gray-700 font-semibold flex items-center gap-2">
-                        Kecamatan
+                        Kecamatan <span className="text-red-500">*</span>
                       </Label>
                       <Controller
                         name="kecamatan"
@@ -1181,7 +1186,7 @@ const FormMutiara = ({
                             }}
                             disabled={!selectedAddress.cityId || addressData.loadingDistricts}
                           >
-                            <SelectTrigger className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.kecamatan ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}>
+                            <SelectTrigger className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.kecamatan ? 'border-red-500' : 'border-slate-300'} focus:border-green-400 focus:ring-2 focus:ring-green-100`}>
                               <SelectValue placeholder={
                                 !selectedAddress.cityId ? "Pilih kota" :
                                 addressData.loadingDistricts ? "Memuat kecamatan..." : 
@@ -1203,7 +1208,7 @@ const FormMutiara = ({
                     {/* Village Dropdown */}
                     <div>
                       <Label className="text-gray-700 font-semibold flex items-center gap-2">
-                        Kelurahan/Desa
+                        Kelurahan/Desa <span className="text-red-500">*</span>
                       </Label>
                       <Controller
                         name="kelurahan"
@@ -1225,7 +1230,7 @@ const FormMutiara = ({
                             }}
                             disabled={!selectedAddress.districtId || addressData.loadingVillages}
                           >
-                            <SelectTrigger className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.kelurahan ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}>
+                            <SelectTrigger className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.kelurahan ? 'border-red-500' : 'border-slate-300'} focus:border-green-400 focus:ring-2 focus:ring-green-100`}>
                               <SelectValue placeholder={
                                 !selectedAddress.districtId ? "Pilih kecamatan" :
                                 addressData.loadingVillages ? "Memuat kelurahan..." : 
@@ -1258,7 +1263,7 @@ const FormMutiara = ({
                       {...register('address', { required: watchedCitizenship !== 'Indonesia' ? 'Alamat lengkap harus diisi' : false })}
                       rows={4}
                       placeholder="Contoh: 123 Main Street, Apartment 4B, Downtown District, Bangkok 10110, Thailand"
-                      className={`mt-2 w-full p-3 rounded-lg border-2 ${rhfErrors.address ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500 focus:outline-none resize-none`}
+                      className={`mt-2 w-full p-3 rounded-lg border-2 ${rhfErrors.address ? 'border-red-500' : 'border-slate-300'} focus:border-green-400 focus:ring-2 focus:ring-green-100 focus:outline-none resize-none`}
                     />
                     <p className="text-xs text-slate-500 mt-1">
                       Masukkan alamat lengkap termasuk nama jalan, nomor, kota, kode pos, dan negara
@@ -1277,7 +1282,7 @@ const FormMutiara = ({
                     id="postalCode"
                     {...register('postalCode', { required: 'Kode pos harus diisi', maxLength: 5 })}
                     placeholder="55281"
-                    className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.postalCode ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}
+                    className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.postalCode ? 'border-red-500' : 'border-slate-300'} focus:border-green-400 focus:ring-2 focus:ring-green-100`}
                   />
                 </div>
 
@@ -1291,7 +1296,7 @@ const FormMutiara = ({
                       rules={{ required: 'Status tempat tinggal harus dipilih' }}
                       render={({ field }) => (
                         <Select value={field.value} onValueChange={field.onChange}>
-                          <SelectTrigger className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.statusRumah ? 'border-red-500' : 'border-slate-300'} focus:border-emerald-500`}>
+                          <SelectTrigger className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.statusRumah ? 'border-red-500' : 'border-slate-300'} focus:border-green-400 focus:ring-2 focus:ring-green-100`}>
                             <SelectValue placeholder="-- Pilih Status --" />
                           </SelectTrigger>
                           <SelectContent>
@@ -1342,7 +1347,7 @@ const FormMutiara = ({
     <Input
       {...register('alamatDomisili')}
       placeholder="Kosongkan jika sama dengan alamat KTP"
-      className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500 shadow-sm"
+      className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-green-400 focus:ring-2 focus:ring-green-100 shadow-sm"
     />
     <p className="text-xs text-slate-500 mt-1 italic">Isi jika Anda tinggal di lokasi berbeda dari KTP</p>
   </div>
@@ -1360,7 +1365,7 @@ const FormMutiara = ({
         <div className="space-y-8">
           
           {/* Header */}
-          <div className="text-center mb-8">
+          {/* <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-purple-100 mb-4">
               <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -1370,7 +1375,7 @@ const FormMutiara = ({
             <p className="text-slate-600 max-w-2xl mx-auto">
               Informasi ini diperlukan untuk proses verifikasi dan keamanan rekening Anda.
             </p>
-          </div>
+          </div> */}
 
           {/* Section 1: Informasi Pekerjaan */}
           <div className="bg-white p-4 md:p-6 rounded-2xl border-2 border-slate-200 shadow-sm">
@@ -1391,7 +1396,7 @@ const FormMutiara = ({
                     rules={{ required: 'Pekerjaan harus dipilih' }}
                     render={({ field }) => (
                       <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
+                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-green-400 focus:ring-2 focus:ring-green-100">
                           <SelectValue placeholder="-- Pilih Pekerjaan --" />
                         </SelectTrigger>
                         <SelectContent>
@@ -1417,7 +1422,7 @@ const FormMutiara = ({
                     rules={{ required: 'Penghasilan harus dipilih' }}
                     render={({ field }) => (
                       <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
+                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-green-400 focus:ring-2 focus:ring-green-100">
                           <SelectValue placeholder="-- Pilih Range Penghasilan --" />
                         </SelectTrigger>
                         <SelectContent>
@@ -1441,7 +1446,7 @@ const FormMutiara = ({
                     </Label>
                     <Input
                       {...register('tempatBekerja')}
-                      className="mt-2 h-12 rounded-md border-slate-300 focus:border-blue-500"
+                      className="mt-2 h-12 rounded-md border-slate-300 focus:border-green-400 focus:ring-2 focus:ring-green-100"
                     />
                   </div>
                   <div>
@@ -1450,7 +1455,7 @@ const FormMutiara = ({
                     </Label>
                     <Input
                       {...register('jabatan')}
-                      className="mt-2 h-12 rounded-md border-slate-300 focus:border-blue-500"
+                      className="mt-2 h-12 rounded-md border-slate-300 focus:border-green-400 focus:ring-2 focus:ring-green-100"
                     />
                   </div>
               </div>
@@ -1462,7 +1467,7 @@ const FormMutiara = ({
                     </Label>
                     <Input
                       {...register('alamatKantor')}
-                      className="mt-2 h-12 rounded-md border-slate-300 focus:border-blue-500"
+                      className="mt-2 h-12 rounded-md border-slate-300 focus:border-green-400 focus:ring-2 focus:ring-green-100"
                     />
                   </div>
                   <div>
@@ -1472,7 +1477,7 @@ const FormMutiara = ({
                     <Input
                       {...register('teleponKantor')}
                       placeholder="021-12345678"
-                      className="mt-2 h-12 rounded-md border-slate-300 focus:border-blue-500"
+                      className="mt-2 h-12 rounded-md border-slate-300 focus:border-green-400 focus:ring-2 focus:ring-green-100"
                     />
                   </div>
               </div>
@@ -1483,7 +1488,7 @@ const FormMutiara = ({
                     <Input
                       {...register('bidangUsaha')}
                       placeholder="Contoh: Perdagangan, Jasa..."
-                      className="mt-2 h-12 rounded-md border-slate-300 focus:border-blue-500"
+                      className="mt-2 h-12 rounded-md border-slate-300 focus:border-green-400 focus:ring-2 focus:ring-green-100"
                     />
                   </div>
                   <div>
@@ -1500,7 +1505,7 @@ const FormMutiara = ({
                             const cleanValue = e.target.value.replace(/\D/g, '');
                             field.onChange(cleanValue);
                           }}
-                          className="mt-2 h-12 rounded-md border-slate-300 focus:border-blue-500"
+                          className="mt-2 h-12 rounded-md border-slate-300 focus:border-green-400 focus:ring-2 focus:ring-green-100"
                         />
                       )}
                     />
@@ -1523,7 +1528,7 @@ const FormMutiara = ({
                         }
                       }}
                     >
-                      <SelectTrigger className="mt-2 h-12 rounded-md">
+                      <SelectTrigger className="mt-2 h-12 rounded-md border-slate-300 focus:border-green-400 focus:ring-2 focus:ring-green-100">
                         <SelectValue placeholder="Pilih sumber dana" />
                       </SelectTrigger>
                       <SelectContent>
@@ -1542,7 +1547,7 @@ const FormMutiara = ({
                   <Input
                     {...register('sumberDanaCustom')}
                     placeholder="Sebutkan sumber dana lainnya"
-                    className="mt-2 h-12 rounded-md"
+                    className="mt-2 h-12 rounded-md border-slate-300 focus:border-green-400 focus:ring-2 focus:ring-green-100"
                   />
                 )}
               </div>
@@ -1550,7 +1555,7 @@ const FormMutiara = ({
               {/* EDD Bank Lain Section */}
 <div className="bg-slate-50 p-5 md:p-6 rounded-2xl border-2 border-slate-200">
   <div className="flex items-center gap-3 mb-1">
-    <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
+    <div className="p-2 bg-green-100 rounded-lg text-blue-600">
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
       </svg>
@@ -1585,7 +1590,7 @@ const FormMutiara = ({
             <Input
               {...register(`eddBankLain.${index}.bank_name`)}
               placeholder="Misal: Bank Central Asia (BCA)"
-              className="mt-1.5 h-11 bg-slate-50/50 border-slate-200 focus:bg-white focus:border-emerald-500 transition-all"
+              className="mt-1.5 h-11 bg-slate-50/50 border-slate-200 focus:bg-white focus:border-green-400 focus:ring-2 focus:ring-green-100 transition-all"
             />
           </div>
           
@@ -1595,7 +1600,7 @@ const FormMutiara = ({
               <Input
                 {...register(`eddBankLain.${index}.jenis_rekening`)}
                 placeholder="Tabungan / Giro"
-                className="mt-1.5 h-11 bg-slate-50/50 border-slate-200 focus:bg-white focus:border-emerald-500 transition-all"
+                className="mt-1.5 h-11 bg-slate-50/50 border-slate-200 focus:bg-white focus:border-green-400 focus:ring-2 focus:ring-green-100 transition-all"
               />
             </div>
             <div>
@@ -1603,7 +1608,7 @@ const FormMutiara = ({
               <Input
                 {...register(`eddBankLain.${index}.nomor_rekening`)}
                 placeholder="Masukkan angka saja"
-                className="mt-1.5 h-11 bg-slate-50/50 border-slate-200 focus:bg-white focus:border-emerald-500 transition-all"
+                className="mt-1.5 h-11 bg-slate-50/50 border-slate-200 focus:bg-white focus:border-green-400 focus:ring-2 focus:ring-green-100 transition-all"
               />
             </div>
           </div>
@@ -1650,7 +1655,7 @@ const FormMutiara = ({
               <Input
                 {...register(`eddPekerjaanLain.${index}.jenis_usaha`)}
                 placeholder="Contoh: Toko Kelontong, Jasa Desain, dsb"
-                className="h-11 pr-12 bg-slate-50/50 border-slate-200 focus:bg-white focus:border-purple-500 transition-all"
+                className="h-11 pr-12 bg-slate-50/50 border-slate-200 focus:bg-white focus:border-green-400 focus:ring-2 focus:ring-green-100 transition-all"
               />
               <button
                 type="button"
@@ -1698,7 +1703,7 @@ const FormMutiara = ({
         <div className="space-y-8">
           
           {/* Header */}
-          <div className="text-center mb-8">
+          {/* <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
               <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
@@ -1708,7 +1713,7 @@ const FormMutiara = ({
             <p className="text-slate-600 max-w-2xl mx-auto">
               Tentukan detail rekening tabungan Mutiara Anda.
             </p>
-          </div>
+          </div> */}
 
           {/* Section 1: Konfigurasi Rekening */}
           <div className="bg-white p-4 md:p-6 rounded-2xl border-2 border-slate-200 shadow-sm">
@@ -1718,17 +1723,23 @@ const FormMutiara = ({
             </h4>
             <div className="space-y-5">
               
-              {/* Account Type - Pre-filled and Read-only for Mutiara */}
+              {/* Account Type - Pre-filled and Read-only */}
               <div>
                 <Label htmlFor="jenis_rekening" className="text-gray-700">Jenis Rekening</Label>
-                <Input
-                  id="jenis_rekening"
-                  value="Mutiara"
-                  readOnly
-                  disabled
-                  className="mt-2 h-12 rounded-md bg-slate-100 cursor-not-allowed"
+                <Controller
+                  name="jenis_rekening"
+                  control={control}
+                  render={({ field }) => (
+                    <Input
+                      {...field}
+                      id="jenis_rekening"
+                      readOnly
+                      disabled
+                      className="mt-2 h-12 rounded-md bg-slate-100 cursor-not-allowed"
+                    />
+                  )}
                 />
-                <p className="text-xs text-gray-500 mt-1">Jenis rekening Mutiara</p>
+                <p className="text-xs text-gray-500 mt-1">Jenis rekening {getSavingsTypeName()}</p>
               </div>
 
               {/* Card Type Selection - Only for Mutiara */}
@@ -1741,7 +1752,7 @@ const FormMutiara = ({
                   control={control}
                   render={({ field }) => (
                     <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-emerald-500">
+                      <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-green-400 focus:ring-2 focus:ring-green-100">
                         <SelectValue placeholder="-- Pilih Jenis Kartu --" />
                       </SelectTrigger>
                       <SelectContent>
@@ -1823,7 +1834,7 @@ const FormMutiara = ({
                         }
                       }}
                     >
-                      <SelectTrigger className="mt-2 h-12 rounded-md shadow-sm border-slate-200">
+                      <SelectTrigger className="mt-2 h-12 rounded-md shadow-sm border-slate-200 focus:border-green-400 focus:ring-2 focus:ring-green-100">
                         <SelectValue placeholder="Pilih tujuan" />
                       </SelectTrigger>
                       <SelectContent>
@@ -1841,7 +1852,7 @@ const FormMutiara = ({
                   <Input
                     {...register('tujuanRekeningLainnya')}
                     placeholder="Sebutkan tujuan pembukaan rekening"
-                    className="mt-3 h-12 rounded-md shadow-sm border-slate-200 focus:ring-emerald-500"
+                    className="mt-3 h-12 rounded-md shadow-sm border-slate-200 focus:border-green-400 focus:ring-2 focus:ring-green-100"
                   />
                 )}
               </div>
@@ -1921,7 +1932,7 @@ const FormMutiara = ({
                   <Input
                     {...register('boNama')}
                     placeholder="Nama Lengkap Pemilik Dana"
-                    className="mt-2 h-12 rounded-md transition-all focus:ring-2 focus:ring-emerald-500/20"
+                    className="mt-2 h-12 rounded-md border-slate-200 transition-all focus:border-green-400 focus:ring-2 focus:ring-green-100"
                   />
                 </div>
                 <div>
@@ -1929,7 +1940,7 @@ const FormMutiara = ({
                   <Input
                     {...register('boTempatLahir')}
                     placeholder="Kota Tempat Lahir"
-                    className="mt-2 h-12 rounded-md transition-all focus:ring-2 focus:ring-emerald-500/20"
+                    className="mt-2 h-12 rounded-md border-slate-200 transition-all focus:border-green-400 focus:ring-2 focus:ring-green-100"
                   />
                 </div>
               </div>
@@ -1940,7 +1951,7 @@ const FormMutiara = ({
                   <Input
                     type="date"
                     {...register('boTanggalLahir')}
-                    className="mt-2 h-12 rounded-md transition-all focus:ring-2 focus:ring-emerald-500/20"
+                    className="mt-2 h-12 rounded-md border-slate-200 transition-all focus:border-green-400 focus:ring-2 focus:ring-green-100"
                   />
                 </div>
                 <div>
@@ -1950,7 +1961,7 @@ const FormMutiara = ({
                     control={control}
                     render={({ field }) => (
                       <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger className="mt-2 h-12 rounded-md shadow-sm border-slate-200 focus:border-emerald-500">
+                        <SelectTrigger className="mt-2 h-12 rounded-md border-slate-200 shadow-sm border-slate-200 focus:border-green-400 focus:ring-2 focus:ring-green-100">
                           <SelectValue placeholder="Pilih Jenis Kelamin" />
                         </SelectTrigger>
                         <SelectContent>
@@ -1968,7 +1979,7 @@ const FormMutiara = ({
                 <Input
                   {...register('boAlamat')}
                   placeholder="Alamat lengkap pemilik dana"
-                  className="mt-2 h-12 rounded-md transition-all focus:ring-2 focus:ring-emerald-500/20"
+                  className="mt-2 h-12 rounded-md border-slate-200 transition-all focus:border-green-400 focus:ring-2 focus:ring-green-100"
                 />
               </div>
 
@@ -1980,7 +1991,7 @@ const FormMutiara = ({
                     control={control}
                     render={({ field }) => (
                       <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger className="mt-2 h-12 rounded-md shadow-sm border-slate-200 focus:border-emerald-500">
+                        <SelectTrigger className="mt-2 h-12 rounded-md border-slate-200 shadow-sm border-slate-200 focus:border-green-400 focus:ring-2 focus:ring-green-100">
                           <SelectValue placeholder="Pilih Kewarganegaraan" />
                         </SelectTrigger>
                         <SelectContent>
@@ -1998,7 +2009,7 @@ const FormMutiara = ({
                     control={control}
                     render={({ field }) => (
                       <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger className="mt-2 h-12 rounded-md shadow-sm border-slate-200 focus:border-emerald-500">
+                        <SelectTrigger className="mt-2 h-12 rounded-md border-slate-200 shadow-sm border-slate-200 focus:border-green-400 focus:ring-2 focus:ring-green-100">
                           <SelectValue placeholder="Pilih Status" />
                         </SelectTrigger>
                         <SelectContent>
@@ -2021,7 +2032,7 @@ const FormMutiara = ({
                     control={control}
                     render={({ field }) => (
                       <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger className="mt-2 h-12 rounded-md shadow-sm border-slate-200 focus:border-emerald-500">
+                        <SelectTrigger className="mt-2 h-12 rounded-md border-slate-200 shadow-sm border-slate-200 focus:border-green-400 focus:ring-2 focus:ring-green-100">
                           <SelectValue placeholder="Pilih Jenis ID" />
                         </SelectTrigger>
                         <SelectContent>
@@ -2039,7 +2050,7 @@ const FormMutiara = ({
                   <Input
                     {...register('boNomorId')}
                     placeholder="Masukkan nomor identitas"
-                    className="mt-2 h-12 rounded-md transition-all focus:ring-2 focus:ring-emerald-500/20"
+                    className="mt-2 h-12 rounded-md border-slate-200 transition-all focus:border-green-400 focus:ring-2 focus:ring-green-100"
                   />
                 </div>
               </div>
@@ -2052,7 +2063,7 @@ const FormMutiara = ({
                     control={control}
                     render={({ field }) => (
                       <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger className="mt-2 h-12 rounded-md shadow-sm border-slate-200 focus:border-emerald-500">
+                        <SelectTrigger className="mt-2 h-12 rounded-md shadow-sm border-slate-200 focus:border-green-400 focus:ring-2 focus:ring-green-100">
                           <SelectValue placeholder="Pilih Sumber Dana" />
                         </SelectTrigger>
                         <SelectContent>
@@ -2072,7 +2083,7 @@ const FormMutiara = ({
                     control={control}
                     render={({ field }) => (
                       <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger className="mt-2 h-12 rounded-md shadow-sm border-slate-200 focus:border-emerald-500">
+                        <SelectTrigger className="mt-2 h-12 rounded-md shadow-sm border-slate-200 focus:border-green-400 focus:ring-2 focus:ring-green-100">
                           <SelectValue placeholder="Pilih Hubungan" />
                         </SelectTrigger>
                         <SelectContent>
@@ -2092,8 +2103,8 @@ const FormMutiara = ({
                   <Label className="text-gray-700">Nomor HP</Label>
                   <Input
                     {...register('boNomorHp')}
-                    placeholder="Masukkan nomor HP"
-                    className={`mt-2 h-12 rounded-md ${rhfErrors.boNomorHp ? 'border-red-500' : ''}`}
+                      placeholder="Masukkan nomor HP"
+                      className={`mt-2 h-12 rounded-md focus:border-green-400 focus:ring-2 focus:ring-green-100 ${rhfErrors.boNomorHp ? 'border-red-500' : 'border-slate-300'}`}
                   />
                   {rhfErrors.boNomorHp && <p className="text-sm text-red-600 mt-1">{rhfErrors.boNomorHp.message}</p>}
                 </div>
@@ -2102,7 +2113,7 @@ const FormMutiara = ({
                   <Input
                     {...register('boPekerjaan')}
                     placeholder="Masukkan pekerjaan"
-                    className="mt-2 h-12 rounded-md"
+                    className="mt-2 h-12 rounded-md border-slate-300 focus:border-green-400 focus:ring-2 focus:ring-green-100"
                   />
                 </div>
               </div>
@@ -2115,7 +2126,7 @@ const FormMutiara = ({
                   control={control}
                   render={({ field }) => (
                     <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger className={`mt-2 h-12 rounded-md ${rhfErrors.boPendapatanTahun ? 'border-red-500' : ''}`}>
+                      <SelectTrigger className={`mt-2 h-12 rounded-md border-slate-200 focus:border-green-400 focus:ring-2 focus:ring-green-100 ${rhfErrors.boPendapatanTahun ? 'border-red-500' : 'border-slate-300'}`}>
                         <SelectValue placeholder="Pilih range pendapatan tahunan" />
                       </SelectTrigger>
                       <SelectContent>
@@ -2172,7 +2183,7 @@ const FormMutiara = ({
         <div className="space-y-8">
           
           {/* Header */}
-          <div className="text-center mb-8">
+          {/* <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 mb-4">
               <svg className="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -2182,7 +2193,7 @@ const FormMutiara = ({
             <p className="text-slate-600 max-w-2xl mx-auto">
               Periksa kembali data Anda sebelum mengirim permohonan pembukaan rekening.
             </p>
-          </div>
+          </div> */}
 
           {/* Ringkasan Data */}
           <div className="space-y-4">
@@ -2277,7 +2288,7 @@ const FormMutiara = ({
               <div className="grid md:grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-gray-500">Jenis Rekening</p>
-                  <p className="font-medium text-gray-800">Mutiara</p>
+                  <p className="font-medium text-gray-800">{getValues().jenis_rekening || getSavingsTypeName()}</p>
                 </div>
                 <div>
                   <p className="text-gray-500">Tujuan Pembukaan</p>
@@ -2337,7 +2348,7 @@ const FormMutiara = ({
               />
               <div>
                 <Label htmlFor="terms" className="cursor-pointer text-gray-800 font-medium text-base">
-                  Saya menyetujui <button type="button" onClick={() => setShowTermsModal(true)} className="text-emerald-700 hover:underline font-bold">Syarat dan Ketentuan</button>
+                  Saya menyetujui <button type="button" onClick={() => setShowTermsModal(true)} className="text-emerald-700 underline font-bold ">Syarat dan Ketentuan</button>
                 </Label>
                 <p className="text-sm text-gray-600 mt-2 leading-relaxed">
                   Dengan mencentang kotak ini, saya menyatakan bahwa semua data yang saya berikan adalah benar dan saya bertanggung jawab penuh atas kebenaran data tersebut.

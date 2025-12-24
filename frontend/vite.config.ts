@@ -18,9 +18,9 @@ export default defineConfig({
       }
     }
   },
-  server: {
-    // Improve mobile development experience
-    host: true,
-    port: 5173
-  }
+  // server: {
+  //   // Improve mobile development experience
+  //   host: true,
+  //   port: 5173
+  // }
 })

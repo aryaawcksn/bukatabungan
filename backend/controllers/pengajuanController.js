@@ -481,6 +481,8 @@ export const getStatusByReferenceCode = async (req, res) => {
         p.created_at,
         p.approved_at,
         p.rejected_at,
+        p.approval_notes,
+        p.rejection_notes,
         cs.kode_referensi,
         cs.nama AS nama_lengkap,
         cs.email,
@@ -540,6 +542,8 @@ export const getStatusByReferenceCode = async (req, res) => {
         created_at: data.created_at,
         approved_at: data.approved_at,
         rejected_at: data.rejected_at,
+        approval_notes: data.approval_notes,
+        rejection_notes: data.rejection_notes,
         cabang: {
           nama_cabang: data.nama_cabang,
           alamat_cabang: data.alamat_cabang,
@@ -734,6 +738,8 @@ export const getAllPengajuan = async (req, res) => {
         p.created_at,
         p.approved_at,
         p.rejected_at,
+        p.approval_notes,
+        p.rejection_notes,
         cs.kode_referensi,
         cs.nama AS nama_lengkap,
         cs.alias,
@@ -778,7 +784,7 @@ export const getAllPengajuan = async (req, res) => {
  */
 export const updatePengajuanStatus = async (req, res) => {
   const { id } = req.params;
-  const { status, sendEmail, sendWhatsApp, message, isEdit, editReason, ...editData } = req.body;
+  const { status, sendEmail, sendWhatsApp, message, notes, isEdit, editReason, ...editData } = req.body;
 
   // If this is an edit request, delegate to editSubmission
   if (isEdit) {
@@ -796,20 +802,22 @@ export const updatePengajuanStatus = async (req, res) => {
         // Super admin can approve any application
         query = `
           UPDATE pengajuan_tabungan 
-          SET status = $1, approved_by = $2, approved_at = NOW(), rejected_by = NULL, rejected_at = NULL
-          WHERE id = $3
+          SET status = $1, approved_by = $2, approved_at = NOW(), rejected_by = NULL, rejected_at = NULL,
+              approval_notes = $3, rejection_notes = NULL
+          WHERE id = $4
         RETURNING *;
         `;
-        values = [status, req.user.id, id];
+        values = [status, req.user.id, notes || null, id];
       } else {
         // Regular admin can only approve applications from their branch
         query = `
           UPDATE pengajuan_tabungan 
-          SET status = $1, approved_by = $2, approved_at = NOW(), rejected_by = NULL, rejected_at = NULL
-          WHERE id = $3 AND cabang_id = $4
+          SET status = $1, approved_by = $2, approved_at = NOW(), rejected_by = NULL, rejected_at = NULL,
+              approval_notes = $3, rejection_notes = NULL
+          WHERE id = $4 AND cabang_id = $5
         RETURNING *;
         `;
-        values = [status, req.user.id, id, req.user.cabang_id];
+        values = [status, req.user.id, notes || null, id, req.user.cabang_id];
       }
     }
     else if (status === 'rejected') {
@@ -817,27 +825,30 @@ export const updatePengajuanStatus = async (req, res) => {
         // Super admin can reject any application
         query = `
           UPDATE pengajuan_tabungan 
-          SET status = $1, rejected_by = $2, rejected_at = NOW(), approved_by = NULL, approved_at = NULL
-          WHERE id = $3
+          SET status = $1, rejected_by = $2, rejected_at = NOW(), approved_by = NULL, approved_at = NULL,
+              rejection_notes = $3, approval_notes = NULL
+          WHERE id = $4
         RETURNING *;
         `;
-        values = [status, req.user.id, id];
+        values = [status, req.user.id, notes || null, id];
       } else {
         // Regular admin can only reject applications from their branch
         query = `
           UPDATE pengajuan_tabungan 
-          SET status = $1, rejected_by = $2, rejected_at = NOW(), approved_by = NULL, approved_at = NULL
-          WHERE id = $3 AND cabang_id = $4
+          SET status = $1, rejected_by = $2, rejected_at = NOW(), approved_by = NULL, approved_at = NULL,
+              rejection_notes = $3, approval_notes = NULL
+          WHERE id = $4 AND cabang_id = $5
         RETURNING *;
         `;
-        values = [status, req.user.id, id, req.user.cabang_id];
+        values = [status, req.user.id, notes || null, id, req.user.cabang_id];
       }
     } else {
       if (isSuper) {
         // Super admin can change any application to pending
         query = `
           UPDATE pengajuan_tabungan 
-          SET status = $1, approved_by = NULL, approved_at = NULL, rejected_by = NULL, rejected_at = NULL
+          SET status = $1, approved_by = NULL, approved_at = NULL, rejected_by = NULL, rejected_at = NULL,
+              approval_notes = NULL, rejection_notes = NULL
           WHERE id = $2
         RETURNING *;
         `;
@@ -846,7 +857,8 @@ export const updatePengajuanStatus = async (req, res) => {
         // Regular admin can only change applications from their branch to pending
         query = `
           UPDATE pengajuan_tabungan 
-          SET status = $1, approved_by = NULL, approved_at = NULL, rejected_by = NULL, rejected_at = NULL
+          SET status = $1, approved_by = NULL, approved_at = NULL, rejected_by = NULL, rejected_at = NULL,
+              approval_notes = NULL, rejection_notes = NULL
           WHERE id = $2 AND cabang_id = $3
         RETURNING *;
         `;
