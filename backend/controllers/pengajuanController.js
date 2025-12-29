@@ -806,6 +806,23 @@ export const updatePengajuanStatus = async (req, res) => {
   const { status, sendEmail, sendWhatsApp, message, notes } = req.body;
 
   try {
+    // Validate status parameter
+    if (!status) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Status is required" 
+      });
+    }
+
+    // Validate status values
+    const validStatuses = ['pending', 'approved', 'rejected'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Invalid status. Must be one of: pending, approved, rejected" 
+      });
+    }
+
     let query, values;
     const userRole = req.user.role;
     const isSuper = userRole === 'super';
@@ -855,7 +872,7 @@ export const updatePengajuanStatus = async (req, res) => {
         `;
         values = [status, req.user.id, notes || null, id, req.user.cabang_id];
       }
-    } else {
+    } else if (status === 'pending') {
       if (isSuper) {
         // Super admin can change any application to pending
         query = `
