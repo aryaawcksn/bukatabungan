@@ -1239,6 +1239,7 @@ export const importData = async (req, res) => {
     let importedCount = 0;
     let skippedCount = 0;
     let overwrittenCount = 0;
+    let conflictCount = 0; // New counter for edit conflicts
     const totalRecords = importData.length;
 
     for (let index = 0; index < importData.length; index++) {
@@ -1285,38 +1286,96 @@ export const importData = async (req, res) => {
 
         if (existingCheck.rows.length > 0) {
           if (overwriteMode) {
-            // Update data yang sudah ada - simplified (no complex validation)
+            // Check for edit conflicts based on edit_count
             const existingId = existingCheck.rows[0].id;
             const existingEditCount = existingCheck.rows[0].edit_count || 0;
+            const importEditCount = item.edit_count || 0;
 
-            // Detect if this is edited data (edit_count > 0 or has edit tracking)
-            const isEditedData = (item.edit_count && item.edit_count > 0) || item.last_edited_at;
+            // Edit conflict detection: if database has different edit_count than import data
+            if (existingEditCount !== importEditCount) {
+              console.log(`⚠️ Edit conflict detected for ${item.kode_referensi}: DB count=${existingEditCount}, Import count=${importEditCount}`);
+              
+              // Increment conflict counter in database
+              await client.query(`
+                UPDATE pengajuan_tabungan 
+                SET edit_count = edit_count + 1,
+                    last_edited_at = NOW(),
+                    last_edited_by = $1
+                WHERE id = $2
+              `, [req.user.id, existingId]);
 
-            // Update pengajuan_tabungan with simplified edit tracking
-            await client.query(`
-              UPDATE pengajuan_tabungan 
-              SET status = $1, 
-                  approved_at = $2, 
-                  rejected_at = $3,
-                  edit_count = $4,
-                  last_edited_at = $5,
-                  last_edited_by = $6
-              WHERE id = $7
-            `, [
-              item.status,
-              item.approved_at || null,
-              item.rejected_at || null,
-              item.edit_count || 0,
-              item.last_edited_at || null,
-              item.last_edited_by || null,
-              existingId
-            ]);
+              // Log the conflict
+              console.log(`🔄 Conflict resolved for ${item.kode_referensi}: edit_count incremented to ${existingEditCount + 1}`);
+              conflictCount++;
+            } else {
+              // No conflict, update normally
+              await client.query(`
+                UPDATE pengajuan_tabungan 
+                SET status = $1, 
+                    approved_at = $2, 
+                    rejected_at = $3,
+                    edit_count = $4,
+                    last_edited_at = $5,
+                    last_edited_by = $6
+                WHERE id = $7
+              `, [
+                item.status,
+                item.approved_at || null,
+                item.rejected_at || null,
+                item.edit_count || 0,
+                item.last_edited_at || null,
+                item.last_edited_by || null,
+                existingId
+              ]);
 
-            // Update other tables (cdd_self, cdd_job, account, etc.) - simplified
-            // No complex validation, just update the data
+              // Update other tables (cdd_self, cdd_job, account, etc.) - simplified
+              // No NIK/email/HP validation, just update the data
+              await client.query(`
+                UPDATE cdd_self SET
+                  nama = $1, alias = $2, jenis_id = $3, no_id = $4, berlaku_id = $5,
+                  tempat_lahir = $6, tanggal_lahir = $7, alamat_id = $8, alamat_jalan = $9,
+                  provinsi = $10, kota = $11, kecamatan = $12, kelurahan = $13,
+                  kode_pos_id = $14, alamat_now = $15, jenis_kelamin = $16, status_kawin = $17,
+                  agama = $18, pendidikan = $19, nama_ibu_kandung = $20, npwp = $21,
+                  email = $22, no_hp = $23, kewarganegaraan = $24, status_rumah = $25,
+                  rekening_untuk_sendiri = $26, tipe_nasabah = $27, nomor_rekening_lama = $28
+                WHERE pengajuan_id = $29
+              `, [
+                item.nama_lengkap, item.alias, item.identityType, item.nik, item.berlaku_id,
+                item.tempat_lahir, item.tanggal_lahir, item.alamat, item.alamat_jalan,
+                item.provinsi, item.kota, item.kecamatan, item.kelurahan,
+                item.kode_pos, item.alamat_domisili, item.jenis_kelamin, item.status_pernikahan,
+                item.agama, item.pendidikan, item.nama_ibu_kandung, item.npwp,
+                item.email || 'imported@example.com', item.no_hp || '08000000000',
+                item.kewarganegaraan, item.status_rumah, item.rekening_untuk_sendiri,
+                item.tipe_nasabah, item.nomor_rekening_lama, existingId
+              ]);
 
-            overwrittenCount++;
-            console.log(`✅ Record ${item.kode_referensi} updated (edit_count: ${item.edit_count || 0})`);
+              // Update cdd_job
+              await client.query(`
+                UPDATE cdd_job SET
+                  pekerjaan = $1, gaji_per_bulan = $2, sumber_dana = $3, rata_transaksi_per_bulan = $4,
+                  nama_perusahaan = $5, alamat_perusahaan = $6, no_telepon = $7, jabatan = $8, bidang_usaha = $9
+                WHERE pengajuan_id = $10
+              `, [
+                item.pekerjaan, item.penghasilan, item.sumber_dana, item.rata_rata_transaksi,
+                item.tempat_bekerja, item.alamat_kantor, item.telepon_perusahaan, item.jabatan, 
+                item.bidang_usaha || 'tidak bekerja', existingId
+              ]);
+
+              // Update account
+              await client.query(`
+                UPDATE account SET
+                  tabungan_tipe = $1, atm = $2, atm_tipe = $3, nominal_setoran = $4, tujuan_pembukaan = $5
+                WHERE pengajuan_id = $6
+              `, [
+                item.jenis_rekening || 'simpel', item.jenis_kartu ? 1 : 0, item.jenis_kartu || null,
+                item.nominal_setoran || null, item.tujuan_rekening || null, existingId
+              ]);
+
+              overwrittenCount++;
+              console.log(`✅ Record ${item.kode_referensi} updated (edit_count: ${item.edit_count || 0})`);
+            }
           } else {
             console.log(`⚠️ Record ${item.kode_referensi} sudah ada - dilewati`);
             skippedCount++;
@@ -1373,7 +1432,57 @@ export const importData = async (req, res) => {
           ]);
 
           // Insert other tables (cdd_job, account, etc.) - simplified
-          // ... (similar pattern, no complex validation)
+          // Insert cdd_job
+          if (item.pekerjaan || item.penghasilan) {
+            await client.query(`
+              INSERT INTO cdd_job (
+                pengajuan_id, pekerjaan, gaji_per_bulan, sumber_dana, rata_transaksi_per_bulan,
+                nama_perusahaan, alamat_perusahaan, no_telepon, jabatan, bidang_usaha, created_at
+              ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
+            `, [
+              newPengajuanId, item.pekerjaan, item.penghasilan, item.sumber_dana, item.rata_rata_transaksi,
+              item.tempat_bekerja, item.alamat_kantor, item.telepon_perusahaan, item.jabatan, item.bidang_usaha || 'tidak bekerja'
+            ]);
+          }
+
+          // Insert account
+          await client.query(`
+            INSERT INTO account (
+              pengajuan_id, tabungan_tipe, atm, atm_tipe, nominal_setoran, tujuan_pembukaan, created_at
+            ) VALUES ($1, $2, $3, $4, $5, $6, NOW())
+          `, [
+            newPengajuanId, item.jenis_rekening || 'simpel', item.jenis_kartu ? 1 : 0, 
+            item.jenis_kartu || null, item.nominal_setoran || null, item.tujuan_rekening || null
+          ]);
+
+          // Insert emergency contact if exists
+          if (item.kontak_darurat_nama) {
+            await client.query(`
+              INSERT INTO cdd_reference (
+                pengajuan_id, nama, alamat, no_hp, hubungan, created_at
+              ) VALUES ($1, $2, $3, $4, $5, NOW())
+            `, [
+              newPengajuanId, item.kontak_darurat_nama, item.kontak_darurat_alamat,
+              item.kontak_darurat_hp, item.kontak_darurat_hubungan
+            ]);
+          }
+
+          // Insert beneficial owner if exists
+          if (item.bo_nama && item.rekening_untuk_sendiri === false) {
+            await client.query(`
+              INSERT INTO bo (
+                pengajuan_id, nama, alamat, tempat_lahir, tanggal_lahir,
+                jenis_kelamin, kewarganegaraan, status_pernikahan,
+                jenis_id, nomor_id, sumber_dana, hubungan, nomor_hp,
+                pekerjaan, pendapatan_tahunan, persetujuan, created_at
+              ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, NOW())
+            `, [
+              newPengajuanId, item.bo_nama, item.bo_alamat, item.bo_tempat_lahir, item.bo_tanggal_lahir,
+              item.bo_jenis_kelamin, item.bo_kewarganegaraan, item.bo_status_pernikahan,
+              item.bo_jenis_id, item.bo_nomor_id, item.bo_sumber_dana, item.bo_hubungan, item.bo_nomor_hp,
+              item.bo_pekerjaan, item.bo_pendapatan_tahun, item.bo_persetujuan
+            ]);
+          }
 
           importedCount++;
           console.log(`✅ Record ${kodeReferensi} imported (edit_count: ${item.edit_count || 0})`);
@@ -1398,6 +1507,7 @@ export const importData = async (req, res) => {
         total: totalRecords,
         imported: importedCount,
         overwritten: overwrittenCount,
+        conflicts: conflictCount, // New field for edit conflicts
         skipped: skippedCount
       }
     };
@@ -1408,7 +1518,7 @@ export const importData = async (req, res) => {
     await logUserActivity(
       req.user.id,
       'IMPORT_DATA',
-      `Import Data: ${importedCount} new, ${overwrittenCount} updated, ${skippedCount} skipped`,
+      `Import Data: ${importedCount} new, ${overwrittenCount} updated, ${conflictCount} conflicts, ${skippedCount} skipped`,
       req.user.cabang_id,
       req.ip,
       req.get('User-Agent')
