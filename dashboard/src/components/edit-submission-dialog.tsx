@@ -13,7 +13,6 @@ import {
   User, 
   Briefcase, 
   AlertCircle,
-  History,
   CheckCircle2,
   Clock
 } from 'lucide-react';
@@ -51,38 +50,12 @@ interface EditSubmissionDialogProps {
   onEditComplete?: () => void; // Optional callback for when edit is completed
 }
 
-interface EditHistory {
-  id: number;
-  field_name: string;
-  old_value: string;
-  new_value: string;
-  edit_reason: string;
-  edited_at: string;
-  edited_by_username: string;
-  edited_by_name: string;
-}
-
 interface SubmissionInfo {
   id: number;
   status: string;
   edit_count: number;
   last_edited_at: string | null;
-  last_edited_by: {
-    username: string;
-  } | null;
-  original_approved_by: {
-    username: string;
-    approved_at: string;
-  } | null;
-  current_approved_by: {
-    username: string;
-    approved_at: string;
-  } | null;
-}
-
-interface EditHistoryData {
-  submission: SubmissionInfo;
-  history: EditHistory[];
+  last_edited_by: string | null;
 }
 
 // Dropdown options based on FormSimpel.tsx and FormMutiara.tsx
@@ -226,8 +199,8 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
   const [editMode, setEditMode] = useState(false);
   const [loading, setLoading] = useState(false);
   const [editReason, setEditReason] = useState('');
-  const [editHistory, setEditHistory] = useState<EditHistoryData | null>(null);
-  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [submissionInfo, setSubmissionInfo] = useState<SubmissionInfo | null>(null);
+  const [loadingInfo, setLoadingInfo] = useState(false);
   const [originalFormData, setOriginalFormData] = useState<any>(null);
   const [changedFields, setChangedFields] = useState<Set<string>>(new Set());
 
@@ -407,7 +380,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
   useEffect(() => {
     if (open && submission.id) {
       loadFullSubmissionData();
-      loadEditHistory();
+      loadSubmissionInfo();
     }
   }, [open, submission.id]);
 
@@ -506,24 +479,24 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
     }
   };
 
-  const loadEditHistory = async () => {
-    setLoadingHistory(true);
+  const loadSubmissionInfo = async () => {
+    setLoadingInfo(true);
     try {
       const res = await fetch(`${API_BASE_URL}/api/pengajuan/${submission.id}/history`, {
         credentials: 'include'
       });
       
-      if (!res.ok) throw new Error('Failed to fetch edit history');
+      if (!res.ok) throw new Error('Failed to fetch submission info');
       
       const data = await res.json();
       if (data.success) {
-        setEditHistory(data.data);
+        setSubmissionInfo(data.data.submission);
       }
     } catch (err) {
-      console.error('Error loading edit history:', err);
-      toast.error('Gagal memuat riwayat edit');
+      console.error('Error loading submission info:', err);
+      toast.error('Gagal memuat informasi submission');
     } finally {
-      setLoadingHistory(false);
+      setLoadingInfo(false);
     }
   };
 
@@ -663,8 +636,8 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
         console.log('🔄 Reloading form data after successful save...');
         await loadFullSubmissionData();
         
-        // Reload history
-        await loadEditHistory();
+        // Reload submission info
+        await loadSubmissionInfo();
         
         // Refresh parent data
         onSuccess();
@@ -877,6 +850,18 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
                 </span>
                 <span className="w-1 h-1 bg-slate-300 rounded-full" />
                 <span>{submission.personalData.fullName}</span>
+                {/* Simplified edit indicator */}
+                {submission.edit_count && submission.edit_count > 0 && (
+                  <>
+                    <span className="w-1 h-1 bg-slate-300 rounded-full" />
+                    <div className="flex items-center gap-1 text-amber-600">
+                      <Edit3 className="w-3 h-3" />
+                      <span className="text-xs font-medium">
+                        Edited {submission.edit_count}x
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -1292,123 +1277,91 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
               </div>
             </div>
           ) : (
-            // History Mode
+            // History Mode - Simplified
             <div className="space-y-6">
-              {/* Submission Info */}
-              {editHistory && (
+              {/* Simplified Submission Info */}
+              {submissionInfo && (
                 <div className="bg-white p-6 rounded-xl border border-slate-200">
                   <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
                     <CheckCircle2 className="w-5 h-5 text-green-600" />
-                    Status Approval
+                    Informasi Edit
                   </h3>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <div className="text-sm text-slate-500 mb-1">Disetujui Pertama Kali</div>
-                      <div className="text-sm font-medium">
-                        {editHistory.submission.original_approved_by ? (
-                          <>
-                            <div>{editHistory.submission.original_approved_by.username}</div>
-                            <div className="text-slate-500">
-                              {formatDate(editHistory.submission.original_approved_by.approved_at)}
-                            </div>
-                          </>
-                        ) : (
-                          <div className="text-slate-400">Belum ada data</div>
-                        )}
-                      </div>
+                      <div className="text-sm text-slate-500 mb-1">Status</div>
+                      <Badge variant="outline" className="border-green-500 text-green-700 bg-green-50">
+                        {submissionInfo.status}
+                      </Badge>
                     </div>
                     
-                    {editHistory.submission.edit_count > 0 && (
-                      <div>
-                        <div className="text-sm text-slate-500 mb-1">Terakhir Diedit</div>
-                        <div className="text-sm font-medium">
-                          {editHistory.submission.last_edited_by ? (
-                            <>
-                              <div>{editHistory.submission.last_edited_by.username}</div>
-                              <div className="text-slate-500">
-                                {formatDate(editHistory.submission.last_edited_at!)}
-                              </div>
-                            </>
-                          ) : (
-                            <div className="text-slate-400">Belum pernah diedit</div>
-                          )}
+                    <div>
+                      <div className="text-sm text-slate-500 mb-1">Jumlah Edit</div>
+                      <Badge variant="outline" className="border-blue-500 text-blue-700 bg-blue-50">
+                        {submissionInfo.edit_count || 0} kali diedit
+                      </Badge>
+                    </div>
+                    
+                    {submissionInfo.edit_count && submissionInfo.edit_count > 0 && (
+                      <>
+                        <div>
+                          <div className="text-sm text-slate-500 mb-1">Terakhir Diedit</div>
+                          <div className="text-sm font-medium">
+                            {submissionInfo.last_edited_at ? (
+                              formatDate(submissionInfo.last_edited_at)
+                            ) : (
+                              <span className="text-slate-400">-</span>
+                            )}
+                          </div>
                         </div>
-                      </div>
+                        
+                        <div>
+                          <div className="text-sm text-slate-500 mb-1">Diedit Oleh</div>
+                          <div className="text-sm font-medium">
+                            {submissionInfo.last_edited_by || (
+                              <span className="text-slate-400">-</span>
+                            )}
+                          </div>
+                        </div>
+                      </>
                     )}
-                  </div>
-
-                  <div className="mt-4 flex items-center gap-4">
-                    <Badge variant="outline" className="border-blue-500 text-blue-700 bg-blue-50">
-                      {editHistory.submission.edit_count} kali diedit
-                    </Badge>
-                    <Badge variant="outline" className="border-green-500 text-green-700 bg-green-50">
-                      Status: {editHistory.submission.status}
-                    </Badge>
                   </div>
                 </div>
               )}
 
-              {/* Edit History */}
+              {/* Simple Edit Status */}
               <div className="bg-white p-6 rounded-xl border border-slate-200">
-                <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                  <History className="w-5 h-5 text-purple-600" />
-                  Riwayat Perubahan
+                <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                  <Edit3 className="w-5 h-5 text-amber-600" />
+                  Status Edit
                 </h3>
 
-                {loadingHistory ? (
+                {loadingInfo ? (
                   <div className="text-center py-8 text-slate-500">
                     <Clock className="w-8 h-8 mx-auto mb-2 animate-spin" />
-                    Memuat riwayat edit...
-                  </div>
-                ) : editHistory && editHistory.history.length > 0 ? (
-                  <div className="space-y-4">
-                    {editHistory.history.map((item) => (
-                      <div key={item.id} className="border border-slate-200 rounded-lg p-4">
-                        <div className="flex items-start justify-between mb-3">
-                          <div>
-                            <div className="font-medium text-slate-900">
-                              {getFieldLabel(item.field_name)}
-                            </div>
-                            <div className="text-sm text-slate-500">
-                              Diedit oleh {item.edited_by_username}
-                            </div>
-                          </div>
-                          <div className="text-sm text-slate-500">
-                            {formatDate(item.edited_at)}
-                          </div>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
-                          <div>
-                            <div className="text-xs text-slate-500 mb-1">Nilai Lama</div>
-                            <div className="text-sm bg-red-50 border border-red-200 rounded px-3 py-2">
-                              {item.old_value || '-'}
-                            </div>
-                          </div>
-                          <div>
-                            <div className="text-xs text-slate-500 mb-1">Nilai Baru</div>
-                            <div className="text-sm bg-green-50 border border-green-200 rounded px-3 py-2">
-                              {item.new_value || '-'}
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {item.edit_reason && (
-                          <div>
-                            <div className="text-xs text-slate-500 mb-1">Alasan</div>
-                            <div className="text-sm bg-slate-50 border border-slate-200 rounded px-3 py-2">
-                              {item.edit_reason}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                    Memuat informasi...
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-slate-500">
-                    <History className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                    Belum ada riwayat edit
+                  <div className="text-center py-8">
+                    {submissionInfo && submissionInfo.edit_count && submissionInfo.edit_count > 0 ? (
+                      <div className="space-y-2">
+                        <Edit3 className="w-12 h-12 mx-auto text-amber-500" />
+                        <p className="text-slate-600">
+                          Data ini telah diedit <strong>{submissionInfo.edit_count}</strong> kali
+                        </p>
+                        <p className="text-sm text-slate-500">
+                          Sistem tracking yang disederhanakan hanya mencatat jumlah edit dan waktu terakhir edit
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <CheckCircle2 className="w-12 h-12 mx-auto text-green-500" />
+                        <p className="text-slate-600">Data ini belum pernah diedit</p>
+                        <p className="text-sm text-slate-500">
+                          Data masih dalam kondisi asli seperti saat pertama kali disetujui
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -1427,7 +1380,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
                     </span>
                   </div>
                 )
-              : `Submission ini telah diedit ${editHistory?.submission.edit_count || 0} kali`
+              : `Submission ini telah diedit ${submissionInfo?.edit_count || 0} kali`
             }
           </div>
 

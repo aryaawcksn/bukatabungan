@@ -330,7 +330,7 @@ function ProductDetails({
       <div className="max-w-7xl mx-auto px-6 py-10 animate-content-enter">
 
         {/* Breadcrumb */}
-        <div className="mb-10">
+        {/* <div className="mb-10">
           <Button
             variant="ghost"
             onClick={onBack}
@@ -338,7 +338,7 @@ function ProductDetails({
           >
             <ArrowLeft className="w-4 h-4 mr-2" /> Kembali ke Produk
           </Button>
-        </div>
+        </div> */}
 
         <div className="grid lg:grid-cols-12 gap-12 items-start">
 

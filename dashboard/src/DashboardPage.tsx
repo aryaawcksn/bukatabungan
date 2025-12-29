@@ -129,6 +129,10 @@ export interface FormSubmission {
   rejectedAt?: string;
   approval_notes?: string;
   rejection_notes?: string;
+  // Simplified edit tracking
+  edit_count?: number;
+  last_edited_at?: string;
+  lastEditedBy?: string;
 }
 
 // Helper function untuk mapping data dari backend ke format FormSubmission
@@ -302,7 +306,11 @@ export const mapBackendDataToFormSubmission = (data: any): FormSubmission => {
     rejectedBy: data.rejectedBy || undefined,
     rejectedAt: data.rejected_at ? formatDateTime(data.rejected_at) : undefined,
     approval_notes: data.approval_notes || undefined,
-    rejection_notes: data.rejection_notes || undefined
+    rejection_notes: data.rejection_notes || undefined,
+    // Simplified edit tracking
+    edit_count: data.edit_count || 0,
+    last_edited_at: data.last_edited_at ? formatDateTime(data.last_edited_at) : undefined,
+    lastEditedBy: data.lastEditedBy || undefined
   };
   
   // Data mapping completed

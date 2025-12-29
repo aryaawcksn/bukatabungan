@@ -17,7 +17,8 @@ import {
   CreditCard,
   User,
   Calendar,
-  MessageSquare
+  MessageSquare,
+  Edit3
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -120,6 +121,15 @@ export function SubmissionTable({
                         <code className="text-[11px] font-mono bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded w-fit">
                             {submission.referenceCode}
                         </code>
+                        {/* Edit indicator - simplified */}
+                        {submission.edit_count && submission.edit_count > 0 && (
+                          <div className="flex items-center gap-1 mt-1">
+                            <Edit3 className="w-3 h-3 text-amber-500" />
+                            <span className="text-[10px] text-amber-600 font-medium">
+                              Edited {submission.edit_count}x
+                            </span>
+                          </div>
+                        )}
                     </div>
                   </TableCell>
 

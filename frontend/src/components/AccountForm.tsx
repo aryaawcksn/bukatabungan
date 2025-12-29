@@ -354,17 +354,18 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
              if (!currentData.kelurahan) newErrors.kelurahan = "Kelurahan wajib diisi";
            }
            // For WNA, only require address field (no additional validations)
-           if (!currentData.jenisId) newErrors.jenisId = "Jenis identitas wajib diisi";
+           // Skip jenisId validation for SimPel (automatically set to KIA), Mutiara (automatically set to KTP), and TabunganKu (automatically set to KTP)
+           if (savingsType !== 'simpel' && savingsType !== 'mutiara' && savingsType !== 'tabunganku' && !currentData.jenisId) newErrors.jenisId = "Jenis identitas wajib diisi";
            if (currentData.jenisId === 'Lainnya' && !currentData.jenisIdCustom) {
               newErrors.jenisIdCustom = "Sebutkan jenis identitas Anda";
            }
-           // Validity date validation - exclude KTP (lifetime validity)
-           if (currentData.jenisId && currentData.jenisId !== 'KTP' && !currentData.berlakuId) {
+           // Validity date validation - exclude KTP and KIA (both have lifetime validity)
+           if (currentData.jenisId && currentData.jenisId !== 'KTP' && currentData.jenisId !== 'KIA' && !currentData.berlakuId) {
               newErrors.berlakuId = "Masa berlaku identitas wajib diisi";
            }
            
            // Basic client-side validations only
-           if (!newErrors.nik && (!currentData.jenisId || currentData.jenisId === 'KTP')) {
+           if (!newErrors.nik && (!currentData.jenisId || currentData.jenisId === 'KTP' || currentData.jenisId === 'KIA')) {
              const nikErr = validateNikBasic(currentData.nik);
              if (nikErr) newErrors.nik = nikErr;
            }
@@ -452,7 +453,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
               <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
               </svg>
-              <span>Terdapat field yang perlu diisi.</span>
+              <span>Terjadi ${errorCount} kesalahan. Silakan periksa kembali form Anda sebelum melanjutkan.</span>
             </div>
           `;
           document.body.appendChild(errorDiv);
@@ -515,12 +516,14 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     if (!currentData.motherName) newErrors.motherName = "Nama ibu kandung wajib diisi";
     if (!currentData.citizenship) newErrors.citizenship = "Kewarganegaraan wajib diisi";
     
-    // Identity Validity - Required for non-KTP
-    if (!currentData.jenisId) newErrors.jenisId = "Jenis identitas wajib diisi";
+    // Identity Validity - Required for non-KTP and non-SimPel
+    // Skip jenisId validation for SimPel (automatically set to KIA), Mutiara (automatically set to KTP), and TabunganKu (automatically set to KTP)
+    if (savingsType !== 'simpel' && savingsType !== 'mutiara' && savingsType !== 'tabunganku' && !currentData.jenisId) newErrors.jenisId = "Jenis identitas wajib diisi";
     if (currentData.jenisId === 'Lainnya' && !currentData.jenisIdCustom) {
       newErrors.jenisIdCustom = "Sebutkan jenis identitas Anda";
     }
-    if (currentData.jenisId && currentData.jenisId !== 'KTP' && !currentData.berlakuId) {
+    // Validity date validation - exclude KTP and KIA (both have lifetime validity)
+    if (currentData.jenisId && currentData.jenisId !== 'KTP' && currentData.jenisId !== 'KIA' && !currentData.berlakuId) {
       newErrors.berlakuId = "Masa berlaku identitas wajib diisi";
     }
     
@@ -581,7 +584,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
     }
  
     // Basic client-side validations only (no async duplicate checks)
-    if (!newErrors.nik && (!currentData.jenisId || currentData.jenisId === 'KTP')) {
+    if (!newErrors.nik && (!currentData.jenisId || currentData.jenisId === 'KTP' || currentData.jenisId === 'KIA')) {
       const nikErr = validateNikBasic(currentData.nik);
       if (nikErr) newErrors.nik = nikErr;
     }
@@ -1037,7 +1040,7 @@ export default function AccountForm({ savingsType, onBack }: AccountFormProps) {
         <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between py-4">
-              <div className="flex flex-col md:flex-row items-start md:items-center justify-between w-full gap-1 md:gap-0">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between w-full gap-1 ">
                 <img 
                   src="/banksleman.png" 
                   alt="Bank Sleman Logo" 

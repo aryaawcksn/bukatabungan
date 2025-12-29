@@ -14,10 +14,12 @@ import {
   importData,
   getImportProgress,
   deleteDataByStatus,
-  editSubmission,
-  getEditHistory,
   getStatusByReferenceCode,
 } from "../controllers/pengajuanController.js";
+import {
+  editSubmission,
+  getEditHistory,
+} from "../controllers/editController.js";
 
 // Konfigurasi multer untuk import file
 const storage = multer.memoryStorage();

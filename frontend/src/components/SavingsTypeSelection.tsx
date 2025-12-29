@@ -25,13 +25,13 @@ export default function SavingsTypeSelection({
 
         {/* HEADER SECTION */}
         <div className="mb-12">
-          <Button
+          {/* <Button
             variant="ghost"
             onClick={onBack}
             className="pl-0 mb-8 text-slate-600 hover:text-emerald-700 hover:bg-transparent"
           >
             <ArrowLeft className="w-4 h-4 mr-2" /> Kembali ke Beranda
-          </Button>
+          </Button> */}
 
           <div className="text-center">
             <h1 className="text-4xl font-bold text-slate-900 mb-4">

@@ -18,6 +18,7 @@ import InvalidRequestPage from "./pages/InvalidRequestPage";
 import StatusCheck from "./components/StatusCheck";
 import RouteLoader from "./components/RouteLoader";
 import { VALID_SAVING_TYPES } from "./data/savingsTypes";
+import ErrorPage from "./components/ErrorPage";
 
 function RootLayout() {
   const location = useLocation();
@@ -115,10 +116,13 @@ function FormRoute() {
   );
 }
 
+
+
 const router = createBrowserRouter([
   {
     path: "/",
     element: <RootLayout />,
+    errorElement: <ErrorPage />,
     children: [
       {
         index: true,

@@ -178,7 +178,7 @@ export function FormDetailDialog({ submission, open, onClose, onApprove, onRejec
       <DialogContent className="max-w-[95vw] sm:max-w-6xl h-[90vh] p-0 gap-0 overflow-hidden flex flex-col bg-slate-50">
         
         {/* HEADER SECTION - Compact & Cleaner */}
-        <div className="px-8 py-5 border-b border-slate-200 bg-white flex items-center justify-between shrink-0">
+        <div className="px-8 py-5 border-b border-slate-200 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-4">
                 <div className="h-10 w-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center">
                     <FileText className="w-5 h-5" />
@@ -227,7 +227,7 @@ export function FormDetailDialog({ submission, open, onClose, onApprove, onRejec
         </div>
 
         {/* MAIN SCROLLABLE CONTENT */}
-        <div className="flex-1 overflow-y-auto p-8 space-y-10">
+        <div className="flex-1 overflow-y-auto p-4 space-y-10">
           {fetchingDetails && (
              <div className="p-3 bg-blue-50 text-blue-700 rounded-md text-center text-sm border border-blue-100 animate-pulse">
                Sedang memuat data lengkap...
@@ -409,7 +409,7 @@ export function FormDetailDialog({ submission, open, onClose, onApprove, onRejec
         </div>
 
         {/* FOOTER ACTION BAR */}
-        <div className="p-5 border-t border-slate-200 bg-white flex justify-between items-center shrink-0">
+        <div className="p-5 border-t border-slate-200 flex justify-between items-center shrink-0">
            <div className="text-sm text-slate-500 hidden sm:block">
               {status.label === 'Disetujui' 
                 ? `Permohonan disetujui pada ${detailSubmission.approvedAt || 'Unknown Date'}`
@@ -420,7 +420,7 @@ export function FormDetailDialog({ submission, open, onClose, onApprove, onRejec
 
            <DialogFooter className="gap-3 sm:gap-4 w-full sm:w-auto">
             {/* Approved: PDF Button & Edit Button */}
-            {detailSubmission.status === 'approved' && (
+            {detailSubmission.status === 'approved' &&  (
               <>
                 {onEdit && (
                   <Button variant="outline" onClick={onEdit} className="w-full sm:w-auto border-blue-200 text-blue-600 hover:bg-blue-50">

@@ -27,6 +27,27 @@ const formatRupiah = (angka: string) => {
   return 'Rp. ' + rupiah;
 };
 
+/**
+ * FormMutiara Component
+ * 
+ * Account opening form specifically customized for Mutiara savings accounts.
+ * 
+ * Key Features:
+ * - Fixed identity type: KTP (Kartu Tanda Penduduk) - no selection UI needed
+ * - KTP has lifetime validity - no expiration date required
+ * - Standard employment and income options for adult customers
+ * - Multiple card type options: Gold, Silver, Platinum
+ * - Full account purpose options available
+ * - Comprehensive beneficial owner and emergency contact sections
+ * 
+ * Identity Requirements:
+ * - Uses KTP as the only accepted identity document
+ * - Requires 16-digit NIK (Nomor Induk Kependudukan)
+ * - No validity date needed (KTP has lifetime validity)
+ * 
+ * @param props - Component props including branches, currentStep, savingsType, etc.
+ * @returns JSX element for Mutiara account form
+ */
 const FormMutiara = ({
    branches = [],
    currentStep = 1,
@@ -95,7 +116,6 @@ const FormMutiara = ({
   });
   */
 
-  const watchedJenisId = useWatch({ control, name: 'jenisId' });
   const watchedEmploymentStatus = useWatch({ control, name: 'employmentStatus' });
   const watchedSumberDana = useWatch({ control, name: 'sumberDana' });
   const watchedTujuanRekening = useWatch({ control, name: 'tujuanRekening' });
@@ -123,17 +143,10 @@ const FormMutiara = ({
   // State to store the street address separately (not in formData)
   const [streetAddress, setStreetAddress] = useState('');
 
-  // Auto-set jenis_rekening based on savings type
+  // Auto-set identity type and account type based on savings type
   useEffect(() => {
-    // const currentStatus = getValues('employmentStatus');
-    // if (currentStatus !== 'Pelajar/Mahasiswa') {
-    //   setValue('employmentStatus', 'Pelajar/Mahasiswa', { shouldValidate: true });
-    // }
-    // Set jenis_rekening based on savings type from URL
-    setValue('jenis_rekening', getSavingsTypeName(), { shouldValidate: false });
-    if (!getValues('tipeNasabah')) {
-      setValue('tipeNasabah', 'baru');
-    }
+    // Set default identity type to KTP for Mutiara (always KTP for Mutiara accounts)
+    setValue('jenisId', 'KTP', { shouldValidate: false });
   }, [setValue, getValues, getSavingsTypeName]);
 
   // Validation function for age requirement
@@ -439,58 +452,124 @@ const FormMutiara = ({
           
           {/* Branch Selection */}
           <div className="max-w-5xl mx-auto">
-            <fieldset className="bg-white p-4 md:p-8 rounded-2xl border-2 border-slate-200 shadow-sm">
-              <legend className="sr-only">Pilihan Cabang</legend>
-              <Label htmlFor="cabang_pengambilan" className="text-gray-800 font-semibold text-lg mb-3 block">
-                Kantor Cabang  <span className="text-red-500">*</span>
-              </Label>
-              <Controller
-                name="cabang_pengambilan"
-                control={control}
-                rules={{ required: 'Kantor cabang harus dipilih' }}
-                render={({ field }) => (
-                  <Select
-                    value={field.value}
-                    onValueChange={(value) => {
-                      field.onChange(value);
-                      const selectedBranch = branches.find(b => b.id.toString() === value.toString());
-                      if (selectedBranch && !selectedBranch.is_active) {
-                        setError('cabang_pengambilan', { type: 'manual', message: "Cabang sedang dalam perbaikan, silahkan pilih cabang lain" });
-                      } else {
-                        clearErrors('cabang_pengambilan');
-                      }
-                    }}
-                  >
-                    <SelectTrigger className={`h-14 bg-white border-2 text-base focus:border-green-400 focus:ring-2 focus:ring-green-100 rounded-xl ${rhfErrors.cabang_pengambilan ? 'border-red-500' : 'border-slate-300'}`}>
-                      <SelectValue placeholder="-- Pilih Cabang Bank Sleman --" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {branches.map((branch: any) => (
-                        <SelectItem key={branch.id} value={branch.id.toString()} disabled={!branch.is_active}>
-                          <div className="flex items-center gap-2">
-                            <svg className="w-4 h-4 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                            </svg>
-                            <span>{branch.nama_cabang}</span>
-                            {!branch.is_active && <span className="text-xs text-red-500 ml-2">(Tidak tersedia)</span>}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-              {rhfErrors.cabang_pengambilan && (
-                <p className="text-sm text-red-600 mt-1">{rhfErrors.cabang_pengambilan.message}</p>
-              )}
-              <p className="text-sm text-slate-500 mt-3 flex items-start gap-2">
-                <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                </svg>
-                Buku tabungan dapat diambil di cabang yang Anda pilih setelah permohonan disetujui.
-              </p>
-            </fieldset>
-          </div>
+  <fieldset className="bg-white p-5 md:p-8 rounded-2xl border-2 border-slate-200 shadow-sm space-y-6">
+    <legend className="sr-only">Pilihan Cabang</legend>
+
+    {/* Section Header */}
+    <header>
+  <h4 className="text-emerald-800 font-bold text-xl flex items-center gap-3">
+    <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-600 text-white text-sm shadow-sm">
+      1
+    </span>
+    Kantor Cabang Pengambilan
+  </h4>
+  <p className="text-slate-500 text-sm ml-11 mb-6">
+    Silakan pilih kantor cabang untuk pengambilan buku tabungan {getSavingsTypeName()} anda.
+  </p>
+</header>
+
+
+    {/* <h4 className="text-emerald-800 font-bold text-xl flex items-center gap-3">
+    <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-600 text-white text-sm shadow-sm">
+      1
+    </span>
+    Identitas Diri
+  </h4>
+  <p className="text-slate-500 text-sm ml-11 mb-6">
+    Lengkapi data diri anda sesuai dengan dokumen identitas resmi.
+  </p>
+</header> */}
+
+    {/* Input Area */}
+    <div>
+      <Label
+        htmlFor="cabang_pengambilan"
+        className="text-gray-800 font-semibold text-base mb-2 block"
+      >
+        Kantor Cabang <span className="text-red-500">*</span>
+      </Label>
+
+      <Controller
+        name="cabang_pengambilan"
+        control={control}
+        rules={{ required: 'Kantor cabang harus dipilih' }}
+        render={({ field }) => (
+          <Select
+            value={field.value}
+            onValueChange={(value) => {
+              field.onChange(value);
+              const selectedBranch = branches.find(
+                b => b.id.toString() === value.toString()
+              );
+              if (selectedBranch && !selectedBranch.is_active) {
+                setError('cabang_pengambilan', {
+                  type: 'manual',
+                  message: 'Cabang sedang dalam perbaikan, silahkan pilih cabang lain'
+                });
+              } else {
+                clearErrors('cabang_pengambilan');
+              }
+            }}
+          >
+            <SelectTrigger
+              className={`h-14 bg-white border-2 text-base rounded-xl focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100
+              ${rhfErrors.cabang_pengambilan ? 'border-red-500' : 'border-slate-300'}`}
+            >
+              <SelectValue placeholder="-- Pilih Cabang Bank Sleman --" />
+            </SelectTrigger>
+
+            <SelectContent>
+              {branches.map((branch: any) => (
+                <SelectItem
+                  key={branch.id}
+                  value={branch.id.toString()}
+                  disabled={!branch.is_active}
+                >
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path
+                        fillRule="evenodd"
+                        d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span>{branch.nama_cabang}</span>
+                    {!branch.is_active && (
+                      <span className="text-xs text-red-500 ml-2">
+                        (Tidak tersedia)
+                      </span>
+                    )}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+      />
+
+      {rhfErrors.cabang_pengambilan && (
+        <p className="text-sm text-red-600 mt-2">
+          {rhfErrors.cabang_pengambilan.message}
+        </p>
+      )}
+    </div>
+
+    {/* Info Box */}
+    <div className="flex gap-3 rounded-xl">
+      <svg className="w-4 h-4 text-slate-500  flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+        <path
+          fillRule="evenodd"
+          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+          clipRule="evenodd"
+        />
+      </svg>
+      <p className="text-xs text-slate-600">
+        Buku tabungan dapat diambil di cabang yang Anda pilih setelah permohonan disetujui.
+      </p>
+    </div>
+  </fieldset>
+</div>
+
         </section>
       )}
 
@@ -517,15 +596,17 @@ const FormMutiara = ({
 
           {/* Section 1: Identitas Diri */}
           <article className="bg-white p-4 md:p-6 rounded-2xl border-2 border-slate-200 shadow-sm">
-            <header>
-          <h4 className="text-emerald-800 font-bold text-xl flex items-center gap-2">
-            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">1</span>
-            Identitas Diri
-          </h4>
-          <p className="text-slate-500 text-sm ml-10 mb-6">
-            Lengkapi data diri anda sesuai dengan dokumen identitas resmi.
-          </p>
-        </header>
+           <header>
+  <h4 className="text-emerald-800 font-bold text-xl flex items-center gap-3">
+    <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-600 text-white text-sm shadow-sm">
+      2
+    </span>
+    Identitas Diri
+  </h4>
+  <p className="text-slate-500 text-sm ml-11 mb-6">
+    Lengkapi data diri anda sesuai dengan dokumen identitas resmi.
+  </p>
+</header>
             <fieldset className="space-y-5">
               <legend className="sr-only">Informasi Identitas Pribadi</legend>
 
@@ -619,109 +700,33 @@ const FormMutiara = ({
                 </div>
               )}
 
-              {/* Identity Type & Number */}
-              <div className="grid md:grid-cols-2 gap-5">
-                <div>
-                  <Label className="text-gray-700 font-semibold">
-                    Jenis Identitas <span className="text-red-500">*</span>
-                  </Label>
-                  <Controller
-                    name="jenisId"
-                    control={control}
-                    rules={{ required: 'Jenis identitas harus dipilih' }}
-                    render={({ field }) => (
-                      <Select
-                        value={field.value}
-                        onValueChange={(value) => {
-                          field.onChange(value);
-                          setValue('nik', '');
-                          clearErrors('nik');
-                        }}
-                      >
-                        <SelectTrigger className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-green-400 focus:ring-2 focus:ring-green-100">
-                          <SelectValue placeholder="-- Pilih Jenis Identitas --" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="KTP">KTP</SelectItem>
-                          <SelectItem value="Paspor">Paspor</SelectItem>
-                          <SelectItem value="Lainnya">Lainnya</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                  {watchedJenisId === 'Lainnya' && (
-                    <Input
-                      {...register('jenisIdCustom')}
-                      placeholder="Sebutkan jenis identitas"
-                      className="mt-2 h-12 rounded-lg border-2 border-slate-300 focus:border-green-400 focus:ring-2 focus:ring-green-100"
-                    />
-                  )}
-                </div>
-                <div>
-                  <Label htmlFor="nik" className="text-gray-700 font-semibold">
-                    {watchedJenisId === 'KTP' ? 'Nomor KTP' : watchedJenisId === 'Paspor' ? 'Nomor Paspor' : 'Nomor Identitas'} <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="nik"
-                    {...register('nik', { 
-                      required: 'Nomor identitas harus diisi',
-                      validate: (val) => {
-                        const jenisIdValue = getValues('jenisId');
-                        if (jenisIdValue === 'KTP' && val.length !== 16) return 'NIK harus 16 digit';
-                        return true;
-                      }
-                    })}
-                    placeholder={watchedJenisId === 'KTP' ? 'Masukkan 16 digit NIK' : watchedJenisId === 'Paspor' ? 'Masukkan 6-9 karakter' : 'Masukkan nomor identitas'}
-                    maxLength={watchedJenisId === 'KTP' ? 16 : undefined}
-                    className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.nik ? 'border-red-500' : 'border-slate-300'} focus:border-green-400 focus:ring-2 focus:ring-green-100`}
-                  />
-                  {rhfErrors.nik && (
-                    <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
-                      {rhfErrors.nik.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Validity Date - Exclude KTP (lifetime validity) */}
-              {watchedJenisId !== 'KTP' && (
-              <div className="md:col-span-2">
-                <Label htmlFor="berlakuId" className="text-gray-700 font-semibold">
-                  Masa Berlaku Identitas <span className="text-red-500">*</span>
+              {/* KTP Number - Fixed identity type for Mutiara */}
+              <div>
+                <Label htmlFor="nik" className="text-gray-700 font-semibold">
+                  Nomor KTP <span className="text-red-500">*</span>
                 </Label>
-                
-                {/* Hapus space-y-3 atau ganti jadi yang lebih kecil seperti space-y-1 */}
-                <div className="mt-2"> 
-                  <Input
-                    id="berlakuId"
-                    {...register('berlakuId', { 
-                      required: watchedJenisId !== 'KTP' ? 'Masa berlaku harus diisi' : false 
-                    })}
-                    type="date"
-                    className={`h-12 rounded-lg border-2 ${rhfErrors.berlakuId ? 'border-red-500' : 'border-slate-300'} focus:border-green-400 focus:ring-2 focus:ring-green-100`}
-                  />
-                  
-                  {/* Pesan Error */}
-                  {rhfErrors.berlakuId && (
-                    <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
-                      {rhfErrors.berlakuId.message}
-                    </p>
-                  )}
-
-                  {/* Teks Bantuan (Kecil di bawah) */}
-                  <p className="text-xs text-slate-500 mt-1">
-                    {watchedJenisId === 'Paspor' ? 'Masukkan tanggal masa berlaku paspor' : 'Masukkan tanggal masa berlaku identitas'}
+                <Input
+                  id="nik"
+                  {...register('nik', { 
+                    required: 'Nomor KTP harus diisi',
+                    validate: (val) => {
+                      if (val.length !== 16) return 'NIK harus 16 digit';
+                      return true;
+                    }
+                  })}
+                  placeholder="Masukkan 16 digit NIK"
+                  maxLength={16}
+                  className={`mt-2 h-12 rounded-lg border-2 ${rhfErrors.nik ? 'border-red-500' : 'border-slate-300'} focus:border-green-400 focus:ring-2 focus:ring-green-100`}
+                />
+                {rhfErrors.nik && (
+                  <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    {rhfErrors.nik.message}
                   </p>
-                </div>
+                )}
               </div>
-            )}
-
 
               {/* Tempat & Tanggal Lahir */}
               <div className="grid md:grid-cols-2 gap-5">
@@ -904,14 +909,16 @@ const FormMutiara = ({
          {/* Section 2: Informasi Kontak */}
 <div className="bg-white p-4 md:p-6 rounded-2xl border-2 border-slate-200 shadow-sm">
           <header>
-            <h4 className="text-emerald-800 font-bold text-xl flex items-center gap-2">
-              <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">2</span>
-              Informasi Kontak
-            </h4>
-            <p className="text-slate-500 text-sm ml-10 mb-6">
-              Silakan isi informasi kontak Anda untuk keperluan komunikasi dan pemberitahuan.
-            </p>
-          </header>
+  <h4 className="text-emerald-800 font-bold text-xl flex items-center gap-3">
+    <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-600 text-white text-sm shadow-sm">
+      3
+    </span>
+    Informasi Kontak
+  </h4>
+  <p className="text-slate-500 text-sm ml-11 mb-6">
+    Lengkapi informasi kontak utama dan darurat Anda.
+  </p>
+</header>
   
 
   <div className="space-y-6">
@@ -1075,14 +1082,16 @@ const FormMutiara = ({
           {/* Section 3: Alamat Tempat Tinggal */}
           <div className="bg-white p-4 md:p-6 rounded-2xl border-2 border-slate-200 shadow-sm">
              <header>
-            <h4 className="text-emerald-800 font-bold text-xl flex items-center gap-2">
-              <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">3</span>
-              Alamat Tempat Tinggal
-            </h4>
-            <p className="text-slate-500 text-sm ml-10 mb-6">
-              Isi alamat tempat tinggal Anda sesuai dengan dokumen identitas yang berlaku.
-            </p>
-          </header>
+  <h4 className="text-emerald-800 font-bold text-xl flex items-center gap-3">
+    <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-600 text-white text-sm shadow-sm">
+      4
+    </span>
+    Alamat Tempat Tinggal
+  </h4>
+  <p className="text-slate-500 text-sm ml-11 mb-6">
+    Isi alamat tempat tinggal sesuai dokumen identitas Anda.
+  </p>
+</header>
             <div className="space-y-5">
 
               {/* RT/RW Field - Only for WNI */}
@@ -1440,14 +1449,16 @@ const FormMutiara = ({
           {/* Section 1: Informasi Pekerjaan */}
           <div className="bg-white p-4 md:p-6 rounded-2xl border-2 border-slate-200 shadow-sm">
              <header>
-            <h4 className="text-emerald-800 font-bold text-xl flex items-center gap-2">
-              <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">3</span>
-              Informasi Pekerjaan
-            </h4>
-            <p className="text-slate-500 text-sm ml-10 mb-6">
-              Silakan isi informasi pekerjaan dan penghasilan Anda.
-            </p>
-          </header>
+  <h4 className="text-emerald-800 font-bold text-xl flex items-center gap-3">
+    <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-600 text-white text-sm shadow-sm">
+      5
+    </span>
+    Informasi Pekerjaan & Kekayaan
+  </h4>
+  <p className="text-slate-500 text-sm ml-11 mb-6">
+    Lengkapi informasi mengenai pekerjaan dan penghasilan bulanan Anda.
+  </p>
+</header>
             <div className="space-y-5">
 
               <div className="grid md:grid-cols-2 gap-5">
@@ -1620,7 +1631,7 @@ const FormMutiara = ({
               {/* EDD Bank Lain Section */}
 <div className="bg-slate-50 p-5 md:p-6 rounded-2xl border-2 border-slate-200">
   <div className="flex items-center gap-3 mb-1">
-    <div className="p-2 bg-green-100 rounded-lg text-blue-600">
+    <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
       </svg>
@@ -1783,14 +1794,16 @@ const FormMutiara = ({
           {/* Section 1: Konfigurasi Rekening */}
           <div className="bg-white p-4 md:p-6 rounded-2xl border-2 border-slate-200 shadow-sm">
              <header>
-            <h4 className="text-emerald-800 font-bold text-xl flex items-center gap-2">
-              <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">4</span>
-              Konfigurasi Rekening
-            </h4>
-            <p className="text-slate-500 text-sm ml-10 mb-6">
-              Silakan pilih jenis kartu dan tujuan pembukaan rekening Anda.
-            </p>
-          </header>
+  <h4 className="text-emerald-800 font-bold text-xl flex items-center gap-3">
+    <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-600 text-white text-sm shadow-sm">
+      6
+    </span>
+    Konfigurasi Rekening
+  </h4>
+  <p className="text-slate-500 text-sm ml-11 mb-6">
+    Atur preferensi dan detail rekening tabungan Anda.
+  </p>
+</header>
             <div className="space-y-5">
               
               {/* Account Type - Pre-filled and Read-only */}
@@ -1933,39 +1946,51 @@ const FormMutiara = ({
               {/* Section 2: Kepemilikan Rekening */}
               <div className="bg-white p-4 md:p-6 rounded-2xl border-2 border-slate-200 shadow-sm">
   {/* Section Header */}
-  <header className="mb-6">
-    <h4 className="text-emerald-800 font-bold text-xl flex items-center gap-2">
-      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">
-        5
-      </span>
-      Kepemilikan Rekening
-    </h4>
-    <p className="text-slate-500 text-sm ml-10 mt-1">
-      Tentukan pengendali dana atau pemilik manfaat (Beneficial Owner) dari rekening ini.
-    </p>
-  </header>
+  <header>
+  <h4 className="text-emerald-800 font-bold text-xl flex items-center gap-3">
+    <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-600 text-white text-sm shadow-sm">
+      7
+    </span>
+    Kepemilikan Rekening
+  </h4>
+  <p className="text-slate-500 text-sm ml-11 mb-6">
+    Beneficial Owner (Pemilik Manfaat Sebenarnya)
+  </p>
+</header>
 
   {/* Question Card */}
-  <div className="bg-emerald-50 p-5 rounded-2xl border-2 border-emerald-100 mb-4">
-    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-      <div className="flex items-start gap-4">
-        {/* Icon */}
-        <div className="bg-emerald-100 p-3 rounded-xl shrink-0">
-          <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <div className="bg-emerald-50/50 p-6 rounded-3xl border border-emerald-100 mb-4">
+  <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+    <div className="flex items-center gap-5">
+      
+      {/* Container Icon Modern (Bulat) */}
+      <div className="relative flex-shrink-0">
+        {/* Lingkaran Background */}
+        <div className="w-14 h-14 bg-emerald-100/80 rounded-full flex items-center justify-center">
+          {/* Icon Orang Tunggal (Utama) */}
+          <svg className="w-7 h-7 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
         </div>
         
-        {/* Text Area */}
-        <div>
-          <h5 className="font-bold text-gray-800">
-            Pemilik Dana <span className="text-red-500">*</span>
-          </h5>
-          <p className="text-sm text-emerald-700/80 mt-0.5">
-            Apakah rekening ini dibuka untuk kepentingan Anda sendiri?
-          </p>
+        {/* Icon Orang Banyak (Floating di atas kanan) */}
+        <div className="absolute -top-1 -right-1 bg-white p-1 rounded-full shadow-sm border border-emerald-50">
+          <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
         </div>
       </div>
+      
+      {/* Text Area - Dibuat Center secara Vertikal */}
+      <div className="flex flex-col justify-center">
+        <h5 className="text-lg font-bold text-slate-800 leading-none mb-1">
+          Pemilik Dana <span className="text-red-500 text-base">*</span>
+        </h5>
+        <p className="text-sm text-emerald-700/70 leading-relaxed max-w-sm">
+          Apakah rekening ini dibuka untuk kepentingan Anda sendiri?
+        </p>
+      </div>
+    </div>
       
       {/* Toggle Buttons */}
       <div className="bg-white p-1 rounded-xl shadow-sm border border-emerald-100 flex w-full md:w-auto shrink-0">
@@ -2007,17 +2032,17 @@ const FormMutiara = ({
 
           {watchedRekeningUntukSendiri === false && (
             <div className="bg-white p-4 md:p-6 rounded-2xl border-2 border-slate-200 shadow-sm space-y-6">
-              <header className="mb-6">
-    <h4 className="text-emerald-800 font-bold text-xl flex items-center gap-2">
-      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">
-        6
-      </span>
-      Data Beneficial Owner
-    </h4>
-    <p className="text-slate-500 text-sm ml-10 mt-1">
-      Silakan isi data pemilik dana atau Beneficial Owner dari rekening ini.
-    </p>
-  </header>
+              <header>
+  <h4 className="text-emerald-800 font-bold text-xl flex items-center gap-3">
+    <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-600 text-white text-sm shadow-sm">
+      8
+    </span>
+    Data Beneficial Owner
+  </h4>
+  <p className="text-slate-500 text-sm ml-11 mb-6">
+    Isi data pemilik dana sebenarnya sesuai identitas resmi.
+  </p>
+</header>
               
               <div className="grid md:grid-cols-2 gap-5">
                 <div>
@@ -2025,7 +2050,7 @@ const FormMutiara = ({
                   <Input
                     {...register('boNama')}
                     placeholder="Nama Lengkap Pemilik Dana"
-                    className="mt-2 h-12 rounded-md border-slate-200 transition-all focus:border-green-400 focus:ring-2 focus:ring-green-100"
+                    className="mt-2 h-12 rounded-md border-slate-300 focus:border-green-400 focus:ring-2 focus:ring-green-100"
                   />
                 </div>
                 <div>
@@ -2033,7 +2058,7 @@ const FormMutiara = ({
                   <Input
                     {...register('boTempatLahir')}
                     placeholder="Kota Tempat Lahir"
-                    className="mt-2 h-12 rounded-md border-slate-200 transition-all focus:border-green-400 focus:ring-2 focus:ring-green-100"
+                    className="mt-2 h-12 rounded-md border-slate-300 focus:border-green-400 focus:ring-2 focus:ring-green-100"
                   />
                 </div>
               </div>
@@ -2044,7 +2069,7 @@ const FormMutiara = ({
                   <Input
                     type="date"
                     {...register('boTanggalLahir')}
-                    className="mt-2 h-12 rounded-md border-slate-200 transition-all focus:border-green-400 focus:ring-2 focus:ring-green-100"
+                    className="mt-2 h-12 rounded-md border-slate-300 focus:border-green-400 focus:ring-2 focus:ring-green-100"
                   />
                 </div>
                 <div>
@@ -2072,7 +2097,7 @@ const FormMutiara = ({
                 <Input
                   {...register('boAlamat')}
                   placeholder="Alamat lengkap pemilik dana"
-                  className="mt-2 h-12 rounded-md border-slate-200 transition-all focus:border-green-400 focus:ring-2 focus:ring-green-100"
+                  className="mt-2 h-12 rounded-md border-slate-300 focus:border-green-400 focus:ring-2 focus:ring-green-100"
                 />
               </div>
 
@@ -2141,7 +2166,7 @@ const FormMutiara = ({
                     <Input
                       {...register('boJenisIdCustom')}
                       placeholder="Sebutkan jenis identitas lainnya"
-                      className="mt-2 h-12 rounded-md border-slate-200 transition-all focus:border-green-400 focus:ring-2 focus:ring-green-100"
+                      className="mt-2 h-12 rounded-md border-slate-300 focus:border-green-400 focus:ring-2 focus:ring-green-100"
                     />
                   )}
                 </div>
@@ -2150,7 +2175,7 @@ const FormMutiara = ({
                   <Input
                     {...register('boNomorId')}
                     placeholder="Masukkan nomor identitas"
-                    className="mt-2 h-12 rounded-md border-slate-200 transition-all focus:border-green-400 focus:ring-2 focus:ring-green-100"
+                    className="mt-2 h-12 rounded-md border-slate-300 focus:border-green-400 focus:ring-2 focus:ring-green-100"
                   />
                 </div>
               </div>
@@ -2199,7 +2224,7 @@ const FormMutiara = ({
                     <Input
                       {...register('boHubunganCustom')}
                       placeholder="Sebutkan hubungan lainnya"
-                      className="mt-2 h-12 rounded-md border-slate-200 transition-all focus:border-green-400 focus:ring-2 focus:ring-green-100"
+                      className="mt-2 h-12 rounded-md border-slate-300 focus:border-green-400 focus:ring-2 focus:ring-green-100"
                     />
                   )}
                 </div>
