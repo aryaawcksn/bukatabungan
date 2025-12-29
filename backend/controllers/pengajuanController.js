@@ -803,7 +803,15 @@ export const getAllPengajuan = async (req, res) => {
  */
 export const updatePengajuanStatus = async (req, res) => {
   const { id } = req.params;
-  const { status, sendEmail, sendWhatsApp, message, notes } = req.body;
+  const { status, sendEmail, sendWhatsApp, message, notes, isEdit, editReason, ...editData } = req.body;
+
+  // If this is an edit request, delegate to editSubmission
+  if (isEdit) {
+    // Import editSubmission from editController
+    const { editSubmission } = await import('./editController.js');
+    req.body = { ...editData, editReason };
+    return editSubmission(req, res);
+  }
 
   try {
     // Validate status parameter

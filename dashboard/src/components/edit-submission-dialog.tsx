@@ -612,7 +612,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
         dataToSend.bo_pendapatan_tahun = '';
       }
 
-      const res = await fetch(`${API_BASE_URL}/api/pengajuan/${submission.id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/pengajuan/${submission.id}/edit`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
