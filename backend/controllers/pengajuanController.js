@@ -2180,76 +2180,54 @@ export const previewImportData = async (req, res) => {
       analysis.cabangBreakdown[cabangId] = (analysis.cabangBreakdown[cabangId] || 0) + 1;
     });
 
-    // Simple conflict detection - check for existing NIK/no_id with pending/approved status
+    // Edit conflict detection - check for existing records with different edit_count
     for (const item of importData) {
-      const nikToCheck = item.no_id || item.nik;
+      const kodeReferensi = item.kode_referensi;
 
-      if (nikToCheck) {
+      if (kodeReferensi) {
         try {
           const existingQuery = await pool.query(
-            `SELECT p.status, cs.kode_referensi, p.edit_count
+            `SELECT p.status, cs.kode_referensi, p.edit_count, cs.nama
              FROM cdd_self cs
              JOIN pengajuan_tabungan p ON cs.pengajuan_id = p.id
-             WHERE cs.no_id = $1 
+             WHERE cs.kode_referensi = $1 
              LIMIT 1`,
-            [nikToCheck]
+            [kodeReferensi]
           );
 
           if (existingQuery.rows.length > 0) {
             const existing = existingQuery.rows[0];
-            const isBlocked = ['pending', 'approved'].includes(existing.status);
+            const existingEditCount = existing.edit_count || 0;
+            const importEditCount = item.edit_count || 0;
 
-            if (isBlocked) {
-              // Status conflict - existing submission blocks import
+            // Check for edit count conflict
+            if (existingEditCount !== importEditCount) {
               analysis.conflicts.push({
-                kode_referensi: existing.kode_referensi || item.kode_referensi,
-                nama_lengkap: item.nama_lengkap || item.nama,
-                no_id: nikToCheck,
-                currentStatus: existing.status,
-                newStatus: item.status || 'pending',
-                message: `NIK sudah ada dengan status ${existing.status}`,
-                edit_count: existing.edit_count || 0
-              });
-            } else {
-              // Can replace rejected submission
-              analysis.existingRecords.push({
-                kode_referensi: existing.kode_referensi || item.kode_referensi,
-                nama_lengkap: item.nama_lengkap || item.nama,
-                no_id: nikToCheck,
-                currentStatus: existing.status,
-                newStatus: item.status || 'pending',
-                edit_count: existing.edit_count || 0
+                kode_referensi: kodeReferensi,
+                nama_lengkap: item.nama_lengkap,
+                currentEditCount: existingEditCount,
+                importEditCount: importEditCount,
+                message: `Edit count berbeda: DB=${existingEditCount}, Import=${importEditCount}`
               });
             }
+
+            analysis.existingRecords.push({
+              kode_referensi: kodeReferensi,
+              nama_lengkap: item.nama_lengkap,
+              currentStatus: existing.status,
+              newStatus: item.status,
+              hasEditConflict: existingEditCount !== importEditCount
+            });
           } else {
-            // New record
             analysis.newRecords.push({
-              kode_referensi: item.kode_referensi || `NEW-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-              nama_lengkap: item.nama_lengkap || item.nama,
-              no_id: nikToCheck,
-              status: item.status || 'pending',
-              edit_count: item.edit_count || 0
+              kode_referensi: kodeReferensi,
+              nama_lengkap: item.nama_lengkap,
+              status: item.status
             });
           }
-        } catch (err) {
-          console.error(`Error checking NIK ${nikToCheck}:`, err);
-          // Treat as new record if error
-          analysis.newRecords.push({
-            kode_referensi: item.kode_referensi || `NEW-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-            nama_lengkap: item.nama_lengkap || item.nama,
-            no_id: nikToCheck,
-            status: item.status || 'pending',
-            edit_count: item.edit_count || 0
-          });
+        } catch (queryErr) {
+          console.error(`❌ Error checking existing record for ${kodeReferensi}:`, queryErr);
         }
-      } else {
-        // No NIK, treat as new record
-        analysis.newRecords.push({
-          kode_referensi: item.kode_referensi || `NEW-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-          nama_lengkap: item.nama_lengkap || item.nama,
-          status: item.status || 'pending',
-          edit_count: item.edit_count || 0
-        });
       }
     }
 
