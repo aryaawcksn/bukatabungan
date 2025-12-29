@@ -73,6 +73,8 @@ export const editSubmission = async (req, res) => {
       pendidikan: { table: 'cdd_self', column: 'pendidikan' },
       nama_ibu_kandung: { table: 'cdd_self', column: 'nama_ibu_kandung' },
       npwp: { table: 'cdd_self', column: 'npwp' },
+      email: { table: 'cdd_self', column: 'email' },
+      no_hp: { table: 'cdd_self', column: 'no_hp' },
       kewarganegaraan: { table: 'cdd_self', column: 'kewarganegaraan' },
       status_rumah: { table: 'cdd_self', column: 'status_rumah' },
       rekening_untuk_sendiri: { table: 'cdd_self', column: 'rekening_untuk_sendiri' },
@@ -117,11 +119,29 @@ export const editSubmission = async (req, res) => {
       bo_pendapatan_tahun: { table: 'bo', column: 'pendapatan_tahunan' }
     };
 
-    // Helper function to process field values - simplified
-    const processFieldValue = (value) => {
+    // Helper function to process field values - simplified with better data cleaning
+    const processFieldValue = (value, fieldName) => {
       if (value === null || value === undefined || value === '') {
         return null;
       }
+      
+      // Handle currency values (remove "Rp" and convert to proper format)
+      if (typeof value === 'string' && value.includes('Rp')) {
+        // Remove "Rp", spaces, dots, and commas, then convert to number
+        const cleanValue = value.replace(/Rp\s?/g, '').replace(/[.,]/g, '');
+        const numValue = parseInt(cleanValue);
+        return isNaN(numValue) ? null : numValue.toString();
+      }
+      
+      // Handle boolean values
+      if (fieldName === 'rekening_untuk_sendiri') {
+        if (typeof value === 'boolean') return value;
+        if (typeof value === 'string') {
+          return value.toLowerCase() === 'true' || value === '1';
+        }
+        return Boolean(value);
+      }
+      
       return value;
     };
 
@@ -130,6 +150,11 @@ export const editSubmission = async (req, res) => {
 
     // Process each field to edit
     for (const [fieldName, rawValue] of Object.entries(editData)) {
+      // Skip system fields that shouldn't be edited
+      if (fieldName === 'isEdit') {
+        continue;
+      }
+      
       const fieldInfo = fieldMapping[fieldName];
       
       if (!fieldInfo) {
@@ -137,7 +162,7 @@ export const editSubmission = async (req, res) => {
         continue;
       }
 
-      const newValue = processFieldValue(rawValue);
+      const newValue = processFieldValue(rawValue, fieldName);
       
       // Group updates by table
       if (!tableUpdates[fieldInfo.table]) {
