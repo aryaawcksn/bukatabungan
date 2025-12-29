@@ -865,28 +865,28 @@ export default function DataManagement({ onDataImported, cabangList = [], userRo
 
             {/* Conflicts Warning */}
             {importPreviewData.conflicts.length > 0 && (
-              <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-yellow-800 mb-2">⚠️ Konflik Edit Terdeteksi</h3>
-                <p className="text-yellow-700 text-sm mb-3">
-                  Data berikut memiliki perbedaan edit count dengan database dan akan diselesaikan otomatis:
+              <div className="mb-6 bg-orange-50 border border-orange-200 rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-orange-800 mb-2">⚠️ Konflik Edit Terdeteksi</h3>
+                <p className="text-orange-700 text-sm mb-3">
+                  Data berikut memiliki perbedaan edit count dan akan <strong>ditimpa sepenuhnya</strong> dengan data backup:
                 </p>
                 
                 <div className="max-h-40 overflow-y-auto space-y-2">
                   {importPreviewData.conflicts.slice(0, 5).map((conflict: any, index: number) => (
-                    <div key={index} className="bg-white rounded p-3 text-xs border-l-4 border-yellow-500">
+                    <div key={index} className="bg-white rounded p-3 text-xs border-l-4 border-orange-500">
                       <div className="flex items-center justify-between mb-1">
                         <div className="font-medium">{conflict.nama_lengkap}</div>
                       </div>
                       <div className="text-slate-600 mb-1">
                         Kode Ref: {conflict.kode_referensi} | Edit Count: DB={conflict.currentEditCount} vs Import={conflict.importEditCount}
                       </div>
-                      <div className="text-yellow-600 text-xs">
-                        {conflict.message || 'Edit count akan diincrement untuk menyelesaikan konflik'}
+                      <div className="text-orange-600 text-xs">
+                        {conflict.message || 'Data database akan ditimpa dengan data backup'}
                       </div>
                     </div>
                   ))}
                   {importPreviewData.conflicts.length > 5 && (
-                    <div className="text-xs text-yellow-600">
+                    <div className="text-xs text-orange-600">
                       +{importPreviewData.conflicts.length - 5} konflik lainnya
                     </div>
                   )}

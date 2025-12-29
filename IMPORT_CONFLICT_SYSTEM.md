@@ -6,13 +6,13 @@
 - **Sebelum**: Import data memvalidasi NIK, email, dan nomor HP untuk mencegah duplikasi
 - **Sesudah**: Validasi NIK dihilangkan, sistem hanya menggunakan `kode_referensi` untuk identifikasi
 
-### 2. Sistem Konflik Edit Berdasarkan `edit_count`
+### 2. Sistem Konflik Edit Berdasarkan `edit_count` dengan OVERWRITE
 - **Deteksi Konflik**: Membandingkan `edit_count` antara data backup dan database
 - **Resolusi Konflik**: Jika `edit_count` berbeda, sistem akan:
-  - Increment `edit_count` di database (+1)
-  - Update `last_edited_at` dengan timestamp saat ini
-  - Update `last_edited_by` dengan ID user yang melakukan import
-  - Mencatat konflik dalam counter terpisah
+  - **MENIMPA SELURUH DATA** dengan data dari backup
+  - Menggunakan `edit_count` dari backup (bukan increment)
+  - Update `last_edited_at` dan `last_edited_by` dari backup
+  - Mengembalikan data ke state backup sepenuhnya
 
 ### 3. Response Summary yang Diperbaharui
 ```json
@@ -23,48 +23,61 @@
     "total": 100,
     "imported": 25,      // Data baru yang diimport
     "overwritten": 50,   // Data yang diupdate tanpa konflik
-    "conflicts": 15,     // Data dengan konflik edit yang diselesaikan
+    "conflicts": 15,     // Data dengan konflik yang ditimpa dengan backup
     "skipped": 10        // Data yang dilewati
   }
 }
 ```
 
 ### 4. Logging yang Diperbaharui
-- Log aktivitas sekarang mencatat jumlah konflik
-- Format: `Import Data: X new, Y updated, Z conflicts, W skipped`
+- Log aktivitas sekarang mencatat jumlah konflik yang ditimpa
+- Format: `Import Data: X new, Y updated, Z conflicts overwritten, W skipped`
 
 ## Cara Kerja Sistem Konflik
 
 1. **Import Mode: Replace**
    - Sistem membandingkan `edit_count` antara backup dan database
    - Jika sama: Update data normal
-   - Jika berbeda: Increment `edit_count` database dan catat sebagai konflik
+   - Jika berbeda: **TIMPA SELURUH DATA** dengan data backup
 
 2. **Import Mode: Add New**
    - Data yang sudah ada akan dilewati (skipped)
    - Hanya data baru yang akan diimport
 
+## Contoh Skenario Overwrite
+
+### Skenario Konflik Edit:
+- **Database**: edit_count=2, nama="arya04" (hasil edit terbaru)
+- **Backup**: edit_count=1, nama="arya" (backup lama)
+- **Hasil Setelah Import**: 
+  - edit_count=1 (dari backup)
+  - nama="arya" (dari backup)
+  - **Semua data kembali ke state backup**
+
+### Mengapa Sistem Ini Berguna:
+1. **Restore Point**: Backup berfungsi sebagai restore point
+2. **Rollback Edit**: Bisa mengembalikan data ke state sebelumnya
+3. **Konsistensi**: Seluruh data konsisten dengan backup
+4. **Audit Trail**: edit_count menunjukkan versi data yang aktif
+
 ## Keuntungan Sistem Baru
 
 1. **Tidak Ada Validasi NIK**: Memungkinkan import data dengan NIK yang sama
-2. **Deteksi Konflik Otomatis**: Sistem mendeteksi jika data telah diedit sejak backup
-3. **Resolusi Konflik Sederhana**: Increment counter untuk menandai konflik
-4. **Tracking yang Lebih Baik**: Log yang lebih detail tentang hasil import
-5. **Fleksibilitas**: Admin dapat mengimport data tanpa khawatir validasi yang ketat
+2. **True Overwrite**: Data benar-benar dikembalikan ke state backup
+3. **Rollback Capability**: Bisa mengembalikan perubahan yang tidak diinginkan
+4. **Tracking yang Akurat**: edit_count mencerminkan versi data yang sebenarnya
+5. **Fleksibilitas**: Admin dapat restore data ke versi backup kapan saja
 
-## Contoh Skenario
+## Contoh Use Case
 
-### Skenario 1: Tidak Ada Konflik
-- Database: `edit_count = 2`
-- Backup: `edit_count = 2`
-- **Hasil**: Update normal, `edit_count` tetap 2
+### Use Case 1: Rollback Edit yang Salah
+1. Admin mengedit data: nama "John" → "John Smith" (edit_count: 0→1)
+2. Ternyata edit salah, ingin kembali ke "John"
+3. Import backup dengan edit_count=0, nama="John"
+4. **Hasil**: Data kembali ke "John", edit_count=0
 
-### Skenario 2: Ada Konflik
-- Database: `edit_count = 3`
-- Backup: `edit_count = 2`
-- **Hasil**: Konflik terdeteksi, `edit_count` menjadi 4, dicatat sebagai conflict
-
-### Skenario 3: Data Baru
-- Database: Data tidak ada
-- Backup: Data baru
-- **Hasil**: Insert data baru dengan `edit_count` dari backup
+### Use Case 2: Sinkronisasi Antar Environment
+1. Development: edit_count=3, data terbaru
+2. Production: edit_count=5, data berbeda
+3. Import backup development ke production
+4. **Hasil**: Production data = Development data, edit_count=3

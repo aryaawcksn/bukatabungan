@@ -1295,17 +1295,72 @@ export const importData = async (req, res) => {
             if (existingEditCount !== importEditCount) {
               console.log(`⚠️ Edit conflict detected for ${item.kode_referensi}: DB count=${existingEditCount}, Import count=${importEditCount}`);
               
-              // Increment conflict counter in database
+              // OVERWRITE: Replace all data with backup data (including edit_count)
               await client.query(`
                 UPDATE pengajuan_tabungan 
-                SET edit_count = edit_count + 1,
-                    last_edited_at = NOW(),
-                    last_edited_by = $1
-                WHERE id = $2
-              `, [req.user.id, existingId]);
+                SET status = $1, 
+                    approved_at = $2, 
+                    rejected_at = $3,
+                    edit_count = $4,
+                    last_edited_at = $5,
+                    last_edited_by = $6
+                WHERE id = $7
+              `, [
+                item.status,
+                item.approved_at || null,
+                item.rejected_at || null,
+                item.edit_count || 0, // Use backup edit_count, not increment
+                item.last_edited_at || null,
+                item.last_edited_by || null,
+                existingId
+              ]);
 
-              // Log the conflict
-              console.log(`🔄 Conflict resolved for ${item.kode_referensi}: edit_count incremented to ${existingEditCount + 1}`);
+              // Update all related tables with backup data
+              await client.query(`
+                UPDATE cdd_self SET
+                  nama = $1, alias = $2, jenis_id = $3, no_id = $4, berlaku_id = $5,
+                  tempat_lahir = $6, tanggal_lahir = $7, alamat_id = $8, alamat_jalan = $9,
+                  provinsi = $10, kota = $11, kecamatan = $12, kelurahan = $13,
+                  kode_pos_id = $14, alamat_now = $15, jenis_kelamin = $16, status_kawin = $17,
+                  agama = $18, pendidikan = $19, nama_ibu_kandung = $20, npwp = $21,
+                  email = $22, no_hp = $23, kewarganegaraan = $24, status_rumah = $25,
+                  rekening_untuk_sendiri = $26, tipe_nasabah = $27, nomor_rekening_lama = $28
+                WHERE pengajuan_id = $29
+              `, [
+                item.nama_lengkap, item.alias, item.identityType, item.nik, item.berlaku_id,
+                item.tempat_lahir, item.tanggal_lahir, item.alamat, item.alamat_jalan,
+                item.provinsi, item.kota, item.kecamatan, item.kelurahan,
+                item.kode_pos, item.alamat_domisili, item.jenis_kelamin, item.status_pernikahan,
+                item.agama, item.pendidikan, item.nama_ibu_kandung, item.npwp,
+                item.email || 'imported@example.com', item.no_hp || '08000000000',
+                item.kewarganegaraan, item.status_rumah, item.rekening_untuk_sendiri,
+                item.tipe_nasabah, item.nomor_rekening_lama, existingId
+              ]);
+
+              // Update cdd_job
+              await client.query(`
+                UPDATE cdd_job SET
+                  pekerjaan = $1, gaji_per_bulan = $2, sumber_dana = $3, rata_transaksi_per_bulan = $4,
+                  nama_perusahaan = $5, alamat_perusahaan = $6, no_telepon = $7, jabatan = $8, bidang_usaha = $9
+                WHERE pengajuan_id = $10
+              `, [
+                item.pekerjaan, item.penghasilan, item.sumber_dana, item.rata_rata_transaksi,
+                item.tempat_bekerja, item.alamat_kantor, item.telepon_perusahaan, item.jabatan, 
+                item.bidang_usaha || 'tidak bekerja', existingId
+              ]);
+
+              // Update account
+              await client.query(`
+                UPDATE account SET
+                  tabungan_tipe = $1, atm = $2, atm_tipe = $3, nominal_setoran = $4, tujuan_pembukaan = $5
+                WHERE pengajuan_id = $6
+              `, [
+                item.jenis_rekening || 'simpel', item.jenis_kartu ? 1 : 0, item.jenis_kartu || null,
+                item.nominal_setoran || null, item.tujuan_rekening || null, existingId
+              ]);
+
+              // Log the conflict resolution
+              console.log(`🔄 Conflict resolved for ${item.kode_referensi}: Data overwritten with backup (edit_count: ${existingEditCount} → ${item.edit_count || 0})`);
               conflictCount++;
             } else {
               // No conflict, update normally
@@ -2207,7 +2262,7 @@ export const previewImportData = async (req, res) => {
                 nama_lengkap: item.nama_lengkap,
                 currentEditCount: existingEditCount,
                 importEditCount: importEditCount,
-                message: `Edit count berbeda: DB=${existingEditCount}, Import=${importEditCount}`
+                message: `Data akan ditimpa: DB edit_count=${existingEditCount} → Import edit_count=${importEditCount}`
               });
             }
 
