@@ -111,7 +111,7 @@ const DROPDOWN_OPTIONS = {
     { value: 'pns', label: 'PNS / TNI / Polri' },
     { value: 'wiraswasta', label: 'Wiraswasta' },
     { value: 'ibu-rumah-tangga', label: 'Ibu Rumah Tangga' },
-    { value: 'lainnya', label: 'Lainnya' }
+    { value: 'Lainnya', label: 'Lainnya' }
   ],
   gaji_per_bulan: [
     { value: 's.d 1 Juta', label: 's.d 1 Juta' },
@@ -241,6 +241,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
     nama: submission.personalData.fullName || '',
     alias: submission.personalData.alias || '',
     jenis_id: submission.personalData.identityType || '',
+    jenis_id_custom: '', // Custom field for jenis_id
     no_id: submission.personalData.nik || '',
     berlaku_id: '',
     tempat_lahir: submission.personalData.birthPlace || '',
@@ -251,7 +252,9 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
     jenis_kelamin: submission.personalData.gender || '',
     status_kawin: submission.personalData.maritalStatus || '',
     agama: submission.personalData.religion || '',
+    agama_custom: '', // Custom field for agama
     pendidikan: submission.personalData.education || '',
+    pendidikan_custom: '', // Custom field for pendidikan
     nama_ibu_kandung: submission.personalData.motherName || '',
     npwp: submission.personalData.npwp || '',
     email: submission.personalData.email || '',
@@ -261,8 +264,10 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
     
     // Job Info
     pekerjaan: submission.jobInfo.occupation || '',
+    pekerjaan_custom: '', // Custom field for pekerjaan
     gaji_per_bulan: submission.jobInfo.salaryRange || '',
     sumber_dana: submission.jobInfo.incomeSource || '',
+    sumber_dana_custom: '', // Custom field for sumber_dana
     rata_transaksi_per_bulan: submission.jobInfo.averageTransaction || '',
     nama_perusahaan: submission.jobInfo.workplace || '',
     alamat_perusahaan: submission.jobInfo.officeAddress || '',
@@ -275,12 +280,14 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
     atm_tipe: submission.cardType || '',
     nominal_setoran: submission.accountInfo.initialDeposit || '',
     tujuan_pembukaan: submission.jobInfo.accountPurpose || '',
+    tujuan_pembukaan_custom: '', // Custom field for tujuan_pembukaan
     
     // Emergency Contact
     kontak_darurat_nama: submission.emergencyContact?.name || '',
     kontak_darurat_hp: submission.emergencyContact?.phone || '',
     kontak_darurat_alamat: submission.emergencyContact?.address || '',
     kontak_darurat_hubungan: submission.emergencyContact?.relationship || '',
+    kontak_darurat_hubungan_custom: '', // Custom field for kontak_darurat_hubungan
     
     // Beneficial Owner (BO) fields
     rekening_untuk_sendiri: true as boolean, // Default to true
@@ -292,9 +299,12 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
     bo_kewarganegaraan: '',
     bo_status_pernikahan: '',
     bo_jenis_id: '',
+    bo_jenis_id_custom: '', // Custom field for bo_jenis_id
     bo_nomor_id: '',
     bo_sumber_dana: '',
+    bo_sumber_dana_custom: '', // Custom field for bo_sumber_dana
     bo_hubungan: '',
+    bo_hubungan_custom: '', // Custom field for bo_hubungan
     bo_nomor_hp: '',
     bo_pekerjaan: '',
     bo_pendapatan_tahun: '',
@@ -313,6 +323,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
       nama: submission.personalData.fullName || '',
       alias: submission.personalData.alias || '',
       jenis_id: submission.personalData.identityType || '',
+      jenis_id_custom: '', // Will be populated from backend if needed
       no_id: submission.personalData.nik || '',
       berlaku_id: '',
       tempat_lahir: submission.personalData.birthPlace || '',
@@ -323,7 +334,9 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
       jenis_kelamin: submission.personalData.gender || '',
       status_kawin: submission.personalData.maritalStatus || '',
       agama: submission.personalData.religion || '',
+      agama_custom: '',
       pendidikan: submission.personalData.education || '',
+      pendidikan_custom: '',
       nama_ibu_kandung: submission.personalData.motherName || '',
       npwp: submission.personalData.npwp || '',
       email: submission.personalData.email || '',
@@ -333,8 +346,10 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
       
       // Job Info
       pekerjaan: submission.jobInfo.occupation || '',
+      pekerjaan_custom: '',
       gaji_per_bulan: submission.jobInfo.salaryRange || '',
       sumber_dana: submission.jobInfo.incomeSource || '',
+      sumber_dana_custom: '',
       rata_transaksi_per_bulan: submission.jobInfo.averageTransaction || '',
       nama_perusahaan: submission.jobInfo.workplace || '',
       alamat_perusahaan: submission.jobInfo.officeAddress || '',
@@ -347,12 +362,14 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
       atm_tipe: submission.cardType || '',
       nominal_setoran: submission.accountInfo.initialDeposit || '',
       tujuan_pembukaan: submission.jobInfo.accountPurpose || '',
+      tujuan_pembukaan_custom: '',
       
       // Emergency Contact
       kontak_darurat_nama: submission.emergencyContact?.name || '',
       kontak_darurat_hp: submission.emergencyContact?.phone || '',
       kontak_darurat_alamat: submission.emergencyContact?.address || '',
       kontak_darurat_hubungan: submission.emergencyContact?.relationship || '',
+      kontak_darurat_hubungan_custom: '',
       
       // Beneficial Owner (BO) fields - Add these from submission data if available
       rekening_untuk_sendiri: true as boolean, // Default to true, will be updated from backend if available
@@ -364,9 +381,12 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
       bo_kewarganegaraan: '',
       bo_status_pernikahan: '',
       bo_jenis_id: '',
+      bo_jenis_id_custom: '',
       bo_nomor_id: '',
       bo_sumber_dana: '',
+      bo_sumber_dana_custom: '',
       bo_hubungan: '',
+      bo_hubungan_custom: '',
       bo_nomor_hp: '',
       bo_pekerjaan: '',
       bo_pendapatan_tahun: '',
@@ -413,6 +433,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
           nama: fullSubmission.personalData.fullName || '',
           alias: fullSubmission.personalData.alias || '',
           jenis_id: fullSubmission.personalData.identityType || '',
+          jenis_id_custom: '', // Will be populated if jenis_id is custom
           no_id: fullSubmission.personalData.nik || '',
           berlaku_id: '',
           tempat_lahir: fullSubmission.personalData.birthPlace || '',
@@ -423,7 +444,9 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
           jenis_kelamin: fullSubmission.personalData.gender || '',
           status_kawin: fullSubmission.personalData.maritalStatus || '',
           agama: fullSubmission.personalData.religion || '',
+          agama_custom: '',
           pendidikan: fullSubmission.personalData.education || '',
+          pendidikan_custom: '',
           nama_ibu_kandung: fullSubmission.personalData.motherName || '',
           npwp: fullSubmission.personalData.npwp || '',
           email: fullSubmission.personalData.email || '',
@@ -433,8 +456,10 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
           
           // Job Info
           pekerjaan: fullSubmission.jobInfo.occupation || '',
+          pekerjaan_custom: '',
           gaji_per_bulan: fullSubmission.jobInfo.salaryRange || '',
           sumber_dana: fullSubmission.jobInfo.incomeSource || '',
+          sumber_dana_custom: '',
           rata_transaksi_per_bulan: fullSubmission.jobInfo.averageTransaction || '',
           nama_perusahaan: fullSubmission.jobInfo.workplace || '',
           alamat_perusahaan: fullSubmission.jobInfo.officeAddress || '',
@@ -447,12 +472,14 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
           atm_tipe: fullSubmission.cardType || '',
           nominal_setoran: fullSubmission.accountInfo.initialDeposit || '',
           tujuan_pembukaan: fullSubmission.jobInfo.accountPurpose || '',
+          tujuan_pembukaan_custom: '',
           
           // Emergency Contact
           kontak_darurat_nama: fullSubmission.emergencyContact?.name || '',
           kontak_darurat_hp: fullSubmission.emergencyContact?.phone || '',
           kontak_darurat_alamat: fullSubmission.emergencyContact?.address || '',
           kontak_darurat_hubungan: fullSubmission.emergencyContact?.relationship || '',
+          kontak_darurat_hubungan_custom: '',
           
           // Beneficial Owner (BO) fields - Use mapped data from fullSubmission
           rekening_untuk_sendiri: fullSubmission.accountInfo.isForSelf !== undefined ? Boolean(fullSubmission.accountInfo.isForSelf) : true,
@@ -464,13 +491,44 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
           bo_kewarganegaraan: fullSubmission.beneficialOwner?.citizenship || '',
           bo_status_pernikahan: fullSubmission.beneficialOwner?.maritalStatus || '',
           bo_jenis_id: fullSubmission.beneficialOwner?.identityType || '',
+          bo_jenis_id_custom: '',
           bo_nomor_id: fullSubmission.beneficialOwner?.identityNumber || '',
           bo_sumber_dana: fullSubmission.beneficialOwner?.incomeSource || '',
+          bo_sumber_dana_custom: '',
           bo_hubungan: fullSubmission.beneficialOwner?.relationship || '',
+          bo_hubungan_custom: '',
           bo_nomor_hp: fullSubmission.beneficialOwner?.phone || '',
           bo_pekerjaan: fullSubmission.beneficialOwner?.occupation || '',
           bo_pendapatan_tahun: fullSubmission.beneficialOwner?.annualIncome || '',
         };
+
+        // Handle custom fields - check if current values are not in dropdown options
+        // If a value is not in the predefined options, it's likely a custom value
+        const checkAndSetCustomField = (fieldName: string, value: string, customFieldName: string) => {
+          const options = DROPDOWN_OPTIONS[fieldName as keyof typeof DROPDOWN_OPTIONS];
+          if (options && value) {
+            const isInOptions = options.some(option => option.value === value);
+            if (!isInOptions) {
+              // Value is not in dropdown options, so it's a custom value
+              // Set the dropdown to "Lainnya" and put the actual value in custom field
+              (fullFormData as any)[fieldName] = 'Lainnya';
+              (fullFormData as any)[customFieldName] = value;
+              console.log(`🔧 Custom field detected: ${fieldName} = "${value}" -> setting to Lainnya with custom value`);
+            }
+          }
+        };
+
+        // Check for custom values in various fields
+        checkAndSetCustomField('jenis_id', fullFormData.jenis_id, 'jenis_id_custom');
+        checkAndSetCustomField('agama', fullFormData.agama, 'agama_custom');
+        checkAndSetCustomField('pendidikan', fullFormData.pendidikan, 'pendidikan_custom');
+        checkAndSetCustomField('pekerjaan', fullFormData.pekerjaan, 'pekerjaan_custom');
+        checkAndSetCustomField('sumber_dana', fullFormData.sumber_dana, 'sumber_dana_custom');
+        checkAndSetCustomField('tujuan_pembukaan', fullFormData.tujuan_pembukaan, 'tujuan_pembukaan_custom');
+        checkAndSetCustomField('kontak_darurat_hubungan', fullFormData.kontak_darurat_hubungan, 'kontak_darurat_hubungan_custom');
+        checkAndSetCustomField('bo_jenis_id', fullFormData.bo_jenis_id, 'bo_jenis_id_custom');
+        checkAndSetCustomField('bo_sumber_dana', fullFormData.bo_sumber_dana, 'bo_sumber_dana_custom');
+        checkAndSetCustomField('bo_hubungan', fullFormData.bo_hubungan, 'bo_hubungan_custom');
         
         setFormData(fullFormData);
         setOriginalFormData(fullFormData); // Update original data reference
@@ -509,11 +567,22 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
         [field]: value
       };
       
+      // Special handling: Clear custom field when main field is not "Lainnya"
+      if (field.endsWith('_custom')) {
+        // This is a custom field, no special handling needed
+      } else {
+        // This is a main field, check if we need to clear custom field
+        const customFieldName = `${field}_custom`;
+        if (value !== 'Lainnya' && customFieldName in newData) {
+          (newData as any)[customFieldName] = '';
+        }
+      }
+      
       // Special handling: Clear BO fields when rekening_untuk_sendiri is changed to true
       if (field === 'rekening_untuk_sendiri' && value === true) {
         console.log('🗑️ Clearing BO fields because rekening_untuk_sendiri changed to true');
         
-        // Clear all BO fields
+        // Clear all BO fields including custom fields
         newData.bo_nama = '';
         newData.bo_alamat = '';
         newData.bo_tempat_lahir = '';
@@ -522,9 +591,12 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
         newData.bo_kewarganegaraan = '';
         newData.bo_status_pernikahan = '';
         newData.bo_jenis_id = '';
+        newData.bo_jenis_id_custom = '';
         newData.bo_nomor_id = '';
         newData.bo_sumber_dana = '';
+        newData.bo_sumber_dana_custom = '';
         newData.bo_hubungan = '';
+        newData.bo_hubungan_custom = '';
         newData.bo_nomor_hp = '';
         newData.bo_pekerjaan = '';
         newData.bo_pendapatan_tahun = '';
@@ -535,10 +607,10 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
         const newChangedFields = new Set(changedFields);
         
         // Check if field has actually changed from original
-        if (originalFormData[field] !== value) {
+        if ((originalFormData as any)[field] !== value) {
           // Skip empty optional fields unless they had content before
           if ((value === '' || value === null || value === undefined) && 
-              (originalFormData[field] === '' || originalFormData[field] === null || originalFormData[field] === undefined)) {
+              ((originalFormData as any)[field] === '' || (originalFormData as any)[field] === null || (originalFormData as any)[field] === undefined)) {
             newChangedFields.delete(field);
           } else {
             newChangedFields.add(field);
@@ -551,11 +623,11 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
         if (field === 'rekening_untuk_sendiri' && value === true) {
           const boFields = ['bo_nama', 'bo_alamat', 'bo_tempat_lahir', 'bo_tanggal_lahir', 
                            'bo_jenis_kelamin', 'bo_kewarganegaraan', 'bo_status_pernikahan', 
-                           'bo_jenis_id', 'bo_nomor_id', 'bo_sumber_dana', 'bo_hubungan', 
-                           'bo_nomor_hp', 'bo_pekerjaan', 'bo_pendapatan_tahun'];
+                           'bo_jenis_id', 'bo_jenis_id_custom', 'bo_nomor_id', 'bo_sumber_dana', 'bo_sumber_dana_custom', 
+                           'bo_hubungan', 'bo_hubungan_custom', 'bo_nomor_hp', 'bo_pekerjaan', 'bo_pendapatan_tahun'];
           
           boFields.forEach(boField => {
-            if (originalFormData[boField] && originalFormData[boField] !== '') {
+            if ((originalFormData as any)[boField] && (originalFormData as any)[boField] !== '') {
               newChangedFields.add(boField);
             }
           });
@@ -595,6 +667,27 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
         isEdit: true
       };
 
+      // Handle custom fields - send custom values directly to main fields when "Lainnya" is selected
+      const customFieldMappings = [
+        { main: 'jenis_id', custom: 'jenis_id_custom' },
+        { main: 'agama', custom: 'agama_custom' },
+        { main: 'pendidikan', custom: 'pendidikan_custom' },
+        { main: 'pekerjaan', custom: 'pekerjaan_custom' },
+        { main: 'sumber_dana', custom: 'sumber_dana_custom' },
+        { main: 'tujuan_pembukaan', custom: 'tujuan_pembukaan_custom' },
+        { main: 'kontak_darurat_hubungan', custom: 'kontak_darurat_hubungan_custom' },
+        { main: 'bo_jenis_id', custom: 'bo_jenis_id_custom' },
+        { main: 'bo_sumber_dana', custom: 'bo_sumber_dana_custom' },
+        { main: 'bo_hubungan', custom: 'bo_hubungan_custom' },
+      ];
+
+      customFieldMappings.forEach(({ main, custom }) => {
+        if ((formData as any)[main] === 'Lainnya' && (formData as any)[custom]) {
+          // Send the custom value directly to the main field
+          (dataToSend as any)[main] = (formData as any)[custom];
+        }
+      });
+
       // If rekening_untuk_sendiri is true, explicitly send empty BO fields to ensure they're cleared
       if (formData.rekening_untuk_sendiri === true) {
         console.log('🗑️ Sending empty BO fields to clear database');
@@ -606,9 +699,12 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
         dataToSend.bo_kewarganegaraan = '';
         dataToSend.bo_status_pernikahan = '';
         dataToSend.bo_jenis_id = '';
+        dataToSend.bo_jenis_id_custom = '';
         dataToSend.bo_nomor_id = '';
         dataToSend.bo_sumber_dana = '';
+        dataToSend.bo_sumber_dana_custom = '';
         dataToSend.bo_hubungan = '';
+        dataToSend.bo_hubungan_custom = '';
         dataToSend.bo_nomor_hp = '';
         dataToSend.bo_pekerjaan = '';
         dataToSend.bo_pendapatan_tahun = '';
@@ -630,7 +726,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
       }
 
       if (data.success) {
-        toast.success(`Berhasil mengedit ${data.changedFields} field`);
+        toast.success(`Berhasil menyimpan perubahan pada submission ID ${submission.id}`);
         setEditMode(false);
         setEditReason('');
         
@@ -669,6 +765,12 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
         [fieldName]: originalFormData[fieldName]
       };
       
+      // If undoing a main field that has custom field, also restore custom field
+      const customFieldName = `${fieldName}_custom`;
+      if (customFieldName in originalFormData) {
+        (newData as any)[customFieldName] = (originalFormData as any)[customFieldName];
+      }
+      
       // Special handling for undoing 'rekening_untuk_sendiri'
       // If we revert to 'false', we should probably restore BO fields too if they match original
       // But for simplicity and safety, if we undo the main toggle, we let the user re-enter or undo specific BO fields if needed.
@@ -677,12 +779,11 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
       if (fieldName === 'rekening_untuk_sendiri' && originalFormData.rekening_untuk_sendiri === false) {
          const boFields = ['bo_nama', 'bo_alamat', 'bo_tempat_lahir', 'bo_tanggal_lahir', 
                            'bo_jenis_kelamin', 'bo_kewarganegaraan', 'bo_status_pernikahan', 
-                           'bo_jenis_id', 'bo_nomor_id', 'bo_sumber_dana', 'bo_hubungan', 
-                           'bo_nomor_hp', 'bo_pekerjaan', 'bo_pendapatan_tahun'];
+                           'bo_jenis_id', 'bo_jenis_id_custom', 'bo_nomor_id', 'bo_sumber_dana', 'bo_sumber_dana_custom',
+                           'bo_hubungan', 'bo_hubungan_custom', 'bo_nomor_hp', 'bo_pekerjaan', 'bo_pendapatan_tahun'];
          
          boFields.forEach(field => {
-           // @ts-ignore
-           newData[field] = originalFormData[field];
+           (newData as any)[field] = (originalFormData as any)[field];
          });
       }
 
@@ -693,12 +794,18 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
       const newSet = new Set(prev);
       newSet.delete(fieldName);
       
+      // Also clear custom field from changed set if we reverted the main field
+      const customFieldName = `${fieldName}_custom`;
+      if (customFieldName in originalFormData) {
+        newSet.delete(customFieldName);
+      }
+      
       // Also clear BO fields from changed set if we reverted the toggle
-      if (fieldName === 'rekening_untuk_sendiri' && originalFormData[fieldName] === false) {
+      if (fieldName === 'rekening_untuk_sendiri' && (originalFormData as any)[fieldName] === false) {
           const boFields = ['bo_nama', 'bo_alamat', 'bo_tempat_lahir', 'bo_tanggal_lahir', 
                            'bo_jenis_kelamin', 'bo_kewarganegaraan', 'bo_status_pernikahan', 
-                           'bo_jenis_id', 'bo_nomor_id', 'bo_sumber_dana', 'bo_hubungan', 
-                           'bo_nomor_hp', 'bo_pekerjaan', 'bo_pendapatan_tahun'];
+                           'bo_jenis_id', 'bo_jenis_id_custom', 'bo_nomor_id', 'bo_sumber_dana', 'bo_sumber_dana_custom',
+                           'bo_hubungan', 'bo_hubungan_custom', 'bo_nomor_hp', 'bo_pekerjaan', 'bo_pendapatan_tahun'];
           boFields.forEach(f => newSet.delete(f));
       }
       
@@ -784,18 +891,30 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
 
     if (options) {
       inputElement = (
-        <Select value={value} onValueChange={onChange}>
-          <SelectTrigger className={baseClassName}>
-            <SelectValue placeholder={`Pilih ${getFieldLabel(fieldName)}`} />
-          </SelectTrigger>
-          <SelectContent>
-            {options.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="space-y-2">
+          <Select value={value} onValueChange={onChange}>
+            <SelectTrigger className={baseClassName}>
+              <SelectValue placeholder={`Pilih ${getFieldLabel(fieldName)}`} />
+            </SelectTrigger>
+            <SelectContent>
+              {options.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          {/* Custom input field when "Lainnya" is selected */}
+          {value === 'Lainnya' && (
+            <Input
+              value={formData[`${fieldName}_custom` as keyof typeof formData] as string || ''}
+              onChange={(e) => handleInputChange(`${fieldName}_custom`, e.target.value)}
+              placeholder={`Sebutkan ${getFieldLabel(fieldName).toLowerCase()} lainnya`}
+              className={changedFields.has(`${fieldName}_custom`) ? 'border-2 border-orange-400 bg-orange-50' : ''}
+            />
+          )}
+        </div>
       );
     } else if (fieldName === 'tanggal_lahir' || fieldName === 'bo_tanggal_lahir') {
       inputElement = (

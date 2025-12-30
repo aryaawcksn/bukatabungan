@@ -571,9 +571,9 @@ export default function DashboardPage() {
       
       setLastFetchTime(new Date());
 
-      if (showLoading) {
-        toast.success("Data berhasil dimuat", { duration: 2000 });
-      }
+      // if (showLoading) {
+      //   toast.success("Data berhasil dimuat", { duration: 2000 });
+      // }
     } else {
       if (showLoading) {
         toast.error(result.message || "Gagal mengambil data pengajuan");
@@ -832,7 +832,7 @@ export default function DashboardPage() {
   const handleEditSuccess = useCallback(() => {
     setEditDialog({ open: false, submission: null });
     fetchSubmissions(); // Refresh data
-    toast.success('Data berhasil diperbarui');
+    // toast.success('Data berhasil diperbarui');
   }, [fetchSubmissions]);
 
   const handleEditComplete = useCallback(() => {
