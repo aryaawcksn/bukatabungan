@@ -922,18 +922,33 @@ export default function DataManagement({ onDataImported, cabangList = [], userRo
                   </Button>
                 </>
               ) : (
-                <Button
-                  onClick={() => handleImportConfirm(false)}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white"
-                  disabled={isImporting}
-                >
-                  {isImporting ? (
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  ) : (
-                    <Upload className="w-4 h-4 mr-2" />
-                  )}
-                  Lanjutkan Import
-                </Button>
+                <>
+                  <Button
+                    onClick={() => handleImportConfirm(true)}
+                    className="w-full bg-orange-600 hover:bg-orange-700 text-white"
+                    disabled={isImporting}
+                  >
+                    {isImporting ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Upload className="w-4 h-4 mr-2" />
+                    )}
+                    Import & Timpa Semua Data
+                  </Button>
+                  <Button
+                    onClick={() => handleImportConfirm(false)}
+                    variant="outline"
+                    className="w-full"
+                    disabled={isImporting}
+                  >
+                    {isImporting ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Upload className="w-4 h-4 mr-2" />
+                    )}
+                    Import Hanya Data Baru
+                  </Button>
+                </>
               )}
               
               <Button
