@@ -188,18 +188,17 @@ export default function IndonesianAddressDropdown({
   // Don't show dropdowns for non-Indonesian
   if (citizenship !== 'Indonesia') {
     return (
-      <div className="space-y-3 p-4 bg-gray-50 rounded-lg border">
+      
         <div>
-          <Label htmlFor="alamat_jalan" className="text-xs text-gray-600">Alamat Lengkap</Label>
+          <Label htmlFor="alamat_jalan" className="text-xs text-gray-600">Alamat Lengkap Baru</Label>
           <Input
             id="alamat_jalan"
-            placeholder="Masukkan alamat lengkap"
+            placeholder="Masukkan alamat lengkap baru"
             value={addressComponents.alamatJalan}
             onChange={(e) => handleStreetAddressChange(e.target.value)}
             className="mt-1"
           />
         </div>
-      </div>
     );
   }
 

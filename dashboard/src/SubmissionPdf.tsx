@@ -358,10 +358,6 @@ export const SubmissionPdf = ({ submission }: { submission: FormSubmission }) =>
   const isSimpel = submission.cardType === 'Tabungan Simpel' || submission.savingsType === 'SimPel';
   
 
-  const formatRupiah = (amount: string | number | null | undefined) => {
-    if (!amount || isNaN(Number(amount))) return '0';
-    return `Rp ${parseFloat(String(amount)).toLocaleString('id-ID')}`;
-  };
 
   return (
     <Document>
@@ -439,7 +435,7 @@ export const SubmissionPdf = ({ submission }: { submission: FormSubmission }) =>
             <Text style={{ ...styles.label, marginTop: 4, marginBottom: 2, color: PRIMARY_COLOR }}>ALAMAT IDENTITAS (KTP)</Text>
             <RowTwoCol>
                <DataField label="Kode Pos" value={submission.personalData.address.postalCode} />
-               <DataField label="Kode Pos" value={submission.personalData.address.postalCode} />
+               <DataField label="Kewarganegaraan" value={submission.personalData.citizenship} />
             </RowTwoCol>
 
             {submission.personalData.address.domicile && (
@@ -518,15 +514,12 @@ export const SubmissionPdf = ({ submission }: { submission: FormSubmission }) =>
             </RowTwoCol>
             <RowTwoCol>
                <DataField 
-                 label="Setoran Awal" 
-                 value={formatRupiah(submission.accountInfo.initialDeposit)} 
-               />
-               <DataField label="Tujuan Pembukaan" value={submission.jobInfo.accountPurpose} />
-            </RowTwoCol>
-            <DataField 
               label="Kepemilikan Dana" 
               value={submission.accountInfo.isForSelf ? 'Milik Sendiri' : 'Mewakili Pihak Lain (Lihat Bagian Beneficial Owner)'} 
             />
+               <DataField label="Tujuan Pembukaan" value={submission.jobInfo.accountPurpose} />
+            </RowTwoCol>
+            
           </View>
         </View>
 
@@ -647,7 +640,7 @@ export const SubmissionPdf = ({ submission }: { submission: FormSubmission }) =>
               flex: 1, 
               height: 80, 
               borderWidth: 1.5,
-              borderColor: '#000',
+              borderColor: '#D1D5DB',
               // marginRight dihapus
               justifyContent: 'center',
               alignItems: 'center'
@@ -659,7 +652,7 @@ export const SubmissionPdf = ({ submission }: { submission: FormSubmission }) =>
               flex: 1,
               height: 80,
               borderWidth: 1.5,
-              borderColor: '#000',
+              borderColor: '#D1D5DB',
               // marginLeft dihapus
               justifyContent: 'center',
               alignItems: 'center'

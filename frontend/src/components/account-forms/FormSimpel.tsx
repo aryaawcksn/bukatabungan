@@ -1548,11 +1548,11 @@ const FormSimpel = ({
                           <SelectValue placeholder="-- Pilih Range Penghasilan --" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="s.d 500 Ribu">s.d 500 Ribu</SelectItem>
-                          <SelectItem value="> 500 Ribu - 1 Juta">&gt; 500 Ribu - 1 Juta</SelectItem>
-                          <SelectItem value="> 1 - 2 Juta">&gt; 1 - 2 Juta</SelectItem>
-                          <SelectItem value="> 2 - 5 Juta">&gt; 2 - 5 Juta</SelectItem>
-                          <SelectItem value="> 5 Juta">&gt; 5 Juta</SelectItem>
+                          <SelectItem value="s.d 1 Juta">s.d 1 Juta</SelectItem>
+                          <SelectItem value="> 1 - 5 Juta">&gt; 1 - 5 Juta</SelectItem>
+                          <SelectItem value="> 5 - 10 Juta">&gt; 5 - 10 Juta</SelectItem>
+                          <SelectItem value="> 10 - 25 Juta">&gt; 10 - 25 Juta</SelectItem>
+                          <SelectItem value="> 100 Juta">&gt; 100 Juta</SelectItem>
                         </SelectContent>
                       </Select>
                     )}

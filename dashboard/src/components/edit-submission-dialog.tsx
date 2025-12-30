@@ -4,7 +4,6 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
-import { Badge } from './ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { 
   Edit3, 
@@ -14,7 +13,8 @@ import {
   Briefcase, 
   AlertCircle,
   CheckCircle2,
-  Clock
+  History,
+  RotateCcw
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { API_BASE_URL } from '../config/api';
@@ -61,13 +61,14 @@ interface SubmissionInfo {
 // Dropdown options based on FormSimpel.tsx and FormMutiara.tsx
 const DROPDOWN_OPTIONS = {
   jenis_id: [
-    { value: 'KTP', label: '🪪 KTP / KIA' },
-    { value: 'Paspor', label: '📘 Paspor' },
-    { value: 'Lainnya', label: '📄 Lainnya' }
+    { value: 'KTP', label: 'KTP / NIK' },
+    { value: 'KIA', label: 'KIA' },
+    { value: 'Paspor', label: 'Paspor' },
+    { value: 'Lainnya', label: 'Lainnya' }
   ],
   jenis_kelamin: [
-    { value: 'Laki-laki', label: '👨 Laki-laki' },
-    { value: 'Perempuan', label: '👩 Perempuan' }
+    { value: 'Laki-laki', label: 'Laki-laki' },
+    { value: 'Perempuan', label: 'Perempuan' }
   ],
   status_kawin: [
     { value: 'Belum Kawin', label: 'Belum Kawin' },
@@ -76,47 +77,48 @@ const DROPDOWN_OPTIONS = {
     { value: 'Cerai Mati', label: 'Cerai Mati' }
   ],
   agama: [
-    { value: 'Islam', label: '☪️ Islam' },
-    { value: 'Kristen', label: '✝️ Kristen' },
-    { value: 'Katolik', label: '✝️ Katolik' },
-    { value: 'Hindu', label: '🕉️ Hindu' },
-    { value: 'Budha', label: '☸️ Budha' },
-    { value: 'Konghucu', label: '☯️ Konghucu' },
+    { value: 'Islam', label: 'Islam' },
+    { value: 'Kristen', label: 'Kristen' },
+    { value: 'Katolik', label: 'Katolik' },
+    { value: 'Hindu', label: 'Hindu' },
+    { value: 'Budha', label: 'Budha' },
+    { value: 'Konghucu', label: 'Konghucu' },
     { value: 'Lainnya', label: 'Lainnya' }
   ],
   pendidikan: [
-    { value: 'SD', label: '🎒 SD' },
-    { value: 'SMP', label: '📚 SMP' },
-    { value: 'SMA', label: '🎓 SMA' },
-    { value: 'Diploma', label: '📜 Diploma (D3)' },
-    { value: 'Sarjana', label: '🎓 Sarjana (S1)' },
-    { value: 'Magister', label: '🎓 Magister (S2)' },
-    { value: 'Doktor', label: '🎓 Doktor (S3)' },
+    { value: 'PAUD/TK', label: 'PAUD/TK' },
+    { value: 'SD', label: 'SD' },
+    { value: 'SMP', label: 'SMP' },
+    { value: 'SMA', label: 'SMA' },
+    { value: 'Diploma', label: 'Diploma (D3)' },
+    { value: 'S-1', label: 'S-1' },
+    { value: 'S-2/S-3', label: 'S-2/S-3' },
     { value: 'Lainnya', label: 'Lainnya' }
   ],
   kewarganegaraan: [
     { value: 'Indonesia', label: '🇮🇩 WNI (Warga Negara Indonesia)' },
-    { value: 'WNA', label: '🌍 WNA (Warga Negara Asing)' }
+    { value: 'WNA', label: 'WNA (Warga Negara Asing)' }
   ],
   status_rumah: [
-    { value: 'Milik Sendiri', label: '🏠 Milik Sendiri' },
-    { value: 'Milik Orang Tua', label: '👨‍👩‍👧 Milik Orang Tua' },
-    { value: 'Sewa/Kontrak', label: '🔑 Sewa/Kontrak' },
-    { value: 'Dinas', label: '🏢 Rumah Dinas' }
+    { value: 'Milik Sendiri', label: 'Milik Sendiri' },
+    { value: 'Milik Orang Tua', label: 'Milik Orang Tua' },
+    { value: 'Sewa/Kontrak', label: 'Sewa/Kontrak' },
+    { value: 'Dinas', label: 'Rumah Dinas' }
   ],
   pekerjaan: [
-    { value: 'pelajar-mahasiswa', label: '🎓 Pelajar / Mahasiswa' },
-    { value: 'karyawan-swasta', label: '💼 Karyawan Swasta' },
-    { value: 'pns', label: '🏛️ PNS / TNI / Polri' },
-    { value: 'wiraswasta', label: '🏪 Wiraswasta' },
-    { value: 'ibu-rumah-tangga', label: '🏠 Ibu Rumah Tangga' },
-    { value: 'lainnya', label: '📋 Lainnya' }
+    { value: 'Pelajar/Mahasiswa', label: 'Pelajar / Mahasiswa' },
+    { value: 'karyawan-swasta', label: 'Karyawan Swasta' },
+    { value: 'pns', label: 'PNS / TNI / Polri' },
+    { value: 'wiraswasta', label: 'Wiraswasta' },
+    { value: 'ibu-rumah-tangga', label: 'Ibu Rumah Tangga' },
+    { value: 'lainnya', label: 'Lainnya' }
   ],
   gaji_per_bulan: [
-    { value: '< 3 Juta', label: '💰 < 3 Juta' },
-    { value: '3 - 5 Juta', label: '💰 3 - 5 Juta' },
-    { value: '5 - 10 Juta', label: '💰💰 5 - 10 Juta' },
-    { value: '> 10 Juta', label: '💰💰💰 > 10 Juta' }
+    { value: 's.d 1 Juta', label: 's.d 1 Juta' },
+    { value: '> 1 - 5 Juta', label: '> 1 - 5 Juta' },
+    { value: '> 10 - 25 Juta', label: '> 10 - 25 Juta' },
+    { value: '> 5 - 10 Juta', label: '> 5 - 10 Juta' },
+    { value: '> 100 Juta', label: '> 100 Juta' }
   ],
   sumber_dana: [
     { value: 'Gaji', label: 'Gaji' },
@@ -149,21 +151,21 @@ const DROPDOWN_OPTIONS = {
     { value: 'Lainnya', label: 'Lainnya' }
   ],
   kontak_darurat_hubungan: [
-    { value: 'Orang Tua', label: '👨‍👩‍👧 Orang Tua' },
-    { value: 'Suami/Istri', label: '💑 Suami/Istri' },
-    { value: 'Anak', label: '👶 Anak' },
-    { value: 'Saudara Kandung', label: '👫 Saudara Kandung' },
-    { value: 'Kerabat Lain', label: '👥 Kerabat Lain' },
-    { value: 'Lainnya', label: '✏️ Lainnya' }
+    { value: 'Orang Tua', label: 'Orang Tua' },
+    { value: 'Suami/Istri', label: 'Suami/Istri' },
+    { value: 'Anak', label: 'Anak' },
+    { value: 'Saudara Kandung', label: 'Saudara Kandung' },
+    { value: 'Kerabat Lain', label: 'Kerabat Lain' },
+    { value: 'Lainnya', label: 'Lainnya' }
   ],
   // BO Fields
   bo_jenis_kelamin: [
-    { value: 'Laki-laki', label: '👨 Laki-laki' },
-    { value: 'Perempuan', label: '👩 Perempuan' }
+    { value: 'Laki-laki', label: 'Laki-laki' },
+    { value: 'Perempuan', label: 'Perempuan' }
   ],
   bo_kewarganegaraan: [
-    { value: 'Indonesia', label: '🇮🇩 WNI (Warga Negara Indonesia)' },
-    { value: 'WNA', label: '🌍 WNA (Warga Negara Asing)' }
+    { value: 'Indonesia', label: 'WNI (Warga Negara Indonesia)' },
+    { value: 'WNA', label: 'WNA (Warga Negara Asing)' }
   ],
   bo_status_pernikahan: [
     { value: 'Belum Kawin', label: 'Belum Kawin' },
@@ -172,9 +174,9 @@ const DROPDOWN_OPTIONS = {
     { value: 'Cerai Mati', label: 'Cerai Mati' }
   ],
   bo_jenis_id: [
-    { value: 'KTP', label: '🪪 KTP / KIA' },
-    { value: 'Paspor', label: '📘 Paspor' },
-    { value: 'Lainnya', label: '📄 Lainnya' }
+    { value: 'KTP', label: 'KTP / KIA' },
+    { value: 'Paspor', label: 'Paspor' },
+    { value: 'Lainnya', label: 'Lainnya' }
   ],
   bo_sumber_dana: [
     { value: 'Gaji', label: 'Gaji' },
@@ -185,13 +187,13 @@ const DROPDOWN_OPTIONS = {
     { value: 'Lainnya', label: 'Lainnya' }
   ],
   bo_hubungan: [
-    { value: 'Orang Tua', label: '👨‍👩‍👧 Orang Tua' },
-    { value: 'Anak', label: '👶 Anak' },
-    { value: 'Suami/Istri', label: '💑 Suami/Istri' },
-    { value: 'Saudara Kandung', label: '👫 Saudara Kandung' },
-    { value: 'Kerabat', label: '👥 Kerabat' },
-    { value: 'Teman', label: '🤝 Teman' },
-    { value: 'Lainnya', label: '📋 Lainnya' }
+    { value: 'Orang Tua', label: 'Orang Tua' },
+    { value: 'Anak', label: 'Anak' },
+    { value: 'Suami/Istri', label: 'Suami/Istri' },
+    { value: 'Saudara Kandung', label: 'Saudara Kandung' },
+    { value: 'Kerabat', label: 'Kerabat' },
+    { value: 'Teman', label: 'Teman' },
+    { value: 'Lainnya', label: 'Lainnya' }
   ]
 };
 
@@ -200,7 +202,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
   const [loading, setLoading] = useState(false);
   const [editReason, setEditReason] = useState('');
   const [submissionInfo, setSubmissionInfo] = useState<SubmissionInfo | null>(null);
-  const [loadingInfo, setLoadingInfo] = useState(false);
+
   const [originalFormData, setOriginalFormData] = useState<any>(null);
   const [changedFields, setChangedFields] = useState<Set<string>>(new Set());
 
@@ -480,7 +482,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
   };
 
   const loadSubmissionInfo = async () => {
-    setLoadingInfo(true);
+
     try {
       const res = await fetch(`${API_BASE_URL}/api/pengajuan/${submission.id}/history`, {
         credentials: 'include'
@@ -496,7 +498,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
       console.error('Error loading submission info:', err);
       toast.error('Gagal memuat informasi submission');
     } finally {
-      setLoadingInfo(false);
+
     }
   };
 
@@ -567,10 +569,10 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
   };
 
   const handleSave = async () => {
-    if (!editReason.trim()) {
-      toast.error('Alasan edit harus diisi');
-      return;
-    }
+    // if (!editReason.trim()) {
+    //   toast.error('Alasan edit harus diisi');
+    //   return;
+    // }
 
     // Prevent double submission
     if (loading) {
@@ -657,14 +659,51 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
     }
   };
 
-  const handleCancel = () => {
-    setEditMode(false);
-    setEditReason('');
-    // Reset form data to original values
-    if (originalFormData) {
-      setFormData({ ...originalFormData });
-      setChangedFields(new Set());
-    }
+
+  const handleUndoField = (fieldName: string) => {
+    if (!originalFormData) return;
+    
+    setFormData(prev => {
+      const newData = {
+        ...prev,
+        [fieldName]: originalFormData[fieldName]
+      };
+      
+      // Special handling for undoing 'rekening_untuk_sendiri'
+      // If we revert to 'false', we should probably restore BO fields too if they match original
+      // But for simplicity and safety, if we undo the main toggle, we let the user re-enter or undo specific BO fields if needed.
+      // However, if we revert to 'rekening_untuk_sendiri' = false (from true), the BO fields in current formData are empty.
+      // We must restore them from originalFormData to avoid data loss feeling.
+      if (fieldName === 'rekening_untuk_sendiri' && originalFormData.rekening_untuk_sendiri === false) {
+         const boFields = ['bo_nama', 'bo_alamat', 'bo_tempat_lahir', 'bo_tanggal_lahir', 
+                           'bo_jenis_kelamin', 'bo_kewarganegaraan', 'bo_status_pernikahan', 
+                           'bo_jenis_id', 'bo_nomor_id', 'bo_sumber_dana', 'bo_hubungan', 
+                           'bo_nomor_hp', 'bo_pekerjaan', 'bo_pendapatan_tahun'];
+         
+         boFields.forEach(field => {
+           // @ts-ignore
+           newData[field] = originalFormData[field];
+         });
+      }
+
+      return newData;
+    });
+
+    setChangedFields(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(fieldName);
+      
+      // Also clear BO fields from changed set if we reverted the toggle
+      if (fieldName === 'rekening_untuk_sendiri' && originalFormData[fieldName] === false) {
+          const boFields = ['bo_nama', 'bo_alamat', 'bo_tempat_lahir', 'bo_tanggal_lahir', 
+                           'bo_jenis_kelamin', 'bo_kewarganegaraan', 'bo_status_pernikahan', 
+                           'bo_jenis_id', 'bo_nomor_id', 'bo_sumber_dana', 'bo_hubungan', 
+                           'bo_nomor_hp', 'bo_pekerjaan', 'bo_pendapatan_tahun'];
+          boFields.forEach(f => newSet.delete(f));
+      }
+      
+      return newSet;
+    });
   };
 
   const formatDate = (dateString: string) => {
@@ -741,8 +780,10 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
     const isChanged = changedFields.has(fieldName);
     const baseClassName = isChanged ? 'border-2 border-orange-400 bg-orange-50' : '';
     
+    let inputElement;
+
     if (options) {
-      return (
+      inputElement = (
         <Select value={value} onValueChange={onChange}>
           <SelectTrigger className={baseClassName}>
             <SelectValue placeholder={`Pilih ${getFieldLabel(fieldName)}`} />
@@ -756,11 +797,8 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
           </SelectContent>
         </Select>
       );
-    }
-
-    // Special cases for specific input types
-    if (fieldName === 'tanggal_lahir' || fieldName === 'bo_tanggal_lahir') {
-      return (
+    } else if (fieldName === 'tanggal_lahir' || fieldName === 'bo_tanggal_lahir') {
+      inputElement = (
         <Input
           type="date"
           value={value}
@@ -768,10 +806,8 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
           className={baseClassName}
         />
       );
-    }
-
-    if (fieldName === 'email') {
-      return (
+    } else if (fieldName === 'email') {
+      inputElement = (
         <Input
           type="email"
           value={value}
@@ -779,11 +815,8 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
           className={baseClassName}
         />
       );
-    }
-
-    // Currency fields
-    if (fieldName === 'nominal_setoran' || fieldName === 'rata_transaksi_per_bulan') {
-      return (
+    } else if (fieldName === 'nominal_setoran' || fieldName === 'rata_transaksi_per_bulan') {
+      inputElement = (
         <Input
           type="text"
           value={formatRupiah(value)}
@@ -801,11 +834,8 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
           title="Maksimal Rp. 9.999.999.999.999.999"
         />
       );
-    }
-
-    // Textarea for address fields
-    if (fieldName === 'alamat_id' || fieldName === 'alamat_now' || fieldName === 'alamat_perusahaan' || fieldName === 'bo_alamat' || fieldName === 'kontak_darurat_alamat') {
-      return (
+    } else if (fieldName === 'alamat_id' || fieldName === 'alamat_now' || fieldName === 'alamat_perusahaan' || fieldName === 'bo_alamat' || fieldName === 'kontak_darurat_alamat') {
+      inputElement = (
         <Textarea
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -813,15 +843,37 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
           rows={2}
         />
       );
+    } else {
+      inputElement = (
+        <Input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className={baseClassName}
+        />
+      );
     }
 
-    // Default text input
+    // Wrap with undo button if changed
     return (
-      <Input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={baseClassName}
-      />
+      <div className="flex items-start gap-2 group">
+        <div className="flex-1">
+          {inputElement}
+        </div>
+        {isChanged && (
+          <div className="mt-1">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => handleUndoField(fieldName)}
+              className="h-8 w-8 text-orange-600 hover:text-orange-700 hover:bg-orange-100 rounded-full"
+              title={`Kembalikan ${getFieldLabel(fieldName)} ke nilai awal`}
+            >
+              <RotateCcw className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
+      </div>
     );
   };
 
@@ -835,14 +887,14 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
       <DialogContent className="max-w-[95vw] sm:max-w-6xl h-[90vh] p-0 gap-0 overflow-hidden flex flex-col bg-slate-50">
         
         {/* Header */}
-        <div className="px-8 py-5 border-b border-slate-200 bg-white flex items-center justify-between shrink-0">
+        <div className="px-8 py-5 border-b border-slate-200 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-4">
             <div className="h-10 w-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center">
               <Edit3 className="w-5 h-5" />
             </div>
             <div>
               <DialogTitle className="text-xl font-bold text-slate-900">
-                {editMode ? 'Edit Submission' : 'Riwayat Edit Submission'}
+                {editMode ? 'Edit Submission' : 'Edit Submission'}
               </DialogTitle>
               <div className="flex items-center gap-3 text-sm text-slate-500 mt-0.5">
                 <span className="font-mono bg-slate-100 px-1.5 rounded text-slate-600 font-medium">
@@ -867,15 +919,6 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
           </div>
 
           <div className="flex items-center gap-3">
-            {!editMode && submission.status === 'approved' && (
-              <Button 
-                onClick={() => setEditMode(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                <Edit3 className="w-4 h-4 mr-2" />
-                Edit Data
-              </Button>
-            )}
             <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full hover:bg-slate-100">
               <X className="w-6 h-6 text-slate-400" />
             </Button>
@@ -884,11 +927,39 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-8">
-          {editMode ? (
-            // Edit Mode
             <div className="space-y-8">
+              
+              {/* Minimal Edit Info Alert */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-3">
+                <div className="mt-0.5">
+                   {submissionInfo && submissionInfo.edit_count && submissionInfo.edit_count > 0 ? (
+                      <History className="w-5 h-5 text-blue-600" />
+                   ) : (
+                      <CheckCircle2 className="w-5 h-5 text-green-600" />
+                   )}
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-sm font-semibold text-blue-900 mb-1">
+                    {submissionInfo && submissionInfo.edit_count && submissionInfo.edit_count > 0 
+                      ? 'Riwayat Pengeditan' 
+                      : 'Data Belum Pernah Diedit'}
+                  </h4>
+                  <p className="text-xs text-blue-700">
+                    {submissionInfo && submissionInfo.edit_count && submissionInfo.edit_count > 0 ? (
+                      <>
+                        Data ini telah diedit <strong>{submissionInfo.edit_count} kali</strong>. 
+                        Terakhir diubah pada <strong>{submissionInfo.last_edited_at ? formatDate(submissionInfo.last_edited_at) : '-'}</strong>
+                        {submissionInfo.last_edited_by ? <> oleh <strong>{submissionInfo.last_edited_by}</strong></> : ''}.
+                      </>
+                    ) : (
+                      'Data ini masih orisinil sesuai pengajuan awal nasabah.'
+                    )}
+                  </p>
+                </div>
+              </div>
+
               {/* Edit Reason */}
-              <div className={`border rounded-lg p-4 ${changedFields.size > 0 ? 'bg-orange-50 border-orange-200' : 'bg-yellow-50 border-yellow-200'}`}>
+              {/* <div className={`border rounded-lg p-4 ${changedFields.size > 0 ? 'bg-orange-50 border-orange-200' : 'bg-yellow-50 border-yellow-200'}`}>
                 <div className="flex items-center justify-between mb-2">
                   <Label htmlFor="editReason" className={`text-sm font-semibold mb-0 block ${changedFields.size > 0 ? 'text-orange-800' : 'text-yellow-800'}`}>
                     Alasan Edit *
@@ -912,7 +983,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
                     Field yang berubah: {Array.from(changedFields).map(field => getFieldLabel(field)).join(', ')}
                   </p>
                 )}
-              </div>
+              </div> */}
 
               {/* Personal Data Section */}
               <div className="bg-white p-6 rounded-xl border border-slate-200">
@@ -947,7 +1018,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
                   </div>
                   <div className="md:col-span-2">
                     <Label className="text-sm font-medium text-gray-700 mb-3 block">
-                      📍 Alamat KTP (Dropdown Indonesia)
+                      Alamat KTP (Dropdown hanya untuk alamat di Indonesia)
                     </Label>
                     <IndonesianAddressDropdown
                       addressComponents={addressComponents}
@@ -961,7 +1032,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
                     />
                     {formData.alamat_id && (
                       <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded">
-                        <p className="text-xs text-green-700 font-medium">📍 Alamat Lengkap:</p>
+                        <p className="text-xs text-green-700 font-medium">Alamat Lengkap Sekarang:</p>
                         <p className="text-sm text-green-800 mt-1">{formData.alamat_id}</p>
                       </div>
                     )}
@@ -1276,138 +1347,33 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
                 )}
               </div>
             </div>
-          ) : (
-            // History Mode - Simplified
-            <div className="space-y-6">
-              {/* Simplified Submission Info */}
-              {submissionInfo && (
-                <div className="bg-white p-6 rounded-xl border border-slate-200">
-                  <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
-                    Informasi Edit
-                  </h3>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <div className="text-sm text-slate-500 mb-1">Status</div>
-                      <Badge variant="outline" className="border-green-500 text-green-700 bg-green-50">
-                        {submissionInfo.status}
-                      </Badge>
-                    </div>
-                    
-                    <div>
-                      <div className="text-sm text-slate-500 mb-1">Jumlah Edit</div>
-                      <Badge variant="outline" className="border-blue-500 text-blue-700 bg-blue-50">
-                        {submissionInfo.edit_count || 0} kali diedit
-                      </Badge>
-                    </div>
-                    
-                    {submissionInfo.edit_count && submissionInfo.edit_count > 0 && (
-                      <>
-                        <div>
-                          <div className="text-sm text-slate-500 mb-1">Terakhir Diedit</div>
-                          <div className="text-sm font-medium">
-                            {submissionInfo.last_edited_at ? (
-                              formatDate(submissionInfo.last_edited_at)
-                            ) : (
-                              <span className="text-slate-400">-</span>
-                            )}
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <div className="text-sm text-slate-500 mb-1">Diedit Oleh</div>
-                          <div className="text-sm font-medium">
-                            {submissionInfo.last_edited_by || (
-                              <span className="text-slate-400">-</span>
-                            )}
-                          </div>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Simple Edit Status */}
-              <div className="bg-white p-6 rounded-xl border border-slate-200">
-                <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-                  <Edit3 className="w-5 h-5 text-amber-600" />
-                  Status Edit
-                </h3>
-
-                {loadingInfo ? (
-                  <div className="text-center py-8 text-slate-500">
-                    <Clock className="w-8 h-8 mx-auto mb-2 animate-spin" />
-                    Memuat informasi...
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    {submissionInfo && submissionInfo.edit_count && submissionInfo.edit_count > 0 ? (
-                      <div className="space-y-2">
-                        <Edit3 className="w-12 h-12 mx-auto text-amber-500" />
-                        <p className="text-slate-600">
-                          Data ini telah diedit <strong>{submissionInfo.edit_count}</strong> kali
-                        </p>
-                        <p className="text-sm text-slate-500">
-                          Sistem tracking yang disederhanakan hanya mencatat jumlah edit dan waktu terakhir edit
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        <CheckCircle2 className="w-12 h-12 mx-auto text-green-500" />
-                        <p className="text-slate-600">Data ini belum pernah diedit</p>
-                        <p className="text-sm text-slate-500">
-                          Data masih dalam kondisi asli seperti saat pertama kali disetujui
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Footer */}
-        <div className="p-5 border-t border-slate-200 bg-white flex justify-between items-center shrink-0">
+        <div className="p-5 border-t border-slate-200 flex justify-between items-center shrink-0">
           <div className="text-sm text-slate-500">
-            {editMode 
-              ? (
                   <div className="flex items-center gap-2">
                     <span>
                       Pastikan data yang diubah sudah benar sebelum menyimpan.
                     </span>
                   </div>
-                )
-              : `Submission ini telah diedit ${submissionInfo?.edit_count || 0} kali`
-            }
           </div>
 
           <DialogFooter className="gap-3">
-            {editMode ? (
-              <>
-                <Button variant="outline" onClick={handleCancel} disabled={loading}>
+                <Button variant="outline" onClick={onClose} disabled={loading}>
                   <X className="w-4 h-4 mr-2" />
                   Batal
                 </Button>
                 <Button 
                   onClick={handleSave} 
-                  disabled={loading || !editReason.trim() || changedFields.size === 0}
+                  disabled={loading || changedFields.size === 0}
                   className={changedFields.size > 0 ? 'bg-orange-600 hover:bg-orange-700' : ''}
                 >
                   <Save className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                   {loading ? 'Menyimpan & Memuat Ulang...' : `Simpan ${changedFields.size} Perubahan`}
                 </Button>
-              </>
-            ) : (
-              <Button variant="outline" onClick={onClose}>
-                Tutup
-              </Button>
-            )}
           </DialogFooter>
         </div>
-
       </DialogContent>
     </Dialog>
   );

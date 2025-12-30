@@ -18,7 +18,6 @@ import {
   User,
   Calendar,
   MessageSquare,
-  Edit3
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -122,14 +121,14 @@ export function SubmissionTable({
                             {submission.referenceCode}
                         </code>
                         {/* Edit indicator - simplified */}
-                        {submission.edit_count && submission.edit_count > 0 && (
+                        {/* {submission.edit_count && submission.edit_count > 0 && (
                           <div className="flex items-center gap-1 mt-1">
                             <Edit3 className="w-3 h-3 text-amber-500" />
                             <span className="text-[10px] text-amber-600 font-medium">
                               Edited {submission.edit_count}x
                             </span>
                           </div>
-                        )}
+                        )} */}
                     </div>
                   </TableCell>
 
@@ -182,12 +181,12 @@ export function SubmissionTable({
                               <MessageSquare className="h-4 w-4 text-slate-600" />
                             </Button>
                           </TooltipTrigger>
-                          <TooltipContent side="left" className="max-w-xs">
+                          <TooltipContent side="left" className="max-w-sm p-4">
                             <div className="space-y-2">
-                              <p className="font-semibold text-xs">
+                              <p className="font-semibold text-xs border-b pb-2 mb-2">
                                 {submission.status === 'approved' ? 'Catatan Persetujuan:' : 'Alasan Penolakan:'}
                               </p>
-                              <p className="text-xs">
+                              <p className="text-xs whitespace-pre-wrap leading-relaxed">
                                 {submission.approval_notes || submission.rejection_notes}
                               </p>
                             </div>

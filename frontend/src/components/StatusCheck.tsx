@@ -196,7 +196,7 @@ export default function StatusCheck() {
                   <div className="mt-6 border-t border-slate-100 pt-6">
                     <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3">Catatan Petugas:</h3>
                     <div className="bg-slate-50 border border-slate-200 p-4">
-                      <p className="text-sm text-slate-700 leading-relaxed font-medium">
+                      <p className="text-sm text-slate-700 leading-relaxed font-medium whitespace-pre-wrap">
                         {statusData.approval_notes || statusData.rejection_notes}
                       </p>
                     </div>

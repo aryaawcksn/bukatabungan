@@ -1020,6 +1020,8 @@ export const exportBackup = async (req, res) => {
         p.created_at,
         p.approved_at,
         p.rejected_at,
+        p.approval_notes,
+        p.rejection_notes,
         p.cabang_id,
         p.edit_count,
         p.last_edited_at,
@@ -1307,14 +1309,18 @@ export const importData = async (req, res) => {
               SET status = $1, 
                   approved_at = $2, 
                   rejected_at = $3,
-                  edit_count = $4,
-                  last_edited_at = $5,
-                  last_edited_by = $6
-              WHERE id = $7
+                  approval_notes = $4,
+                  rejection_notes = $5,
+                  edit_count = $6,
+                  last_edited_at = $7,
+                  last_edited_by = $8
+              WHERE id = $9
             `, [
               item.status,
               item.approved_at || null,
               item.rejected_at || null,
+              item.approval_notes || null,
+              item.rejection_notes || null,
               item.edit_count || 0,
               item.last_edited_at || null,
               item.last_edited_by || null,
@@ -1395,8 +1401,9 @@ export const importData = async (req, res) => {
           const pengajuanResult = await client.query(`
             INSERT INTO pengajuan_tabungan (
               cabang_id, status, created_at, approved_at, rejected_at,
+              approval_notes, rejection_notes,
               edit_count, last_edited_at, last_edited_by
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
             RETURNING id
           `, [
             targetCabangId,
@@ -1404,6 +1411,8 @@ export const importData = async (req, res) => {
             item.created_at || new Date(),
             item.approved_at || null,
             item.rejected_at || null,
+            item.approval_notes || null,
+            item.rejection_notes || null,
             item.edit_count || 0,
             item.last_edited_at || null,
             item.last_edited_by || null
@@ -1780,6 +1789,8 @@ export const exportToExcel = async (req, res) => {
         p.created_at,
         p.approved_at,
         p.rejected_at,
+        p.approval_notes,
+        p.rejection_notes,
         cs.kode_referensi,
         cs.nama AS nama_lengkap,
         cs.alias,
@@ -1944,6 +1955,8 @@ export const exportToExcel = async (req, res) => {
         { header: 'Tanggal Pengajuan', key: 'created_at', width: 20 },
         { header: 'Tanggal Disetujui', key: 'approved_at', width: 20 },
         { header: 'Tanggal Ditolak', key: 'rejected_at', width: 20 },
+        { header: 'Catatan Persetujuan', key: 'approval_notes', width: 30 },
+        { header: 'Catatan Penolakan', key: 'rejection_notes', width: 30 },
       ];
     } else {
       // Standard export - kolom utama saja
@@ -1962,6 +1975,8 @@ export const exportToExcel = async (req, res) => {
         { header: 'Cabang', key: 'nama_cabang', width: 20 },
         { header: 'Status', key: 'status', width: 12 },
         { header: 'Tanggal Pengajuan', key: 'created_at', width: 20 },
+        { header: 'Catatan Persetujuan', key: 'approval_notes', width: 30 },
+        { header: 'Catatan Penolakan', key: 'rejection_notes', width: 30 },
       ];
     }
 
@@ -1990,6 +2005,8 @@ export const exportToExcel = async (req, res) => {
         nama_cabang: row.nama_cabang,
         status: row.status,
         created_at: row.created_at ? new Date(row.created_at).toLocaleString('id-ID') : '',
+        approval_notes: row.approval_notes || '',
+        rejection_notes: row.rejection_notes || '',
       };
 
       if (fullData === 'true') {
@@ -2044,6 +2061,8 @@ export const exportToExcel = async (req, res) => {
           bo_persetujuan: row.bo_persetujuan ? 'Ya' : 'Tidak',
           approved_at: row.approved_at ? new Date(row.approved_at).toLocaleString('id-ID') : '',
           rejected_at: row.rejected_at ? new Date(row.rejected_at).toLocaleString('id-ID') : '',
+          approval_notes: row.approval_notes || '',
+          rejection_notes: row.rejection_notes || '',
         });
       } else {
         worksheet.addRow(baseData);
@@ -2175,7 +2194,7 @@ export const previewImportData = async (req, res) => {
       if (kodeReferensi) {
         try {
           const existingQuery = await pool.query(
-            `SELECT p.status, cs.kode_referensi, p.edit_count, cs.nama
+            `SELECT p.status, p.approval_notes, p.rejection_notes, cs.kode_referensi, p.edit_count, cs.nama
              FROM cdd_self cs
              JOIN pengajuan_tabungan p ON cs.pengajuan_id = p.id
              WHERE cs.kode_referensi = $1 
@@ -2189,13 +2208,40 @@ export const previewImportData = async (req, res) => {
             const importEditCount = item.edit_count || 0;
 
             // Check for edit count conflict
-            if (existingEditCount !== importEditCount) {
+            const hasEditConflict = existingEditCount !== importEditCount;
+            
+            // Check for status change
+            const hasStatusChange = existing.status !== item.status;
+            
+            // Check for notes change
+            const hasNotesChange = (existing.approval_notes !== (item.approval_notes || null)) || 
+                                 (existing.rejection_notes !== (item.rejection_notes || null));
+
+            if (hasEditConflict || hasStatusChange || hasNotesChange) {
+              let conflictMessage = '';
+              if (hasEditConflict) {
+                conflictMessage += `Edit count: DB=${existingEditCount} → Import=${importEditCount}`;
+              }
+              if (hasStatusChange) {
+                if (conflictMessage) conflictMessage += '; ';
+                conflictMessage += `Status: ${existing.status} → ${item.status}`;
+              }
+              if (hasNotesChange) {
+                if (conflictMessage) conflictMessage += '; ';
+                conflictMessage += 'Catatan berubah';
+              }
+
               analysis.conflicts.push({
                 kode_referensi: kodeReferensi,
                 nama_lengkap: item.nama_lengkap,
                 currentEditCount: existingEditCount,
                 importEditCount: importEditCount,
-                message: `Data akan ditimpa: DB edit_count=${existingEditCount} → Import edit_count=${importEditCount}`
+                currentStatus: existing.status,
+                importStatus: item.status,
+                hasEditConflict,
+                hasStatusChange,
+                hasNotesChange,
+                message: conflictMessage
               });
             }
 
@@ -2204,7 +2250,9 @@ export const previewImportData = async (req, res) => {
               nama_lengkap: item.nama_lengkap,
               currentStatus: existing.status,
               newStatus: item.status,
-              hasEditConflict: existingEditCount !== importEditCount
+              hasEditConflict: hasEditConflict,
+              hasStatusChange: hasStatusChange,
+              hasNotesChange: hasNotesChange
             });
           } else {
             analysis.newRecords.push({

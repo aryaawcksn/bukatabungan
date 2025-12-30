@@ -1,12 +1,13 @@
-import { Clock3 } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 
 interface DashboardHeaderProps {
   user: any;
   title: string;
   lastFetchTime?: Date | null;
+  onRefresh?: () => void;
 }
 
-export function DashboardHeader({ user, title, lastFetchTime }: DashboardHeaderProps) {
+export function DashboardHeader({ user, title, lastFetchTime, onRefresh }: DashboardHeaderProps) {
   return (
     <header className="sticky top-0 z-30 flex h-20 w-full items-center justify-between border-b border-slate-200 bg-white/80 px-8 backdrop-blur-sm">
       {/* Left side: Page Title */}
@@ -24,8 +25,17 @@ export function DashboardHeader({ user, title, lastFetchTime }: DashboardHeaderP
           </p>
           {lastFetchTime && (
             <p className="flex items-center justify-end gap-1 text-[10px] text-slate-400">
-              <Clock3 className="h-3 w-3" />
+              {onRefresh && (
+                <button 
+                  onClick={onRefresh}
+                  className="ml-1 rounded-full p-1 hover:bg-slate-100 text-slate-400 hover:text-blue-600 transition-colors"
+                  title="Refresh data"
+                >
+                  <RefreshCw className="h-3 w-3" />
+                </button>
+              )}
               Diperbarui {lastFetchTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+              
             </p>
           )}
         </div>

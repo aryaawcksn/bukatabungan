@@ -114,8 +114,8 @@ export function ApprovalDialog({
                   ? 'Catatan tambahan untuk persetujuan (opsional)...'
                   : 'Jelaskan alasan penolakan (wajib diisi)...'
               }
-              rows={3}
-              className="resize-none"
+              rows={5}
+              className="resize-y min-h-[100px]"
               disabled={loading}
             />
             <p className="text-sm text-gray-500 mt-1">

@@ -863,12 +863,62 @@ export default function DataManagement({ onDataImported, cabangList = [], userRo
               </div>
             )}
 
+            {/* Existing Records with Status Changes */}
+            {importPreviewData.existingRecords.length > 0 && (
+              <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-blue-800 mb-2">📋 Data yang Akan Diperbarui</h3>
+                <p className="text-blue-700 text-sm mb-3">
+                  Data berikut sudah ada dan akan diperbarui dengan data backup:
+                </p>
+                
+                <div className="max-h-40 overflow-y-auto space-y-2">
+                  {importPreviewData.existingRecords.slice(0, 5).map((record: any, index: number) => (
+                    <div key={index} className="bg-white rounded p-3 text-xs border-l-4 border-blue-500">
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="font-medium">{record.nama_lengkap}</div>
+                        <div className="text-xs text-slate-500">{record.kode_referensi}</div>
+                      </div>
+                      
+                      {/* Status Change Indicator */}
+                      {record.hasStatusChange ? (
+                        <div className="text-blue-600 text-xs mb-1">
+                          📋 Status: {record.currentStatus} → {record.newStatus}
+                        </div>
+                      ) : (
+                        <div className="text-slate-600 text-xs mb-1">
+                          📋 Status: {record.currentStatus} (tidak berubah)
+                        </div>
+                      )}
+                      
+                      {/* Additional change indicators */}
+                      <div className="flex gap-2 text-xs">
+                        {record.hasEditConflict && (
+                          <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded">Edit Count</span>
+                        )}
+                        {record.hasNotesChange && (
+                          <span className="bg-green-100 text-green-700 px-2 py-1 rounded">Catatan</span>
+                        )}
+                        {!record.hasEditConflict && !record.hasNotesChange && !record.hasStatusChange && (
+                          <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded">Data sama</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  {importPreviewData.existingRecords.length > 5 && (
+                    <div className="text-xs text-blue-600">
+                      +{importPreviewData.existingRecords.length - 5} data lainnya
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Conflicts Warning */}
             {importPreviewData.conflicts.length > 0 && (
               <div className="mb-6 bg-orange-50 border border-orange-200 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-orange-800 mb-2">⚠️ Konflik Edit Terdeteksi</h3>
+                <h3 className="text-lg font-semibold text-orange-800 mb-2">⚠️ Konflik Terdeteksi</h3>
                 <p className="text-orange-700 text-sm mb-3">
-                  Data berikut memiliki perbedaan edit count dan akan <strong>ditimpa sepenuhnya</strong> dengan data backup:
+                  Data berikut memiliki perbedaan dan akan <strong>ditimpa sepenuhnya</strong> dengan data backup:
                 </p>
                 
                 <div className="max-h-40 overflow-y-auto space-y-2">
@@ -876,12 +926,32 @@ export default function DataManagement({ onDataImported, cabangList = [], userRo
                     <div key={index} className="bg-white rounded p-3 text-xs border-l-4 border-orange-500">
                       <div className="flex items-center justify-between mb-1">
                         <div className="font-medium">{conflict.nama_lengkap}</div>
+                        <div className="text-xs text-slate-500">{conflict.kode_referensi}</div>
                       </div>
-                      <div className="text-slate-600 mb-1">
-                        Kode Ref: {conflict.kode_referensi} | Edit Count: DB={conflict.currentEditCount} vs Import={conflict.importEditCount}
-                      </div>
-                      <div className="text-orange-600 text-xs">
-                        {conflict.message || 'Data database akan ditimpa dengan data backup'}
+                      
+                      {/* Status Change */}
+                      {conflict.hasStatusChange && (
+                        <div className="text-blue-600 text-xs mb-1">
+                          📋 Status: {conflict.currentStatus} → {conflict.importStatus}
+                        </div>
+                      )}
+                      
+                      {/* Edit Count Change */}
+                      {conflict.hasEditConflict && (
+                        <div className="text-purple-600 text-xs mb-1">
+                          ✏️ Edit Count: {conflict.currentEditCount} → {conflict.importEditCount}
+                        </div>
+                      )}
+                      
+                      {/* Notes Change */}
+                      {conflict.hasNotesChange && (
+                        <div className="text-green-600 text-xs mb-1">
+                          📝 Catatan akan diperbarui
+                        </div>
+                      )}
+                      
+                      <div className="text-orange-600 text-xs font-medium">
+                        {conflict.message}
                       </div>
                     </div>
                   ))}

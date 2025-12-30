@@ -557,7 +557,14 @@ export default function DashboardPage() {
           item.status !== mappedData[index]?.status ||
           item.submittedAt !== mappedData[index]?.submittedAt ||
            // Check if we have enriched data that changed
-           (item.jobInfo?.salaryRange !== mappedData[index]?.jobInfo?.salaryRange)
+           (item.jobInfo?.salaryRange !== mappedData[index]?.jobInfo?.salaryRange) ||
+           // Check for edits
+           (item.edit_count !== mappedData[index]?.edit_count) ||
+           (item.last_edited_at !== mappedData[index]?.last_edited_at) ||
+           // Check for relevant personal data changes (name is visible in table)
+           (item.personalData.fullName !== mappedData[index]?.personalData.fullName) ||
+           // Check for account info changes
+           (item.accountInfo.accountType !== mappedData[index]?.accountInfo.accountType)
         );
         return hasChanged ? mappedData : prev;
       });
@@ -1148,6 +1155,17 @@ const handleToggleMark = useCallback((id: string) => {
 
 
 
+  // Manual Refresh Handler
+  const handleManualRefresh = useCallback(() => {
+    if (activeTab === 'analytics') {
+      fetchAnalyticsData(true);
+      fetchCabangForAnalytics();
+    } else {
+      fetchSubmissions(true);
+      fetchCabang();
+    }
+  }, [activeTab]);
+
   return (
     <div className="flex min-h-screen bg-slate-50/50 font-sans text-slate-900 selection:bg-blue-100 selection:text-blue-900 animate-page-enter">
       <Sidebar 
@@ -1162,6 +1180,7 @@ const handleToggleMark = useCallback((id: string) => {
           user={user} 
           title={activeTab === 'dashboard' ? 'Overview' : activeTab === 'analytics' ? 'Data Analytics' : activeTab === 'submissions' ? 'Daftar Permohonan' : activeTab === 'manage' ? 'Pengaturan' : 'Dashboard'}
           lastFetchTime={lastFetchTime}
+          onRefresh={handleManualRefresh}
         />
 
         <main className="max-w-7xl mx-auto px-6 py-8">
