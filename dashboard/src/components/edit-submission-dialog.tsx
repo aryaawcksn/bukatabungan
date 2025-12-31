@@ -844,6 +844,15 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
       // Map telepon_kantor to no_telepon for backend compatibility
       if (formData.telepon_kantor) {
         dataToSend.no_telepon = formData.telepon_kantor;
+        // Remove the original field to avoid confusion
+        (dataToSend as any).telepon_kantor = undefined;
+      }
+      
+      // Map alamat_kantor to alamat_perusahaan for backend compatibility  
+      if (formData.alamat_kantor) {
+        dataToSend.alamat_perusahaan = formData.alamat_kantor;
+        // Remove the original field to avoid confusion
+        (dataToSend as any).alamat_kantor = undefined;
       }
 
       // If rekening_untuk_sendiri is true, explicitly send empty BO fields to ensure they're cleared

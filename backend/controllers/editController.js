@@ -88,15 +88,15 @@ export const editSubmission = async (req, res) => {
       rata_transaksi_per_bulan: { table: 'cdd_job', column: 'rata_transaksi_per_bulan' },
       nama_perusahaan: { table: 'cdd_job', column: 'nama_perusahaan' },
       alamat_perusahaan: { table: 'cdd_job', column: 'alamat_perusahaan' },
-      alamat_kantor: { table: 'cdd_job', column: 'alamat_kantor' },
-      telepon_kantor: { table: 'cdd_job', column: 'telepon_kantor' },
+      alamat_kantor: { table: 'cdd_job', column: 'alamat_perusahaan' }, // Map to existing column
+      telepon_kantor: { table: 'cdd_job', column: 'no_telepon' }, // Map to existing column
       no_telepon: { table: 'cdd_job', column: 'no_telepon' },
       jabatan: { table: 'cdd_job', column: 'jabatan' },
       bidang_usaha: { table: 'cdd_job', column: 'bidang_usaha' },
       
       // account fields
       tabungan_tipe: { table: 'account', column: 'tabungan_tipe' },
-      jenis_tabungan: { table: 'account', column: 'jenis_tabungan' },
+      jenis_tabungan: { table: 'account', column: 'atm_tipe' }, // Map to atm_tipe for Mutiara Silver/Gold
       atm_tipe: { table: 'account', column: 'atm_tipe' },
       nominal_setoran: { table: 'account', column: 'nominal_setoran' },
       tujuan_pembukaan: { table: 'account', column: 'tujuan_pembukaan' },

@@ -1,0 +1,12 @@
+-- ============================================
+-- Migration: Add Missing Job Fields
+-- Description: Add missing fields that don't exist in current database
+-- Date: 2025-12-31
+-- ============================================
+
+-- Note: After checking database structure:
+-- - alamat_kantor -> use alamat_perusahaan (already exists)
+-- - telepon_kantor -> use no_telepon (already exists)  
+-- - jenis_tabungan -> use atm_tipe (already exists)
+-- 
+-- No new columns needed - using field mapping in backend controller instead
