@@ -121,34 +121,16 @@ export const editSubmission = async (req, res) => {
       bo_hubungan: { table: 'bo', column: 'hubungan' },
       bo_nomor_hp: { table: 'bo', column: 'nomor_hp' },
       bo_pekerjaan: { table: 'bo', column: 'pekerjaan' },
-      bo_pendapatan_tahun: { table: 'bo', column: 'pendapatan_tahunan' },
+      bo_pendapatan_tahun: { table: 'bo', column: 'pendapatan_tahunan' }
       
-      // EDD fields - handle as JSON
-      edd_bank_lain: { table: 'cdd_self', column: 'edd_bank_lain' },
-      edd_pekerjaan_lain: { table: 'cdd_self', column: 'edd_pekerjaan_lain' }
+      // Note: EDD fields (edd_bank_lain, edd_pekerjaan_lain) are handled separately
+      // as they use separate tables, not columns in existing tables
     };
 
     // Helper function to process field values - simplified with better data cleaning
     const processFieldValue = (value, fieldName) => {
       if (value === null || value === undefined || value === '') {
         return null;
-      }
-      
-      // Handle EDD fields (JSON arrays)
-      if (fieldName === 'edd_bank_lain' || fieldName === 'edd_pekerjaan_lain') {
-        if (Array.isArray(value)) {
-          return JSON.stringify(value);
-        }
-        if (typeof value === 'string') {
-          try {
-            // Validate it's proper JSON
-            JSON.parse(value);
-            return value;
-          } catch {
-            return JSON.stringify([]);
-          }
-        }
-        return JSON.stringify([]);
       }
       
       // Handle currency values (remove "Rp" and convert to proper format)
@@ -173,6 +155,8 @@ export const editSubmission = async (req, res) => {
 
     const tableUpdates = {};
     let hasChanges = false;
+    let eddBankLainData = null;
+    let eddPekerjaanLainData = null;
 
     // Process each field to edit
     for (const [fieldName, rawValue] of Object.entries(editData)) {
@@ -184,6 +168,19 @@ export const editSubmission = async (req, res) => {
       // Skip custom fields - they are handled by frontend logic and sent as main field values
       if (fieldName.endsWith('_custom')) {
         console.log(`⚠️ Skipping custom field: ${fieldName}`);
+        continue;
+      }
+      
+      // Handle EDD fields separately
+      if (fieldName === 'edd_bank_lain') {
+        eddBankLainData = rawValue;
+        hasChanges = true;
+        continue;
+      }
+      
+      if (fieldName === 'edd_pekerjaan_lain') {
+        eddPekerjaanLainData = rawValue;
+        hasChanges = true;
         continue;
       }
       
@@ -246,6 +243,44 @@ export const editSubmission = async (req, res) => {
     if (tableUpdates.cdd_self && tableUpdates.cdd_self.rekening_untuk_sendiri === true) {
       const deleteBoQuery = 'DELETE FROM bo WHERE pengajuan_id = $1';
       await client.query(deleteBoQuery, [id]);
+    }
+
+    // Handle EDD Bank Lain updates
+    if (eddBankLainData !== null) {
+      // Delete existing EDD bank records
+      await client.query('DELETE FROM edd_bank_lain WHERE pengajuan_id = $1', [id]);
+      
+      // Insert new EDD bank records if data exists
+      if (Array.isArray(eddBankLainData) && eddBankLainData.length > 0) {
+        for (let i = 0; i < eddBankLainData.length; i++) {
+          const bank = eddBankLainData[i];
+          if (bank.bank_name && bank.jenis_rekening && bank.nomor_rekening) {
+            await client.query(`
+              INSERT INTO edd_bank_lain (edd_id, pengajuan_id, bank_name, jenis_rekening, nomor_rekening)
+              VALUES ($1, $2, $3, $4, $5)
+            `, [i + 1, id, bank.bank_name, bank.jenis_rekening, bank.nomor_rekening]);
+          }
+        }
+      }
+    }
+
+    // Handle EDD Pekerjaan Lain updates
+    if (eddPekerjaanLainData !== null) {
+      // Delete existing EDD pekerjaan records
+      await client.query('DELETE FROM edd_pekerjaan_lain WHERE pengajuan_id = $1', [id]);
+      
+      // Insert new EDD pekerjaan records if data exists
+      if (Array.isArray(eddPekerjaanLainData) && eddPekerjaanLainData.length > 0) {
+        for (let i = 0; i < eddPekerjaanLainData.length; i++) {
+          const pekerjaan = eddPekerjaanLainData[i];
+          if (pekerjaan.jenis_usaha) {
+            await client.query(`
+              INSERT INTO edd_pekerjaan_lain (edd_id, pengajuan_id, jenis_usaha)
+              VALUES ($1, $2, $3)
+            `, [i + 1, id, pekerjaan.jenis_usaha]);
+          }
+        }
+      }
     }
 
     // Update main submission record - simplified tracking
