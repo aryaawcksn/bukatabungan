@@ -221,6 +221,11 @@ export const editSubmission = async (req, res) => {
       await client.query(updateQuery, values);
     }
 
+    // Special handling: Clear atm_tipe when tabungan_tipe is changed to non-Mutiara
+    if (tableUpdates.account && tableUpdates.account.tabungan_tipe && tableUpdates.account.tabungan_tipe !== 'Mutiara') {
+      await client.query('UPDATE account SET atm_tipe = NULL WHERE pengajuan_id = $1', [id]);
+    }
+
     // Special handling for BO table - use UPSERT
     if (tableUpdates.bo) {
       const updates = tableUpdates.bo;

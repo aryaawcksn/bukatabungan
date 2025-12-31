@@ -11,12 +11,9 @@ import { pdf } from '@react-pdf/renderer';
 import { SubmissionPdf } from '../SubmissionPdf';
 import {
   User,
-  Mail,
-  Phone,
   Calendar,
   MapPin,
   Briefcase,
-  DollarSign,
   FileText,
   CheckCircle,
   XCircle,
@@ -24,8 +21,6 @@ import {
   UserCheck,
   Wallet,
   AlertCircle,
-  Target,
-  Building2,
   Clock,
   Edit3,
   Loader2
@@ -310,15 +305,15 @@ export function FormDetailDialog({ submission, open, onClose, onApprove, onRejec
                   <Field label="No Identitas" value={detailSubmission.personalData.nik} />
                   <Field label="Jenis Identitas" value={detailSubmission.personalData.identityType} />
                   <Field label="NPWP" value={detailSubmission.personalData.npwp} />
-                  <Field label="Tempat, Tgl Lahir" icon={<Calendar className="w-3 h-3" />} value={`${detailSubmission.personalData.birthPlace || ''}, ${detailSubmission.personalData.birthDate}`} />
+                  <Field label="Tempat, Tgl Lahir"value={`${detailSubmission.personalData.birthPlace || ''}, ${detailSubmission.personalData.birthDate}`} />
                   <Field label="Jenis Kelamin" value={detailSubmission.personalData.gender} />
                   <Field label="Status Pernikahan" value={detailSubmission.personalData.maritalStatus} />
                   <Field label="Nama Ibu Kandung" value={detailSubmission.personalData.motherName} />
                   <Field label="Agama" value={detailSubmission.personalData.religion} />
                   <Field label="Pendidikan" value={detailSubmission.personalData.education} />
                    <Field label="Kewarganegaraan" value={detailSubmission.personalData.citizenship} />
-                  <Field label="Email" icon={<Mail className="w-3 h-3" />} value={detailSubmission.personalData.email} />
-                  <Field label="No. Telepon" icon={<Phone className="w-3 h-3" />} value={detailSubmission.personalData.phone} />
+                  <Field label="Email"value={detailSubmission.personalData.email} />
+                  <Field label="No. Telepon"value={detailSubmission.personalData.phone} />
                   </GridContainer>
               </div>
                <div className="mt-4 bg-white p-6 rounded-xl border border-slate-200">
@@ -348,20 +343,19 @@ export function FormDetailDialog({ submission, open, onClose, onApprove, onRejec
                   <Field label="Pekerjaan" value={detailSubmission.jobInfo.occupation} />
                   <Field 
                       label={detailSubmission.savingsType === 'SimPel' ? 'Nama Sekolah' : 'Nama Instansi'} 
-                      icon={<Building2 className="w-3 h-3" />}
                       value={detailSubmission.jobInfo.workplace} 
                   />
                   <Field label="Bidang Usaha" value={detailSubmission.jobInfo.businessField} />
                   <Field label="Jabatan" value={detailSubmission.jobInfo.position} />
-                  <Field label="Penghasilan" icon={<DollarSign className="w-3 h-3" />} value={detailSubmission.jobInfo.salaryRange} />
+                  <Field label="Penghasilan" value={detailSubmission.jobInfo.salaryRange} />
                   <Field label="Sumber Dana" value={detailSubmission.jobInfo.incomeSource} />
-                  <Field label="Rata-rata Transaksi" icon={<DollarSign className="w-3 h-3" />} value={detailSubmission.jobInfo.averageTransaction} />
-                  <Field label="Tujuan Rekening" icon={<Target className="w-3 h-3" />} value={detailSubmission.jobInfo.accountPurpose} />
+                  <Field label="Rata-rata Transaksi"value={detailSubmission.jobInfo.averageTransaction} />
+                  <Field label="Tujuan Rekening" value={detailSubmission.jobInfo.accountPurpose} />
                   </GridContainer>
                   <Separator className="my-6" />
                   <GridContainer>
                        <Field label="Alamat Kantor" value={detailSubmission.jobInfo.officeAddress} fullWidth />
-                       <Field label="Telp Kantor" icon={<Phone className="w-3 h-3" />} value={detailSubmission.jobInfo.officePhone} />
+                       <Field label="Telp Kantor" value={detailSubmission.jobInfo.officePhone} />
                   </GridContainer>
                </div>
             </Section>
@@ -375,8 +369,8 @@ export function FormDetailDialog({ submission, open, onClose, onApprove, onRejec
                        <div className="space-y-4">
                          <Field label="Nama" value={detailSubmission.emergencyContact.name} />
                          <Field label="Hubungan" value={detailSubmission.emergencyContact.relationship} />
-                         <Field label="Nomor Telepon" icon={<Phone className="w-3 h-3" />} value={detailSubmission.emergencyContact.phone} />
-                         <Field label="Alamat" icon={<MapPin className="w-3 h-3" />} value={detailSubmission.emergencyContact.address} />
+                         <Field label="Nomor Telepon" value={detailSubmission.emergencyContact.phone} />
+                         <Field label="Alamat"value={detailSubmission.emergencyContact.address} />
                        </div>
                      </div>
                    </Section>
