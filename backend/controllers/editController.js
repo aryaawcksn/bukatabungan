@@ -54,6 +54,8 @@ export const editSubmission = async (req, res) => {
       // cdd_self fields
       nama: { table: 'cdd_self', column: 'nama' },
       alias: { table: 'cdd_self', column: 'alias' },
+      tipe_nasabah: { table: 'cdd_self', column: 'tipe_nasabah' },
+      nomor_rekening_lama: { table: 'cdd_self', column: 'nomor_rekening_lama' },
       jenis_id: { table: 'cdd_self', column: 'jenis_id' },
       no_id: { table: 'cdd_self', column: 'no_id' },
       berlaku_id: { table: 'cdd_self', column: 'berlaku_id' },
@@ -86,12 +88,15 @@ export const editSubmission = async (req, res) => {
       rata_transaksi_per_bulan: { table: 'cdd_job', column: 'rata_transaksi_per_bulan' },
       nama_perusahaan: { table: 'cdd_job', column: 'nama_perusahaan' },
       alamat_perusahaan: { table: 'cdd_job', column: 'alamat_perusahaan' },
+      alamat_kantor: { table: 'cdd_job', column: 'alamat_kantor' },
+      telepon_kantor: { table: 'cdd_job', column: 'telepon_kantor' },
       no_telepon: { table: 'cdd_job', column: 'no_telepon' },
       jabatan: { table: 'cdd_job', column: 'jabatan' },
       bidang_usaha: { table: 'cdd_job', column: 'bidang_usaha' },
       
       // account fields
       tabungan_tipe: { table: 'account', column: 'tabungan_tipe' },
+      jenis_tabungan: { table: 'account', column: 'jenis_tabungan' },
       atm_tipe: { table: 'account', column: 'atm_tipe' },
       nominal_setoran: { table: 'account', column: 'nominal_setoran' },
       tujuan_pembukaan: { table: 'account', column: 'tujuan_pembukaan' },
@@ -116,13 +121,34 @@ export const editSubmission = async (req, res) => {
       bo_hubungan: { table: 'bo', column: 'hubungan' },
       bo_nomor_hp: { table: 'bo', column: 'nomor_hp' },
       bo_pekerjaan: { table: 'bo', column: 'pekerjaan' },
-      bo_pendapatan_tahun: { table: 'bo', column: 'pendapatan_tahunan' }
+      bo_pendapatan_tahun: { table: 'bo', column: 'pendapatan_tahunan' },
+      
+      // EDD fields - handle as JSON
+      edd_bank_lain: { table: 'cdd_self', column: 'edd_bank_lain' },
+      edd_pekerjaan_lain: { table: 'cdd_self', column: 'edd_pekerjaan_lain' }
     };
 
     // Helper function to process field values - simplified with better data cleaning
     const processFieldValue = (value, fieldName) => {
       if (value === null || value === undefined || value === '') {
         return null;
+      }
+      
+      // Handle EDD fields (JSON arrays)
+      if (fieldName === 'edd_bank_lain' || fieldName === 'edd_pekerjaan_lain') {
+        if (Array.isArray(value)) {
+          return JSON.stringify(value);
+        }
+        if (typeof value === 'string') {
+          try {
+            // Validate it's proper JSON
+            JSON.parse(value);
+            return value;
+          } catch {
+            return JSON.stringify([]);
+          }
+        }
+        return JSON.stringify([]);
       }
       
       // Handle currency values (remove "Rp" and convert to proper format)
@@ -152,6 +178,12 @@ export const editSubmission = async (req, res) => {
     for (const [fieldName, rawValue] of Object.entries(editData)) {
       // Skip system fields that shouldn't be edited
       if (fieldName === 'isEdit') {
+        continue;
+      }
+      
+      // Skip custom fields - they are handled by frontend logic and sent as main field values
+      if (fieldName.endsWith('_custom')) {
+        console.log(`⚠️ Skipping custom field: ${fieldName}`);
         continue;
       }
       

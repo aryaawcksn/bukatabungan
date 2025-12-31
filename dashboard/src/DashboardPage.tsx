@@ -25,6 +25,9 @@ const AnalyticsDashboard = lazy(() => import('./components/AnalyticsDashboard'))
 const InsightCards = lazy(() => import('./components/InsightCards'));
 const QuickStats = lazy(() => import('./components/QuickStats'));
 
+// Import skeletons
+import { QuickStatsSkeleton, InsightCardsSkeleton, AnalyticsSkeleton } from './components/analytics-skeleton';
+
 // Loading component
 const LoadingSpinner = memo(() => (
   <div className="flex items-center justify-center py-8">
@@ -227,9 +230,17 @@ export const mapBackendDataToFormSubmission = (data: any): FormSubmission => {
     personalData: {
       fullName: data.nama_lengkap || '',
       alias: data.alias || undefined,
-      identityType: data.identityType || data.jenis_id || 'KTP',
+      identityType: (() => {
+        const type = data.identityType || data.jenis_id || 'KTP';
+        const upperType = type.toUpperCase();
+        if (upperType.includes('KTP')) return 'KTP';
+        if (upperType.includes('KIA')) return 'KIA';
+        if (upperType.includes('PASPOR')) return 'Paspor';
+        if (upperType.includes('LAINNYA')) return 'Lainnya';
+        return type;
+      })(),
       nik: data.nik || '',
-      identityValidUntil: (data.berlaku_id && data.berlaku_id.trim() !== '') ? formatDate(data.berlaku_id) : 'Seumur Hidup',
+      identityValidUntil: (data.berlaku_id && data.berlaku_id.trim() !== '' && data.berlaku_id.toLowerCase() !== 'seumur hidup') ? formatDate(data.berlaku_id) : 'Seumur Hidup',
       email: data.email || '',
       phone: data.no_hp || '',
       birthPlace: (data.tempat_lahir && data.tempat_lahir.trim() !== '') ? data.tempat_lahir : undefined,
@@ -836,7 +847,6 @@ export default function DashboardPage() {
   }, [fetchSubmissions]);
 
   const handleEditComplete = useCallback(() => {
-    console.log('🎉 Edit completed, refreshing dashboard data...');
     fetchSubmissions(); // Refresh data when edit is completed
     setDetailRefreshKey(prev => prev + 1); // Force refresh detail dialog
   }, [fetchSubmissions]);
@@ -1525,17 +1535,17 @@ const handleToggleMark = useCallback((id: string) => {
             </div>
 
             {/* Quick Stats */}
-            <Suspense fallback={<LoadingSpinner />}>
+            <Suspense fallback={<QuickStatsSkeleton />}>
               <QuickStats submissions={filteredAnalyticsSubmissions} />
             </Suspense>
 
             {/* Insight Cards */}
-            <Suspense fallback={<LoadingSpinner />}>
+            <Suspense fallback={<InsightCardsSkeleton />}>
               <InsightCards submissions={filteredAnalyticsSubmissions} />
             </Suspense>
 
             {/* Analytics Dashboard */}
-            <Suspense fallback={<LoadingSpinner />}>
+            <Suspense fallback={<AnalyticsSkeleton />}>
               <AnalyticsDashboard submissions={filteredAnalyticsSubmissions} cabangList={cabangList} />
             </Suspense>
           </div>

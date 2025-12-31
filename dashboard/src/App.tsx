@@ -11,14 +11,12 @@ function ProtectedRoute({ children }: { children: JSX.Element }) {
   const { user, loading } = useAuth();
 
   if (loading) return (
-  <div className="fixed inset-0 z-50 grid place-items-center bg-white">
-    <div className="flex flex-col items-center gap-3">
-      <div className="w-10 h-10 border-4 border-blue-600/30 border-t-blue-600 rounded-full animate-spin"></div>
-      <p className="text-slate-500 font-medium animate-pulse">
-        Mengambil data...
-      </p>
-    </div>
-  </div>
+  <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Mengambil Data...</p>
+        </div>
+      </div>
 );
 
   
@@ -31,14 +29,12 @@ function PublicRoute({ children }: { children: JSX.Element }) {
   const { user, loading } = useAuth();
 
   if (loading) return (
-  <div className="fixed inset-0 z-50 grid place-items-center bg-white">
-    <div className="flex flex-col items-center gap-3">
-      <div className="w-10 h-10 border-4 border-blue-600/30 border-t-blue-600 rounded-full animate-spin"></div>
-      <p className="text-slate-500 font-medium animate-pulse">
-        Mengambil data...
-      </p>
-    </div>
-  </div>
+  <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Mengambil Data...</p>
+        </div>
+      </div>
 );
 
 

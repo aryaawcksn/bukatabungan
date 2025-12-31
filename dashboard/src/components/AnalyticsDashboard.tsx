@@ -16,6 +16,7 @@ import {
 } from 'recharts';
 import { Calendar, TrendingUp, Users, CreditCard, MapPin, Clock } from 'lucide-react';
 import type { FormSubmission } from '../DashboardPage';
+import { AnalyticsSkeleton } from './analytics-skeleton';
 
 interface AnalyticsDashboardProps {
   submissions: FormSubmission[];
@@ -232,22 +233,11 @@ const AnalyticsDashboard = memo(({ submissions, cabangList = [] }: AnalyticsDash
   }, [submissions]);
 
   if (submissions.length === 0) {
-    return (
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="bg-white rounded-xl p-6 border border-slate-200">
-            <div className="animate-pulse">
-              <div className="h-4 bg-slate-200 rounded w-1/2 mb-4"></div>
-              <div className="h-32 bg-slate-200 rounded"></div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
+    return <AnalyticsSkeleton />;
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-contentEnter">
       {/* Row 1: Status Overview & Daily Trend */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Status Distribution */}

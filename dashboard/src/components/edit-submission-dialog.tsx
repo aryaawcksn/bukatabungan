@@ -14,8 +14,10 @@ import {
   AlertCircle,
   CheckCircle2,
   History,
-  RotateCcw
+  RotateCcw,
+  Loader2
 } from 'lucide-react';
+import { Skeleton } from './ui/skeleton';
 import { toast } from 'sonner';
 import { API_BASE_URL } from '../config/api';
 import { type FormSubmission, mapBackendDataToFormSubmission } from '../DashboardPage';
@@ -60,6 +62,10 @@ interface SubmissionInfo {
 
 // Dropdown options based on FormSimpel.tsx and FormMutiara.tsx
 const DROPDOWN_OPTIONS = {
+  tipe_nasabah: [
+    { value: 'baru', label: 'Nasabah Baru' },
+    { value: 'lama', label: 'Nasabah Lama' }
+  ],
   jenis_id: [
     { value: 'KTP', label: 'KTP / NIK' },
     { value: 'KIA', label: 'KIA' },
@@ -138,6 +144,10 @@ const DROPDOWN_OPTIONS = {
     { value: 'Pensiun', label: 'Pensiun' },
     { value: 'TamasyaPlus', label: 'TamasyaPlus' }
   ],
+  jenis_tabungan: [
+    { value: 'Silver', label: 'Silver' },
+    { value: 'Gold', label: 'Gold' }
+  ],
   atm_tipe: [
     { value: 'Gold', label: 'Gold' },
     { value: 'Silver', label: 'Silver' },
@@ -164,12 +174,12 @@ const DROPDOWN_OPTIONS = {
     { value: 'Perempuan', label: 'Perempuan' }
   ],
   bo_kewarganegaraan: [
-    { value: 'Indonesia', label: 'WNI (Warga Negara Indonesia)' },
+    { value: 'WNI', label: 'WNI (Warga Negara Indonesia)' },
     { value: 'WNA', label: 'WNA (Warga Negara Asing)' }
   ],
   bo_status_pernikahan: [
-    { value: 'Belum Kawin', label: 'Belum Kawin' },
-    { value: 'Kawin', label: 'Kawin' },
+    { value: 'Belum Menikah', label: 'Belum Menikah' },
+    { value: 'Menikah', label: 'Menikah' },
     { value: 'Cerai Hidup', label: 'Cerai Hidup' },
     { value: 'Cerai Mati', label: 'Cerai Mati' }
   ],
@@ -200,19 +210,45 @@ const DROPDOWN_OPTIONS = {
 export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onEditComplete }: EditSubmissionDialogProps) {
   const [editMode, setEditMode] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [fetchingData, setFetchingData] = useState(false);
   const [editReason, setEditReason] = useState('');
   const [submissionInfo, setSubmissionInfo] = useState<SubmissionInfo | null>(null);
 
   const [originalFormData, setOriginalFormData] = useState<any>(null);
   const [changedFields, setChangedFields] = useState<Set<string>>(new Set());
 
+  // Skeleton for Edit Form
+  const EditSkeleton = () => (
+    <div className="flex-1 overflow-y-auto p-6 space-y-8 animate-pulse">
+      <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100 flex flex-col gap-2">
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-3 w-48" />
+      </div>
+
+      {[1, 2, 3].map((section) => (
+        <div key={section} className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-5 w-5 rounded-md" />
+            <Skeleton className="h-5 w-40" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[1, 2, 4, 5].map((field) => (
+              <div key={field} className="space-y-2">
+                <Skeleton className="h-3 w-24" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
   // Helper function to format date for input
-  const formatDateForInput = (dateString: string | undefined) => {
-    if (!dateString) return '';
+  const formatDateForInput = (dateString: string | undefined | null) => {
+    if (!dateString || dateString.toLowerCase() === 'seumur hidup') return '';
+    
     try {
-      // Handle different date formats
-      let date: Date;
-      
       // If it's already in YYYY-MM-DD format, return as is
       if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
         return dateString;
@@ -224,8 +260,12 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
         return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
       }
       
-      // Otherwise, parse as regular date and format to YYYY-MM-DD
-      date = new Date(dateString);
+      // Handle other potential valid date strings
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return '';
+      }
+      
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const day = String(date.getDate()).padStart(2, '0');
@@ -240,10 +280,12 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
     // Personal Data
     nama: submission.personalData.fullName || '',
     alias: submission.personalData.alias || '',
+    tipe_nasabah: '', // Will be loaded from backend
+    nomor_rekening_lama: '', // Will be loaded from backend
     jenis_id: submission.personalData.identityType || '',
     jenis_id_custom: '', // Custom field for jenis_id
     no_id: submission.personalData.nik || '',
-    berlaku_id: '',
+    berlaku_id: formatDateForInput(submission.personalData.identityValidUntil),
     tempat_lahir: submission.personalData.birthPlace || '',
     tanggal_lahir: formatDateForInput(submission.personalData.birthDate),
     alamat_id: submission.personalData.address.street || '',
@@ -271,12 +313,19 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
     rata_transaksi_per_bulan: submission.jobInfo.averageTransaction || '',
     nama_perusahaan: submission.jobInfo.workplace || '',
     alamat_perusahaan: submission.jobInfo.officeAddress || '',
+    alamat_kantor: '', // Will be loaded from backend
+    telepon_kantor: '', // Will be loaded from backend
     no_telepon: submission.jobInfo.officePhone || '',
     jabatan: submission.jobInfo.position || '',
     bidang_usaha: submission.jobInfo.businessField || '',
     
+    // EDD Fields (will be loaded from backend)
+    edd_bank_lain: [] as any[],
+    edd_pekerjaan_lain: [] as any[],
+    
     // Account Info
     tabungan_tipe: submission.savingsType || '',
+    jenis_tabungan: '', // Will be loaded from backend (Silver/Gold for Mutiara)
     atm_tipe: submission.cardType || '',
     nominal_setoran: submission.accountInfo.initialDeposit || '',
     tujuan_pembukaan: submission.jobInfo.accountPurpose || '',
@@ -284,8 +333,8 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
     
     // Emergency Contact
     kontak_darurat_nama: submission.emergencyContact?.name || '',
-    kontak_darurat_hp: submission.emergencyContact?.phone || '',
     kontak_darurat_alamat: submission.emergencyContact?.address || '',
+    kontak_darurat_hp: submission.emergencyContact?.phone || '',
     kontak_darurat_hubungan: submission.emergencyContact?.relationship || '',
     kontak_darurat_hubungan_custom: '', // Custom field for kontak_darurat_hubungan
     
@@ -317,15 +366,16 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
 
   // Update form data when submission changes
   useEffect(() => {
-    console.log('🔍 Updating form data with submission:', submission);
     const newFormData = {
       // Personal Data
       nama: submission.personalData.fullName || '',
       alias: submission.personalData.alias || '',
+      tipe_nasabah: '', // Will be loaded from backend
+      nomor_rekening_lama: '', // Will be loaded from backend
       jenis_id: submission.personalData.identityType || '',
       jenis_id_custom: '', // Will be populated from backend if needed
       no_id: submission.personalData.nik || '',
-      berlaku_id: '',
+      berlaku_id: formatDateForInput(submission.personalData.identityValidUntil),
       tempat_lahir: submission.personalData.birthPlace || '',
       tanggal_lahir: formatDateForInput(submission.personalData.birthDate),
       alamat_id: submission.personalData.address.street || '',
@@ -353,12 +403,19 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
       rata_transaksi_per_bulan: submission.jobInfo.averageTransaction || '',
       nama_perusahaan: submission.jobInfo.workplace || '',
       alamat_perusahaan: submission.jobInfo.officeAddress || '',
+      alamat_kantor: '', // Will be loaded from backend
+      telepon_kantor: '', // Will be loaded from backend
       no_telepon: submission.jobInfo.officePhone || '',
       jabatan: submission.jobInfo.position || '',
       bidang_usaha: submission.jobInfo.businessField || '',
       
+      // EDD Fields (will be loaded from backend)
+      edd_bank_lain: [] as any[],
+      edd_pekerjaan_lain: [] as any[],
+      
       // Account Info
       tabungan_tipe: submission.savingsType || '',
+      jenis_tabungan: '', // Will be loaded from backend
       atm_tipe: submission.cardType || '',
       nominal_setoran: submission.accountInfo.initialDeposit || '',
       tujuan_pembukaan: submission.jobInfo.accountPurpose || '',
@@ -366,8 +423,8 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
       
       // Emergency Contact
       kontak_darurat_nama: submission.emergencyContact?.name || '',
-      kontak_darurat_hp: submission.emergencyContact?.phone || '',
       kontak_darurat_alamat: submission.emergencyContact?.address || '',
+      kontak_darurat_hp: submission.emergencyContact?.phone || '',
       kontak_darurat_hubungan: submission.emergencyContact?.relationship || '',
       kontak_darurat_hubungan_custom: '',
       
@@ -395,20 +452,33 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
     setFormData(newFormData);
     setOriginalFormData(newFormData); // Store original data for comparison
     setChangedFields(new Set()); // Reset changed fields
-    console.log('🔍 Form data updated:', newFormData);
   }, [submission]);
 
   // Load full submission data and edit history when dialog opens
   useEffect(() => {
-    if (open && submission.id) {
-      loadFullSubmissionData();
-      loadSubmissionInfo();
-    }
+    const initializeData = async () => {
+      if (open && submission.id) {
+        setFetchingData(true);
+        try {
+          // Run both in parallel for better performance
+          await Promise.all([
+            loadFullSubmissionData(),
+            loadSubmissionInfo()
+          ]);
+        } catch (err) {
+          console.error('Error initializing dialog data:', err);
+        } finally {
+          // Minimal delay to ensure smooth transition
+          setTimeout(() => setFetchingData(false), 300);
+        }
+      }
+    };
+
+    initializeData();
   }, [open, submission.id]);
 
   const loadFullSubmissionData = async () => {
     try {
-      console.log('🔄 Loading full submission data for ID:', submission.id);
       const res = await fetch(`${API_BASE_URL}/api/pengajuan/${submission.id}`, {
         credentials: 'include'
       });
@@ -419,23 +489,18 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
       if (data.success) {
         // Update submission data with full details
         const fullSubmission = mapBackendDataToFormSubmission(data.data);
-        console.log('🔍 Full submission data loaded:', fullSubmission);
-        console.log('🔍 BO data from backend:', {
-          rekening_untuk_sendiri: data.data.rekening_untuk_sendiri,
-          bo_nama: data.data.bo_nama,
-          bo_alamat: data.data.bo_alamat,
-          beneficialOwner: fullSubmission.beneficialOwner
-        });
         
         // Update form data with full submission
         const fullFormData = {
           // Personal Data
           nama: fullSubmission.personalData.fullName || '',
           alias: fullSubmission.personalData.alias || '',
+          tipe_nasabah: data.data.tipe_nasabah || '',
+          nomor_rekening_lama: data.data.nomor_rekening_lama || '',
           jenis_id: fullSubmission.personalData.identityType || '',
           jenis_id_custom: '', // Will be populated if jenis_id is custom
           no_id: fullSubmission.personalData.nik || '',
-          berlaku_id: '',
+          berlaku_id: formatDateForInput(data.data.berlaku_id), // Use formatter to ensure it works with date picker
           tempat_lahir: fullSubmission.personalData.birthPlace || '',
           tanggal_lahir: formatDateForInput(fullSubmission.personalData.birthDate),
           alamat_id: fullSubmission.personalData.address.street || '',
@@ -463,12 +528,19 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
           rata_transaksi_per_bulan: fullSubmission.jobInfo.averageTransaction || '',
           nama_perusahaan: fullSubmission.jobInfo.workplace || '',
           alamat_perusahaan: fullSubmission.jobInfo.officeAddress || '',
+          alamat_kantor: data.data.alamat_kantor || '',
+          telepon_kantor: data.data.telepon_perusahaan || data.data.no_telepon || '',
           no_telepon: fullSubmission.jobInfo.officePhone || '',
           jabatan: fullSubmission.jobInfo.position || '',
           bidang_usaha: fullSubmission.jobInfo.businessField || '',
           
+          // EDD Fields
+          edd_bank_lain: data.data.edd_bank_lain || [],
+          edd_pekerjaan_lain: data.data.edd_pekerjaan_lain || [],
+          
           // Account Info
           tabungan_tipe: fullSubmission.savingsType || '',
+          jenis_tabungan: data.data.jenis_tabungan || '',
           atm_tipe: fullSubmission.cardType || '',
           nominal_setoran: fullSubmission.accountInfo.initialDeposit || '',
           tujuan_pembukaan: fullSubmission.jobInfo.accountPurpose || '',
@@ -476,8 +548,8 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
           
           // Emergency Contact
           kontak_darurat_nama: fullSubmission.emergencyContact?.name || '',
-          kontak_darurat_hp: fullSubmission.emergencyContact?.phone || '',
           kontak_darurat_alamat: fullSubmission.emergencyContact?.address || '',
+          kontak_darurat_hp: fullSubmission.emergencyContact?.phone || '',
           kontak_darurat_hubungan: fullSubmission.emergencyContact?.relationship || '',
           kontak_darurat_hubungan_custom: '',
           
@@ -513,7 +585,6 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
               // Set the dropdown to "Lainnya" and put the actual value in custom field
               (fullFormData as any)[fieldName] = 'Lainnya';
               (fullFormData as any)[customFieldName] = value;
-              console.log(`🔧 Custom field detected: ${fieldName} = "${value}" -> setting to Lainnya with custom value`);
             }
           }
         };
@@ -532,6 +603,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
         
         setFormData(fullFormData);
         setOriginalFormData(fullFormData); // Update original data reference
+        
       }
     } catch (err) {
       console.error('Error loading full submission data:', err);
@@ -540,7 +612,6 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
   };
 
   const loadSubmissionInfo = async () => {
-
     try {
       const res = await fetch(`${API_BASE_URL}/api/pengajuan/${submission.id}/history`, {
         credentials: 'include'
@@ -555,12 +626,10 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
     } catch (err) {
       console.error('Error loading submission info:', err);
       toast.error('Gagal memuat informasi submission');
-    } finally {
-
     }
   };
 
-  const handleInputChange = (field: string, value: string | boolean) => {
+  const handleInputChange = (field: string, value: string | boolean | any[]) => {
     setFormData(prev => {
       const newData = {
         ...prev,
@@ -576,11 +645,33 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
         if (value !== 'Lainnya' && customFieldName in newData) {
           (newData as any)[customFieldName] = '';
         }
+        
+        // Special handling: If changing back to "Lainnya" and we have original custom value, restore it
+        if (value === 'Lainnya' && customFieldName in newData && originalFormData) {
+          const originalCustomValue = (originalFormData as any)[customFieldName];
+          if (originalCustomValue && !(newData as any)[customFieldName]) {
+            (newData as any)[customFieldName] = originalCustomValue;
+          }
+        }
+      }
+      
+      // Special handling: Clear nomor_rekening_lama when tipe_nasabah changes to 'baru'
+      if (field === 'tipe_nasabah' && value === 'baru') {
+        newData.nomor_rekening_lama = '';
+      }
+      
+      // Special handling: Clear berlaku_id when jenis_id changes to 'KTP'
+      if (field === 'jenis_id' && value === 'KTP') {
+        newData.berlaku_id = '';
+      }
+      
+      // Special handling: Clear jenis_tabungan when tabungan_tipe is not 'Mutiara'
+      if (field === 'tabungan_tipe' && value !== 'Mutiara') {
+        newData.jenis_tabungan = '';
       }
       
       // Special handling: Clear BO fields when rekening_untuk_sendiri is changed to true
       if (field === 'rekening_untuk_sendiri' && value === true) {
-        console.log('🗑️ Clearing BO fields because rekening_untuk_sendiri changed to true');
         
         // Clear all BO fields including custom fields
         newData.bo_nama = '';
@@ -602,9 +693,13 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
         newData.bo_pendapatan_tahun = '';
       }
       
-      // Track changed fields
-      if (originalFormData) {
-        const newChangedFields = new Set(changedFields);
+      return newData;
+    });
+
+    // Track changed fields separately to avoid state update conflicts
+    if (originalFormData) {
+      setChangedFields(prevChangedFields => {
+        const newChangedFields = new Set(prevChangedFields);
         
         // Check if field has actually changed from original
         if ((originalFormData as any)[field] !== value) {
@@ -617,6 +712,32 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
           }
         } else {
           newChangedFields.delete(field);
+        }
+        
+        // Special handling for EDD arrays - check if they've changed
+        if (field === 'edd_bank_lain' || field === 'edd_pekerjaan_lain') {
+          const originalValue = (originalFormData as any)[field];
+          const currentValue = value;
+          
+          // Simple comparison for arrays
+          if (JSON.stringify(originalValue) !== JSON.stringify(currentValue)) {
+            newChangedFields.add(field);
+          } else {
+            newChangedFields.delete(field);
+          }
+        }
+        
+        // Mark cleared fields as changed too
+        if (field === 'tipe_nasabah' && value === 'baru' && originalFormData.nomor_rekening_lama) {
+          newChangedFields.add('nomor_rekening_lama');
+        }
+        
+        if (field === 'jenis_id' && value === 'KTP' && originalFormData.berlaku_id) {
+          newChangedFields.add('berlaku_id');
+        }
+        
+        if (field === 'tabungan_tipe' && value !== 'Mutiara' && originalFormData.jenis_tabungan) {
+          newChangedFields.add('jenis_tabungan');
         }
         
         // If we're clearing BO fields, mark them as changed too
@@ -633,11 +754,28 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
           });
         }
         
-        setChangedFields(newChangedFields);
+        return newChangedFields;
+      });
+    }
+  };
+
+  // Helper function to handle EDD changes with proper tracking
+  const handleEddChange = (fieldName: 'edd_bank_lain' | 'edd_pekerjaan_lain', newArray: any[]) => {
+    setFormData(prev => ({ ...prev, [fieldName]: newArray }));
+    
+    // Track changes for EDD fields
+    if (originalFormData) {
+      const originalValue = (originalFormData as any)[fieldName];
+      const newChangedFields = new Set(changedFields);
+      
+      if (JSON.stringify(originalValue) !== JSON.stringify(newArray)) {
+        newChangedFields.add(fieldName);
+      } else {
+        newChangedFields.delete(fieldName);
       }
       
-      return newData;
-    });
+      setChangedFields(newChangedFields);
+    }
   };
 
   const handleSave = async () => {
@@ -648,7 +786,6 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
 
     // Prevent double submission
     if (loading) {
-      console.log('⚠️ Save already in progress, ignoring duplicate call');
       return;
     }
 
@@ -666,6 +803,17 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
         editReason,
         isEdit: true
       };
+
+      // Remove all custom fields from dataToSend - they shouldn't be sent to backend
+      const customFieldsToRemove = [
+        'jenis_id_custom', 'agama_custom', 'pendidikan_custom', 'pekerjaan_custom',
+        'sumber_dana_custom', 'tujuan_pembukaan_custom', 'kontak_darurat_hubungan_custom',
+        'bo_jenis_id_custom', 'bo_sumber_dana_custom', 'bo_hubungan_custom'
+      ];
+      
+      customFieldsToRemove.forEach(field => {
+        delete (dataToSend as any)[field];
+      });
 
       // Handle custom fields - send custom values directly to main fields when "Lainnya" is selected
       const customFieldMappings = [
@@ -688,9 +836,18 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
         }
       });
 
+      // Special handling for Mutiara: map jenis_tabungan to atm_tipe
+      if (formData.tabungan_tipe === 'Mutiara' && formData.jenis_tabungan) {
+        dataToSend.atm_tipe = formData.jenis_tabungan; // Silver or Gold
+      }
+
+      // Map telepon_kantor to no_telepon for backend compatibility
+      if (formData.telepon_kantor) {
+        dataToSend.no_telepon = formData.telepon_kantor;
+      }
+
       // If rekening_untuk_sendiri is true, explicitly send empty BO fields to ensure they're cleared
       if (formData.rekening_untuk_sendiri === true) {
-        console.log('🗑️ Sending empty BO fields to clear database');
         dataToSend.bo_nama = '';
         dataToSend.bo_alamat = '';
         dataToSend.bo_tempat_lahir = '';
@@ -699,12 +856,9 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
         dataToSend.bo_kewarganegaraan = '';
         dataToSend.bo_status_pernikahan = '';
         dataToSend.bo_jenis_id = '';
-        dataToSend.bo_jenis_id_custom = '';
         dataToSend.bo_nomor_id = '';
         dataToSend.bo_sumber_dana = '';
-        dataToSend.bo_sumber_dana_custom = '';
         dataToSend.bo_hubungan = '';
-        dataToSend.bo_hubungan_custom = '';
         dataToSend.bo_nomor_hp = '';
         dataToSend.bo_pekerjaan = '';
         dataToSend.bo_pendapatan_tahun = '';
@@ -731,7 +885,6 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
         setEditReason('');
         
         // Reload form data to reflect changes immediately
-        console.log('🔄 Reloading form data after successful save...');
         await loadFullSubmissionData();
         
         // Reload submission info
@@ -744,8 +897,6 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
         if (onEditComplete) {
           onEditComplete();
         }
-        
-        console.log('✅ Form data reloaded successfully');
       }
     } catch (err: any) {
       console.error('Error editing submission:', err);
@@ -771,11 +922,16 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
         (newData as any)[customFieldName] = (originalFormData as any)[customFieldName];
       }
       
+      // Special handling for alamat_id - restore address components
+      if (fieldName === 'alamat_id') {
+        const originalAddress = originalFormData.alamat_id;
+        if (originalAddress) {
+          const parsedComponents = parseAddress(originalAddress);
+          setAddressComponents(parsedComponents);
+        }
+      }
+      
       // Special handling for undoing 'rekening_untuk_sendiri'
-      // If we revert to 'false', we should probably restore BO fields too if they match original
-      // But for simplicity and safety, if we undo the main toggle, we let the user re-enter or undo specific BO fields if needed.
-      // However, if we revert to 'rekening_untuk_sendiri' = false (from true), the BO fields in current formData are empty.
-      // We must restore them from originalFormData to avoid data loss feeling.
       if (fieldName === 'rekening_untuk_sendiri' && originalFormData.rekening_untuk_sendiri === false) {
          const boFields = ['bo_nama', 'bo_alamat', 'bo_tempat_lahir', 'bo_tanggal_lahir', 
                            'bo_jenis_kelamin', 'bo_kewarganegaraan', 'bo_status_pernikahan', 
@@ -827,8 +983,11 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
     const labels: Record<string, string> = {
       nama: 'Nama Lengkap',
       alias: 'Alias',
+      tipe_nasabah: 'Tipe Nasabah',
+      nomor_rekening_lama: 'Nomor Rekening Lama',
       jenis_id: 'Jenis ID',
       no_id: 'Nomor ID',
+      berlaku_id: 'Berlaku Hingga',
       tempat_lahir: 'Tempat Lahir',
       tanggal_lahir: 'Tanggal Lahir',
       alamat_id: 'Alamat KTP',
@@ -850,16 +1009,19 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
       rata_transaksi_per_bulan: 'Rata-rata Transaksi',
       nama_perusahaan: 'Nama Perusahaan',
       alamat_perusahaan: 'Alamat Perusahaan',
+      alamat_kantor: 'Alamat Kantor',
+      telepon_kantor: 'Telepon Kantor',
       no_telepon: 'No Telepon Kantor',
       jabatan: 'Jabatan',
       bidang_usaha: 'Bidang Usaha',
       tabungan_tipe: 'Jenis Rekening',
+      jenis_tabungan: 'Jenis Tabungan',
       atm_tipe: 'Jenis Kartu ATM',
       nominal_setoran: 'Nominal Setoran',
       tujuan_pembukaan: 'Tujuan Pembukaan',
       kontak_darurat_nama: 'Nama Kontak Darurat',
-      kontak_darurat_hp: 'HP Kontak Darurat',
       kontak_darurat_alamat: 'Alamat Kontak Darurat',
+      kontak_darurat_hp: 'HP Kontak Darurat',
       kontak_darurat_hubungan: 'Hubungan Kontak Darurat',
       // BO Fields
       rekening_untuk_sendiri: 'Rekening untuk Sendiri',
@@ -882,9 +1044,11 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
   };
 
   // Helper function to render appropriate input component
-  const renderInputField = (fieldName: string, value: string, onChange: (value: string) => void) => {
+  const renderInputField = (fieldName: string, value: string, onChange: (value: string | boolean | any[]) => void) => {
     const options = DROPDOWN_OPTIONS[fieldName as keyof typeof DROPDOWN_OPTIONS];
     const isChanged = changedFields.has(fieldName);
+    const customFieldName = `${fieldName}_custom`;
+    const isCustomFieldChanged = changedFields.has(customFieldName);
     const baseClassName = isChanged ? 'border-2 border-orange-400 bg-orange-50' : '';
     
     let inputElement;
@@ -907,16 +1071,34 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
           
           {/* Custom input field when "Lainnya" is selected */}
           {value === 'Lainnya' && (
-            <Input
-              value={formData[`${fieldName}_custom` as keyof typeof formData] as string || ''}
-              onChange={(e) => handleInputChange(`${fieldName}_custom`, e.target.value)}
-              placeholder={`Sebutkan ${getFieldLabel(fieldName).toLowerCase()} lainnya`}
-              className={changedFields.has(`${fieldName}_custom`) ? 'border-2 border-orange-400 bg-orange-50' : ''}
-            />
+            <div className="flex items-start gap-2 group">
+              <div className="flex-1">
+                <Input
+                  value={formData[`${fieldName}_custom` as keyof typeof formData] as string || ''}
+                  onChange={(e) => handleInputChange(`${fieldName}_custom`, e.target.value)}
+                  placeholder={`Sebutkan ${getFieldLabel(fieldName).toLowerCase()} lainnya`}
+                  className={isCustomFieldChanged ? 'border-2 border-orange-400 bg-orange-50' : ''}
+                />
+              </div>
+              {isCustomFieldChanged && (
+                <div className="mt-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleUndoField(`${fieldName}_custom`)}
+                    className="h-8 w-8 text-orange-600 hover:text-orange-700 hover:bg-orange-100 rounded-full"
+                    title={`Kembalikan ${getFieldLabel(fieldName)} Custom ke nilai awal`}
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
           )}
         </div>
       );
-    } else if (fieldName === 'tanggal_lahir' || fieldName === 'bo_tanggal_lahir') {
+    } else if (fieldName === 'tanggal_lahir' || fieldName === 'bo_tanggal_lahir' || fieldName === 'berlaku_id') {
       inputElement = (
         <Input
           type="date"
@@ -953,7 +1135,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
           title="Maksimal Rp. 9.999.999.999.999.999"
         />
       );
-    } else if (fieldName === 'alamat_id' || fieldName === 'alamat_now' || fieldName === 'alamat_perusahaan' || fieldName === 'bo_alamat' || fieldName === 'kontak_darurat_alamat') {
+    } else if (fieldName === 'alamat_id' || fieldName === 'alamat_now' || fieldName === 'alamat_perusahaan' || fieldName === 'alamat_kantor' || fieldName === 'bo_alamat' || fieldName === 'kontak_darurat_alamat') {
       inputElement = (
         <Textarea
           value={value}
@@ -972,28 +1154,54 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
       );
     }
 
-    // Wrap with undo button if changed
-    return (
-      <div className="flex items-start gap-2 group">
-        <div className="flex-1">
-          {inputElement}
-        </div>
-        {isChanged && (
-          <div className="mt-1">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => handleUndoField(fieldName)}
-              className="h-8 w-8 text-orange-600 hover:text-orange-700 hover:bg-orange-100 rounded-full"
-              title={`Kembalikan ${getFieldLabel(fieldName)} ke nilai awal`}
-            >
-              <RotateCcw className="w-4 h-4" />
-            </Button>
+    // Wrap with undo button if changed (but not for dropdown fields with custom inputs)
+    if (options) {
+      // For dropdown fields, we handle undo buttons separately for main and custom fields
+      return (
+        <div className="flex items-start gap-2 group">
+          <div className="flex-1">
+            {inputElement}
           </div>
-        )}
-      </div>
-    );
+          {isChanged && (
+            <div className="mt-1">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => handleUndoField(fieldName)}
+                className="h-8 w-8 text-orange-600 hover:text-orange-700 hover:bg-orange-100 rounded-full"
+                title={`Kembalikan ${getFieldLabel(fieldName)} ke nilai awal`}
+              >
+                <RotateCcw className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
+        </div>
+      );
+    } else {
+      // For non-dropdown fields, standard undo button
+      return (
+        <div className="flex items-start gap-2 group">
+          <div className="flex-1">
+            {inputElement}
+          </div>
+          {isChanged && (
+            <div className="mt-1">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => handleUndoField(fieldName)}
+                className="h-8 w-8 text-orange-600 hover:text-orange-700 hover:bg-orange-100 rounded-full"
+                title={`Kembalikan ${getFieldLabel(fieldName)} ke nilai awal`}
+              >
+                <RotateCcw className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
+        </div>
+      );
+    }
   };
 
   // Only show edit button for approved submissions
@@ -1045,7 +1253,10 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-8">
+        {fetchingData ? (
+          <EditSkeleton />
+        ) : (
+          <div className="flex-1 overflow-y-auto p-8 animate-contentEnter">
             <div className="space-y-8">
               
               {/* Minimal Edit Info Alert */}
@@ -1110,28 +1321,46 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
                   <User className="w-5 h-5 text-blue-600" />
                   Data Pribadi
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ">
+                  <div className="space-y-2">
                     <Label htmlFor="nama">Nama Lengkap</Label>
                     {renderInputField('nama', formData.nama, (value) => handleInputChange('nama', value))}
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="alias">Alias</Label>
                     {renderInputField('alias', formData.alias, (value) => handleInputChange('alias', value))}
                   </div>
-                  <div>
+                  <div className="space-y-2">
+                    <Label htmlFor="tipe_nasabah">Tipe Nasabah</Label>
+                    {renderInputField('tipe_nasabah', formData.tipe_nasabah, (value) => handleInputChange('tipe_nasabah', value))}
+                  </div>
+                  {/* Show nomor rekening lama only if tipe nasabah is 'lama' */}
+                  {formData.tipe_nasabah === 'lama' && (
+                    <div className="space-y-2">
+                      <Label htmlFor="nomor_rekening_lama">Nomor Rekening Lama</Label>
+                      {renderInputField('nomor_rekening_lama', formData.nomor_rekening_lama, (value) => handleInputChange('nomor_rekening_lama', value))}
+                    </div>
+                  )}
+                  <div className="space-y-2">
                     <Label htmlFor="jenis_id">Jenis ID</Label>
                     {renderInputField('jenis_id', formData.jenis_id, (value) => handleInputChange('jenis_id', value))}
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="no_id">Nomor ID</Label>
                     {renderInputField('no_id', formData.no_id, (value) => handleInputChange('no_id', value))}
                   </div>
-                  <div>
+                  {/* Show berlaku_id only for non-KTP documents */}
+                  {formData.jenis_id && formData.jenis_id !== 'KTP' && (
+                    <div className="space-y-2">
+                      <Label htmlFor="berlaku_id">Berlaku Hingga</Label>
+                      {renderInputField('berlaku_id', formData.berlaku_id, (value) => handleInputChange('berlaku_id', value))}
+                    </div>
+                  )}
+                  <div className="space-y-2">
                     <Label htmlFor="tempat_lahir">Tempat Lahir</Label>
                     {renderInputField('tempat_lahir', formData.tempat_lahir, (value) => handleInputChange('tempat_lahir', value))}
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="tanggal_lahir">Tanggal Lahir</Label>
                     {renderInputField('tanggal_lahir', formData.tanggal_lahir, (value) => handleInputChange('tanggal_lahir', value))}
                   </div>
@@ -1139,24 +1368,42 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
                     <Label className="text-sm font-medium text-gray-700 mb-3 block">
                       Alamat KTP (Dropdown hanya untuk alamat di Indonesia)
                     </Label>
-                    <IndonesianAddressDropdown
-                      addressComponents={addressComponents}
-                      onAddressChange={(components) => {
-                        setAddressComponents(components);
-                        // Update the combined address in formData
-                        const combinedAddress = combineAddress(components);
-                        handleInputChange('alamat_id', combinedAddress);
-                      }}
-                      citizenship={formData.kewarganegaraan}
-                    />
-                    {formData.alamat_id && (
-                      <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded">
-                        <p className="text-xs text-green-700 font-medium">Alamat Lengkap Sekarang:</p>
-                        <p className="text-sm text-green-800 mt-1">{formData.alamat_id}</p>
+                    <div className="flex items-start gap-2 group">
+                      <div className="flex-1">
+                        <IndonesianAddressDropdown
+                          addressComponents={addressComponents}
+                          onAddressChange={(components) => {
+                            setAddressComponents(components);
+                            // Update the combined address in formData
+                            const combinedAddress = combineAddress(components);
+                            handleInputChange('alamat_id', combinedAddress);
+                          }}
+                          citizenship={formData.kewarganegaraan}
+                        />
+                        {formData.alamat_id && (
+                          <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded">
+                            <p className="text-xs text-green-700 font-medium">Alamat Lengkap Sekarang:</p>
+                            <p className="text-sm text-green-800 mt-1">{formData.alamat_id}</p>
+                          </div>
+                        )}
                       </div>
-                    )}
+                      {changedFields.has('alamat_id') && (
+                        <div className="mt-1">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleUndoField('alamat_id')}
+                            className="h-8 w-8 text-orange-600 hover:text-orange-700 hover:bg-orange-100 rounded-full"
+                            title="Kembalikan Alamat KTP ke nilai awal"
+                          >
+                            <RotateCcw className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="kode_pos_id">Kode Pos</Label>
                     {renderInputField('kode_pos_id', formData.kode_pos_id, (value) => handleInputChange('kode_pos_id', value))}
                   </div>
@@ -1164,39 +1411,43 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
                     <Label htmlFor="alamat_now">Alamat Domisili</Label>
                     {renderInputField('alamat_now', formData.alamat_now, (value) => handleInputChange('alamat_now', value))}
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
                     {renderInputField('email', formData.email, (value) => handleInputChange('email', value))}
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="no_hp">No HP</Label>
                     {renderInputField('no_hp', formData.no_hp, (value) => handleInputChange('no_hp', value))}
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="jenis_kelamin">Jenis Kelamin</Label>
                     {renderInputField('jenis_kelamin', formData.jenis_kelamin, (value) => handleInputChange('jenis_kelamin', value))}
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="status_kawin">Status Pernikahan</Label>
                     {renderInputField('status_kawin', formData.status_kawin, (value) => handleInputChange('status_kawin', value))}
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="agama">Agama</Label>
                     {renderInputField('agama', formData.agama, (value) => handleInputChange('agama', value))}
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="pendidikan">Pendidikan</Label>
                     {renderInputField('pendidikan', formData.pendidikan, (value) => handleInputChange('pendidikan', value))}
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="nama_ibu_kandung">Nama Ibu Kandung</Label>
                     {renderInputField('nama_ibu_kandung', formData.nama_ibu_kandung, (value) => handleInputChange('nama_ibu_kandung', value))}
                   </div>
-                  <div>
+                  <div className="space-y-2">
+                    <Label htmlFor="npwp">NPWP</Label>
+                    {renderInputField('npwp', formData.npwp, (value) => handleInputChange('npwp', value))}
+                  </div>
+                  <div className="space-y-2">
                     <Label htmlFor="kewarganegaraan">Kewarganegaraan</Label>
                     {renderInputField('kewarganegaraan', formData.kewarganegaraan, (value) => handleInputChange('kewarganegaraan', value))}
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="status_rumah">Status Rumah</Label>
                     {renderInputField('status_rumah', formData.status_rumah, (value) => handleInputChange('status_rumah', value))}
                   </div>
@@ -1210,27 +1461,39 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
                   Informasi Pekerjaan
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="pekerjaan">Pekerjaan</Label>
                     {renderInputField('pekerjaan', formData.pekerjaan, (value) => handleInputChange('pekerjaan', value))}
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="nama_perusahaan">Nama Perusahaan</Label>
                     {renderInputField('nama_perusahaan', formData.nama_perusahaan, (value) => handleInputChange('nama_perusahaan', value))}
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="jabatan">Jabatan</Label>
                     {renderInputField('jabatan', formData.jabatan, (value) => handleInputChange('jabatan', value))}
                   </div>
-                  <div>
+                  <div className="space-y-2">
+                    <Label htmlFor="alamat_kantor">Alamat Kantor</Label>
+                    {renderInputField('alamat_kantor', formData.alamat_kantor, (value) => handleInputChange('alamat_kantor', value))}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="telepon_kantor">Telepon Kantor</Label>
+                    {renderInputField('telepon_kantor', formData.telepon_kantor, (value) => handleInputChange('telepon_kantor', value))}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="bidang_usaha">Bidang Usaha</Label>
+                    {renderInputField('bidang_usaha', formData.bidang_usaha, (value) => handleInputChange('bidang_usaha', value))}
+                  </div>
+                  <div className="space-y-2">
                     <Label htmlFor="gaji_per_bulan">Gaji per Bulan</Label>
                     {renderInputField('gaji_per_bulan', formData.gaji_per_bulan, (value) => handleInputChange('gaji_per_bulan', value))}
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="sumber_dana">Sumber Dana</Label>
                     {renderInputField('sumber_dana', formData.sumber_dana, (value) => handleInputChange('sumber_dana', value))}
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="rata_transaksi_per_bulan">Rata-rata Transaksi</Label>
                     {renderInputField('rata_transaksi_per_bulan', formData.rata_transaksi_per_bulan, (value) => handleInputChange('rata_transaksi_per_bulan', value))}
                   </div>
@@ -1246,22 +1509,22 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
                   Informasi Rekening
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="tabungan_tipe">Jenis Rekening</Label>
                     {renderInputField('tabungan_tipe', formData.tabungan_tipe, (value) => handleInputChange('tabungan_tipe', value))}
                   </div>
-                  {/* ATM Type - Only for Mutiara */}
+                  {/* Jenis Tabungan - Only for Mutiara */}
                   {formData.tabungan_tipe === 'Mutiara' && (
-                    <div>
-                      <Label htmlFor="atm_tipe">Jenis Kartu ATM</Label>
-                      {renderInputField('atm_tipe', formData.atm_tipe, (value) => handleInputChange('atm_tipe', value))}
+                    <div className="space-y-2">
+                      <Label htmlFor="jenis_tabungan">Jenis Tabungan (Silver/Gold)</Label>
+                      {renderInputField('jenis_tabungan', formData.jenis_tabungan, (value) => handleInputChange('jenis_tabungan', value))}
                     </div>
                   )}
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="nominal_setoran">Nominal Setoran</Label>
                     {renderInputField('nominal_setoran', formData.nominal_setoran, (value) => handleInputChange('nominal_setoran', value))}
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="tujuan_pembukaan">Tujuan Pembukaan</Label>
                     {renderInputField('tujuan_pembukaan', formData.tujuan_pembukaan, (value) => handleInputChange('tujuan_pembukaan', value))}
                   </div>
@@ -1275,20 +1538,20 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
                   Kontak Darurat
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <Label htmlFor="kontak_darurat_nama">Nama</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="kontak_darurat_nama">Nama Lengkap</Label>
                     {renderInputField('kontak_darurat_nama', formData.kontak_darurat_nama, (value) => handleInputChange('kontak_darurat_nama', value))}
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="kontak_darurat_hp">No HP</Label>
                     {renderInputField('kontak_darurat_hp', formData.kontak_darurat_hp, (value) => handleInputChange('kontak_darurat_hp', value))}
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="kontak_darurat_hubungan">Hubungan</Label>
                     {renderInputField('kontak_darurat_hubungan', formData.kontak_darurat_hubungan, (value) => handleInputChange('kontak_darurat_hubungan', value))}
                   </div>
-                  <div>
-                    <Label htmlFor="kontak_darurat_alamat">Alamat</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="kontak_darurat_alamat">Alamat Lengkap</Label>
                     {renderInputField('kontak_darurat_alamat', formData.kontak_darurat_alamat, (value) => handleInputChange('kontak_darurat_alamat', value))}
                   </div>
                 </div>
@@ -1333,6 +1596,18 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
                       </span>
                       <span className="text-sm text-gray-700">Tidak, untuk orang lain</span>
                     </label>
+                    {changedFields.has('rekening_untuk_sendiri') && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleUndoField('rekening_untuk_sendiri')}
+                        className="h-8 w-8 text-orange-600 hover:text-orange-700 hover:bg-orange-100 rounded-full"
+                        title="Kembalikan ke nilai awal"
+                      >
+                        <RotateCcw className="w-4 h-4" />
+                      </Button>
+                    )}
                   </div>
                 </div>
 
@@ -1340,13 +1615,13 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
                 {formData.rekening_untuk_sendiri === false ? (
                   <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
+                      <div className="space-y-2">
                         <Label htmlFor="bo_nama">
                           Nama Lengkap BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
                         </Label>
                         {renderInputField('bo_nama', formData.bo_nama, (value) => handleInputChange('bo_nama', value))}
                       </div>
-                      <div>
+                      <div className="space-y-2">
                         <Label htmlFor="bo_tempat_lahir">
                           Tempat Lahir BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
                         </Label>
@@ -1355,13 +1630,13 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
+                      <div className="space-y-2">
                         <Label htmlFor="bo_tanggal_lahir">
                           Tanggal Lahir BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
                         </Label>
                         {renderInputField('bo_tanggal_lahir', formData.bo_tanggal_lahir, (value) => handleInputChange('bo_tanggal_lahir', value))}
                       </div>
-                      <div>
+                      <div className="space-y-2">
                         <Label htmlFor="bo_jenis_kelamin">
                           Jenis Kelamin BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
                         </Label>
@@ -1369,7 +1644,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
                       </div>
                     </div>
 
-                    <div>
+                    <div className="space-y-2">
                       <Label htmlFor="bo_alamat">
                         Alamat BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
                       </Label>
@@ -1377,13 +1652,13 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
+                      <div className="space-y-2">
                         <Label htmlFor="bo_kewarganegaraan">
                           Kewarganegaraan BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
                         </Label>
                         {renderInputField('bo_kewarganegaraan', formData.bo_kewarganegaraan, (value) => handleInputChange('bo_kewarganegaraan', value))}
                       </div>
-                      <div>
+                      <div className="space-y-2">
                         <Label htmlFor="bo_status_pernikahan">
                           Status Pernikahan BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
                         </Label>
@@ -1392,13 +1667,13 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
+                      <div className="space-y-2">
                         <Label htmlFor="bo_jenis_id">
                           Jenis Identitas BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
                         </Label>
                         {renderInputField('bo_jenis_id', formData.bo_jenis_id, (value) => handleInputChange('bo_jenis_id', value))}
                       </div>
-                      <div>
+                      <div className="space-y-2">
                         <Label htmlFor="bo_nomor_id">
                           Nomor Identitas BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
                         </Label>
@@ -1407,13 +1682,13 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
+                      <div className="space-y-2">
                         <Label htmlFor="bo_pekerjaan">
                           Pekerjaan BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
                         </Label>
                         {renderInputField('bo_pekerjaan', formData.bo_pekerjaan, (value) => handleInputChange('bo_pekerjaan', value))}
                       </div>
-                      <div>
+                      <div className="space-y-2">
                         <Label htmlFor="bo_sumber_dana">
                           Sumber Dana BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
                         </Label>
@@ -1422,13 +1697,13 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
+                      <div className="space-y-2">
                         <Label htmlFor="bo_hubungan">
                           Hubungan dengan Nasabah {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
                         </Label>
                         {renderInputField('bo_hubungan', formData.bo_hubungan, (value) => handleInputChange('bo_hubungan', value))}
                       </div>
-                      <div>
+                      <div className="space-y-2">
                         <Label htmlFor="bo_nomor_hp">
                           Nomor HP BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
                         </Label>
@@ -1436,25 +1711,43 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
                       </div>
                     </div>
 
-                    <div>
+                    <div className="space-y-2">
                       <Label htmlFor="bo_pendapatan_tahun">
                         Pendapatan Tahunan BO {formData.rekening_untuk_sendiri === false && <span className="text-red-500">*</span>}
                       </Label>
-                      <Select
-                        value={formData.bo_pendapatan_tahun}
-                        onValueChange={(value) => handleInputChange('bo_pendapatan_tahun', value)}
-                      >
-                        <SelectTrigger className={changedFields.has('bo_pendapatan_tahun') ? 'border-2 border-orange-400 bg-orange-50' : ''}>
-                          <SelectValue placeholder="Pilih range pendapatan tahunan" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="sd-5jt">Sampai dengan 5 Juta</SelectItem>
-                          <SelectItem value="5-10jt">5 - 10 Juta</SelectItem>
-                          <SelectItem value="10-25jt">10 - 25 Juta</SelectItem>
-                          <SelectItem value="25-100jt">25 - 100 Juta</SelectItem>
-                          <SelectItem value=">100jt">Lebih dari 100 Juta</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <div className="flex items-start gap-2 group">
+                        <div className="flex-1">
+                          <Select
+                            value={formData.bo_pendapatan_tahun}
+                            onValueChange={(value) => handleInputChange('bo_pendapatan_tahun', value)}
+                          >
+                            <SelectTrigger className={changedFields.has('bo_pendapatan_tahun') ? 'border-2 border-orange-400 bg-orange-50' : ''}>
+                              <SelectValue placeholder="Pilih range pendapatan tahunan" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="sd-5jt">Sampai dengan 5 Juta</SelectItem>
+                              <SelectItem value="5-10jt">5 - 10 Juta</SelectItem>
+                              <SelectItem value="10-25jt">10 - 25 Juta</SelectItem>
+                              <SelectItem value="25-100jt">25 - 100 Juta</SelectItem>
+                              <SelectItem value=">100jt">Lebih dari 100 Juta</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        {changedFields.has('bo_pendapatan_tahun') && (
+                          <div className="mt-1">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleUndoField('bo_pendapatan_tahun')}
+                              className="h-8 w-8 text-orange-600 hover:text-orange-700 hover:bg-orange-100 rounded-full"
+                              title="Kembalikan Pendapatan Tahunan BO ke nilai awal"
+                            >
+                              <RotateCcw className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ) : (
@@ -1465,8 +1758,160 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
                   </div>
                 )}
               </div>
+
+              {/* EDD Bank Lain Section */}
+              <div className="bg-white p-6 rounded-xl border border-slate-200">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    Enhanced Due Diligence - Bank Lain
+                  </h3>
+                  {changedFields.has('edd_bank_lain') && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleUndoField('edd_bank_lain')}
+                      className="h-8 w-8 text-orange-600 hover:text-orange-700 hover:bg-orange-100 rounded-full"
+                      title="Kembalikan EDD Bank Lain ke nilai awal"
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
+                
+                {formData.edd_bank_lain && formData.edd_bank_lain.length > 0 ? (
+                  <div className="space-y-4">
+                    {formData.edd_bank_lain.map((bank: any, index: number) => (
+                      <div key={index} className={`p-4 border rounded-lg ${changedFields.has('edd_bank_lain') ? 'border-orange-400 bg-orange-50' : 'border-slate-200 bg-slate-50'}`}>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="space-y-2">
+                            <Label>Nama Bank</Label>
+                            <Input
+                              value={bank.bank_name || ''}
+                              onChange={(e) => {
+                                const newEddBankLain = [...(formData.edd_bank_lain || [])];
+                                newEddBankLain[index] = { ...newEddBankLain[index], bank_name: e.target.value };
+                                handleEddChange('edd_bank_lain', newEddBankLain);
+                              }}
+                              placeholder="Nama bank"
+                              className="mt-1"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Jenis Rekening</Label>
+                            <Input
+                              value={bank.jenis_rekening || ''}
+                              onChange={(e) => {
+                                const newEddBankLain = [...(formData.edd_bank_lain || [])];
+                                newEddBankLain[index] = { ...newEddBankLain[index], jenis_rekening: e.target.value };
+                                handleEddChange('edd_bank_lain', newEddBankLain);
+                              }}
+                              placeholder="Tabungan / Giro"
+                              className="mt-1"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Nomor Rekening</Label>
+                            <Input
+                              value={bank.nomor_rekening || ''}
+                              onChange={(e) => {
+                                const newEddBankLain = [...(formData.edd_bank_lain || [])];
+                                newEddBankLain[index] = { ...newEddBankLain[index], nomor_rekening: e.target.value };
+                                handleEddChange('edd_bank_lain', newEddBankLain);
+                              }}
+                              placeholder="Nomor rekening"
+                              className="mt-1"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-slate-500 bg-slate-50 rounded-lg border-2 border-dashed border-slate-200">
+                    <svg className="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    <p className="text-lg font-medium mb-2">Tidak Ada Data Bank Lain</p>
+                    <p className="text-sm">Nasabah tidak memiliki rekening di bank lain.</p>
+                  </div>
+                )}
+              </div>
+
+              {/* EDD Pekerjaan Lain Section */}
+              <div className="bg-white p-6 rounded-xl border border-slate-200">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H8a2 2 0 01-2-2V8a2 2 0 012-2V6" />
+                    </svg>
+                    Enhanced Due Diligence - Pekerjaan/Usaha Lain
+                  </h3>
+                  {changedFields.has('edd_pekerjaan_lain') && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleUndoField('edd_pekerjaan_lain')}
+                      className="h-8 w-8 text-orange-600 hover:text-orange-700 hover:bg-orange-100 rounded-full"
+                      title="Kembalikan EDD Pekerjaan/Usaha Lain ke nilai awal"
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
+                
+                {formData.edd_pekerjaan_lain && formData.edd_pekerjaan_lain.length > 0 ? (
+                  <div className="space-y-4">
+                    {formData.edd_pekerjaan_lain.map((pekerjaan: any, index: number) => (
+                      <div key={index} className={`p-4 border rounded-lg ${changedFields.has('edd_pekerjaan_lain') ? 'border-orange-400 bg-orange-50' : 'border-slate-200 bg-slate-50'}`}>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label>Jenis Usaha</Label>
+                            <Input
+                              value={pekerjaan.jenis_usaha || ''}
+                              onChange={(e) => {
+                                const newEddPekerjaanLain = [...(formData.edd_pekerjaan_lain || [])];
+                                newEddPekerjaanLain[index] = { ...newEddPekerjaanLain[index], jenis_usaha: e.target.value };
+                                handleEddChange('edd_pekerjaan_lain', newEddPekerjaanLain);
+                              }}
+                              placeholder="Jenis usaha/pekerjaan"
+                              className="mt-1"
+                            />
+                          </div>
+                          {/* <div className="space-y-2">
+                            <Label>Keterangan</Label>
+                            <Input
+                              value={pekerjaan.keterangan || ''}
+                              onChange={(e) => {
+                                const newEddPekerjaanLain = [...(formData.edd_pekerjaan_lain || [])];
+                                newEddPekerjaanLain[index] = { ...newEddPekerjaanLain[index], keterangan: e.target.value };
+                                handleEddChange('edd_pekerjaan_lain', newEddPekerjaanLain);
+                              }}
+                              placeholder="Keterangan tambahan"
+                              className="mt-1"
+                            />
+                          </div> */}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-slate-500 bg-slate-50 rounded-lg border-2 border-dashed border-slate-200">
+                    <svg className="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H8a2 2 0 01-2-2V8a2 2 0 012-2V6" />
+                    </svg>
+                    <p className="text-lg font-medium mb-2">Tidak Ada Pekerjaan/Usaha Lain</p>
+                    <p className="text-sm">Nasabah tidak memiliki pekerjaan atau usaha lain.</p>
+                  </div>
+                )}
+              </div>
             </div>
-        </div>
+          </div>
+        )}
 
         {/* Footer */}
         <div className="p-5 border-t border-slate-200 flex justify-between items-center shrink-0">
@@ -1488,8 +1933,17 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
                   disabled={loading || changedFields.size === 0}
                   className={changedFields.size > 0 ? 'bg-orange-600 hover:bg-orange-700' : ''}
                 >
-                  <Save className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-                  {loading ? 'Menyimpan & Memuat Ulang...' : `Simpan ${changedFields.size} Perubahan`}
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Menyimpan...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4 mr-2" />
+                      Simpan {changedFields.size} Perubahan
+                    </>
+                  )}
                 </Button>
           </DialogFooter>
         </div>

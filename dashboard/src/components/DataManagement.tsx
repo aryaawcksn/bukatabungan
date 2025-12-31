@@ -4,7 +4,6 @@ import {
   Upload, 
   FileSpreadsheet, 
   Database, 
-  AlertCircle, 
   Loader2,
   FileText,
   Archive,
@@ -364,15 +363,6 @@ export default function DataManagement({ onDataImported, cabangList = [], userRo
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-          <Database className="w-5 h-5 text-white" />
-        </div>
-        <div>
-          <h3 className="text-xl font-semibold text-slate-900">Olah Data</h3>
-          <p className="text-slate-500 text-sm">Export, import, dan backup data permohonan</p>
-        </div>
-      </div>
 
       {/* Date Filter Section */}
       <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-xl p-6">
@@ -671,7 +661,7 @@ export default function DataManagement({ onDataImported, cabangList = [], userRo
       </div>
 
       {/* Info Section */}
-      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+      {/* <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
         <div className="flex items-start gap-3">
           <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
           <div className="text-sm">
@@ -688,7 +678,7 @@ export default function DataManagement({ onDataImported, cabangList = [], userRo
             </ul>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (

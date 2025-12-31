@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogTitle, DialogFooter } from './ui/dialog';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
-// import { Card } from './ui/card'; // Card is not used anymore in the new design
+import { Skeleton } from './ui/skeleton';
 import { pdf } from '@react-pdf/renderer';
 import { SubmissionPdf } from '../SubmissionPdf';
 import {
@@ -28,6 +28,7 @@ import {
   Building2,
   Clock,
   Edit3,
+  Loader2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { API_BASE_URL } from '../config/api';
@@ -100,6 +101,50 @@ const Field = ({ label, value, icon, fullWidth = false }: FieldProps) => {
   );
 };
 
+// Skeleton component for loading state
+const DetailSkeleton = () => (
+  <div className="flex-1 overflow-y-auto p-4 space-y-10 animate-pulse">
+    {/* TOP SUMMARY CARDS SKELETON */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm flex flex-col gap-2">
+          <Skeleton className="h-3 w-20" />
+          <Skeleton className="h-6 w-32" />
+          <Skeleton className="h-4 w-24" />
+        </div>
+      ))}
+    </div>
+
+    {/* PERSONAL DATA SKELETON */}
+    <Section title="Data Pribadi Nasabah" icon={<Skeleton className="w-4 h-4 rounded-full" />}>
+      <div className="bg-white p-6 rounded-xl border border-slate-200">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => (
+            <div key={i} className="space-y-2">
+              <Skeleton className="h-3 w-24" />
+              <Skeleton className="h-5 w-full" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </Section>
+
+    {/* JOB INFO SKELETON */}
+    <Section title="Pekerjaan & Keuangan" icon={<Skeleton className="w-4 h-4 rounded-full" />}>
+      <div className="bg-white p-6 rounded-xl border border-slate-200">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="space-y-2">
+              <Skeleton className="h-3 w-24" />
+              <Skeleton className="h-5 w-full" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </Section>
+  </div>
+);
+
 export function FormDetailDialog({ submission, open, onClose, onApprove, onReject, onEdit}: FormDetailDialogProps) {
   const [loading, setLoading] = useState(false);
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
@@ -112,7 +157,6 @@ export function FormDetailDialog({ submission, open, onClose, onApprove, onRejec
     
     setFetchingDetails(true);
     try {
-      console.log('🔄 Fetching full details for submission:', submission.id);
       const res = await fetch(`${API_BASE_URL}/api/pengajuan/${submission.id}`, {
         credentials: 'include'
       });
@@ -122,7 +166,6 @@ export function FormDetailDialog({ submission, open, onClose, onApprove, onRejec
       const data = await res.json();
       if (data.success) {
         const fullDetails = mapBackendDataToFormSubmission(data.data);
-        console.log('✅ Full details loaded:', fullDetails);
         setDetailSubmission(fullDetails);
       }
     } catch (err) {
@@ -148,7 +191,6 @@ export function FormDetailDialog({ submission, open, onClose, onApprove, onRejec
   useEffect(() => {
     if (open && submission.id) {
       // If submission data has changed (like after edit), refresh details
-      console.log('🔄 Submission data may have changed, refreshing...');
       fetchDetails();
     }
   }, [submission.submittedAt, submission.status]); // Listen to key fields that might change 
@@ -227,186 +269,178 @@ export function FormDetailDialog({ submission, open, onClose, onApprove, onRejec
         </div>
 
         {/* MAIN SCROLLABLE CONTENT */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-10">
-          {fetchingDetails && (
-             <div className="p-3 bg-blue-50 text-blue-700 rounded-md text-center text-sm border border-blue-100 animate-pulse">
-               Sedang memuat data lengkap...
-             </div>
-          )}
-
-           {/* TOP SUMMARY CARDS */}
-           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm flex flex-col gap-1">
-                  <div className="text-xs text-slate-500 uppercase font-semibold">Jenis Rekening</div>
-                  <div className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                      <Wallet className="w-5 h-5 text-blue-600" />
-                      {detailSubmission.savingsType || "-"}
-                  </div>
-                  <div className="text-sm text-slate-500">{detailSubmission.personalData.tipeNasabah === 'lama' ? 'Nasabah Lama' : 'Nasabah Baru'}</div>
-              </div>
-              <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm flex flex-col gap-1">
-                   <div className="text-xs text-slate-500 uppercase font-semibold">Jenis Kartu</div>
-                   <div className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                       <CreditCard className="w-5 h-5 text-purple-600" />
-                       {detailSubmission.cardType 
-                         ? detailSubmission.cardType
-                         : (detailSubmission.savingsType === 'Mutiara' ? "Belum Dipilih" : "Tanpa Kartu ATM")}
-                   </div>
-                   {/* <div className="text-sm text-slate-500">
-                      {detailSubmission.accountInfo.isForSelf ? 'Milik Sendiri' : 'Untuk Orang Lain'}
-                   </div> */}
-              </div>
-               <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm flex flex-col gap-1">
-                   <div className="text-xs text-slate-500 uppercase font-semibold">Kepemilikikan</div>
-                   <div className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                       <User className='w-5 h-5 text-emerald-600'/>
-                       {/* {detailSubmission.accountInfo.initialDeposit 
-                         ? `Rp ${parseFloat(detailSubmission.accountInfo.initialDeposit).toLocaleString('id-ID')}`
-                         : "-"} */}
-                      {detailSubmission.accountInfo.isForSelf ? 'Pribadi' : 'Orang Lain'}
-                   </div>
-               </div>
-           </div>
-
-          {/* PERSONAL DATA */}
-          <Section title="Data Pribadi Nasabah" icon={<User className="w-4 h-4" />}>
-            <div className="bg-white p-6 rounded-xl border border-slate-200">
-                <GridContainer>
-                <Field label="Nama Lengkap" value={detailSubmission.personalData.fullName} />
-                <Field label="Alias" value={detailSubmission.personalData.alias} />
-                <Field label="No Identitas" value={detailSubmission.personalData.nik} />
-                <Field label="Jenis Identitas" value={detailSubmission.personalData.identityType} />
-                <Field label="NPWP" value={detailSubmission.personalData.npwp} />
-                <Field label="Tempat, Tgl Lahir" icon={<Calendar className="w-3 h-3" />} value={`${detailSubmission.personalData.birthPlace || ''}, ${detailSubmission.personalData.birthDate}`} />
-                <Field label="Jenis Kelamin" value={detailSubmission.personalData.gender} />
-                <Field label="Status Pernikahan" value={detailSubmission.personalData.maritalStatus} />
-                <Field label="Nama Ibu Kandung" value={detailSubmission.personalData.motherName} />
-                <Field label="Agama" value={detailSubmission.personalData.religion} />
-                <Field label="Pendidikan" value={detailSubmission.personalData.education} />
-                 <Field label="Kewarganegaraan" value={detailSubmission.personalData.citizenship} />
-                <Field label="Email" icon={<Mail className="w-3 h-3" />} value={detailSubmission.personalData.email} />
-                <Field label="No. Telepon" icon={<Phone className="w-3 h-3" />} value={detailSubmission.personalData.phone} />
-                </GridContainer>
-            </div>
-             <div className="mt-4 bg-white p-6 rounded-xl border border-slate-200">
-                <h4 className="text-sm font-semibold text-slate-900 mb-4 flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-slate-500" /> Alamat Lengkap
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Field label="Alamat KTP" value={detailSubmission.personalData.address.street} fullWidth />
-                    <div className="grid grid-cols-2 gap-4">
-                        <Field label="Kode Pos" value={detailSubmission.personalData.address.postalCode} />
-                        <Field label="Status Rumah" value={detailSubmission.personalData.homeStatus} />
+        {fetchingDetails ? (
+          <DetailSkeleton />
+        ) : (
+          <div className="flex-1 overflow-y-auto p-4 space-y-10 animate-contentEnter">
+             {/* TOP SUMMARY CARDS */}
+             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm flex flex-col gap-1">
+                    <div className="text-xs text-slate-500 uppercase font-semibold">Jenis Rekening</div>
+                    <div className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <Wallet className="w-5 h-5 text-blue-600" />
+                        {detailSubmission.savingsType || "-"}
                     </div>
-                     {detailSubmission.personalData.address.domicile && (
-                        <Field label="Alamat Domisili" value={detailSubmission.personalData.address.domicile} fullWidth />
-                    )}
+                    <div className="text-sm text-slate-500">{detailSubmission.personalData.tipeNasabah === 'lama' ? 'Nasabah Lama' : 'Nasabah Baru'}</div>
                 </div>
-             </div>
-          </Section>
-
-          {/* JOB INFO */}
-          <Section
-            title={detailSubmission.savingsType === 'SimPel' ? 'Sekolah & Pekerjaan' : 'Pekerjaan & Keuangan'}
-            icon={<Briefcase className="w-4 h-4" />}
-          >
-             <div className="bg-white p-6 rounded-xl border border-slate-200">
-                 <GridContainer>
-                <Field label="Pekerjaan" value={detailSubmission.jobInfo.occupation} />
-                <Field 
-                    label={detailSubmission.savingsType === 'SimPel' ? 'Nama Sekolah' : 'Nama Instansi'} 
-                    icon={<Building2 className="w-3 h-3" />}
-                    value={detailSubmission.jobInfo.workplace} 
-                />
-                <Field label="Bidang Usaha" value={detailSubmission.jobInfo.businessField} />
-                <Field label="Jabatan" value={detailSubmission.jobInfo.position} />
-                <Field label="Penghasilan" icon={<DollarSign className="w-3 h-3" />} value={detailSubmission.jobInfo.salaryRange} />
-                <Field label="Sumber Dana" value={detailSubmission.jobInfo.incomeSource} />
-                <Field label="Rata-rata Transaksi" icon={<DollarSign className="w-3 h-3" />} value={detailSubmission.jobInfo.averageTransaction} />
-                <Field label="Tujuan Rekening" icon={<Target className="w-3 h-3" />} value={detailSubmission.jobInfo.accountPurpose} />
-                </GridContainer>
-                <Separator className="my-6" />
-                <GridContainer>
-                     <Field label="Alamat Kantor" value={detailSubmission.jobInfo.officeAddress} fullWidth />
-                     <Field label="Telp Kantor" icon={<Phone className="w-3 h-3" />} value={detailSubmission.jobInfo.officePhone} />
-                </GridContainer>
-             </div>
-          </Section>
-
-          {/* EMERGENCY CONTACT & BENEFICIAL OWNER GRID */}
-          <div className="grid grid-cols-1 xl:grid-cols-1 gap-8">
-               {/* EMERGENCY CONTACT */}
-               {detailSubmission.emergencyContact && (
-                 <Section title="Kontak Darurat" icon={<AlertCircle className="w-4 h-4" />} className="mb-0">
-                   <div className="bg-white p-6 rounded-xl border border-slate-200 h-full">
-                     <div className="space-y-4">
-                       <Field label="Nama" value={detailSubmission.emergencyContact.name} />
-                       <Field label="Hubungan" value={detailSubmission.emergencyContact.relationship} />
-                       <Field label="Nomor Telepon" icon={<Phone className="w-3 h-3" />} value={detailSubmission.emergencyContact.phone} />
-                       <Field label="Alamat" icon={<MapPin className="w-3 h-3" />} value={detailSubmission.emergencyContact.address} />
+                <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm flex flex-col gap-1">
+                     <div className="text-xs text-slate-500 uppercase font-semibold">Jenis Kartu</div>
+                     <div className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                         <CreditCard className="w-5 h-5 text-purple-600" />
+                         {detailSubmission.cardType 
+                           ? detailSubmission.cardType
+                           : (detailSubmission.savingsType === 'Mutiara' ? "Belum Dipilih" : "Tanpa Kartu ATM")}
                      </div>
-                   </div>
-                 </Section>
-                )}
-
-                 {/* BENEFICIAL OWNER */}
-                {detailSubmission.beneficialOwner && (
-                    <Section title="Beneficial Owner" icon={<UserCheck className="w-4 h-4" />} className="mb-0">
-                    <div className="bg-white p-6 rounded-xl border border-slate-200 h-full">
-                        <GridContainer>
-                            <Field label="Nama Lengkap" value={detailSubmission.beneficialOwner.name} />
-                            <Field label="Hubungan" value={detailSubmission.beneficialOwner.relationship} />
-                            <Field label="Kewarganegaraan" value={detailSubmission.beneficialOwner.citizenship} />
-                            <Field label="Pendapatan" value={detailSubmission.beneficialOwner.annualIncome} />
-                            <Field label="Alamat" value={detailSubmission.beneficialOwner.address} />
-                            <Field label="Tempat, Tgl Lahir" icon={<Calendar className="w-3 h-3" />} value={`${detailSubmission.beneficialOwner.birthPlace || ''}, ${detailSubmission.beneficialOwner.birthDate}`} />
-                            <Field label="Jenis Kelamin" value={detailSubmission.beneficialOwner.gender} />
-                            <Field label="Status Pernikahan" value={detailSubmission.beneficialOwner.maritalStatus} />
-                            <Field label="Jenis ID" value={detailSubmission.beneficialOwner.identityType} />
-                            <Field label="Nomor ID" value={detailSubmission.beneficialOwner.identityNumber} />
-                            <Field label="Sumber Dana" value={detailSubmission.beneficialOwner.incomeSource} />
-                            <Field label="No Hp" value={detailSubmission.beneficialOwner.phone} />
-                            <Field label="Pekerjaan" value={detailSubmission.beneficialOwner.occupation} />
-                        </GridContainer>
-                    </div>
-                    </Section>
-                )}
+                </div>
+                 <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm flex flex-col gap-1">
+                     <div className="text-xs text-slate-500 uppercase font-semibold">Kepemilikikan</div>
+                     <div className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                         <User className='w-5 h-5 text-emerald-600'/>
+                        {detailSubmission.accountInfo.isForSelf ? 'Pribadi' : 'Orang Lain'}
+                     </div>
+                 </div>
+             </div>
+  
+            {/* PERSONAL DATA */}
+            <Section title="Data Pribadi Nasabah" icon={<User className="w-4 h-4" />}>
+              <div className="bg-white p-6 rounded-xl border border-slate-200">
+                  <GridContainer>
+                  <Field label="Nama Lengkap" value={detailSubmission.personalData.fullName} />
+                  <Field label="Alias" value={detailSubmission.personalData.alias} />
+                  <Field label="No Identitas" value={detailSubmission.personalData.nik} />
+                  <Field label="Jenis Identitas" value={detailSubmission.personalData.identityType} />
+                  <Field label="NPWP" value={detailSubmission.personalData.npwp} />
+                  <Field label="Tempat, Tgl Lahir" icon={<Calendar className="w-3 h-3" />} value={`${detailSubmission.personalData.birthPlace || ''}, ${detailSubmission.personalData.birthDate}`} />
+                  <Field label="Jenis Kelamin" value={detailSubmission.personalData.gender} />
+                  <Field label="Status Pernikahan" value={detailSubmission.personalData.maritalStatus} />
+                  <Field label="Nama Ibu Kandung" value={detailSubmission.personalData.motherName} />
+                  <Field label="Agama" value={detailSubmission.personalData.religion} />
+                  <Field label="Pendidikan" value={detailSubmission.personalData.education} />
+                   <Field label="Kewarganegaraan" value={detailSubmission.personalData.citizenship} />
+                  <Field label="Email" icon={<Mail className="w-3 h-3" />} value={detailSubmission.personalData.email} />
+                  <Field label="No. Telepon" icon={<Phone className="w-3 h-3" />} value={detailSubmission.personalData.phone} />
+                  </GridContainer>
+              </div>
+               <div className="mt-4 bg-white p-6 rounded-xl border border-slate-200">
+                  <h4 className="text-sm font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-slate-500" /> Alamat Lengkap
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <Field label="Alamat KTP" value={detailSubmission.personalData.address.street} fullWidth />
+                      <div className="grid grid-cols-2 gap-4">
+                          <Field label="Kode Pos" value={detailSubmission.personalData.address.postalCode} />
+                          <Field label="Status Rumah" value={detailSubmission.personalData.homeStatus} />
+                      </div>
+                       {detailSubmission.personalData.address.domicile && (
+                          <Field label="Alamat Domisili" value={detailSubmission.personalData.address.domicile} fullWidth />
+                      )}
+                  </div>
+               </div>
+            </Section>
+  
+            {/* JOB INFO */}
+            <Section
+              title={detailSubmission.savingsType === 'SimPel' ? 'Sekolah & Pekerjaan' : 'Pekerjaan & Keuangan'}
+              icon={<Briefcase className="w-4 h-4" />}
+            >
+               <div className="bg-white p-6 rounded-xl border border-slate-200">
+                   <GridContainer>
+                  <Field label="Pekerjaan" value={detailSubmission.jobInfo.occupation} />
+                  <Field 
+                      label={detailSubmission.savingsType === 'SimPel' ? 'Nama Sekolah' : 'Nama Instansi'} 
+                      icon={<Building2 className="w-3 h-3" />}
+                      value={detailSubmission.jobInfo.workplace} 
+                  />
+                  <Field label="Bidang Usaha" value={detailSubmission.jobInfo.businessField} />
+                  <Field label="Jabatan" value={detailSubmission.jobInfo.position} />
+                  <Field label="Penghasilan" icon={<DollarSign className="w-3 h-3" />} value={detailSubmission.jobInfo.salaryRange} />
+                  <Field label="Sumber Dana" value={detailSubmission.jobInfo.incomeSource} />
+                  <Field label="Rata-rata Transaksi" icon={<DollarSign className="w-3 h-3" />} value={detailSubmission.jobInfo.averageTransaction} />
+                  <Field label="Tujuan Rekening" icon={<Target className="w-3 h-3" />} value={detailSubmission.jobInfo.accountPurpose} />
+                  </GridContainer>
+                  <Separator className="my-6" />
+                  <GridContainer>
+                       <Field label="Alamat Kantor" value={detailSubmission.jobInfo.officeAddress} fullWidth />
+                       <Field label="Telp Kantor" icon={<Phone className="w-3 h-3" />} value={detailSubmission.jobInfo.officePhone} />
+                  </GridContainer>
+               </div>
+            </Section>
+  
+            {/* EMERGENCY CONTACT & BENEFICIAL OWNER GRID */}
+            <div className="grid grid-cols-1 xl:grid-cols-1 gap-8">
+                 {/* EMERGENCY CONTACT */}
+                 {detailSubmission.emergencyContact && (
+                   <Section title="Kontak Darurat" icon={<AlertCircle className="w-4 h-4" />} className="mb-0">
+                     <div className="bg-white p-6 rounded-xl border border-slate-200 h-full">
+                       <div className="space-y-4">
+                         <Field label="Nama" value={detailSubmission.emergencyContact.name} />
+                         <Field label="Hubungan" value={detailSubmission.emergencyContact.relationship} />
+                         <Field label="Nomor Telepon" icon={<Phone className="w-3 h-3" />} value={detailSubmission.emergencyContact.phone} />
+                         <Field label="Alamat" icon={<MapPin className="w-3 h-3" />} value={detailSubmission.emergencyContact.address} />
+                       </div>
+                     </div>
+                   </Section>
+                  )}
+  
+                   {/* BENEFICIAL OWNER */}
+                  {detailSubmission.beneficialOwner && (
+                      <Section title="Beneficial Owner" icon={<UserCheck className="w-4 h-4" />} className="mb-0">
+                      <div className="bg-white p-6 rounded-xl border border-slate-200 h-full">
+                          <GridContainer>
+                              <Field label="Nama Lengkap" value={detailSubmission.beneficialOwner.name} />
+                              <Field label="Hubungan" value={detailSubmission.beneficialOwner.relationship} />
+                              <Field label="Kewarganegaraan" value={detailSubmission.beneficialOwner.citizenship} />
+                              <Field label="Pendapatan" value={detailSubmission.beneficialOwner.annualIncome} />
+                              <Field label="Alamat" value={detailSubmission.beneficialOwner.address} />
+                              <Field label="Tempat, Tgl Lahir" icon={<Calendar className="w-3 h-3" />} value={`${detailSubmission.beneficialOwner.birthPlace || ''}, ${detailSubmission.beneficialOwner.birthDate}`} />
+                              <Field label="Jenis Kelamin" value={detailSubmission.beneficialOwner.gender} />
+                              <Field label="Status Pernikahan" value={detailSubmission.beneficialOwner.maritalStatus} />
+                              <Field label="Jenis ID" value={detailSubmission.beneficialOwner.identityType} />
+                              <Field label="Nomor ID" value={detailSubmission.beneficialOwner.identityNumber} />
+                              <Field label="Sumber Dana" value={detailSubmission.beneficialOwner.incomeSource} />
+                              <Field label="No Hp" value={detailSubmission.beneficialOwner.phone} />
+                              <Field label="Pekerjaan" value={detailSubmission.beneficialOwner.occupation} />
+                          </GridContainer>
+                      </div>
+                      </Section>
+                  )}
+            </div>
+            
+            {/* OTHER BANKS / JOBS */}
+            {(detailSubmission.eddBankLain?.length || detailSubmission.eddPekerjaanLain?.length) ? (
+                <Section title="Informasi Kekayaan (EDD)" icon={<FileText className="w-4 h-4" />}>
+                     <div className="bg-white p-6 rounded-xl border border-slate-200">
+                          {detailSubmission.eddBankLain && detailSubmission.eddBankLain.length > 0 && (
+                               <div className="mb-6">
+                                   <h4 className="text-sm font-semibold mb-3">Rekening Bank Lain</h4>
+                                   <div className="flex flex-wrap gap-4">
+                                       {detailSubmission.eddBankLain.map((bank, i) => (
+                                           <div key={i} className="p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm">
+                                               <div className="font-bold text-slate-700">{bank.bank_name}</div>
+                                               <div className="text-slate-500">{bank.nomor_rekening} ({bank.jenis_rekening})</div>
+                                           </div>
+                                       ))}
+                                   </div>
+                               </div>
+                          )}
+                          {detailSubmission.eddPekerjaanLain && detailSubmission.eddPekerjaanLain.length > 0 && (
+                               <div>
+                                   <h4 className="text-sm font-semibold mb-3">Usaha Tambahan</h4>
+                                   <div className="flex flex-wrap gap-2">
+                                       {detailSubmission.eddPekerjaanLain.map((job, i) => (
+                                           <Badge key={i} variant="secondary" className="px-3 py-1">
+                                               {job.jenis_usaha}
+                                           </Badge>
+                                       ))}
+                                   </div>
+                               </div>
+                          )}
+                     </div>
+                </Section>
+            ) : null}
+  
           </div>
-          
-          {/* OTHER BANKS / JOBS */}
-          {(detailSubmission.eddBankLain?.length || detailSubmission.eddPekerjaanLain?.length) ? (
-              <Section title="Informasi Kekayaan (EDD)" icon={<FileText className="w-4 h-4" />}>
-                   <div className="bg-white p-6 rounded-xl border border-slate-200">
-                        {detailSubmission.eddBankLain && detailSubmission.eddBankLain.length > 0 && (
-                             <div className="mb-6">
-                                 <h4 className="text-sm font-semibold mb-3">Rekening Bank Lain</h4>
-                                 <div className="flex flex-wrap gap-4">
-                                     {detailSubmission.eddBankLain.map((bank, i) => (
-                                         <div key={i} className="p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm">
-                                             <div className="font-bold text-slate-700">{bank.bank_name}</div>
-                                             <div className="text-slate-500">{bank.nomor_rekening} ({bank.jenis_rekening})</div>
-                                         </div>
-                                     ))}
-                                 </div>
-                             </div>
-                        )}
-                        {detailSubmission.eddPekerjaanLain && detailSubmission.eddPekerjaanLain.length > 0 && (
-                             <div>
-                                 <h4 className="text-sm font-semibold mb-3">Usaha Tambahan</h4>
-                                 <div className="flex flex-wrap gap-2">
-                                     {detailSubmission.eddPekerjaanLain.map((job, i) => (
-                                         <Badge key={i} variant="secondary" className="px-3 py-1">
-                                             {job.jenis_usaha}
-                                         </Badge>
-                                     ))}
-                                 </div>
-                             </div>
-                        )}
-                   </div>
-              </Section>
-          ) : null}
-
-        </div>
+        )}
 
         {/* FOOTER ACTION BAR */}
         <div className="p-5 border-t border-slate-200 flex justify-between items-center shrink-0">
@@ -430,8 +464,17 @@ export function FormDetailDialog({ submission, open, onClose, onApprove, onRejec
                 )}
                 {!pdfBlob ? (
                   <Button variant="outline" onClick={handleGeneratePdf} disabled={loading} className="w-full sm:w-auto">
-                    <FileText className="w-4 h-4 mr-2" />
-                    {loading ? 'Memproses PDF...' : 'Generate PDF'}
+                    {loading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Memproses PDF...
+                      </>
+                    ) : (
+                      <>
+                        <FileText className="w-4 h-4 mr-2" />
+                        Generate PDF
+                      </>
+                    )}
                   </Button>
                 ) : (
                   <a href={URL.createObjectURL(pdfBlob)} download={`Bukti-Pendaftaran-${detailSubmission.referenceCode}.pdf`} className="w-full sm:w-auto">

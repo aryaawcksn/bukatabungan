@@ -151,7 +151,7 @@ const InsightCards = memo(({ submissions }: InsightCardsProps) => {
   };
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 animate-contentEnter">
       {insights.map((insight, index) => {
         const colorClasses = getColorClasses(insight.color);
         const Icon = insight.icon;

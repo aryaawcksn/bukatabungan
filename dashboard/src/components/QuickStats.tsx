@@ -78,7 +78,7 @@ const QuickStats = memo(({ submissions }: QuickStatsProps) => {
   }, [submissions]);
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 to-blue-50 rounded-xl p-6 border border-slate-200 mb-6">
+    <div className="bg-gradient-to-br from-slate-50 to-blue-50 rounded-xl p-6 border border-slate-200 mb-6 animate-contentEnter">
       <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
         <Calendar className="w-5 h-5 text-blue-600" />
         Ringkasan Cepat
