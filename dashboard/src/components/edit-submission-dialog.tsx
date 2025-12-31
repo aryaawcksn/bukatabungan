@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { 
   Edit3, 
   Save, 
-  X, 
+  XCircle, 
   User, 
   Briefcase, 
   AlertCircle,
@@ -1256,7 +1256,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
 
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full hover:bg-slate-100">
-              <X className="w-6 h-6 text-slate-400" />
+              <XCircle className="w-6 h-6 text-slate-400" />
             </Button>
           </div>
         </div>
@@ -1417,7 +1417,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
                     {renderInputField('kode_pos_id', formData.kode_pos_id, (value) => handleInputChange('kode_pos_id', value))}
                   </div>
                   <div className="md:col-span-2">
-                    <Label htmlFor="alamat_now">Alamat Domisili</Label>
+                    <Label htmlFor="alamat_now">Alamat Domisili (Opsional)</Label>
                     {renderInputField('alamat_now', formData.alamat_now, (value) => handleInputChange('alamat_now', value))}
                   </div>
                   <div className="space-y-2">
@@ -1934,7 +1934,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
 
           <DialogFooter className="gap-3">
                 <Button variant="outline" onClick={onClose} disabled={loading}>
-                  <X className="w-4 h-4 mr-2" />
+                  <XCircle className="w-4 h-4 mr-2" />
                   Batal
                 </Button>
                 <Button 

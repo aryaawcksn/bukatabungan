@@ -376,7 +376,7 @@ export const SubmissionPdf = ({ submission }: { submission: FormSubmission }) =>
 
   {/* LOGO POSISI ABSOLUTE — AMAN 100% */}
   <Image
-  src="./banksleman.png"
+  src="./logo.png"
   style={{
     width: 130,       // perbesar sesuka kamu
     height: 130,      // WAJIB ada untuk memaksa scale up
@@ -444,6 +444,9 @@ export const SubmissionPdf = ({ submission }: { submission: FormSubmission }) =>
                  <DataField label="Alamat Lengkap" value={submission.personalData.address.domicile} />
               </>
             )}
+            <DataField label="Status Rumah" value={submission.personalData.homeStatus} />
+
+
             
             <Text style={{ ...styles.label, marginTop: 6, marginBottom: 2, color: PRIMARY_COLOR }}>KONTAK</Text>
             <RowTwoCol>
@@ -532,7 +535,11 @@ export const SubmissionPdf = ({ submission }: { submission: FormSubmission }) =>
                  <DataField label="Nama Kontak" value={submission.emergencyContact.name} />
                  <DataField label="Hubungan" value={submission.emergencyContact.relationship} />
               </RowTwoCol>
-              <DataField label="Nomor Telepon" value={submission.emergencyContact.phone} />
+              <RowTwoCol>
+                <DataField label="Alamat" value={submission.emergencyContact.address} />
+                <DataField label="Nomor Telepon" value={submission.emergencyContact.phone} />
+              </RowTwoCol>
+              
             </View>
           </View>
         )}
@@ -556,6 +563,31 @@ export const SubmissionPdf = ({ submission }: { submission: FormSubmission }) =>
 
       <RowTwoCol>
         <DataField
+          label="Tempat, Tgl Lahir"
+          value={submission.beneficialOwner.birthPlace && submission.beneficialOwner.birthDate 
+            ? `${submission.beneficialOwner.birthPlace}, ${submission.beneficialOwner.birthDate}`
+            : submission.beneficialOwner.birthPlace || submission.beneficialOwner.birthDate || '-'
+          }
+        />
+        <DataField
+          label="Jenis Kelamin"
+          value={submission.beneficialOwner.gender}
+        />
+      </RowTwoCol>
+
+      <RowTwoCol>
+        <DataField
+          label="Kewarganegaraan"
+          value={submission.beneficialOwner.citizenship}
+        />
+        <DataField
+          label="Status Pernikahan"
+          value={submission.beneficialOwner.maritalStatus}
+        />
+      </RowTwoCol>
+
+      <RowTwoCol>
+        <DataField
           label="Jenis Identitas"
           value={submission.beneficialOwner.identityType}
         />
@@ -565,9 +597,31 @@ export const SubmissionPdf = ({ submission }: { submission: FormSubmission }) =>
         />
       </RowTwoCol>
 
+      <RowTwoCol>
+        <DataField
+          label="Pekerjaan"
+          value={submission.beneficialOwner.occupation}
+        />
+        <DataField
+          label="Sumber Dana"
+          value={submission.beneficialOwner.incomeSource}
+        />
+      </RowTwoCol>
+
+      <RowTwoCol>
+        <DataField
+          label="Hubungan"
+          value={submission.beneficialOwner.relationship}
+        />
+        <DataField
+          label="No HP"
+          value={submission.beneficialOwner.phone}
+        />
+      </RowTwoCol>
+
       <DataField
-        label="Pekerjaan"
-        value={submission.beneficialOwner.occupation}
+        label="Pendapatan Tahunan"
+        value={submission.beneficialOwner.annualIncome}
       />
     </View>
   </View>

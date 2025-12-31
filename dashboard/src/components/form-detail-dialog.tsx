@@ -23,7 +23,9 @@ import {
   AlertCircle,
   Clock,
   Edit3,
-  Loader2
+  Loader2,
+  History,
+  Target
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { API_BASE_URL } from '../config/api';
@@ -267,33 +269,82 @@ export function FormDetailDialog({ submission, open, onClose, onApprove, onRejec
         {fetchingDetails ? (
           <DetailSkeleton />
         ) : (
-          <div className="flex-1 overflow-y-auto p-4 space-y-10 animate-contentEnter">
-             {/* TOP SUMMARY CARDS */}
-             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm flex flex-col gap-1">
-                    <div className="text-xs text-slate-500 uppercase font-semibold">Jenis Rekening</div>
-                    <div className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                        <Wallet className="w-5 h-5 text-blue-600" />
-                        {detailSubmission.savingsType || "-"}
+          <div className="flex-1 overflow-y-auto p-8 space-y-10 animate-contentEnter">
+             {/* TOP SUMMARY SECTION: 3 BIG CARDS + 3 MINIMAL INFO */}
+             <div className="space-y-4">
+                {/* TIER 1: BIG CARDS */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm flex flex-col gap-1 transition-all hover:border-blue-100">
+                        <div className="text-xs text-slate-500 uppercase font-semibold">Jenis Rekening</div>
+                        <div className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <Wallet className="w-5 h-5 text-blue-600" />
+                            {detailSubmission.savingsType || "-"}
+                        </div>
                     </div>
-                    <div className="text-sm text-slate-500">{detailSubmission.personalData.tipeNasabah === 'lama' ? 'Nasabah Lama' : 'Nasabah Baru'}</div>
-                </div>
-                <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm flex flex-col gap-1">
-                     <div className="text-xs text-slate-500 uppercase font-semibold">Jenis Kartu</div>
-                     <div className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                         <CreditCard className="w-5 h-5 text-purple-600" />
-                         {detailSubmission.cardType 
-                           ? detailSubmission.cardType
-                           : (detailSubmission.savingsType === 'Mutiara' ? "Belum Dipilih" : "Tanpa Kartu ATM")}
+                    <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm flex flex-col gap-1 transition-all hover:border-purple-100">
+                         <div className="text-xs text-slate-500 uppercase font-semibold">Jenis Kartu</div>
+                         <div className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                             <CreditCard className="w-5 h-5 text-purple-600" />
+                             {detailSubmission.cardType 
+                               ? detailSubmission.cardType
+                               : (detailSubmission.savingsType === 'Mutiara' ? "Belum Dipilih" : "Tanpa Kartu ATM")}
+                         </div>
+                    </div>
+                     <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm flex flex-col gap-1 transition-all hover:border-emerald-100">
+                         <div className="text-xs text-slate-500 uppercase font-semibold">Kepemilikikan</div>
+                         <div className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                             <User className='w-5 h-5 text-emerald-600'/>
+                            {detailSubmission.accountInfo.isForSelf ? 'Pribadi' : 'Orang Lain'}
+                         </div>
                      </div>
                 </div>
-                 <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm flex flex-col gap-1">
-                     <div className="text-xs text-slate-500 uppercase font-semibold">Kepemilikikan</div>
-                     <div className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                         <User className='w-5 h-5 text-emerald-600'/>
-                        {detailSubmission.accountInfo.isForSelf ? 'Pribadi' : 'Orang Lain'}
-                     </div>
-                 </div>
+
+                {/* TIER 2: MINIMAL INFO BLOCKS */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className=" p-4 rounded-xl flex items-center gap-3">
+
+                        <div className="p-2 rounded-lg shadow-sm bg-gray-white">
+                            <UserCheck className="w-4 h-4 text-blue-500" />
+                        </div>
+                        <div>
+                            <div className="text-xs text-slate-400 uppercase font-medium leading-none mb-2">Status Nasabah</div>
+                            <div className="text-sm font-bold text-slate-700 capitalize">
+                                {detailSubmission.personalData.tipeNasabah === 'lama' ? 'Nasabah Lama' : 'Nasabah Baru'}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div className=" p-4 rounded-xl flex items-center gap-3">
+                        <div className="p-2 bg-white rounded-lg shadow-sm">
+                            <Target className="w-4 h-4 text-rose-500" />
+                        </div>
+                        <div>
+                            <div className="text-xs text-slate-400 uppercase font-bold leading-none mb-1">Tujuan Pembukaan</div>
+                            <div className="text-sm font-bold text-slate-700">
+                                {detailSubmission.jobInfo.accountPurpose || "-"}
+                            </div>
+                        </div>
+                    </div>
+
+                    {detailSubmission.personalData.tipeNasabah === 'lama' ? (
+                        <div className="p-4 rounded-xl flex items-center gap-3">
+                            <div className="p-2 bg-white rounded-lg border border-slate-100 shadow-sm">
+                                <History className="w-4 h-4 text-amber-500" />
+                            </div>
+                            <div>
+                                <div className="text-xs text-slate-400 uppercase font-bold leading-none mb-1">No. Rekening Lama</div>
+                                <div className="text-sm font-bold text-slate-700">
+                                    {detailSubmission.personalData.nomorRekeningLama || "-"}
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        /* Informational placeholder to keep grid balanced */
+                        <div className="bg-slate-50/30 p-4 rounded-xl border border-slate-100 border-dashed flex items-center justify-center">
+                            <div className="text-[10px] text-slate-400 font-medium italic">Nasabah Baru Terverifikasi</div>
+                        </div>
+                    )}
+                </div>
              </div>
   
             {/* PERSONAL DATA */}
