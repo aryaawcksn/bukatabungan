@@ -889,7 +889,11 @@ export function EditSubmissionDialog({ submission, open, onClose, onSuccess, onE
       }
 
       if (data.success) {
-        toast.success(`Berhasil menyimpan perubahan pada submission ID ${submission.id}`);
+        toast.success(
+  <span>
+    Berhasil menyimpan perubahan pada <strong className="font-bold text-indigo-400">{submission.referenceCode}</strong>
+  </span>
+);
         setEditMode(false);
         setEditReason('');
         
