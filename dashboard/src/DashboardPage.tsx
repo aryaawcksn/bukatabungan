@@ -356,6 +356,7 @@ export default function DashboardPage() {
   const itemsPerPage = 20; // Limit items per page untuk performa
   const [activeTab, setActiveTab] = useState('dashboard');
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [sidebarHovered, setSidebarHovered] = useState(false);
   
   // Marking & Bulk Operations State
   const [markedSubmissions, setMarkedSubmissions] = useState<Set<string>>(new Set());
@@ -1182,10 +1183,14 @@ const handleToggleMark = useCallback((id: string) => {
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
         user={user} 
-        onLogout={() => setActiveTab('logout')} 
+        onLogout={() => setActiveTab('logout')}
+        collapsed={!sidebarHovered}
+        onMouseEnter={() => setSidebarHovered(true)}
+        onMouseLeave={() => setSidebarHovered(false)}
       />
 
-      <div className="flex-1 pl-64 transition-all duration-300">
+      <div className={`flex-1 transition-all duration-300 ${!sidebarHovered ? 'pl-16' : 'pl-64'}`}>
+
         <DashboardHeader 
           user={user} 
           title={activeTab === 'dashboard' ? 'Overview' : activeTab === 'analytics' ? 'Data Analytics' : activeTab === 'submissions' ? 'Daftar Permohonan' : activeTab === 'manage' ? 'Pengaturan' : 'Dashboard'}

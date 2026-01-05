@@ -1309,16 +1309,20 @@ export const importData = async (req, res) => {
               SET status = $1, 
                   approved_at = $2, 
                   rejected_at = $3,
-                  approval_notes = $4,
-                  rejection_notes = $5,
-                  edit_count = $6,
-                  last_edited_at = $7,
-                  last_edited_by = $8
-              WHERE id = $9
+                  approved_by = $4,
+                  rejected_by = $5,
+                  approval_notes = $6,
+                  rejection_notes = $7,
+                  edit_count = $8,
+                  last_edited_at = $9,
+                  last_edited_by = $10
+              WHERE id = $11
             `, [
               item.status,
               item.approved_at || null,
               item.rejected_at || null,
+              item.approved_by || null,
+              item.rejected_by || null,
               item.approval_notes || null,
               item.rejection_notes || null,
               item.edit_count || 0,
@@ -1401,9 +1405,9 @@ export const importData = async (req, res) => {
           const pengajuanResult = await client.query(`
             INSERT INTO pengajuan_tabungan (
               cabang_id, status, created_at, approved_at, rejected_at,
-              approval_notes, rejection_notes,
+              approved_by, rejected_by, approval_notes, rejection_notes,
               edit_count, last_edited_at, last_edited_by
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
             RETURNING id
           `, [
             targetCabangId,
@@ -1411,6 +1415,8 @@ export const importData = async (req, res) => {
             item.created_at || new Date(),
             item.approved_at || null,
             item.rejected_at || null,
+            item.approved_by || null,
+            item.rejected_by || null,
             item.approval_notes || null,
             item.rejection_notes || null,
             item.edit_count || 0,

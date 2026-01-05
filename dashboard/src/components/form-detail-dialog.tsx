@@ -7,7 +7,7 @@ import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
 import { Skeleton } from './ui/skeleton';
-import { pdf } from '@react-pdf/renderer';
+import { pdf} from '@react-pdf/renderer';
 import { SubmissionPdf } from '../SubmissionPdf';
 import {
   User,
@@ -143,8 +143,7 @@ const DetailSkeleton = () => (
 );
 
 export function FormDetailDialog({ submission, open, onClose, onApprove, onReject, onEdit}: FormDetailDialogProps) {
-  const [loading, setLoading] = useState(false);
-  const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
+  const [pdfGenerating, setPdfGenerating] = useState(false);
   const [detailSubmission, setDetailSubmission] = useState<FormSubmission>(submission);
   const [fetchingDetails, setFetchingDetails] = useState(false);
 
@@ -178,7 +177,6 @@ export function FormDetailDialog({ submission, open, onClose, onApprove, onRejec
     if (open && submission.id) {
        // Reset to initial submission first
        setDetailSubmission(submission);
-       setPdfBlob(null);
        
        fetchDetails();
     }
@@ -199,11 +197,24 @@ export function FormDetailDialog({ submission, open, onClose, onApprove, onRejec
   };
   const status = statusConfig[detailSubmission.status];
 
-  const handleGeneratePdf = async () => {
-    setLoading(true);
-    const blob = await pdf(<SubmissionPdf submission={detailSubmission} />).toBlob();
-    setPdfBlob(blob);
-    setLoading(false);
+  const handleDownloadPdf = async () => {
+    setPdfGenerating(true);
+    try {
+      const blob = await pdf(<SubmissionPdf submission={detailSubmission} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Bukti-Pendaftaran-${detailSubmission.referenceCode}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast.error("Gagal membuat PDF");
+    } finally {
+      setPdfGenerating(false);
+    }
   };
 
   const handleDialogOpenChange = (isOpen: boolean) => {
@@ -271,81 +282,85 @@ export function FormDetailDialog({ submission, open, onClose, onApprove, onRejec
         ) : (
           <div className="flex-1 overflow-y-auto p-8 space-y-10 animate-contentEnter">
              {/* TOP SUMMARY SECTION: 3 BIG CARDS + 3 MINIMAL INFO */}
-             <div className="space-y-4">
-                {/* TIER 1: BIG CARDS */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm flex flex-col gap-1 transition-all hover:border-blue-100">
-                        <div className="text-xs text-slate-500 uppercase font-semibold">Jenis Rekening</div>
-                        <div className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                            <Wallet className="w-5 h-5 text-blue-600" />
-                            {detailSubmission.savingsType || "-"}
-                        </div>
-                    </div>
-                    <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm flex flex-col gap-1 transition-all hover:border-purple-100">
-                         <div className="text-xs text-slate-500 uppercase font-semibold">Jenis Kartu</div>
-                         <div className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                             <CreditCard className="w-5 h-5 text-purple-600" />
-                             {detailSubmission.cardType 
-                               ? detailSubmission.cardType
-                               : (detailSubmission.savingsType === 'Mutiara' ? "Belum Dipilih" : "Tanpa Kartu ATM")}
-                         </div>
-                    </div>
-                     <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm flex flex-col gap-1 transition-all hover:border-emerald-100">
-                         <div className="text-xs text-slate-500 uppercase font-semibold">Kepemilikikan</div>
-                         <div className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                             <User className='w-5 h-5 text-emerald-600'/>
-                            {detailSubmission.accountInfo.isForSelf ? 'Pribadi' : 'Orang Lain'}
-                         </div>
-                     </div>
+             <div className="space-y-6">
+    {/* FOKUS PERTAMA: PRODUK & KARTU (Visual Utama) */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Card Tabungan */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-blue-600 to-blue-700 p-6 rounded-2xl shadow-md text-white">
+            <Wallet className="absolute -right-4 -bottom-4 w-24 h-24 opacity-20 rotate-12" />
+            <div className="relative z-10">
+                <p className="text-blue-100 text-xs font-semibold uppercase tracking-wider mb-1">Jenis Rekening</p>
+                <h3 className="text-2xl font-bold tracking-tight">
+                    {detailSubmission.savingsType || "-"}
+                </h3>
+                <div className="mt-4 inline-flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full text-xs backdrop-blur-sm">
+                    <User className="w-3 h-3" />
+                    Kepemilikan: {detailSubmission.accountInfo.isForSelf ? 'Pribadi' : 'Orang Lain'}
                 </div>
+            </div>
+        </div>
 
-                {/* TIER 2: MINIMAL INFO BLOCKS */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className=" p-4 rounded-xl flex items-center gap-3">
+        {/* Card Kartu */}
+        <div className="relative overflow-hidden bg-white p-6 rounded-2xl border-2 border-slate-100 shadow-sm flex flex-col justify-between">
+            <div>
+                <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Fasilitas Kartu</p>
+                <h3 className="text-2xl font-bold text-slate-800 tracking-tight">
+                    {detailSubmission.cardType 
+                        ? detailSubmission.cardType
+                        : (detailSubmission.savingsType === 'Mutiara' ? "Belum Dipilih" : "Tanpa Kartu")}
+                </h3>
+            </div>
+            <div className="mt-4 flex items-center gap-2 text-purple-600">
+                <CreditCard className="w-5 h-5" />
+                <span className="text-xs font-bold uppercase">Debit Card</span>
+            </div>
+        </div>
+    </div>
 
-                        <div className="p-2 rounded-lg shadow-sm bg-gray-white">
-                            <UserCheck className="w-4 h-4 text-blue-500" />
-                        </div>
-                        <div>
-                            <div className="text-xs text-slate-400 uppercase font-medium leading-none mb-2">Status Nasabah</div>
-                            <div className="text-sm font-bold text-slate-700 capitalize">
-                                {detailSubmission.personalData.tipeNasabah === 'lama' ? 'Nasabah Lama' : 'Nasabah Baru'}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div className=" p-4 rounded-xl flex items-center gap-3">
-                        <div className="p-2 bg-white rounded-lg shadow-sm">
-                            <Target className="w-4 h-4 text-rose-500" />
-                        </div>
-                        <div>
-                            <div className="text-xs text-slate-400 uppercase font-bold leading-none mb-1">Tujuan Pembukaan</div>
-                            <div className="text-sm font-bold text-slate-700">
-                                {detailSubmission.jobInfo.accountPurpose || "-"}
-                            </div>
-                        </div>
-                    </div>
-
-                    {detailSubmission.personalData.tipeNasabah === 'lama' ? (
-                        <div className="p-4 rounded-xl flex items-center gap-3">
-                            <div className="p-2 bg-white rounded-lg border border-slate-100 shadow-sm">
-                                <History className="w-4 h-4 text-amber-500" />
-                            </div>
-                            <div>
-                                <div className="text-xs text-slate-400 uppercase font-bold leading-none mb-1">No. Rekening Lama</div>
-                                <div className="text-sm font-bold text-slate-700">
-                                    {detailSubmission.personalData.nomorRekeningLama || "-"}
-                                </div>
-                            </div>
-                        </div>
-                    ) : (
-                        /* Informational placeholder to keep grid balanced */
-                        <div className="bg-slate-50/30 p-4 rounded-xl border border-slate-100 border-dashed flex items-center justify-center">
-                            <div className="text-[10px] text-slate-400 font-medium italic">Nasabah Baru Terverifikasi</div>
-                        </div>
-                    )}
+    {/* FOKUS KEDUA: INFORMASI PENDUKUNG (Clean & Horizontal) */}
+    <div className="bg-slate-50/50 rounded-2xl p-2 border border-slate-100">
+        <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-200">
+            {/* Status Nasabah */}
+            <div className="p-4 flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-blue-500">
+                    <UserCheck className="w-5 h-5" />
                 </div>
-             </div>
+                <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase leading-none mb-1">Status</p>
+                    <p className="text-sm font-bold text-slate-700 capitalize">
+                        Nasabah {detailSubmission.personalData.tipeNasabah}
+                    </p>
+                </div>
+            </div>
+
+            {/* Tujuan Pembukaan */}
+            <div className="p-4 flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-rose-500">
+                    <Target className="w-5 h-5" />
+                </div>
+                <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase leading-none mb-1">Tujuan</p>
+                    <p className="text-sm font-bold text-slate-700 truncate max-w-[150px]">
+                        {detailSubmission.jobInfo.accountPurpose || "-"}
+                    </p>
+                </div>
+            </div>
+
+            {/* Info Tambahan (Rekening Lama) */}
+            <div className="p-4 flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-amber-500">
+                    <History className="w-5 h-5" />
+                </div>
+                <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase leading-none mb-1">Referensi</p>
+                    <p className="text-sm font-bold text-slate-700">
+                        {detailSubmission.personalData.nomorRekeningLama || "NASABAH_BARU"}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
   
             {/* PERSONAL DATA */}
             <Section title="Data Pribadi Nasabah" icon={<User className="w-4 h-4" />}>
@@ -507,28 +522,24 @@ export function FormDetailDialog({ submission, open, onClose, onApprove, onRejec
                     Edit Data
                   </Button>
                 )}
-                {!pdfBlob ? (
-                  <Button variant="outline" onClick={handleGeneratePdf} disabled={loading} className="w-full sm:w-auto">
-                    {loading ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Memproses PDF...
-                      </>
-                    ) : (
-                      <>
-                        <FileText className="w-4 h-4 mr-2" />
-                        Generate PDF
-                      </>
-                    )}
-                  </Button>
-                ) : (
-                  <a href={URL.createObjectURL(pdfBlob)} download={`Bukti-Pendaftaran-${detailSubmission.referenceCode}.pdf`} className="w-full sm:w-auto">
-                    <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                
+                <Button 
+                  onClick={handleDownloadPdf} 
+                  disabled={pdfGenerating} 
+                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  {pdfGenerating ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Mempersiapkan...
+                    </>
+                  ) : (
+                    <>
                       <FileText className="w-4 h-4 mr-2" />
                       Download Bukti PDF
-                    </Button>
-                  </a>
-                )}
+                    </>
+                  )}
+                </Button>
               </>
             )}
 
