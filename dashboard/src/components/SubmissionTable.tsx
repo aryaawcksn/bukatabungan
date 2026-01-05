@@ -9,6 +9,7 @@ import {
 } from "./ui/table";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
+import { Skeleton } from "./ui/skeleton";
 import { 
   Eye, 
   CheckCircle, 
@@ -66,15 +67,78 @@ export function SubmissionTable({
     }
   };
 
+  // Skeleton component for loading state
+  const TableSkeleton = () => (
+    <TooltipProvider>
+      <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+        <Table>
+          <TableHeader className="bg-slate-50/50">
+            <TableRow className="hover:bg-slate-50/50">
+              <TableHead className="w-[180px] font-semibold text-slate-700">Tanggal & ID</TableHead>
+              <TableHead className="min-w-[200px] font-semibold text-slate-700">Nama Nasabah</TableHead>
+              <TableHead className="w-[150px] font-semibold text-slate-700">Rekening</TableHead>
+              <TableHead className="w-[150px] font-semibold text-slate-700">Kewarganegaraan</TableHead>
+              <TableHead className="w-[140px] font-semibold text-slate-700">Status</TableHead>
+              <TableHead className="w-[100px] font-semibold text-slate-700">Catatan</TableHead>
+              <TableHead className="w-[80px] text-right font-semibold text-slate-700">Aksi</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {Array.from({ length: 5 }).map((_, index) => (
+              <TableRow key={index} className="animate-pulse">
+                {/* Tanggal & Ref */}
+                <TableCell className="align-top py-4">
+                  <div className="flex flex-col gap-2">
+                    <Skeleton className="h-3 w-20" />
+                    <Skeleton className="h-4 w-32" />
+                  </div>
+                </TableCell>
+
+                {/* Nama */}
+                <TableCell className="align-top py-4">
+                  <div className="flex flex-col gap-2">
+                    <Skeleton className="h-4 w-40" />
+                    <Skeleton className="h-3 w-24" />
+                  </div>
+                </TableCell>
+
+                {/* Rekening */}
+                <TableCell className="align-top py-4">
+                  <div className="flex flex-col gap-2">
+                    <Skeleton className="h-4 w-28" />
+                    <Skeleton className="h-3 w-16" />
+                  </div>
+                </TableCell>
+
+                {/* Kewarganegaraan */}
+                <TableCell className="align-top py-4">
+                  <Skeleton className="h-4 w-20" />
+                </TableCell>
+
+                {/* Status */}
+                <TableCell className="align-top py-4">
+                  <Skeleton className="h-6 w-20 rounded-full" />
+                </TableCell>
+
+                {/* Catatan */}
+                <TableCell className="align-top py-4">
+                  <Skeleton className="h-8 w-8 rounded" />
+                </TableCell>
+
+                {/* Aksi */}
+                <TableCell className="align-top py-4 text-right">
+                  <Skeleton className="h-8 w-8 rounded ml-auto" />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </TooltipProvider>
+  );
+
   if (loading) {
-     return (
-        <div className="w-full h-48 flex items-center justify-center">
-            <div className="flex flex-col items-center gap-2">
-                <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                <p className="text-sm text-slate-500">Memuat data...</p>
-            </div>
-        </div>
-     )
+    return <TableSkeleton />;
   }
 
   return (

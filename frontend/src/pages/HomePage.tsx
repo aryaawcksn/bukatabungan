@@ -139,7 +139,7 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
 
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
                 <button
-                  onClick={() => navigate('/selection')}
+                  onClick={() => navigate('/produk')}
                   className="w-full sm:w-auto px-18 py-3.5 bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold text-sm uppercase tracking-wide rounded-lg shadow-amber-500/20 mobile-button-press md:transition-transform md:transform md:hover:-translate-y-0.5"
                 >
                   Buka Rekening

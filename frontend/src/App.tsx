@@ -50,14 +50,14 @@ function RootLayout() {
 
 function HomePageWrapper() {
   const navigate = useNavigate();
-  return <HomePage onOpenSavings={(type) => navigate(`/product/${type}`)} />;
+  return <HomePage onOpenSavings={(type) => navigate(`/produk/${type}`)} />;
 }
 
 function SelectionWrapper() {
   const navigate = useNavigate();
   return (
     <SavingsTypeSelection
-      onSelectType={(type) => navigate(`/product/${type}`)}
+      onSelectType={(type) => navigate(`/produk/${type}`)}
       onBack={() => navigate("/")}
     />
   );
@@ -76,7 +76,7 @@ function ProductDetailsRoute() {
     <ProductDetails
       savingsType={type}
       onNext={() => navigate(`/form/${type}`)}
-      onBack={() => navigate("/selection")}
+      onBack={() => navigate("/produk")}
     />
   );
 }
@@ -94,7 +94,7 @@ function ProcedureRoute() {
     <ProcedureSteps
       savingsType={type}
       onComplete={() => navigate(`/form/${type}`)}
-      onBack={() => navigate(`/product/${type}`)}
+      onBack={() => navigate(`/produk/${type}`)}
     />
   );
 }
@@ -111,7 +111,7 @@ function FormRoute() {
   return (
     <AccountForm
       savingsType={type}
-      onBack={() => navigate(`/product/${type}`)}
+      onBack={() => navigate(`/produk/${type}`)}
     />
   );
 }
@@ -133,11 +133,11 @@ const router = createBrowserRouter([
         element: <HeroLanding />,
       },
       {
-        path: "selection",
+        path: "produk",
         element: <SelectionWrapper />,
       },
       {
-        path: "product/:type",
+        path: "produk/:type",
         element: <ProductDetailsRoute />,
       },
       {
