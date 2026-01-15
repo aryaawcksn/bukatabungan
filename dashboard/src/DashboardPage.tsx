@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback, lazy, Suspense, memo } from 'react';
-import { Search, FileBarChart, LogOut, X, Clock3, Check, TrendingDown, TrendingUp, ArrowUp, Calendar as CalendarIcon, AlertTriangle, BarChart3 } from 'lucide-react';
+import { Search, FileBarChart, LogOut, X, Clock3, Check, TrendingDown, TrendingUp, ArrowUp, Calendar as CalendarIcon, AlertTriangle, BarChart3, Building2, Database, Users } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './components/ui/select';
 import { toast } from 'sonner';
 import { Toaster } from './components/ui/sonner';
@@ -1644,32 +1644,52 @@ const handleToggleMark = useCallback((id: string) => {
     </div>
 
     {/* Accordion: Pengaturan Cabang */}
-    <div className="bg-white border border-slate-200 rounded-xl shadow-sm">
+    <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
       {/* Header Accordion */}
       <button
         onClick={() =>
           setOpenAccordion(prev => ({ ...prev, cabang: !prev.cabang }))
         }
-        className="w-full flex items-center justify-between p-5 text-left hover:bg-slate-50 transition-all duration-500"
+        className="w-full flex items-center justify-between p-6 text-left hover:bg-slate-50 transition-all duration-500 group"
       >
-        <div>
-          <h4 className="text-xl font-semibold text-slate-900">Pengaturan Cabang</h4>
-          <p className="text-slate-500 text-sm">
-            Atur status dan akses cabang operasional.
-          </p>
+        <div className="flex items-center gap-4">
+          {/* Icon Container */}
+          <div className="relative overflow-hidden bg-gradient-to-br from-emerald-500 to-green-600 p-3 rounded-xl shadow-md text-white group-hover:scale-105 transition-transform duration-300">
+            <Building2 className="w-6 h-6 relative z-10" />
+            <div className="absolute -right-2 -bottom-2 w-8 h-8 bg-white/20 rounded-full opacity-50" />
+          </div>
+          
+          <div>
+            <h4 className="text-xl font-semibold text-slate-900 group-hover:text-emerald-600 transition-colors">
+              Pengaturan Cabang
+            </h4>
+            <p className="text-slate-500 text-sm">
+              Atur status dan akses cabang operasional.
+            </p>
+          </div>
         </div>
 
-        <svg
-          className={`w-5 h-5 text-slate-600 transition-transform ${
-            openAccordion.cabang ? "rotate-180" : ""
-          }`}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          viewBox="0 0 24 24"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-        </svg>
+        <div className="flex items-center gap-3">
+          {/* <div className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+            openAccordion.cabang 
+              ? 'bg-emerald-100 text-emerald-700' 
+              : 'bg-slate-100 text-slate-600'
+          }`}>
+            {openAccordion.cabang ? 'Terbuka' : 'Tertutup'}
+          </div> */}
+          
+          <svg
+            className={`w-5 h-5 text-slate-600 transition-transform duration-300 ${
+              openAccordion.cabang ? "rotate-180" : ""
+            }`}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
       </button>
 
       {/* Body Accordion */}
@@ -1701,32 +1721,52 @@ const handleToggleMark = useCallback((id: string) => {
     </div>
 
     {/* Accordion: Olah Data */}
-    <div className="bg-white border border-slate-200 rounded-xl shadow-sm">
+    <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
       {/* Header Accordion */}
       <button
         onClick={() =>
           setOpenAccordion(prev => ({ ...prev, dataManagement: !prev.dataManagement }))
         }
-        className="w-full flex items-center justify-between p-5 text-left hover:bg-slate-50 transition-all duration-500"
+        className="w-full flex items-center justify-between p-6 text-left hover:bg-slate-50 transition-all duration-500 group"
       >
-        <div>
-          <h4 className="text-xl font-semibold text-slate-900">Olah Data</h4>
-          <p className="text-slate-500 text-sm">
-            Export, import, dan backup data permohonan.
-          </p>
+        <div className="flex items-center gap-4">
+          {/* Icon Container */}
+          <div className="relative overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 p-3 rounded-xl shadow-md text-white group-hover:scale-105 transition-transform duration-300">
+            <Database className="w-6 h-6 relative z-10" />
+            <div className="absolute -right-2 -bottom-2 w-8 h-8 bg-white/20 rounded-full opacity-50" />
+          </div>
+          
+          <div>
+            <h4 className="text-xl font-semibold text-slate-900 group-hover:text-blue-600 transition-colors">
+              Olah Data
+            </h4>
+            <p className="text-slate-500 text-sm">
+              Export, import, dan backup data permohonan.
+            </p>
+          </div>
         </div>
 
-        <svg
-          className={`w-5 h-5 text-slate-600 transition-transform ${
-            openAccordion.dataManagement ? "rotate-180" : ""
-          }`}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          viewBox="0 0 24 24"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-        </svg>
+        <div className="flex items-center gap-3">
+          {/* <div className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+            openAccordion.dataManagement 
+              ? 'bg-blue-100 text-blue-700' 
+              : 'bg-slate-100 text-slate-600'
+          }`}>
+            {openAccordion.dataManagement ? 'Terbuka' : 'Tertutup'}
+          </div> */}
+          
+          <svg
+            className={`w-5 h-5 text-slate-600 transition-transform duration-300 ${
+              openAccordion.dataManagement ? "rotate-180" : ""
+            }`}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
       </button>
 
       {/* Body Accordion */}
@@ -1748,32 +1788,52 @@ const handleToggleMark = useCallback((id: string) => {
     </div>
 
     {/* Accordion: Pengaturan Akun */}
-    <div className="bg-white border border-slate-200 rounded-xl shadow-sm">
+    <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
       {/* Header Accordion */}
       <button
         onClick={() =>
           setOpenAccordion(prev => ({ ...prev, account: !prev.account }))
         }
-        className="w-full flex items-center justify-between p-5 text-left hover:bg-slate-50 transition-all duration-500"
+        className="w-full flex items-center justify-between p-6 text-left hover:bg-slate-50 transition-all duration-500 group"
       >
-        <div>
-          <h4 className="text-xl font-semibold text-slate-900">Pengaturan Akun</h4>
-          <p className="text-slate-500 text-sm">
-            Manajemen user dan hak akses sistem.
-          </p>
+        <div className="flex items-center gap-4">
+          {/* Icon Container */}
+          <div className="relative overflow-hidden bg-gradient-to-br from-purple-500 to-violet-600 p-3 rounded-xl shadow-md text-white group-hover:scale-105 transition-transform duration-300">
+            <Users className="w-6 h-6 relative z-10" />
+            <div className="absolute -right-2 -bottom-2 w-8 h-8 bg-white/20 rounded-full opacity-50" />
+          </div>
+          
+          <div>
+            <h4 className="text-xl font-semibold text-slate-900 group-hover:text-purple-600 transition-colors">
+              Pengaturan Akun
+            </h4>
+            <p className="text-slate-500 text-sm">
+              Manajemen user dan hak akses sistem.
+            </p>
+          </div>
         </div>
 
-        <svg
-          className={`w-5 h-5 text-slate-600 transition-transform ${
-            openAccordion.account ? "rotate-180" : ""
-          }`}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          viewBox="0 0 24 24"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-        </svg>
+        <div className="flex items-center gap-3">
+          {/* <div className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+            openAccordion.account 
+              ? 'bg-purple-100 text-purple-700' 
+              : 'bg-slate-100 text-slate-600'
+          }`}>
+            {openAccordion.account ? 'Terbuka' : 'Tertutup'}
+          </div> */}
+          
+          <svg
+            className={`w-5 h-5 text-slate-600 transition-transform duration-300 ${
+              openAccordion.account ? "rotate-180" : ""
+            }`}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
       </button>
 
       {/* Body Accordion */}

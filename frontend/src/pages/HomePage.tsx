@@ -152,7 +152,7 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
                 <div className="flex items-center gap-3">
                   <div className="bg-white rounded px-2 py-1 flex items-center justify-center shadow-sm">
                     <img
-                      src="/ojk.webp"
+                      src="/ojk.png"
                       alt="OJK"
                       className="h-4 md:h-5 object-contain"
                       loading="lazy"
@@ -173,7 +173,7 @@ export default function HomePage({ onOpenSavings }: HomePageProps) {
                 <div className="flex items-center gap-3">
                   <div className="bg-white rounded px-2 py-1 flex items-center justify-center shadow-sm">
                     <img
-                      src="/lps.webp"
+                      src="/lps.png"
                       alt="LPS"
                       className="h-4 md:h-5 object-contain"
                       loading="lazy"
